@@ -1,0 +1,19 @@
+v0.1 - 2006-07-12
+-----------------
+- Initial release.
+
+v0.2 - 2006-10-16
+-----------------
+- New: Show which servers are passworded.
+- New: Save passwords in the settings file.
+- Change: Don't show join dialog for servers that don't require a password.
+- Change: Remember which server was selected when it's filtered out, reselect when it's not filtered out anymore.
+- Fix: Don't show players or cvars for a server that is not selected, or for the wrong server.
+
+After 0.2
+-------------
+- New: Selection marker stays on the selected server when recieving servers.
+- New: Server list and player list sorts are now stable (ie. multiple column sorting works again).
+- Fix: Shouldn't hang when querying servers or when exiting the program anymore.
+- Fix: The server table flashes a bit less when recieving servers.
+- Fix: Servers get added to the list much faster, not taking network slowness into consideration.

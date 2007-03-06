@@ -1,0 +1,68 @@
+This program is coded in the Digital Mars D language.  It should be easy to
+pick up, due to its similarity to C/C++ and Java.
+
+
+Useful links
+------------
+D compiler:
+http://ftp.digitalmars.com/dmd.1.007.zip
+Versions 0.174 to 1.0 should work.
+Versions 1.001 to 1.006 do not work properly with DWT apps.
+Version 1.007, and probably later, works.
+
+D docs:
+Language: http://www.digitalmars.com/d/lex.html
+Standard library: http://www.digitalmars.com/d/phobos/phobos.html
+http://www.prowiki.org/wiki4d/wiki.cgi?LanguageSpecification/KeywordIndex
+http://www.prowiki.org/wiki4d/wiki.cgi?FaqRoadmap
+
+D support:
+http://www.digitalmars.com/NewsGroup.html
+irc://irc.freenode.org/D
+
+Derek Parnell's Build, aka Bud, needed for building the project:
+http://www.dsource.org/projects/build
+http://trac.dsource.org/projects/build/browser/downloads/build_win_2.10.exe?format=raw
+Later versions than 2.10 currently don't work for this project.
+
+
+Libraries used
+--------------
+ini.d (included in the source download):
+http://www.dprogramming.com/ini.php
+
+DWT  GUI library (included in the source download):
+http://www.dsource.org/projects/dwt
+http://help.eclipse.org/help30/nftopic/org.eclipse.platform.doc.isv/reference/api/org/eclipse/swt/widgets/package-tree.html
+There's also a DWT news group on news.digitalmars.com.
+The included version works with dmd 1.0 and Build 3.04, the official version
+doesn't (as of February 6 2007).
+
+DWT is a D port of IBM's SWT for Java.  Unfortunately, it still only runs on
+Windows.  I'm hoping that someone will start working on Linux and Mac ports
+sometime.  But as of February 2007, the project seems to be dead. :(
+
+DWT is based on SWT 3.0.  However, some of the 3.1 API also seems to be
+implemented.
+
+
+-----------
+Two external programs are used, the first one is optional and not included in
+the download:
+http://directory.fsf.org/All_Packages_in_Directory/gslist.html
+http://qstat.org/
+
+Please be aware that gslist is subject to some legal controversy, please read
+this link before redistributing it from a US server:
+http://aluigi.altervista.org/papers.htm#distrust
+
+
+PathfinderET is also included, as a source of ideas for this project.
+
+
+Please feel free to clean up my code if you like.  It was coded in a very
+ad hoc, step by step way, so the code organization is a bit random in some
+places.
+
+
+-torhu, aka monSter
