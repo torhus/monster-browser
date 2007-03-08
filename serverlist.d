@@ -77,10 +77,12 @@ struct ServerData {
 				}
 
 				break;
+
 			case ServerColumn.PING:
 				result = std.conv.toInt(server[serverList.sortColumn_]) -
 				           std.conv.toInt(other.server[serverList.sortColumn_]);
 				break;
+
 			default:
 				result = std.string.icmp(server[serverList.sortColumn_],
 				                       other.server[serverList.sortColumn_]);
@@ -220,9 +222,9 @@ class ServerList
 	/****** FILTERS ********/
 	void filterNotEmpty(bool enable)
 	{
-		if (enable == filters_.notEmpty) {
+		if (enable == filters_.notEmpty)
 			return;
-		}
+
 		synchronized {
 			filters_.notEmpty = enable;
 			updateFilteredList();
@@ -232,9 +234,9 @@ class ServerList
 
 	void filterHasHumans(bool enable)
 	{
-		if (enable == filters_.hasHumans) {
+		if (enable == filters_.hasHumans)
 			return;
-		}
+
 		synchronized {
 			filters_.hasHumans = enable;
 			updateFilteredList();
@@ -266,7 +268,7 @@ private:
 	{
 		if (filteredList.length > list.length) {
 			error("filteredlist.length == ", filteredList.length,
-			      "\nlist.length == ", list.length);
+			              "\nlist.length == ", list.length);
 			assert(0);
 		}
 		if (!(filters_.hasHumans || filters_.notEmpty ||
@@ -284,7 +286,7 @@ private:
 	/// Sorts the main list, doesn't touch the filtered list.
 	void _sort()
 	{
-		debug scope Timer timer = new Timer;
+		debug scope timer = new Timer;
 
 		if (!isSorted_ || sortColumn_ != oldSortColumn_) {
 			mergeSort(list);
@@ -302,11 +304,13 @@ private:
 	 */
 	int _insertSorted(ServerData* sd)
 	{
-		bool less(ServerData* a, ServerData* b) {
+		bool less(ServerData* a, ServerData* b)
+		{
 			return (*a < *b);
 		}
 
-		bool greaterOrEq(ServerData* a, ServerData* b) {
+		bool greaterOrEq(ServerData* a, ServerData* b)
+		{
 			return (*a >= *b);
 		}
 
