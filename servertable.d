@@ -117,48 +117,50 @@ class ServerTable
 
 	void reset(Object dummy = null)
 	{
-		if(!table_.isDisposed()) {
-			refresh();
-			volatile if (!parselist.abort) {
-				statusBar.setDefaultStatus(serverList.length,
-				                           serverList.filteredLength);
-			}
-			assert(selectedIp_);
-			int i = serverList.getFilteredIndex(selectedIp_);
-			if (i != -1) {
-				table_.setSelection(i);
-				playerTable.setSelectedServer(i);
-				cvarTable.setItems(serverList.getFiltered(i).cvars);
-			}
-			else {
-				table_.deselectAll();
-				playerTable.clear();
-				cvarTable.clear();
-			}
+		if(table_.isDisposed())
+			return;
+
+		refresh();
+		volatile if (!parselist.abort) {
+			statusBar.setDefaultStatus(serverList.length,
+			                           serverList.filteredLength);
+		}
+		assert(selectedIp_);
+		int i = serverList.getFilteredIndex(selectedIp_);
+		if (i != -1) {
+			table_.setSelection(i);
+			playerTable.setSelectedServer(i);
+			cvarTable.setItems(serverList.getFiltered(i).cvars);
+		}
+		else {
+			table_.deselectAll();
+			playerTable.clear();
+			cvarTable.clear();
 		}
 	}
 
 	void refresh(Object index = null)
 	{
-		if(!table_.isDisposed()) {
-			if (index) {
-				int selected = table_.getSelectionIndex();
-				int i = (cast(IntWrapper) index).value;
+		if(table_.isDisposed())
+			return;
 
-				if (i <= getBottomIndex() /*&& i >= table_.getTopIndex()*/) {
-					table_.clearAll();
-					table_.setItemCount(serverList.filteredLength);
-				}
+		if (index) {
+			int selected = table_.getSelectionIndex();
+			int i = (cast(IntWrapper) index).value;
 
-				if (selected != -1 && i <= selected) {
-						table_.deselectAll();
-						table_.select(selected + 1);
-				}
-			}
-			else {
+			if (i <= getBottomIndex() /*&& i >= table_.getTopIndex()*/) {
 				table_.clearAll();
 				table_.setItemCount(serverList.filteredLength);
 			}
+
+			if (selected != -1 && i <= selected) {
+					table_.deselectAll();
+					table_.select(selected + 1);
+			}
+		}
+		else {
+			table_.clearAll();
+			table_.setItemCount(serverList.filteredLength);
 		}
 	}
 

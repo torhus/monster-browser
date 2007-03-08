@@ -124,6 +124,8 @@ public:
 /**
  * Find a string in an array of strings, ignoring case differences.
  *
+ * Does a linear search.
+ *
  * Returns: the index where it was found, or -1 if it was not found.
  */
 int findString(char[][] array, char[] str)
@@ -251,7 +253,7 @@ void mergeSort(T)(T[] a, bool delegate(T a, T b) lessOrEqual=null)
 	{
 		if (lo < hi)
 		{
-			size_t m = (lo + hi) / 2;
+			size_t m = lo + ((hi - lo) / 2);
 			_mergeSort(lo, m);
 			_mergeSort(m + 1, hi);
 			merge(lo, m, hi);
