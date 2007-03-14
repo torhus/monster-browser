@@ -182,8 +182,8 @@ void sortStringArray(char[][][] arr, int sortColumn=0, bool reverse=false,
 }
 
 
-void sortStringArrayStable(char[][][] arr, int sortColumn=0, bool reverse=false,
-                           bool numeric=false)
+void sortStringArrayStable(char[][][] arr, int sortColumn=0,
+                           bool reverse=false,bool numeric=false)
 {
 
 	bool lessOrEqual(char[][] a, char[][] b)
