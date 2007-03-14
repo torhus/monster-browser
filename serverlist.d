@@ -80,7 +80,7 @@ struct ServerData {
 
 			case ServerColumn.PING:
 				result = std.conv.toInt(server[serverList.sortColumn_]) -
-				           std.conv.toInt(other.server[serverList.sortColumn_]);
+				          std.conv.toInt(other.server[serverList.sortColumn_]);
 				break;
 
 			default:
@@ -387,7 +387,7 @@ private:
 
 		filteredList.length = filteredList.length + 1;
 		memmove(filteredList.ptr + index + 1, filteredList.ptr + index,
-		                 (filteredList.length - 1 - index) * filteredList[0].sizeof);
+		           (filteredList.length - 1 - index) * filteredList[0].sizeof);
 		filteredList[index] = sd;
 	}
 
@@ -478,7 +478,7 @@ void loadSavedList()
 		void callback(Object int_count)
 		{
 			statusBar.setLeft("Loading saved server list... " ~
-			              std.string.toString((cast(IntWrapper) int_count).value));
+			          std.string.toString((cast(IntWrapper) int_count).value));
 		}
 
 		try {
@@ -516,7 +516,7 @@ void getNewList()
 		void status(Object int_count)
 		{
 			statusBar.setLeft("Got " ~  total ~ " servers, querying..." ~
-			              std.string.toString((cast(IntWrapper) int_count).value));
+			          std.string.toString((cast(IntWrapper) int_count).value));
 		}
 
 		try {
@@ -570,7 +570,7 @@ void refreshList()
 		void status(Object int_count)
 		{
 			statusBar.setLeft("Refreshing " ~  total ~ " servers..." ~
-			              std.string.toString((cast(IntWrapper) int_count).value));
+			          std.string.toString((cast(IntWrapper) int_count).value));
 		}
 
 		void done(Object o)
