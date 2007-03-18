@@ -23,9 +23,9 @@ void parseOutput(void delegate(Object) callback, char[] delegate() readLine,
 {
 	char[][] gtypes;
 	BufferedFile outfile;
-	debug scope Timer timer = new Timer;
+	debug scope timer = new Timer;
 	int count = 0;
-	scope IntWrapper countWrapper = new IntWrapper(-1);
+	scope countWrapper = new IntWrapper(-1);
 
 	assert(callback);
 
