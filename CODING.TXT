@@ -8,7 +8,8 @@ D compiler:
 http://ftp.digitalmars.com/dmd.1.007.zip
 Versions 0.174 to 1.0 should work.
 Versions 1.001 to 1.006 do not work properly with DWT apps.
-Version 1.007, and probably later, works.
+Version 1.007 through 1.010 works.
+Version 1.011 does not work.
 
 D docs:
 Language: http://www.digitalmars.com/d/lex.html
@@ -36,11 +37,12 @@ http://www.dsource.org/projects/dwt
 http://help.eclipse.org/help30/nftopic/org.eclipse.platform.doc.isv/reference/api/org/eclipse/swt/widgets/package-tree.html
 There's also a DWT news group on news.digitalmars.com.
 The included version works with dmd 1.0 and Build 3.04, the official version
-doesn't (as of February 6 2007).
+doesn't.
 
 DWT is a D port of IBM's SWT for Java.  Unfortunately, it still only runs on
 Windows.  I'm hoping that someone will start working on Linux and Mac ports
-sometime.  But as of February 2007, the project seems to be dead. :(
+sometime.  But as of April 2007, the project seems to be dead.  However,
+another SWT port (dsource.org/projects/tioport) is progressing quickly.
 
 DWT is based on SWT 3.0.  However, some of the 3.1 API also seems to be
 implemented.
@@ -62,7 +64,7 @@ PathfinderET is also included, as a source of ideas for this project.
 
 Please feel free to clean up my code if you like.  It was coded in a very
 ad hoc, step by step way, so the code organization is a bit random in some
-places.
+places.  Sorry about that.
 
 
 -torhu, aka monSter
