@@ -2,10 +2,22 @@ module parselist;
 
 private {
 	import std.string;
-	import std.stream;
-	import std.stdio;
+	import std.ctype;
+	import std.c.stdio;
+	import tango.core.Exception;
+	import Integer = tango.text.convert.Integer;
+
+	import tango.stdc.string;
+	import tango.stdc.stringz;
+
+	//import std.stream;
+	//import std.stdio;
+	import tango.io.Console;
+	import tango.io.FileConduit;
+	import tango.text.stream.LineIterator;
 
 	import lib.process;
+
 	import common;
 	import serverlist;
 	import qstat;
@@ -50,7 +62,7 @@ int browserGetNewList()
 
 	// bug workaround
 	for(int i = 0; _environ[i]; i++) {
-		proc.addEnv(std.string.toString(_environ[i]).dup);
+		proc.addEnv(fromUtf8z(_environ[i]).dup);
 	}
 
 	try {
@@ -70,9 +82,9 @@ int browserGetNewList()
 			if (common.useGslist) {
 				for (;;) {
 					char[] s = proc.readLine();
-					if (s.length > 0 && std.ctype.isdigit(s[0])) {
-						count = std.conv.toInt(s[0..find(s, ' ')]);
-						log("gslist retrieving " ~ std.string.toString(count) ~
+					if (s.length > 0 && isdigit(s[0])) {
+						count = Integer.toInt(s[0..find(s, ' ')]);
+						log("gslist retrieving " ~ Integer.toUtf8(count) ~
 						               " servers.");
 					}
 				}
@@ -83,9 +95,8 @@ int browserGetNewList()
 
 				proc.readLine();
 				s = proc.readLine();
-				r = sscanf(toStringz(s), "%*s %*s %d", &count);
-				log("qstat retrieving " ~ std.string.toString(count) ~
-				                              " servers.");
+				r = sscanf(toUtf8z(s), "%*s %*s %d", &count);
+				log("qstat retrieving " ~ toString(count) ~ " servers.");
 			}
 		}
 		catch (PipeException e) {
@@ -93,9 +104,9 @@ int browserGetNewList()
 		}
 		catch(Exception e) {
 			logx(__FILE__, __LINE__,e);
-			error(__FILE__ ~ std.string.toString(__LINE__) ~
+			error(__FILE__ ~ Integer.toUtf8(__LINE__) ~
 			                 ": Unkown exception: " ~ e.classinfo.name ~ ": " ~
-			                 e.toString());
+			                 e.toUtf8());
 		}
 	}
 
@@ -115,22 +126,28 @@ int browserGetNewList()
 
 void browserLoadSavedList(void delegate(Object) callback)
 {
-	BufferedFile f;
+	scope path = new FilePath(SERVERFILE);
+	scope FileConduit f;
+	scope LineIterator!(char) iter;
+
+	char[] readLine() { return iter.get(); }
+
+	bool eof() { return (iter.next() is null); }
 
 	volatile abort = false;
 
-	//log("browserLoadSavedList():");
-	if (!std.file.exists(SERVERFILE)) {
+	if (!path.exists) {
 		return;
 	}
 
 	try {
-		f = new BufferedFile(SERVERFILE);
+		f = new FileConduit(path);
+		iter = new LineIterator!(char)(f);
 		serverList.clear();
-		qstat.parseOutput(callback, &f.readLine, &f.eof, null);
+		qstat.parseOutput(callback, &readLine, &eof, null);
 		f.close();
 	}
-	catch (OpenException o) {
+	catch (IOException e) {
 		warning("Unable to load the server list from disk,\n"
 		      "press \'Get new list\' to download a new list.");
 	}
@@ -144,7 +161,7 @@ void browserRefreshList(void delegate(Object) callback)
 
 	// bug workaround
 	for(int i = 0; _environ[i]; i++) {
-		proc.addEnv(std.string.toString(_environ[i]).dup);
+		proc.addEnv(fromUtf8z(_environ[i]).dup);
 	}
 
 	try {
@@ -168,7 +185,7 @@ void browserRefreshList(void delegate(Object) callback)
 	}
 	catch(Exception e) {
 		logx(__FILE__, __LINE__, e);
-		error(__FILE__ ~ std.string.toString(__LINE__) ~ ": " ~ e.toString());
+		error(__FILE__ ~ Integer.toUtf8(__LINE__) ~ ": " ~ e.toUtf8());
 	}
 }
 
@@ -180,7 +197,7 @@ void browserRefreshList(void delegate(Object) callback)
 bool killServerBrowser()
 {
 	if (proc is null) {
-		debug writefln("proc is null");
+		debug Cout("proc is null");
 		return true;
 	}
 

@@ -10,6 +10,7 @@ Versions 0.174 to 1.0 should work.
 Versions 1.001 to 1.006 do not work properly with DWT apps.
 Version 1.007 through 1.010 works.
 Versions 1.011 and 1.012 do not work.
+Version 1.013 works.
 
 D docs:
 Language: http://www.digitalmars.com/d/lex.html

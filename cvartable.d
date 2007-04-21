@@ -1,7 +1,14 @@
 module cvartable;
 
 private {
-	import dwt.all;
+	import dejavu.lang.String;
+
+	import org.eclipse.swt.SWT;
+	import org.eclipse.swt.widgets.Composite;
+	import org.eclipse.swt.widgets.Table;
+	import org.eclipse.swt.widgets.TableColumn;
+	import org.eclipse.swt.widgets.TableItem;
+
 	import common;
 	import serverlist;
 	import main;
@@ -15,14 +22,14 @@ class CvarTable
 	this(Composite parent)
 	{
 		parent_ = parent;
-		table_ = new Table(parent_, DWT.BORDER);
+		table_ = new Table(parent_, SWT.BORDER);
 		table_.setHeaderVisible(true);
 		table_.setLinesVisible(true);
 
-		TableColumn column = new TableColumn(table_, DWT.HIDE_SELECTION);
-		column.setText("Key");
-		column = new TableColumn(table_, DWT.NONE);
-		column.setText("Value");
+		TableColumn column = new TableColumn(table_, SWT.HIDE_SELECTION);
+		column.setText(new String("Key"));
+		column = new TableColumn(table_, SWT.NONE);
+		column.setText(new String("Value"));
 
 
 		table_.getColumn(0).setWidth(90);
@@ -36,8 +43,10 @@ class CvarTable
 		assert (items && items.length);
 		table_.setItemCount(0);
 		foreach (v; items) {
-			TableItem item = new TableItem(table_, DWT.NONE);
-      		item.setText(v);
+			TableItem item = new TableItem(table_, SWT.NONE);
+			foreach (i, s; v) {
+      			item.setText(i, String.fromUtf8(s));
+  			}
       	}
   	}
 

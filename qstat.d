@@ -7,6 +7,11 @@ private {
 	import std.stream;
 	import std.conv;
 
+	import dejavu.lang.JObjectImpl;
+	import dejavu.lang.Runnable;
+	
+	//import org.eclipse.swt.widgets.Display;
+
 	import common;
 	import parselist;
 	import serverlist;
@@ -74,7 +79,9 @@ each_server:
 			assert(fields.length == 9 || fields.length == 3);
 			count++;
 			countWrapper.value = count;
-			display.syncExec(countWrapper, callback);
+			display.syncExec(new class JObjectImpl, Runnable {
+				void run() { callback(countWrapper); }
+			});
 
 			if (fields.length >= 9) {
 				if (settings.modName != "baseq3" &&

@@ -1,7 +1,22 @@
 module servertable;
 
 private {
-	import dwt.all;
+	//import dwt.all;
+
+	import dejavu.lang.JObjectImpl;
+	import dejavu.lang.String;
+
+	import org.eclipse.swt.SWT;
+	import org.eclipse.swt.events.SelectionAdapter;
+	import org.eclipse.swt.events.SelectionEvent;
+	import org.eclipse.swt.widgets.Composite;
+	import org.eclipse.swt.widgets.Event;
+	import org.eclipse.swt.widgets.Listener;
+	import org.eclipse.swt.widgets.Table;
+	import org.eclipse.swt.widgets.TableColumn;
+	import org.eclipse.swt.widgets.TableItem;
+
+
 	import serverlist;
 	import launch;
 	import main;
@@ -19,17 +34,17 @@ class ServerTable
 	this(Composite parent)
 	{
 		parent_ = parent;
-		table_ = new Table(parent, DWT.VIRTUAL | DWT.FULL_SELECTION |
-		                           DWT.BORDER);
+		table_ = new Table(parent, SWT.VIRTUAL | SWT.FULL_SELECTION |
+		                           SWT.BORDER);
 		table_.setHeaderVisible(true);
 		table_.setLinesVisible(true);
 
 		for (int i = 0; i < serverHeaders.length; i++) {
-			TableColumn column = new TableColumn(table_, DWT.NONE);
-			column.setText(serverHeaders[i]);
+			TableColumn column = new TableColumn(table_, SWT.NONE);
+			column.setText(String.fromUtf8(serverHeaders[i]));
 		}
 
-		table_.getColumn(ServerColumn.PASSWORDED).setAlignment(DWT.CENTER);
+		table_.getColumn(ServerColumn.PASSWORDED).setAlignment(SWT.CENTER);
 
 		int col = 0;
 		table_.getColumn(col++).setWidth(250);
@@ -40,17 +55,20 @@ class ServerTable
 		table_.getColumn(col++).setWidth(90);
 		table_.getColumn(col++).setWidth(130);
 
-		table_.addListener(DWT.SetData, new class Listener {
+		table_.addListener(SWT.SetData, new class JObjectImpl, Listener {
 			public void handleEvent(Event e)
 			{
 				TableItem item = cast(TableItem) e.item;
-				int i = table_.indexOf(item);
+				int index = table_.indexOf(item);
 
-				debug if (i >= serverList.filteredLength) {
+				debug if (index >= serverList.filteredLength) {
 					error(__FILE__, "(", __LINE__, "):\n",
-					          "i >= serverList.filteredLength");
+					          "index >= serverList.filteredLength");
 				}
-				item.setText(serverList.getFiltered(i).server);
+				//item.setText(serverList.getFiltered(index).server);
+				foreach (i, s; serverList.getFiltered(index).server) {
+					item.setText(i, String.fromUtf8(s));
+				}
 			}
 		});
 
@@ -70,7 +88,7 @@ class ServerTable
 			}
 		});
 
-		Listener sortListener = new class Listener {
+		Listener sortListener = new class JObjectImpl, Listener {
 			public void handleEvent(Event e)
 			{
 				// determine new sort column and direction
@@ -82,13 +100,13 @@ class ServerTable
 				dir = table_.getSortDirection();
 
 				if (sortColumn is newColumn) {
-					dir = (dir == DWT.UP) ? DWT.DOWN : DWT.UP;
+					dir = (dir == SWT.UP) ? SWT.DOWN : SWT.UP;
 				} else {
-					dir = DWT.UP;
+					dir = SWT.UP;
 					table_.setSortColumn(newColumn);
 				}
 
-				serverList.sort(table_.indexOf(newColumn), (dir == DWT.DOWN));
+				serverList.sort(table_.indexOf(newColumn), (dir == SWT.DOWN));
 
 				table_.setSortDirection(dir);
 				synchronized (serverList) {
@@ -100,11 +118,11 @@ class ServerTable
 
 		for (int i = 0; i < table_.getColumnCount(); i++) {
 			TableColumn c = table_.getColumn(i);
-			c.addListener(DWT.Selection, sortListener);
+			c.addListener(SWT.Selection, sortListener);
 		}
 
 		table_.setSortColumn(table_.getColumn(ServerColumn.NAME));
-		table_.setSortDirection(DWT.UP);
+		table_.setSortDirection(SWT.UP);
 	}
 
 	Table getTable() { return table_; };

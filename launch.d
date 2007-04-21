@@ -7,7 +7,9 @@ private {
 	import std.path;
 	import std.conv;
 
-	import dwt.all;
+	import org.eclipse.swt.SWT;
+
+	//import dwt.all;
 	import lib.process;
 	import main;
 	import common;
@@ -51,11 +53,11 @@ void JoinServer(ServerData *sd)
 		dialog.password = getPassword(sd.server[ServerColumn.ADDRESS]);
 
 		int res = dialog.open();
-		if (res == DWT.OK && dialog.password.length) {
+		if (res == SWT.OK && dialog.password.length) {
 			argv ~= " +set password " ~ dialog.password;
 			setPassword(sd.server[ServerColumn.ADDRESS], dialog.password);
 		}
-		if (res != DWT.OK)
+		if (res != SWT.OK)
 			launch = false;
 	}
 

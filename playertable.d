@@ -1,7 +1,17 @@
 module playertable;
 
 private {
-	import dwt.all;
+	import dejavu.lang.JObjectImpl;
+	import dejavu.lang.String;
+
+	import org.eclipse.swt.SWT;
+	import org.eclipse.swt.widgets.Composite;
+	import org.eclipse.swt.widgets.Event;
+	import org.eclipse.swt.widgets.Listener;
+	import org.eclipse.swt.widgets.Table;
+	import org.eclipse.swt.widgets.TableColumn;
+	import org.eclipse.swt.widgets.TableItem;
+
 	import common;
 	import serverlist;
 	import main;
@@ -18,30 +28,35 @@ class PlayerTable
 	this(Composite parent)
 	{
 		parent_ = parent;
-		table_ = new Table(parent, DWT.VIRTUAL |  DWT.BORDER |
-		                           DWT.HIDE_SELECTION);
+		table_ = new Table(parent, SWT.VIRTUAL |  SWT.BORDER |
+		                           SWT.HIDE_SELECTION);
 		table_.setHeaderVisible(true);
 		table_.setLinesVisible(true);
 
 		for (int i = 0; i < playerHeaders.length; i++) {
-			TableColumn column = new TableColumn(table_, DWT.NONE);
-			column.setText(playerHeaders[i]);
+			TableColumn column = new TableColumn(table_, SWT.NONE);
+			column.setText(String.fromUtf8(playerHeaders[i]));
 		}
 
 		table_.getColumn(0).setWidth(100);
 		table_.getColumn(1).setWidth(40);
 		table_.getColumn(2).setWidth(40);
 
-		table_.addListener(DWT.SetData, new class Listener {
+		table_.addListener(SWT.SetData, new class JObjectImpl, Listener {
 			public void handleEvent(Event e)
 			{
 				TableItem item = cast(TableItem) e.item;
-				item.setText(serverList.getFiltered(
-				          selectedServerIndex_).players[table_.indexOf(item)]);
+				/*item.setText(serverList.getFiltered(
+				          selectedServerIndex_).players[table_.indexOf(item)]);*/
+				          
+				ServerData* sd = serverList.getFiltered(selectedServerIndex_);
+				foreach (i, s; sd.players[table_.indexOf(item)]) {
+					item.setText(i, String.fromUtf8(s));
+				}
 			}
 		});
 
-		Listener sortListener = new class Listener {
+		Listener sortListener = new class JObjectImpl, Listener {
 			public void handleEvent(Event e)
 			{
 				// determine new sort column and direction
@@ -54,10 +69,10 @@ class PlayerTable
 				dir = table_.getSortDirection();
 
 				if (sortColumn is currentColumn) {
-					dir = dir == DWT.UP ? DWT.DOWN : DWT.UP;
+					dir = dir == SWT.UP ? SWT.DOWN : SWT.UP;
 				} else {
 					table_.setSortColumn(currentColumn);
-					dir = DWT.UP;
+					dir = SWT.UP;
 				}
 
 				sortCol = table_.indexOf(table_.getSortColumn());
@@ -67,19 +82,19 @@ class PlayerTable
 						sortStringArrayStable(serverList.getFiltered(
 						                        selectedServerIndex_).players,
 				                        sortCol,
-				                        ((dir == DWT.UP) ? false : true));
+				                        ((dir == SWT.UP) ? false : true));
 				    	break;
 					case PlayerColumn.SCORE:
 				    sortStringArrayStable(serverList.getFiltered(
 				                               selectedServerIndex_).players,
 				                    sortCol,
-				                    ((dir == DWT.DOWN) ? false : true), true);
+				                    ((dir == SWT.DOWN) ? false : true), true);
 						break;
 					case PlayerColumn.PING:
 				    sortStringArrayStable(serverList.getFiltered(
 				                                selectedServerIndex_).players,
 				                    sortCol,
-				                    ((dir == DWT.UP) ? false : true), true);
+				                    ((dir == SWT.UP) ? false : true), true);
 						break;
 					default:
 						assert(0);
@@ -92,11 +107,11 @@ class PlayerTable
 
 		for (int i = 0; i < table_.getColumnCount(); i++) {
 			TableColumn c = table_.getColumn(i);
-			c.addListener(DWT.Selection, sortListener);
+			c.addListener(SWT.Selection, sortListener);
 		}
 
 		table_.setSortColumn(table_.getColumn(PlayerColumn.NAME));
-		table_.setSortDirection(DWT.UP);
+		table_.setSortDirection(SWT.UP);
 	}
 
 	Table getTable() { return table_; };
@@ -141,12 +156,12 @@ private:
 		if (sortCol== 0) {
 			sortStringArrayStable(
 			            serverList.getFiltered(selectedServerIndex_).players,
-		                sortCol, (dir == DWT.UP) ? false : true);
+		                sortCol, (dir == SWT.UP) ? false : true);
 	    }
 	    else {  // numerical sort
 		    sortStringArrayStable(
 		                  serverList.getFiltered(selectedServerIndex_).players,
-		                  sortCol, (dir == DWT.UP) ? false : true, true);
+		                  sortCol, (dir == SWT.UP) ? false : true, true);
 		}
 	}
 

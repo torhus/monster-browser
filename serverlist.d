@@ -6,8 +6,12 @@ private {
 	import std.thread;
 	import std.file;
 	import std.conv;
-	import std.gc;
+	//import std.gc;
+	import tango.core.Memory;
 	import std.c.string;
+
+	import dejavu.lang.Runnable;
+	import dejavu.lang.JObjectImpl;
 
 	import common;
 	import main;
@@ -135,7 +139,10 @@ class ServerList
 			}
 		}
 		if (refresh)
-			display.syncExec(new IntWrapper(index), &serverTable.refresh);
+			//display.syncExec(new IntWrapper(index), &serverTable.refresh);
+			display.syncExec(new class JObjectImpl, Runnable {
+				void run() { serverTable.refresh(new IntWrapper(index)); }
+			});
 	}
 
 	synchronized
@@ -229,7 +236,9 @@ class ServerList
 			filters_.notEmpty = enable;
 			updateFilteredList();
 		}
-		display.asyncExec(null, &serverTable.reset);
+		display.asyncExec(new class JObjectImpl, Runnable {
+			void run() { serverTable.reset(); }
+		});
 	}
 
 	void filterHasHumans(bool enable)
@@ -241,7 +250,9 @@ class ServerList
 			filters_.hasHumans = enable;
 			updateFilteredList();
 		}
-		display.asyncExec(null, &serverTable.reset);
+		display.asyncExec(new class JObjectImpl, Runnable {
+			void run() { serverTable.reset(); }
+		});
 	}
 
 /***********************************************************************
@@ -487,9 +498,12 @@ void loadSavedList()
 			// unreliable
 			serverList.sort();
 			volatile if (!parselist.abort) {
-				display.asyncExec(null, delegate void (Object o) {
+				/*display.asyncExec(null, delegate void (Object o) {
 				                            serverTable.reset();
-				                        } );
+				                        } );*/
+				display.asyncExec(new class JObjectImpl, Runnable {
+					void run() { serverTable.reset(); };
+				});
 			}
 		}
 		catch(Exception e) {
@@ -525,19 +539,28 @@ void getNewList()
 			debug writefln("serverCount = ", total);
 
 			if (serverCount >= 0) {
-				display.asyncExec(null, delegate void (Object o) {
+				/*display.asyncExec(null, delegate void (Object o) {
 				                        statusBar.setLeft("Got "  ~
 				                              total ~ " servers, querying...");
-			                        } );
+			                        } );*/
+			    display.asyncExec(new class JObjectImpl, Runnable {
+				    void run() {
+						statusBar.setLeft("Got "  ~
+						                  total ~ " servers, querying...");
+					}
+				});
 
 				browserRefreshList(&status);
 				// FIXME: only needed because ServerList._insertSorted() is
 				// unreliable
 				serverList.sort();
 				volatile if (!parselist.abort) {
-					display.asyncExec(null, delegate void (Object o) {
+					/*display.asyncExec(null, delegate void (Object o) {
 					                            serverTable.reset();
-					                        } );
+					                        } );*/
+					display.asyncExec(new class JObjectImpl, Runnable {
+						void run() { serverTable.reset(); };
+					});
 				}
 			}
 
@@ -555,7 +578,7 @@ void getNewList()
 
 	serverList.clear();
 	serverTable.refresh();
-	fullCollect();
+	gc.collect();
 	statusBar.setLeft("Getting new server list...");
 	serverThread = new Thread(&f);
 	serverThread.start();
@@ -573,7 +596,7 @@ void refreshList()
 			          std.string.toString((cast(IntWrapper) int_count).value));
 		}
 
-		void done(Object o)
+		static void done()
 		{
 			if (serverList.length() > 0) {
 				serverTable.reset();
@@ -590,7 +613,10 @@ void refreshList()
 			// unreliable
 			serverList.sort();
 			volatile if (!parselist.abort) {
-				display.asyncExec(null, &done);
+				//display.asyncExec(null, &done);
+				display.asyncExec(new class JObjectImpl, Runnable {
+					void run() { done(); };
+				});
 			}
 		}
 		catch(Exception e) {
@@ -609,7 +635,7 @@ void refreshList()
 	         std.string.toString(countServersInRefreshList()) ~ " servers...");
 	serverList.clear();
 	serverTable.refresh();
-	fullCollect();
+	gc.collect();
 	serverThread = new Thread(&f);
 	serverThread.start();
 }

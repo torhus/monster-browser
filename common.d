@@ -1,18 +1,37 @@
 module common;
 
-private {
-	import std.stdio;
-	import std.format;
-	import std.date;
-	import std.utf;
-	import std.file;
-	import std.stream;
-	import std.c.stdlib;
-	import std.c.stdio;
+//import std.date;
+//import std.stdio;
+//import std.format;
+//import std.utf;
+//import std.file;
+//import std.stream;
+//import std.c.stdlib;
+//import std.c.stdio;
 
-	import dwt.all;
-	import main;
-}
+public import tango.core.Type : Time;
+import tango.io.Console;
+import tango.io.FilePath;
+import tango.stdc.stdio;
+import tango.stdc.stdlib;
+import tango.stdc.stringz;
+import tango.text.Ascii;
+import Integer = tango.text.convert.Integer;
+import tango.text.convert.Sprint;
+import TimeStamp = tango.text.convert.TimeStamp;
+import Util = tango.text.Util;
+import tango.util.time.Utc;
+
+import dejavu.lang.JObjectImpl;
+import dejavu.lang.Runnable;
+import dejavu.lang.String;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.MessageBox;
+
+//import dwt.all;
+import main;
 
 
 /* SETTINGS */
@@ -28,14 +47,15 @@ debug {
 	const char[] VERSION = "- " ~ __DATE__ ~ " *DEBUG BUILD*";
 }
 else {
-	const char[] VERSION = "- " ~ __DATE__ ;
+	const char[] VERSION = "- " ~ __DATE__;
 	//const char[] VERSION = "0.2" ;
 }
 
 private {
 	const char[] LOGFILE = "LOG.TXT";
 	const int MAX_LOG_SIZE = 100 * 1024;
-	File logfile;
+	FILE* logfile;
+	Sprint!(char) logFormatter;
 }
 
 
@@ -43,74 +63,87 @@ static this()
 {
 	const char[] sep = "-------------------------------------------------------------";
 
-	if (std.file.exists(LOGFILE) && std.file.getSize(LOGFILE) > MAX_LOG_SIZE) {
-		std.file.remove(LOGFILE);
+	auto f = new FilePath(LOGFILE);
+
+	if (f.exists && f.fileSize > MAX_LOG_SIZE) {
+		f.remove();
 	}
-	logfile = new File(LOGFILE, FileMode.Append);
-	logfile.writeLine("\n" ~ sep ~ "\n" ~ APPNAME ~ " started at " ~
-	                  std.date.toString(getUTCtime()) ~ "\n" ~ sep);
+
+	logfile = fopen(toUtf8z(LOGFILE), "a".ptr);
+
+	char[] s = "\n" ~ sep ~ "\n" ~ APPNAME ~ " started at " ~
+	           TimeStamp.toUtf8(Utc.local()) ~ "\n" ~ sep ~ "\n";
+
+	fwrite(s.ptr, s[0].sizeof, s.length, logfile);
+
+	logFormatter = new Sprint!(char);
 }
 
 
-void messageBox(char[] title, int style, TypeInfo[] arguments, void* argptr)
+static ~this()
 {
-	void f(Object o) {
-		char[] s;
-		void f(dchar c) { std.utf.encode(s, c); }
+	fclose(logfile);
+}
 
-		std.format.doFormat(&f, arguments, argptr);
-		scope MessageBox mb = new MessageBox(mainWindow, style);
-		mb.setText(title);
-		mb.setMessage(s);
-		log("messageBox (" ~ title ~ "): " ~ s);
-		mb.open();
-	}
+
+void messageBox(char[] title, int style, char[] fmt,
+                                    TypeInfo[] arguments, void* argptr)
+{
 	// only the gui thread can display message boxes
-	Display.getDefault().syncExec(null, &f);
+	Display.getDefault().syncExec(new class JObjectImpl, Runnable {
+		void run() {
+			char[] s = logFormatter.format(fmt, arguments, argptr);
+			scope MessageBox mb = new MessageBox(mainWindow, style);
+			mb.setText(String.fromUtf8(title));
+			mb.setMessage(String.fromUtf8(s));
+			log("messageBox (" ~ title ~ "): " ~ s);
+			mb.open();
+		}
+	});
 }
 
 
-void warning(...)
+void warning(char[] fmt, ...)
 {
-	messageBox("Warning", DWT.ICON_WARNING, _arguments, _argptr);
+	messageBox("Warning", SWT.ICON_WARNING, fmt,  _arguments, _argptr);
 }
 
 
-void error(...)
+void error(char[] fmt, ...)
 {
-	messageBox("Error", DWT.ICON_ERROR, _arguments, _argptr);
+	messageBox("Error", SWT.ICON_ERROR,fmt, _arguments, _argptr);
 }
 
 
-void db(...)
+void db(char[] fmt, ...)
 {
-	messageBox("Debug", DWT.NONE, _arguments, _argptr);
+	messageBox("Debug", SWT.NONE,fmt, _arguments, _argptr);
 }
 
 
 void db(char[][] a)
 {
-	db(std.string.join(a, "\n"));
+	db(Util.join(a, "\n"));
 }
 
 
 void log(char[] file, int line, char[] msg)
 {
-	log(file ~ "(" ~ std.string.toString(line) ~ "): " ~ msg);
+	log(file ~ "(" ~ Integer.toUtf8(line) ~ "): " ~ msg);
 }
 
 
 void log(char[] s)
 {
-	logfile.writeLine(s);
+	fwrite((s ~= '\n').ptr, s[0].sizeof, s.length + 1, logfile);
 	version(NO_STDOUT) {}
-	else debug writefln("LOG: " ~ s);
+	else debug Cout("LOG: " ~ s);
 }
 
 
 void logx(char[] file, int line, Exception e)
 {
-	log(file, line, e.classinfo.name ~ ": " ~ e.toString());
+	log(file ~ Integer.toUtf8(line) ~ e.classinfo.name ~ ": " ~ e.toUtf8());
 }
 
 
@@ -131,7 +164,7 @@ public:
 int findString(char[][] array, char[] str)
 {
 	foreach (int i, char[] s; array) {
-		if (std.string.tolower(str) == std.string.tolower(s)) {
+		if (toLower(str) == toLower(s)) {
 			return i;
 		}
 	}
@@ -145,7 +178,7 @@ int findString(char[][] array, char[] str)
 int findString(char[][][] array, char[] str, int column)
 {
 	foreach (int i, char[][] s; array) {
-		if (std.string.tolower(str) == std.string.tolower(s[column])) {
+		if (toLower(str) == toLower(s[column])) {
 			return i;
 		}
 	}
@@ -166,10 +199,10 @@ void sortStringArray(char[][][] arr, int sortColumn=0, bool reverse=false,
 		int result;
 
 		if (_numeric) {
-			result = std.conv.toInt(first) - std.conv.toInt(second);
+			result = Integer.toInt(first) - Integer.toInt(second);
 		}
 		else {
-			result = std.string.icmp(first, second);
+			result = icompare(first, second);
 		}
 		return (_reverse ? -result : result);
 	}
@@ -191,11 +224,11 @@ void sortStringArrayStable(char[][][] arr, int sortColumn=0,
 		int result;
 
 		if (numeric) {
-			result = std.conv.toInt(a[sortColumn]) -
-			                             std.conv.toInt(b[sortColumn]);
+			result = Integer.toInt(a[sortColumn]) -
+			                             Integer.toInt(b[sortColumn]);
 		}
 		else {
-			result = std.string.icmp(a[sortColumn], b[sortColumn]);
+			result = icompare(a[sortColumn], b[sortColumn]);
 		}
 		return (reverse ? -result <= 0 : result <= 0);
 	}
@@ -206,12 +239,12 @@ void sortStringArrayStable(char[][][] arr, int sortColumn=0,
 
 class Timer
 {
-	this() { time_ = std.date.getUTCtime();	}
-	d_time raw() { return std.date.getUTCtime() - time_; }
-	long millis() { return raw * (1000 / TicksPerSecond); }
-	double secs() { return cast(double) raw / TicksPerSecond; }
-	void restart() { time_ = std.date.getUTCtime(); }
-	private d_time time_;
+	this() { time_ = Utc.local();	}
+	Time raw() { return Utc.local() - time_; }
+	long millis() { return raw * (1000 / Time.TicksPerSecond); }
+	double secs() { return cast(double) raw / Time.TicksPerSecond; }
+	void restart() { time_ = Utc.local(); }
+	private Time time_;
 }
 
 

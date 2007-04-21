@@ -1,24 +1,57 @@
 module main;
 
-private {
-	import std.string;
-	import std.stdio;
-	import std.thread;
-	import std.conv;
+import std.string;
+//import std.stdio;
+import std.thread;
+//import std.conv;
 
-	import dwt.all;
-	import parselist;
-	import qstat;
-	import serverlist;
-	import link;
-	import servertable;
-	import playertable;
-	import cvartable;
-	import common;
-	import settings;
-	import monitor;
-	import dialogs;
-}
+//import tango.core.Thread;
+import tango.io.Console;
+import tango.stdc.stdio;
+import Util = tango.text.Util;
+import Integer = tango.text.convert.Integer;
+
+import dejavu.lang.String;
+import dejavu.lang.JArray;
+import dejavu.lang.JObject;
+
+import org.eclipse.swt.StaticCtorsSwt;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.ShellAdapter;
+import org.eclipse.swt.events.ShellEvent;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.swt.widgets.Shell;
+//import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
+
+import parselist;
+import qstat;
+import serverlist;
+import link;
+import servertable;
+import playertable;
+import cvartable;
+import common;
+import settings;
+import monitor;
+import dialogs;
+
 
 Display display;
 ServerTable serverTable;
@@ -32,17 +65,26 @@ Thread serverThread;
 ThreadDispatcher threadDispatcher;
 
 
+// SWT won't link without this
+extern(C) ubyte[] resources_getDataById( char[] aId ){
+    return null;
+}
+
+
 void main() {
 	version (NO_STDOUT) {
 		freopen("STDOUT.TXT", "w", stdout);
 	}
 
 	try	{
+		// SWT initialization
+		callAllStaticCtors();
+
 		loadSettings();
 
 		display = Display.getDefault();
 		mainWindow = new Shell(display);
-		mainWindow.setText(APPNAME ~ " " ~ VERSION);
+		mainWindow.setText(String.fromUtf8(APPNAME ~ " " ~ VERSION));
 
 		// check for presence of Gslist
 		char[] gslistExe;
@@ -69,9 +111,16 @@ void main() {
 		}
 
 		// restore saved size and state
-		char[] size = getSetting("windowSize");
-		int pos = std.string.find(size, 'x');
-		mainWindow.setSize(toInt(size[0..pos]), toInt(size[pos+1..length]));
+		try {
+			char[] size = getSetting("windowSize");
+			int pos = Util.locate(size, 'x');
+			mainWindow.setSize(Integer.toInt(size[0..pos]),
+			                   Integer.toInt(size[pos+1..length]));
+		}
+		catch (Exception e) {
+			log("Error parsing windowSize setting: " ~ e.toUtf8());
+		}
+
 		if (getSetting("windowMaximized") == "true") {
 			mainWindow.setMaximized(true);
 		}
@@ -82,12 +131,12 @@ void main() {
 
 
 		// *********** MAIN WINDOW TOP ***************
-		Composite topComposite = new Composite(mainWindow, DWT.NONE);
+		Composite topComposite = new Composite(mainWindow, SWT.NONE);
 		GridData gridData = new GridData(GridData.HORIZONTAL_ALIGN_FILL |
 		                                 GridData.GRAB_HORIZONTAL);
 		gridData.horizontalSpan = 2;
 		topComposite.setLayoutData(gridData);
-		topComposite.setLayout(new FillLayout(DWT.HORIZONTAL));
+		topComposite.setLayout(new FillLayout(SWT.HORIZONTAL));
 
 		ToolBar toolBar = createToolbar(topComposite);
 
@@ -96,7 +145,7 @@ void main() {
 
 
 		// ************** SERVER LIST, PLAYER LIST, CVARS LIST ***************
-		SashForm middleForm = new SashForm(mainWindow, DWT.HORIZONTAL);
+		SashForm middleForm = new SashForm(mainWindow, SWT.HORIZONTAL);
 		gridData = new GridData(GridData.FILL_BOTH);
 		middleForm.setLayoutData(gridData);
 
@@ -111,15 +160,15 @@ void main() {
 		serverList = new ServerList;
 
 		// parent for player and cvar tables
-		SashForm rightForm = new SashForm(middleForm, DWT.VERTICAL);
+		SashForm rightForm = new SashForm(middleForm, SWT.VERTICAL);
 		gridData = new GridData(GridData.FILL_BOTH);
 		rightForm.setLayoutData(gridData);
 
-		FillLayout rightLayout = new FillLayout(DWT.VERTICAL);
+		FillLayout rightLayout = new FillLayout(SWT.VERTICAL);
 		rightForm.setLayout(rightLayout);
 
 		// distribution of space between the tables
-		middleForm.setWeights([16, 5]);
+		middleForm.setWeights(new JArrayInt([16, 5]));
 
 		// player list
 		playerTable = new PlayerTable(rightForm);
@@ -132,34 +181,34 @@ void main() {
 		cvarTable.getTable().setLayoutData(gridData);
 
 		// **************** STATUS BAR ******************************
-		Composite statusComposite = new Composite(mainWindow, DWT.NONE);
+		Composite statusComposite = new Composite(mainWindow, SWT.NONE);
 		gridData = new GridData(GridData.HORIZONTAL_ALIGN_FILL |
 		                        GridData.GRAB_HORIZONTAL);
 		gridData.horizontalSpan = 2;
 		statusComposite.setLayoutData(gridData);
-		statusComposite.setLayout(new FillLayout(DWT.HORIZONTAL));
+		statusComposite.setLayout(new FillLayout(SWT.HORIZONTAL));
 		statusBar = new StatusBar(statusComposite);
 		statusBar.setLeft(APPNAME ~ " is ready.");
 
 		// **********************************************************
 
-		mainWindow.addKeyListener(new class KeyAdapter {
+		/*mainWindow.addKeyListener(new class KeyAdapter {
 			public void keyPressed (KeyEvent e)
 			{
 				//FIXME: this function never gets called
-				debug writefln("Keypressed");
+				debug Cout("Keypressed");
 				switch (e.keyCode) {
-					case DWT.F4:
+					case SWT.F4:
 						threadDispatcher.run(&getNewList);
 						break;
-					case DWT.F5:
+					case SWT.F5:
 						threadDispatcher.run(&refreshList);
 						break;
 					default:
 						break;
 				}
 			}
-		});
+		});*/
 
 		mainWindow.addShellListener(new class ShellAdapter {
 			public void shellClosed(ShellEvent e)
@@ -215,7 +264,8 @@ void main() {
 	}
 	catch(Exception e) {
 		logx(__FILE__, __LINE__, e);
-		MessageBox.showMsg(e.classinfo.name ~ "\n" ~ e.toString());
+		//MessageBox.showMsg(e.classinfo.name ~ "\n" ~ e.toString());
+		error(e.classinfo.name ~ "\n" ~ e.toString());
 	}
 }
 
@@ -225,14 +275,14 @@ class StatusBar
 
 	this(Composite parent)
 	{
-		leftLabel_ = new Label(parent, DWT.NONE);
-		leftLabel_.setText(APPNAME ~ " is ready.");
+		leftLabel_ = new Label(parent, SWT.NONE);
+		leftLabel_.setText(String.fromUtf8(APPNAME ~ " is ready."));
 	}
 
 	void setLeft(char[] text)
 	{
 		if (!leftLabel_.isDisposed) {
-			leftLabel_.setText(text);
+			leftLabel_.setText(String.fromUtf8(text));
 		}
 	}
 
@@ -240,11 +290,11 @@ class StatusBar
 	{
 		if (shownServers != totalServers) {
 			setLeft("Showing " ~
-			         std.string.toString(shownServers) ~ " of " ~
-			         std.string.toString(totalServers) ~ " servers");
+			         Integer.toUtf8(shownServers) ~ " of " ~
+			         Integer.toUtf8(totalServers) ~ " servers");
 		}
 		else {
-			setLeft("Showing " ~ std.string.toString(totalServers) ~
+			setLeft("Showing " ~ Integer.toUtf8(totalServers) ~
 			         " servers");
 		}
 	}
@@ -258,9 +308,9 @@ class FilterBar : Composite
 {
 	this(Composite parent)
 	{
-		filterComposite_ = new Composite(parent, DWT.NONE);
-		button1_ = new Button(filterComposite_, DWT.CHECK);
-		button1_.setText("Not empty");
+		filterComposite_ = new Composite(parent, SWT.NONE);
+		button1_ = new Button(filterComposite_, SWT.CHECK);
+		button1_.setText(new String("Not empty"));
 		button1_.addSelectionListener(new class SelectionAdapter {
 			public void widgetSelected(SelectionEvent e)
 			{
@@ -272,8 +322,8 @@ class FilterBar : Composite
 			}
 		});
 
-		button2_ = new Button(filterComposite_, DWT.CHECK);
-		button2_.setText("Has humans");
+		button2_ = new Button(filterComposite_, SWT.CHECK);
+		button2_.setText(new String("Has humans"));
 		button2_.addSelectionListener(new class SelectionAdapter {
 			public void widgetSelected(SelectionEvent e)
 			{
@@ -283,18 +333,18 @@ class FilterBar : Composite
 		});
 
 		// game type selection
-		/*Combo combo = new Combo(filterComposite_, DWT.READ_ONLY);
+		/*Combo combo = new Combo(filterComposite_, SWT.READ_ONLY);
 		combo.setItems(gametypes);
 		combo.select(0);*/
 
 		// mod selection
-		modCombo_ = new Combo(filterComposite_, DWT.DROP_DOWN);
+		modCombo_ = new Combo(filterComposite_, SWT.DROP_DOWN);
 		setMods(settings.mods);
 		if (getSetting("startWithLastMod") == "true") {
 			char[] s = getSetting("lastMod");
 			int i = findString(settings.mods, s);
 			if (i == -1) {
-				modCombo_.add(s);
+				modCombo_.add(String.fromUtf8(s));
 				modCombo_.select(modCombo_.getItemCount() - 1);
 			}
 			else {
@@ -307,14 +357,14 @@ class FilterBar : Composite
 		modCombo_.addSelectionListener(new class SelectionAdapter {
 			public void widgetSelected(SelectionEvent e)
 			{
-				settings.modName = (cast(Combo) e.widget).getText();
+				settings.modName = (cast(Combo) e.widget).getText().toUtf8();
 				serverTable.getTable.setFocus();
 				threadDispatcher.run(&getNewList);
 			}
 
 			public void widgetDefaultSelected(SelectionEvent e)
 			{
-				char[] s = strip((cast(Combo) e.widget).getText());
+				char[] s = strip((cast(Combo) e.widget).getText().toUtf8());
 				if (s.length == 0) {
 					return;
 				}
@@ -322,7 +372,7 @@ class FilterBar : Composite
 				int i = findString(mods, s);
 				Combo combo = (cast(Combo) e.widget);
 				if (i == -1) {
-					combo.add(s);
+					combo.add(String.fromUtf8(s));
 					combo.select(combo.getItemCount() - 1);
 				}
 				else {
@@ -334,24 +384,29 @@ class FilterBar : Composite
 			}
 		});
 
-		filterComposite_.setLayout(new RowLayout(DWT.HORIZONTAL));
+		filterComposite_.setLayout(new RowLayout(SWT.HORIZONTAL));
 	}
 
 	void setMods(char[][] list)
 	{
 		int sel, n, height;
 		Point p;
-		char[][] items;
+		//char[][] items;
+		JObject[] items;
 
 		if (list is null)
 			return;
 
 		sel = modCombo_.getSelectionIndex();
-		items = modCombo_.getItems();
+		items = modCombo_.getItems().toObjectArray();
 		foreach (s; list) {
-			if (findString(items, s) == -1) {
-				modCombo_.add(s);
+			String js = String.fromUtf8(s);
+			foreach (JObject item; items) {
+				if (js == cast(String)item)
+					continue;
 			}
+			//if (findString(items, s) == -1)
+			modCombo_.add(js);
 		}
 		n = modCombo_.getItemCount();
 		if (n > 10) {
@@ -380,10 +435,10 @@ private:
 
 ToolBar createToolbar(Composite parent)
 {
-   	ToolBar toolBar = new ToolBar(parent, DWT.HORIZONTAL);
+   	ToolBar toolBar = new ToolBar(parent, SWT.HORIZONTAL);
 
-   	ToolItem item = new ToolItem(toolBar, DWT.PUSH);
-	item.setText("Get new list");
+   	ToolItem item = new ToolItem(toolBar, SWT.PUSH);
+	item.setText(new String("Get new list"w));
 	item.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{
@@ -391,10 +446,10 @@ ToolBar createToolbar(Composite parent)
 		}
 	});
 
- 	item = new ToolItem(toolBar, DWT.SEPARATOR);
+ 	item = new ToolItem(toolBar, SWT.SEPARATOR);
 
-	item = new ToolItem(toolBar, DWT.PUSH);
-	item.setText("Refresh list");
+	item = new ToolItem(toolBar, SWT.PUSH);
+	item.setText(new String("Refresh list"));
 	item.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{
@@ -402,21 +457,21 @@ ToolBar createToolbar(Composite parent)
 		}
 	});
 
-	item = new ToolItem(toolBar, DWT.SEPARATOR);
+	item = new ToolItem(toolBar, SWT.SEPARATOR);
 
-	item = new ToolItem(toolBar, DWT.PUSH);
-    item.setText("Monitor...");
+	item = new ToolItem(toolBar, SWT.PUSH);
+    item.setText(new String("Monitor..."));
     item.setEnabled(false);
 
-   	item = new ToolItem(toolBar, DWT.SEPARATOR);
+   	item = new ToolItem(toolBar, SWT.SEPARATOR);
 
-	item = new ToolItem(toolBar, DWT.PUSH);
-	item.setText("Settings...");
+	item = new ToolItem(toolBar, SWT.PUSH);
+	item.setText(new String("Settings..."));
 	item.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{
 			SettingsDialog dialog = new SettingsDialog(mainWindow);
-			if (dialog.open() == DWT.OK)
+			if (dialog.open() == SWT.OK)
 				saveSettings();
 		}
 	});
@@ -442,13 +497,13 @@ class ThreadDispatcher
 			volatile abort = true;
 		}
 		else {
-			debug writefln("ThreadDispatcher.dispatch: Killing server browser...");
+			debug Cout("ThreadDispatcher.dispatch: Killing server browser...");
 			bool success = killServerBrowser();
 
 			debug if (!success)
-				writefln("killServerBrowser() failed.");
+				Cout("killServerBrowser() failed.");
 			else
-				writefln("killServerBrowser() succeeded.");
+				Cout("killServerBrowser() succeeded.");
 
 
 			fp_();
