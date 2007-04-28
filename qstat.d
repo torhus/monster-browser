@@ -3,6 +3,7 @@ module qstat;
 /* What's specific for qstat */
 
 private {
+	import std.file;
 	import std.string;
 	import std.stream;
 	import std.conv;
@@ -167,6 +168,36 @@ each_server:
 }
 
 
+void filterServerFile()
+{
+	scope BufferedFile infile = new BufferedFile(parselist.SERVERFILE);
+	scope BufferedFile outfile = new BufferedFile(parselist.REFRESHFILE, FileMode.OutNew);
+
+	while (!infile.eof()) {
+		char[] line = infile.readLine();
+
+		if (line && line.length >= 3 && line[0..3] == "Q3S") {
+			char[][] fields = split(line, FIELDSEP);
+			ServerData sd;
+	
+			assert(fields.length == 9 || fields.length == 3);
+	
+			if (fields.length >= 9) {
+				if (settings.modName != "baseq3" &&
+				             MOD_ONLY &&
+				             icmp(fields[8], settings.modName) != 0) {
+					continue;
+				}
+				outfile.writeLine(fields[1]);
+			}
+		}	
+	}
+	
+	infile.close();
+	outfile.close();
+}
+
+
 /**
  * Save the server list so that qstat can refresh servers
  *
@@ -174,13 +205,18 @@ each_server:
  */
 void saveRefreshList()
 {
-	scope BufferedFile f = new BufferedFile(parselist.REFRESHFILE, FileMode.OutNew);
+	if (exists(SERVERFILE)) {
+		filterServerFile();
+	}
+	
+	/*scope BufferedFile f = new BufferedFile(parselist.REFRESHFILE, FileMode.OutNew);
 	scope(exit) f.close();
 
 	foreach (ServerData sd; serverList) {
 		f.writeLine(sd.server[ServerColumn.ADDRESS]);
-	}
+	}*/
 }
+
 
 /**
  * Count how many servers in the file qstat reads when it refreshes the

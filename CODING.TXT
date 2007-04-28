@@ -8,8 +8,8 @@ D compiler:
 http://ftp.digitalmars.com/dmd.1.010.zip
 Versions 0.174 to 1.0 should work.
 Versions 1.001 to 1.006 do not work properly with DWT apps.
-Version 1.007 through 1.010 works.
-Versions 1.011 and 1.012 do not work.
+Versions 1.007 and 1.009 work.
+Versions 1.010 through 1.014 do not work.
 
 D docs:
 Language: http://www.digitalmars.com/d/lex.html

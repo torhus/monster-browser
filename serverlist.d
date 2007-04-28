@@ -530,7 +530,7 @@ void getNewList()
 				                              total ~ " servers, querying...");
 			                        } );
 
-				browserRefreshList(&status);
+				browserRefreshList(&status, true);
 				// FIXME: only needed because ServerList._insertSorted() is
 				// unreliable
 				serverList.sort();
@@ -602,9 +602,9 @@ void refreshList()
 	assert(serverThread is null ||
 	                   serverThread.getState() == Thread.TS.TERMINATED);
 
-	if (!exists(REFRESHFILE)) {
+	//if (!exists(REFRESHFILE)) {
 		qstat.saveRefreshList();
-	}
+	//}
 	statusBar.setLeft("Refreshing " ~
 	         std.string.toString(countServersInRefreshList()) ~ " servers...");
 	serverList.clear();
