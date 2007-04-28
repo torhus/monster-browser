@@ -137,7 +137,7 @@ void browserLoadSavedList(void delegate(Object) callback)
 }
 
 
-void browserRefreshList(void delegate(Object) callback)
+void browserRefreshList(void delegate(Object) callback, bool saveList=false)
 {
 	//log("browserRefreshList():");
 	proc = new Process();
@@ -161,7 +161,8 @@ void browserRefreshList(void delegate(Object) callback)
 	}
 
 	try {
-		qstat.parseOutput(callback, &proc.readLine, null, SERVERFILE);
+		char[] s = saveList ? SERVERFILE : null;
+		qstat.parseOutput(callback, &proc.readLine, null, s);
 	}
 	catch(PipeException e) {
 		//logx(__FILE__, __LINE__, e);

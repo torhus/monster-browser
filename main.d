@@ -309,7 +309,10 @@ class FilterBar : Composite
 			{
 				settings.modName = (cast(Combo) e.widget).getText();
 				serverTable.getTable.setFocus();
-				threadDispatcher.run(&getNewList);
+				if (common.useGslist)
+					threadDispatcher.run(&getNewList);
+				else
+					threadDispatcher.run(&refreshList);
 			}
 
 			public void widgetDefaultSelected(SelectionEvent e)
@@ -330,7 +333,10 @@ class FilterBar : Composite
 				}
 				settings.modName = s;
 				serverTable.getTable.setFocus();
-				threadDispatcher.run(&getNewList);
+				if (common.useGslist)
+					threadDispatcher.run(&getNewList);
+				else
+					threadDispatcher.run(&refreshList);
 			}
 		});
 
