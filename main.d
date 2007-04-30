@@ -22,7 +22,8 @@ private {
 
 Display display;
 ServerTable serverTable;
-ServerList serverList;
+ServerList activeServerList;
+ServerList[char[]] serverLists;
 PlayerTable playerTable;
 CvarTable cvarTable;
 StatusBar statusBar;
@@ -107,8 +108,8 @@ void main() {
 		//gridData.widthHint = 610;  // FIXME: automate using table's info
 		serverTable.getTable().setLayoutData(gridData);
 
-		// global server list array, has to be instantied after the table
-		serverList = new ServerList;
+		// has to be instantied after the table
+		setActiveServerList(modName);
 
 		// parent for player and cvar tables
 		SashForm rightForm = new SashForm(middleForm, DWT.VERTICAL);
@@ -200,7 +201,8 @@ void main() {
 				refreshList();
 			}
 			else {
-				getNewList();
+				//getNewList();
+				refreshList();
 			}
 		}
 
@@ -266,9 +268,9 @@ class FilterBar : Composite
 			{
 				if (button1_.getSelection()) {
 					button2_.setSelection(false);
-					serverList.filterHasHumans(false);
+					activeServerList.filterHasHumans(false);
 				}
-				serverList.filterNotEmpty(button1_.getSelection() != 0);
+				activeServerList.filterNotEmpty(button1_.getSelection() != 0);
 			}
 		});
 
@@ -277,7 +279,7 @@ class FilterBar : Composite
 		button2_.addSelectionListener(new class SelectionAdapter {
 			public void widgetSelected(SelectionEvent e)
 			{
-				serverList.filterHasHumans(cast(bool) (cast(Button) e.widget).
+				activeServerList.filterHasHumans(cast(bool) (cast(Button) e.widget).
 				                                               getSelection());
 			}
 		});
@@ -307,12 +309,17 @@ class FilterBar : Composite
 		modCombo_.addSelectionListener(new class SelectionAdapter {
 			public void widgetSelected(SelectionEvent e)
 			{
-				settings.modName = (cast(Combo) e.widget).getText();
+				settings.modName = (cast(Combo) e.widget).getText();				
 				serverTable.getTable.setFocus();
-				if (common.useGslist)
-					threadDispatcher.run(&getNewList);
-				else
-					threadDispatcher.run(&refreshList);
+				if (!setActiveServerList(modName)) {
+					if (common.useGslist)
+						threadDispatcher.run(&getNewList);
+					else
+						threadDispatcher.run(&refreshList);
+				}
+				else {
+					threadDispatcher.run(&switchToActiveMod);
+				}
 			}
 
 			public void widgetDefaultSelected(SelectionEvent e)
@@ -333,10 +340,15 @@ class FilterBar : Composite
 				}
 				settings.modName = s;
 				serverTable.getTable.setFocus();
-				if (common.useGslist)
-					threadDispatcher.run(&getNewList);
-				else
-					threadDispatcher.run(&refreshList);
+				if (!setActiveServerList(modName)) {
+					if (common.useGslist)
+						threadDispatcher.run(&getNewList);
+					else
+						threadDispatcher.run(&refreshList);
+				}
+				else {
+					threadDispatcher.run(&switchToActiveMod);
+				}				
 			}
 		});
 

@@ -48,7 +48,7 @@ struct ServerData {
 	{
 		int result = 0;
 
-		switch (serverList.sortColumn_) {
+		switch (activeServerList.sortColumn_) {
 			case ServerColumn.PLAYERS:
 				int a, b;
 
@@ -79,16 +79,16 @@ struct ServerData {
 				break;
 
 			case ServerColumn.PING:
-				result = std.conv.toInt(server[serverList.sortColumn_]) -
-				          std.conv.toInt(other.server[serverList.sortColumn_]);
+				result = std.conv.toInt(server[activeServerList.sortColumn_]) -
+				          std.conv.toInt(other.server[activeServerList.sortColumn_]);
 				break;
 
 			default:
-				result = std.string.icmp(server[serverList.sortColumn_],
-				                       other.server[serverList.sortColumn_]);
+				result = std.string.icmp(server[activeServerList.sortColumn_],
+				                       other.server[activeServerList.sortColumn_]);
 		}
 
-		return (serverList.reversed_ ? -result : result);
+		return (activeServerList.reversed_ ? -result : result);
 	}
 
 	int humanCount()
@@ -471,6 +471,20 @@ private:
 }
 
 
+bool setActiveServerList(char[] modName)
+{
+	if (ServerList* slist = modName in serverLists) {
+		activeServerList = *slist;
+		return true;
+	}
+	else {
+		activeServerList = new ServerList;
+		serverLists[modName] = activeServerList;
+		return false;
+	}
+}
+
+
 void loadSavedList()
 {
 	int f()
@@ -485,7 +499,7 @@ void loadSavedList()
 			browserLoadSavedList(&callback);
 			// FIXME: only needed because ServerList._insertSorted() is
 			// unreliable
-			serverList.sort();
+			activeServerList.sort();
 			volatile if (!parselist.abort) {
 				display.asyncExec(null, delegate void (Object o) {
 				                            serverTable.reset();
@@ -505,6 +519,7 @@ void loadSavedList()
 	serverThread = new Thread(&f);
 	serverThread.start();
 }
+
 
 void getNewList()
 {
@@ -533,7 +548,7 @@ void getNewList()
 				browserRefreshList(&status, true);
 				// FIXME: only needed because ServerList._insertSorted() is
 				// unreliable
-				serverList.sort();
+				activeServerList.sort();
 				volatile if (!parselist.abort) {
 					display.asyncExec(null, delegate void (Object o) {
 					                            serverTable.reset();
@@ -553,13 +568,14 @@ void getNewList()
 	assert(serverThread is null ||
 	                   serverThread.getState() == Thread.TS.TERMINATED);
 
-	serverList.clear();
+	activeServerList.clear();
 	serverTable.refresh();
 	fullCollect();
 	statusBar.setLeft("Getting new server list...");
 	serverThread = new Thread(&f);
 	serverThread.start();
 }
+
 
 void refreshList()
 {
@@ -575,7 +591,7 @@ void refreshList()
 
 		void done(Object o)
 		{
-			if (serverList.length() > 0) {
+			if (activeServerList.length() > 0) {
 				serverTable.reset();
 			}
 			else {
@@ -588,7 +604,7 @@ void refreshList()
 			browserRefreshList(&status);
 			// FIXME: only needed because ServerList._insertSorted() is
 			// unreliable
-			serverList.sort();
+			activeServerList.sort();
 			volatile if (!parselist.abort) {
 				display.asyncExec(null, &done);
 			}
@@ -607,9 +623,66 @@ void refreshList()
 	//}
 	statusBar.setLeft("Refreshing " ~
 	         std.string.toString(countServersInRefreshList()) ~ " servers...");
-	serverList.clear();
+	activeServerList.clear();
 	serverTable.refresh();
 	fullCollect();
 	serverThread = new Thread(&f);
 	serverThread.start();
+}
+
+
+void switchToActiveMod()
+{
+	/*int f()
+	{
+		static char[] total;
+
+		void status(Object int_count)
+		{
+			statusBar.setLeft("Refreshing " ~  total ~ " servers..." ~
+			          std.string.toString((cast(IntWrapper) int_count).value));
+		}
+
+		void done(Object o)
+		{
+			if (activeServerList.length() > 0) {
+				serverTable.reset();
+			}
+			else {
+				statusBar.setLeft("Nothing to refresh");
+			}
+		}
+
+		try {
+			total = std.string.toString(countServersInRefreshList());
+			browserRefreshList(&status);
+			// FIXME: only needed because ServerList._insertSorted() is
+			// unreliable
+			activeServerList.sort();
+			volatile if (!parselist.abort) {
+				display.asyncExec(null, &done);
+			}
+		}
+		catch(Exception e) {
+			logx(__FILE__, __LINE__, e);
+		}
+		return 0;
+	}*/
+
+	/*assert(serverThread is null ||
+	                   serverThread.getState() == Thread.TS.TERMINATED);
+
+	//if (!exists(REFRESHFILE)) {
+		qstat.saveRefreshList();
+	//}
+	statusBar.setLeft("Refreshing " ~
+	         std.string.toString(countServersInRefreshList()) ~ " servers...");*/
+	//activeServerList.clear();
+	//serverTable.refresh();
+	serverTable.reset();
+	statusBar.setDefaultStatus(activeServerList.length,
+			                   activeServerList.filteredLength);
+	/*fullCollect();
+	serverThread = new Thread(&f);
+	serverThread.start();*/
 }

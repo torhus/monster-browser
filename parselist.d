@@ -126,7 +126,7 @@ void browserLoadSavedList(void delegate(Object) callback)
 
 	try {
 		f = new BufferedFile(SERVERFILE);
-		serverList.clear();
+		activeServerList.clear();
 		qstat.parseOutput(callback, &f.readLine, &f.eof, null);
 		f.close();
 	}
