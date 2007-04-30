@@ -25,10 +25,14 @@ char[][][char[]] gameTypes;
 static this() {
 	gameTypes["osp"] = split("FFA 1v1 SP TDM CTF CA");
 	gameTypes["q3ut3"] = split("FFA FFA FFA TDM TS FtL C&H CTF B&D");
+	gameTypes["q3ut4"] = split("FFA FFA FFA TDM TS FtL C&H CTF B&D");
 	gameTypes["westernq3"] = split("FFA Duel 2 TDM RTP BR");
 	gameTypes["wop"] = split("FFA 1v1 2 SyC LPS TDM 6 SyCT BB");
 }
 
+private {
+	ServerList[char[]] serverLists;
+}
 
 // should correspond to playertable.playerHeaders
 enum PlayerColumn { NAME, SCORE, PING };

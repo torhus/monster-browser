@@ -23,7 +23,6 @@ private {
 Display display;
 ServerTable serverTable;
 ServerList activeServerList;
-ServerList[char[]] serverLists;
 PlayerTable playerTable;
 CvarTable cvarTable;
 StatusBar statusBar;
