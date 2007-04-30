@@ -153,12 +153,12 @@ each_server:
 				                  "+" ~ (std.string.toString(bots)) ~
 				                  "/" ~ fields[4];
 
-				serverList.add(&sd);
+				activeServerList.add(&sd);
 			}
 			else /*if (!MOD_ONLY)*/ { // server didn't respond
 				/*sd.server.length = servertable.serverHeaders.length;
 				sd.server[ServerColumn.ADDRESS] = fields[1]; // ip
-				serverList.add(sd);*/
+				activeServerList.add(sd);*/
 			}
 			if (outfile) {
 				outfile.writeLine("");
@@ -212,7 +212,7 @@ void saveRefreshList()
 	/*scope BufferedFile f = new BufferedFile(parselist.REFRESHFILE, FileMode.OutNew);
 	scope(exit) f.close();
 
-	foreach (ServerData sd; serverList) {
+	foreach (ServerData sd; activeServerList) {
 		f.writeLine(sd.server[ServerColumn.ADDRESS]);
 	}*/
 }

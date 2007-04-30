@@ -1,10 +1,8 @@
+- don't overwrite servers.lst until the complete list is received.
+
 - ServerList._insertSorted() doesn't always sort right.
 
 - Implement some kind of server monitoring.
-
-- Improve 'get new list' support for qstat
-  - cache server list for each mod, to avoid doing a full getNewList()
-    when a new mod is selected in the combo box
 
 - Give sensible errors messages in case of connection problems etc.
 
