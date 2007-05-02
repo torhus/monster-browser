@@ -9,6 +9,7 @@ private {
 	import std.gc;
 	import std.c.string;
 
+	import dwt.all;
 	import common;
 	import main;
 	import servertable;
@@ -31,7 +32,8 @@ static this() {
 }
 
 private {
-	ServerList[char[]] serverLists;
+	ServerList[char[]] serverLists;	
+	bool saved_hasHumans = false, saved_notEmpty = false;
 }
 
 // should correspond to playertable.playerHeaders
@@ -488,6 +490,12 @@ private:
  */
 bool setActiveServerList(char[] modName)
 {
+	// hack to get the correct filtering set up for the new list
+	if (activeServerList !is null) {
+		saved_hasHumans = activeServerList.filters_.hasHumans;
+		saved_notEmpty = activeServerList.filters_.notEmpty;
+	}
+
 	if (ServerList* slist = modName in serverLists) {
 		activeServerList = *slist;
 		return true;
@@ -645,7 +653,11 @@ void refreshList()
 	serverThread.start();
 }
 
-
+/**
+ * Make the serverTable display the server list contained by activeServerList.
+ *
+ * Useful for updating the display after calling setActiveServerList.
+ */
 void switchToActiveMod()
 {
 	/*int f()
@@ -693,7 +705,20 @@ void switchToActiveMod()
 	statusBar.setLeft("Refreshing " ~
 	         std.string.toString(countServersInRefreshList()) ~ " servers...");*/
 	//activeServerList.clear();
-	//serverTable.refresh();
+	//serverTable.refresh();	
+
+	activeServerList.filters_.notEmpty = saved_notEmpty;
+	activeServerList.filters_.hasHumans = saved_hasHumans;
+
+	// need to do this, to avoid asserting in the invariant
+	// FIXME: find a way to avoid this, as the sort() call below also
+	// calls updateFilteredList()
+	activeServerList.updateFilteredList();
+
+	auto sortCol = serverTable.getTable.getSortColumn();
+	activeServerList.sort(serverTable.getTable.indexOf(sortCol),
+	                      (serverTable.getTable.getSortDirection() == DWT.DOWN));
+	
 	serverTable.reset();
 	statusBar.setDefaultStatus(activeServerList.length,
 			                   activeServerList.filteredLength);
