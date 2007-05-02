@@ -475,6 +475,17 @@ private:
 }
 
 
+/**
+ * Sets the activeServerList global to refer to the ServerList object
+ * for the mod given by modName.
+ *
+ * If there is no ServerList object for the given mod, one will be created.
+ *
+ * Returns:  true if the mod already had a ServerList object, false if a new
+ *           one had to be created
+ *
+ * Throws: OutOfMemoryError
+ */
 bool setActiveServerList(char[] modName)
 {
 	if (ServerList* slist = modName in serverLists) {
