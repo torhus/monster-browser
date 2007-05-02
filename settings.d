@@ -20,7 +20,7 @@ private {
 	const char[] settingsFileName = "settings.ini";
 
 	const char[][] defaultMods = ["westernq3", "baseq3", "osp", "cpma",
-	                              "InstaUnlagged", "q3ut3", "wop"];
+	                              "InstaUnlagged", "q3ut4", "wop"];
 
 	Ini settingsIni;
 
