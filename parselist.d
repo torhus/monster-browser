@@ -164,7 +164,6 @@ void browserRefreshList(void delegate(Object) callback, bool saveList=false)
 	catch(PipeException e) {
 		if (saveList) {
 			if (!abortParsing) {
-				//killServerBrowser();
 				try {
 					if (exists(SERVERFILE))
 						std.file.remove(SERVERFILE);
