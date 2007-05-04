@@ -121,7 +121,7 @@ class ServerTable
 			return;
 
 		refresh();
-		volatile if (!parselist.abort) {
+		volatile if (!parselist.abortParsing) {
 			statusBar.setDefaultStatus(activeServerList.length,
 			                           activeServerList.filteredLength);
 		}

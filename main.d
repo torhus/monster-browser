@@ -164,7 +164,7 @@ void main() {
 		mainWindow.addShellListener(new class ShellAdapter {
 			public void shellClosed(ShellEvent e)
 			{
-				volatile parselist.abort = true;
+				volatile parselist.abortParsing = true;
 				statusBar.setLeft("Saving settings...");
 				log("Saving settings...");
 				saveSettings();
@@ -456,7 +456,7 @@ class ThreadDispatcher
 			return;
 
 		if (serverThread && serverThread.getState() != Thread.TS.TERMINATED) {
-			volatile abort = true;
+			volatile abortParsing = true;
 		}
 		else {
 			debug writefln("ThreadDispatcher.dispatch: Killing server browser...");

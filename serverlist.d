@@ -490,7 +490,8 @@ private:
  */
 bool setActiveServerList(char[] modName)
 {
-	// hack to get the correct filtering set up for the new list
+	// hack to get the correct filtering set up for the new list,
+	// save the old one here for later use
 	if (activeServerList !is null) {
 		saved_hasHumans = activeServerList.filters_.hasHumans;
 		saved_notEmpty = activeServerList.filters_.notEmpty;
@@ -523,7 +524,7 @@ void loadSavedList()
 			// FIXME: only needed because ServerList._insertSorted() is
 			// unreliable
 			activeServerList.sort();
-			volatile if (!parselist.abort) {
+			volatile if (!parselist.abortParsing) {
 				display.asyncExec(null, delegate void (Object o) {
 				                            serverTable.reset();
 				                        } );
@@ -572,7 +573,7 @@ void getNewList()
 				// FIXME: only needed because ServerList._insertSorted() is
 				// unreliable
 				activeServerList.sort();
-				volatile if (!parselist.abort) {
+				volatile if (!parselist.abortParsing) {
 					display.asyncExec(null, delegate void (Object o) {
 					                            serverTable.reset();
 					                        } );
@@ -636,7 +637,7 @@ void refreshList()
 			// FIXME: only needed because ServerList._insertSorted() is
 			// unreliable
 			activeServerList.sort();
-			volatile if (!parselist.abort) {
+			volatile if (!parselist.abortParsing) {
 				display.asyncExec(null, &done);
 			}
 		}
