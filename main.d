@@ -310,14 +310,14 @@ class FilterBar : Composite
 			{
 				settings.modName = (cast(Combo) e.widget).getText();				
 				serverTable.getTable.setFocus();
-				if (!setActiveServerList(modName)) {
+				if (setActiveServerList(modName)) {
+					threadDispatcher.run(&switchToActiveMod);
+				}
+				else {					
 					if (common.useGslist)
 						threadDispatcher.run(&getNewList);
 					else
 						threadDispatcher.run(&refreshList);
-				}
-				else {
-					threadDispatcher.run(&switchToActiveMod);
 				}
 			}
 
@@ -339,14 +339,14 @@ class FilterBar : Composite
 				}
 				settings.modName = s;
 				serverTable.getTable.setFocus();
-				if (!setActiveServerList(modName)) {
+				if (setActiveServerList(modName)) {
+					threadDispatcher.run(&switchToActiveMod);
+				}
+				else {
 					if (common.useGslist)
 						threadDispatcher.run(&getNewList);
 					else
-						threadDispatcher.run(&refreshList);
-				}
-				else {
-					threadDispatcher.run(&switchToActiveMod);
+						threadDispatcher.run(&refreshList);					
 				}				
 			}
 		});

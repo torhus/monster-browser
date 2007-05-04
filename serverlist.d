@@ -127,6 +127,12 @@ struct ServerData {
 
 class ServerList
 {
+	/**
+	 * true if list contains all servers for the mod, that replied when queried.
+	 * Meaning that the server querying process was not interrupted.
+	 */
+	bool complete = false;
+	
 	void add(ServerData* sd)
 	{
 		bool refresh = false;
@@ -193,6 +199,8 @@ class ServerList
 		//list.length = 0;
 		delete filteredList;
 		delete list;
+		complete = false;
+
 		return this;
 	}
 
@@ -484,7 +492,8 @@ private:
  * If there is no ServerList object for the given mod, one will be created.
  *
  * Returns:  true if the mod already had a ServerList object, false if a new
- *           one had to be created
+ *           one had to be created.  Also returns false if the object exists,
+ *           but contains an incomplete list.
  *
  * Throws: OutOfMemoryError
  */
@@ -499,7 +508,13 @@ bool setActiveServerList(char[] modName)
 
 	if (ServerList* slist = modName in serverLists) {
 		activeServerList = *slist;
-		return true;
+		if (slist.complete) {			
+			return true;
+		}
+		else {
+			slist.clear();
+			return false;
+		}
 	}
 	else {
 		activeServerList = new ServerList;
