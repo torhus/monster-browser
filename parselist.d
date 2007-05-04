@@ -129,6 +129,7 @@ void browserLoadSavedList(void delegate(Object) callback)
 		f = new BufferedFile(SERVERFILE);
 		activeServerList.clear();
 		qstat.parseOutput(callback, &f.readLine, &f.eof, null);
+		activeServerList.complete = !abortParsing;
 		f.close();
 	}
 	catch (OpenException o) {
@@ -162,6 +163,8 @@ void browserRefreshList(void delegate(Object) callback, bool saveList=false)
 		qstat.parseOutput(callback, &proc.readLine, null, "servers.tmp");
 	}
 	catch(PipeException e) {
+		activeServerList.complete = !abortParsing;
+		
 		if (saveList) {
 			if (!abortParsing) {
 				try {
