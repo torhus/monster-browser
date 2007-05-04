@@ -593,6 +593,14 @@ void getNewList()
 
 	activeServerList.clear();
 	serverTable.refresh();
+	
+	activeServerList.filterNotEmpty(saved_notEmpty);
+	activeServerList.filterHasHumans(saved_hasHumans);
+
+	auto sortCol = serverTable.getTable.getSortColumn();
+	activeServerList.sort(serverTable.getTable.indexOf(sortCol),
+	                      (serverTable.getTable.getSortDirection() == DWT.DOWN));
+	
 	fullCollect();
 	statusBar.setLeft("Getting new server list...");
 	serverThread = new Thread(&f);
@@ -648,6 +656,14 @@ void refreshList()
 	         std.string.toString(countServersInRefreshList()) ~ " servers...");
 	activeServerList.clear();
 	serverTable.refresh();
+
+	activeServerList.filterNotEmpty(saved_notEmpty);
+	activeServerList.filterHasHumans(saved_hasHumans);
+
+	auto sortCol = serverTable.getTable.getSortColumn();
+	activeServerList.sort(serverTable.getTable.indexOf(sortCol),
+	                      (serverTable.getTable.getSortDirection() == DWT.DOWN));
+	
 	fullCollect();
 	serverThread = new Thread(&f);
 	serverThread.start();
@@ -660,50 +676,6 @@ void refreshList()
  */
 void switchToActiveMod()
 {
-	/*int f()
-	{
-		static char[] total;
-
-		void status(Object int_count)
-		{
-			statusBar.setLeft("Refreshing " ~  total ~ " servers..." ~
-			          std.string.toString((cast(IntWrapper) int_count).value));
-		}
-
-		void done(Object o)
-		{
-			if (activeServerList.length() > 0) {
-				serverTable.reset();
-			}
-			else {
-				statusBar.setLeft("Nothing to refresh");
-			}
-		}
-
-		try {
-			total = std.string.toString(countServersInRefreshList());
-			browserRefreshList(&status);
-			// FIXME: only needed because ServerList._insertSorted() is
-			// unreliable
-			activeServerList.sort();
-			volatile if (!parselist.abort) {
-				display.asyncExec(null, &done);
-			}
-		}
-		catch(Exception e) {
-			logx(__FILE__, __LINE__, e);
-		}
-		return 0;
-	}*/
-
-	/*assert(serverThread is null ||
-	                   serverThread.getState() == Thread.TS.TERMINATED);
-
-	//if (!exists(REFRESHFILE)) {
-		qstat.saveRefreshList();
-	//}
-	statusBar.setLeft("Refreshing " ~
-	         std.string.toString(countServersInRefreshList()) ~ " servers...");*/
 	//activeServerList.clear();
 	//serverTable.refresh();	
 
@@ -722,7 +694,4 @@ void switchToActiveMod()
 	serverTable.reset();
 	statusBar.setDefaultStatus(activeServerList.length,
 			                   activeServerList.filteredLength);
-	/*fullCollect();
-	serverThread = new Thread(&f);
-	serverThread.start();*/
 }
