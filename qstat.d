@@ -19,7 +19,13 @@ private {
 const char[] FIELDSEP = "\x1e"; // \x1e = ascii record separator
 
 
-void parseOutput(void delegate(Object) callback, char[] delegate() readLine,
+
+/**
+ * Parse Qstat's output.
+ *
+ * Throws: when outputFileName is given: OpenException and WriteException.
+ */
+bool parseOutput(void delegate(Object) countDg, char[] delegate() readLine,
                  bool delegate() eof=null, char[] outputFileName=null)
 {
 	char[][] gtypes;
@@ -28,7 +34,7 @@ void parseOutput(void delegate(Object) callback, char[] delegate() readLine,
 	int count = 0;
 	scope countWrapper = new IntWrapper(-1);
 
-	assert(callback);
+	assert(countDg);
 
 	if (outputFileName) {
 		try {
@@ -57,11 +63,11 @@ void parseOutput(void delegate(Object) callback, char[] delegate() readLine,
 		gtypes = defaultGameTypes;
 	}
 
-	volatile abort = false;
+	volatile abortParsing = false;
 
 each_server:
 	while (true) {
-		volatile if (abort || (eof && eof()))
+		volatile if (abortParsing || (eof && eof()))
 			break;
 
 		char[] line = readLine();
@@ -75,7 +81,7 @@ each_server:
 			assert(fields.length == 9 || fields.length == 3);
 			count++;
 			countWrapper.value = count;
-			display.syncExec(countWrapper, callback);
+			display.syncExec(countWrapper, countDg);
 
 			if (fields.length >= 9) {
 				if (settings.modName != "baseq3" &&
@@ -165,13 +171,26 @@ each_server:
 			}
 		}
 	}
+	
+	return !abortParsing;
 }
 
 
-void filterServerFile()
+/**
+ * Parses a server list file and outputs the IP and port number for all servers
+ * for the currently active mod to another file.
+ *
+ * Params:
+ *     readFrom = File to read from.  The format is taken to be
+ *                qstat's raw output.
+ *     writeTo  = File to write to. The format is one IP:PORT combo per line.
+ *
+ * Throws: OpenException, WriteException.
+ */
+void filterServerFile(char[] readFrom, char writeTo[])
 {
-	scope BufferedFile infile = new BufferedFile(parselist.SERVERFILE);
-	scope BufferedFile outfile = new BufferedFile(parselist.REFRESHFILE, FileMode.OutNew);
+	scope BufferedFile infile = new BufferedFile(readFrom);
+	scope BufferedFile outfile = new BufferedFile(writeTo, FileMode.OutNew);
 
 	while (!infile.eof()) {
 		char[] line = infile.readLine();
@@ -201,12 +220,12 @@ void filterServerFile()
 /**
  * Save the server list so that qstat can refresh servers
  *
- * Throws: OpenException, maybe WriteException in rare cases
+ * Throws: OpenException, WriteException.
  */
 void saveRefreshList()
 {
 	if (exists(SERVERFILE)) {
-		filterServerFile();
+		filterServerFile(SERVERFILE, REFRESHFILE);
 	}
 	
 	/*scope BufferedFile f = new BufferedFile(parselist.REFRESHFILE, FileMode.OutNew);
@@ -225,7 +244,7 @@ void saveRefreshList()
  * Useful for getting the number of servers before qstat has started
  * to retrieve them.
  *
- * Throws: OpenException, maybe WriteException in rare cases
+ * Throws: OpenException.
  */
 int countServersInRefreshList()
 {

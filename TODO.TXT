@@ -1,4 +1,5 @@
-- don't overwrite servers.lst until the complete list is received.
+- don't reuse the ServerList object if it contains an incomplete server list,
+  do a refresh instead.
 
 - ServerList._insertSorted() doesn't always sort right.
 

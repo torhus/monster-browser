@@ -1,6 +1,7 @@
 module parselist;
 
 private {
+	import std.file;
 	import std.string;
 	import std.stream;
 	import std.stdio;
@@ -19,9 +20,9 @@ extern(C) extern char **_environ;
 
 Process proc;
 
-// True if loading of server list is to be aborted.  Set to true before
+// True if parsing of the server list is to be aborted.  Set to true before
 // calling a function to load/parse server lists.
-bool abort = false;
+bool abortParsing = false;
 
 // Note: gslist only outputs to a file called quake3.gsl
 const char[] REFRESHFILE = "quake3.gsl";
@@ -117,7 +118,7 @@ void browserLoadSavedList(void delegate(Object) callback)
 {
 	BufferedFile f;
 
-	volatile abort = false;
+	volatile abortParsing = false;
 
 	//log("browserLoadSavedList():");
 	if (!std.file.exists(SERVERFILE)) {
@@ -151,25 +152,40 @@ void browserRefreshList(void delegate(Object) callback, bool saveList=false)
 		// FIXME: feed qstat through stdin (-f -)?
 		proc.execute("qstat -f " ~ REFRESHFILE ~ " -raw,game " ~ FIELDSEP ~
 		             " -P -R -default q3s" /*-carets";*/);
-
-
 	}
 	catch (Exception e) {
-		logx(__FILE__, __LINE__, e);
 		error("qstat not found!\nPlease reinstall " ~ APPNAME ~ ".");
 		return;
 	}
 
 	try {
-		char[] s = saveList ? SERVERFILE : null;
-		qstat.parseOutput(callback, &proc.readLine, null, s);
+		qstat.parseOutput(callback, &proc.readLine, null, "servers.tmp");
 	}
 	catch(PipeException e) {
-		//logx(__FILE__, __LINE__, e);
+		if (saveList) {
+			if (!abortParsing) {
+				//killServerBrowser();
+				try {
+					if (exists(SERVERFILE))
+						std.file.remove(SERVERFILE);
+					std.file.rename("servers.tmp", SERVERFILE);					
+				}
+				catch (FileException e) {
+					warning("Unable to save the server list to disk.");					
+				}
+			}
+			else {
+				try {
+					std.file.remove("servers.tmp");
+				}
+				catch (FileException e) {
+					warning(e.toString());
+				}
+			}
+		}
 	}
 	catch(Exception e) {
-		logx(__FILE__, __LINE__, e);
-		error(__FILE__ ~ std.string.toString(__LINE__) ~ ": " ~ e.toString());
+		db(__FILE__ ~ std.string.toString(__LINE__) ~ ": " ~ e.toString());
 	}
 }
 
