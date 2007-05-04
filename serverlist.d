@@ -32,7 +32,7 @@ static this() {
 }
 
 private {
-	ServerList[char[]] serverLists;	
+	ServerList[char[]] serverLists;
 	bool saved_hasHumans = false, saved_notEmpty = false;
 }
 
@@ -42,14 +42,16 @@ enum PlayerColumn { NAME, SCORE, PING };
 enum ServerColumn { NAME, PASSWORDED, PING, PLAYERS, GAMETYPE, MAP, ADDRESS };
 
 
+/** Stores all data for a server. */
 struct ServerData {
-	// name, ping, playercount, map, etc.
+	/// name, ping, playercount, map, etc.
 	char[][] server;
-	// list of players, with name, score and ping for each
+	/// list of players, with name, score and ping for each
 	char[][][] players;
-	// list of cvars, with key and value for each
+	/// list of cvars, with key and value for each
 	char[][][] cvars;
 
+	/// Compares according to activeServerList's settings.
 	int opCmp(ServerData other)
 	{
 		int result = 0;
@@ -97,26 +99,32 @@ struct ServerData {
 		return (activeServerList.reversed_ ? -result : result);
 	}
 
+
+	/// Extract some info about the server.
 	int humanCount()
 	{
 		char[] s = server[ServerColumn.PLAYERS];
 		return std.conv.toInt(s[0..find(s, '+')]);
 	}
 
+	/// ditto
 	int botCount()
 	{
 		char[] s = server[ServerColumn.PLAYERS];
 		return std.conv.toInt(s[find(s, '+')+1 .. find(s, "/")]);
 	}
 
+	/// ditto
 	int maxClients()
 	{
 		char[] s = server[ServerColumn.PLAYERS];
 		return std.conv.toInt(s[find(s, "/")+1 .. length]);
 	}
 
+	/// ditto
 	bool hasHumans() { return server[ServerColumn.PLAYERS][0] != '0'; }
 
+	/// ditto
 	bool hasBots()
 	{
 		char[] s = server[ServerColumn.PLAYERS];
@@ -125,6 +133,7 @@ struct ServerData {
 }
 
 
+/** A list of servers. */
 class ServerList
 {
 	/**
@@ -132,7 +141,9 @@ class ServerList
 	 * Meaning that the server querying process was not interrupted.
 	 */
 	bool complete = false;
-	
+
+
+	///
 	void add(ServerData* sd)
 	{
 		bool refresh = false;
@@ -150,6 +161,8 @@ class ServerList
 			display.syncExec(new IntWrapper(index), &serverTable.refresh);
 	}
 
+
+	/// Iterate over the full list.
 	synchronized
 	int opApply(int delegate(inout ServerData) dg)
 	{
@@ -164,6 +177,7 @@ class ServerList
 		return result;
 	}
 
+
 	/// Return a server from the filtered list
 	synchronized
 	ServerData* getFiltered(int i)
@@ -171,8 +185,11 @@ class ServerList
 		return filteredList[i];
 	}
 
+
 	/**
 	 * Given the IP and port number, find a server in the filtered list.
+	 *
+	 * Does a linear search.
 	 *
 	 * Returns: the server's index, or -1 if not found.
 	 */
@@ -189,9 +206,14 @@ class ServerList
 		return -1;
 	}
 
-	synchronized size_t filteredLength() { return filteredList.length; }
-	synchronized size_t length() { return list.length; }
 
+	synchronized size_t filteredLength() { return filteredList.length; } ///
+	synchronized size_t length() { return list.length; } /// ditto
+
+
+	/**
+	 * Clears the list and the filtered list.  Sets complete to false.
+	 */
 	synchronized
 	ServerList clear()
 	{
@@ -204,19 +226,21 @@ class ServerList
 		return this;
 	}
 
+
 	/**
 	 * Sort the full list, then update the filtered list.
 	 *
-	 * Uses the previously selected sort order, or the default
+	 * Uses the previously selected _sort order, or the default
 	 * if there is none.
 	 */
 	synchronized
 	void sort() { _sort(); updateFilteredList(); }
 
+
 	/**
-	 * Like sort(), but lets you spesify sort column and order.
+	 * Like sort(), but lets you spesify _sort _column and order.
 	 *
-	 * The given sort column and order will be used for all subsequent
+	 * The given _sort _column and order will be used for all subsequent
 	 * sorting, until new values are given.
 	 */
 	synchronized
@@ -233,7 +257,9 @@ class ServerList
 		updateFilteredList();
 	}
 
-	/****** FILTERS ********/
+
+
+	/** Filter Controls */
 	void filterNotEmpty(bool enable)
 	{
 		if (enable == filters_.notEmpty)
@@ -246,6 +272,8 @@ class ServerList
 		display.asyncExec(null, &serverTable.reset);
 	}
 
+
+	/// ditto
 	void filterHasHumans(bool enable)
 	{
 		if (enable == filters_.hasHumans)
@@ -508,13 +536,7 @@ bool setActiveServerList(char[] modName)
 
 	if (ServerList* slist = modName in serverLists) {
 		activeServerList = *slist;
-		if (slist.complete) {			
-			return true;
-		}
-		else {
-			slist.clear();
-			return false;
-		}
+		return slist.complete;
 	}
 	else {
 		activeServerList = new ServerList;
@@ -609,14 +631,14 @@ void getNewList()
 
 	activeServerList.clear();
 	serverTable.refresh();
-	
+
 	activeServerList.filterNotEmpty(saved_notEmpty);
 	activeServerList.filterHasHumans(saved_hasHumans);
 
 	auto sortCol = serverTable.getTable.getSortColumn();
 	activeServerList.sort(serverTable.getTable.indexOf(sortCol),
 	                      (serverTable.getTable.getSortDirection() == DWT.DOWN));
-	
+
 	fullCollect();
 	statusBar.setLeft("Getting new server list...");
 	serverThread = new Thread(&f);
@@ -679,7 +701,7 @@ void refreshList()
 	auto sortCol = serverTable.getTable.getSortColumn();
 	activeServerList.sort(serverTable.getTable.indexOf(sortCol),
 	                      (serverTable.getTable.getSortDirection() == DWT.DOWN));
-	
+
 	fullCollect();
 	serverThread = new Thread(&f);
 	serverThread.start();
@@ -693,7 +715,7 @@ void refreshList()
 void switchToActiveMod()
 {
 	//activeServerList.clear();
-	//serverTable.refresh();	
+	//serverTable.refresh();
 
 	activeServerList.filters_.notEmpty = saved_notEmpty;
 	activeServerList.filters_.hasHumans = saved_hasHumans;
@@ -706,7 +728,7 @@ void switchToActiveMod()
 	auto sortCol = serverTable.getTable.getSortColumn();
 	activeServerList.sort(serverTable.getTable.indexOf(sortCol),
 	                      (serverTable.getTable.getSortDirection() == DWT.DOWN));
-	
+
 	serverTable.reset();
 	statusBar.setDefaultStatus(activeServerList.length,
 			                   activeServerList.filteredLength);
