@@ -36,7 +36,7 @@ class PlayerTable
 			public void handleEvent(Event e)
 			{
 				TableItem item = cast(TableItem) e.item;
-				item.setText(activeServerList.getFiltered(
+				item.setText(getActiveServerList.getFiltered(
 				          selectedServerIndex_).players[table_.indexOf(item)]);
 			}
 		});
@@ -64,19 +64,19 @@ class PlayerTable
 
 				switch (sortCol) {
 					case PlayerColumn.NAME:
-						sortStringArrayStable(activeServerList.getFiltered(
+						sortStringArrayStable(getActiveServerList.getFiltered(
 						                        selectedServerIndex_).players,
 				                        sortCol,
 				                        ((dir == DWT.UP) ? false : true));
 				    	break;
 					case PlayerColumn.SCORE:
-				    sortStringArrayStable(activeServerList.getFiltered(
+				    sortStringArrayStable(getActiveServerList.getFiltered(
 				                               selectedServerIndex_).players,
 				                    sortCol,
 				                    ((dir == DWT.DOWN) ? false : true), true);
 						break;
 					case PlayerColumn.PING:
-				    sortStringArrayStable(activeServerList.getFiltered(
+				    sortStringArrayStable(getActiveServerList.getFiltered(
 				                                selectedServerIndex_).players,
 				                    sortCol,
 				                    ((dir == DWT.UP) ? false : true), true);
@@ -105,7 +105,7 @@ class PlayerTable
 	{
 		table_.clearAll();
 		sort();
-		table_.setItemCount(activeServerList.getFiltered(
+		table_.setItemCount(getActiveServerList.getFiltered(
 		                                 selectedServerIndex_).players.length);
 	}
 
@@ -140,12 +140,12 @@ private:
 
 		if (sortCol== 0) {
 			sortStringArrayStable(
-			            activeServerList.getFiltered(selectedServerIndex_).players,
+			            getActiveServerList.getFiltered(selectedServerIndex_).players,
 		                sortCol, (dir == DWT.UP) ? false : true);
 	    }
 	    else {  // numerical sort
 		    sortStringArrayStable(
-		                  activeServerList.getFiltered(selectedServerIndex_).players,
+		                  getActiveServerList.getFiltered(selectedServerIndex_).players,
 		                  sortCol, (dir == DWT.UP) ? false : true, true);
 		}
 	}
