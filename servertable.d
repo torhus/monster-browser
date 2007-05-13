@@ -46,11 +46,11 @@ class ServerTable
 				TableItem item = cast(TableItem) e.item;
 				int i = table_.indexOf(item);
 
-				debug if (i >= activeServerList.filteredLength) {
+				debug if (i >= getActiveServerList.filteredLength) {
 					error(__FILE__, "(", __LINE__, "):\n",
-					          "i >= activeServerList.filteredLength");
+					          "i >= getActiveServerList.filteredLength");
 				}
-				item.setText(activeServerList.getFiltered(i).server);
+				item.setText(getActiveServerList.getFiltered(i).server);
 			}
 		});
 
@@ -58,15 +58,15 @@ class ServerTable
 			void widgetSelected(SelectionEvent e)
 			{
 				int i = table_.getSelectionIndex();
-				selectedIp_ = activeServerList.getFiltered(i).server[ServerColumn.ADDRESS];
+				selectedIp_ = getActiveServerList.getFiltered(i).server[ServerColumn.ADDRESS];
 				playerTable.setSelectedServer(i);
-				cvarTable.setItems(activeServerList.getFiltered(i).cvars);
+				cvarTable.setItems(getActiveServerList.getFiltered(i).cvars);
 
 			}
 			void widgetDefaultSelected(SelectionEvent e)
 			{
 				widgetSelected(e);
-				JoinServer(activeServerList.getFiltered(table_.getSelectionIndex()));
+				JoinServer(getActiveServerList.getFiltered(table_.getSelectionIndex()));
 			}
 		});
 
@@ -88,12 +88,12 @@ class ServerTable
 					table_.setSortColumn(newColumn);
 				}
 
-				activeServerList.sort(table_.indexOf(newColumn), (dir == DWT.DOWN));
+				getActiveServerList.sort(table_.indexOf(newColumn), (dir == DWT.DOWN));
 
 				table_.setSortDirection(dir);
-				synchronized (activeServerList) {
+				synchronized (getActiveServerList) {
 					table_.clearAll();
-					table_.setItemCount(activeServerList.filteredLength());
+					table_.setItemCount(getActiveServerList.filteredLength());
 				}
 			}
 		};
@@ -112,7 +112,7 @@ class ServerTable
 	/*void update(Object dummy = null)
 	{
 		if (!table_.isDisposed)
-			table_.setItemCount(activeServerList.filteredLength);
+			table_.setItemCount(getActiveServerList.filteredLength);
 	}*/
 
 	void reset(Object dummy = null)
@@ -122,15 +122,15 @@ class ServerTable
 
 		refresh();
 		volatile if (!parselist.abortParsing) {
-			statusBar.setDefaultStatus(activeServerList.length,
-			                           activeServerList.filteredLength);
+			statusBar.setDefaultStatus(getActiveServerList.length,
+			                           getActiveServerList.filteredLength);
 		}
 		assert(selectedIp_);
-		int i = activeServerList.getFilteredIndex(selectedIp_);
+		int i = getActiveServerList.getFilteredIndex(selectedIp_);
 		if (i != -1) {
 			table_.setSelection(i);
 			playerTable.setSelectedServer(i);
-			cvarTable.setItems(activeServerList.getFiltered(i).cvars);
+			cvarTable.setItems(getActiveServerList.getFiltered(i).cvars);
 		}
 		else {
 			table_.deselectAll();
@@ -150,7 +150,7 @@ class ServerTable
 
 			if (i <= getBottomIndex() /*&& i >= table_.getTopIndex()*/) {
 				table_.clearAll();
-				table_.setItemCount(activeServerList.filteredLength);
+				table_.setItemCount(getActiveServerList.filteredLength);
 			}
 
 			if (selected != -1 && i <= selected) {
@@ -160,7 +160,7 @@ class ServerTable
 		}
 		else {
 			table_.clearAll();
-			table_.setItemCount(activeServerList.filteredLength);
+			table_.setItemCount(getActiveServerList.filteredLength);
 		}
 	}
 

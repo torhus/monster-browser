@@ -159,19 +159,19 @@ each_server:
 				                  "+" ~ (std.string.toString(bots)) ~
 				                  "/" ~ fields[4];
 
-				activeServerList.add(&sd);
+				getActiveServerList.add(&sd);
 			}
 			else /*if (!MOD_ONLY)*/ { // server didn't respond
 				/*sd.server.length = servertable.serverHeaders.length;
 				sd.server[ServerColumn.ADDRESS] = fields[1]; // ip
-				activeServerList.add(sd);*/
+				getActiveServerList.add(sd);*/
 			}
 			if (outfile) {
 				outfile.writeLine("");
 			}
 		}
 	}
-	
+
 	return !abortParsing;
 }
 
@@ -198,9 +198,9 @@ void filterServerFile(char[] readFrom, char writeTo[])
 		if (line && line.length >= 3 && line[0..3] == "Q3S") {
 			char[][] fields = split(line, FIELDSEP);
 			ServerData sd;
-	
+
 			assert(fields.length == 9 || fields.length == 3);
-	
+
 			if (fields.length >= 9) {
 				if (settings.modName != "baseq3" &&
 				             MOD_ONLY &&
@@ -209,9 +209,9 @@ void filterServerFile(char[] readFrom, char writeTo[])
 				}
 				outfile.writeLine(fields[1]);
 			}
-		}	
+		}
 	}
-	
+
 	infile.close();
 	outfile.close();
 }
@@ -227,11 +227,11 @@ void saveRefreshList()
 	if (exists(SERVERFILE)) {
 		filterServerFile(SERVERFILE, REFRESHFILE);
 	}
-	
+
 	/*scope BufferedFile f = new BufferedFile(parselist.REFRESHFILE, FileMode.OutNew);
 	scope(exit) f.close();
 
-	foreach (ServerData sd; activeServerList) {
+	foreach (ServerData sd; getActiveServerList) {
 		f.writeLine(sd.server[ServerColumn.ADDRESS]);
 	}*/
 }

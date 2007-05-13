@@ -127,9 +127,9 @@ void browserLoadSavedList(void delegate(Object) callback)
 
 	try {
 		f = new BufferedFile(SERVERFILE);
-		activeServerList.clear();
+		getActiveServerList.clear();
 		qstat.parseOutput(callback, &f.readLine, &f.eof, null);
-		activeServerList.complete = !abortParsing;
+		getActiveServerList.complete = !abortParsing;
 		f.close();
 	}
 	catch (OpenException o) {
@@ -163,17 +163,17 @@ void browserRefreshList(void delegate(Object) callback, bool saveList=false)
 		qstat.parseOutput(callback, &proc.readLine, null, "servers.tmp");
 	}
 	catch(PipeException e) {
-		activeServerList.complete = !abortParsing;
-		
+		getActiveServerList.complete = !abortParsing;
+
 		if (saveList) {
 			if (!abortParsing) {
 				try {
 					if (exists(SERVERFILE))
 						std.file.remove(SERVERFILE);
-					std.file.rename("servers.tmp", SERVERFILE);					
+					std.file.rename("servers.tmp", SERVERFILE);
 				}
 				catch (FileException e) {
-					warning("Unable to save the server list to disk.");					
+					warning("Unable to save the server list to disk.");
 				}
 			}
 			else {
