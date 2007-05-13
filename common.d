@@ -28,8 +28,8 @@ debug {
 	const char[] VERSION = "- " ~ __DATE__ ~ " *DEBUG BUILD*";
 }
 else {
-	const char[] VERSION = "- " ~ __DATE__ ;
-	//const char[] VERSION = "0.2" ;
+	//const char[] VERSION = "- " ~ __DATE__ ;
+	const char[] VERSION = "0.3";
 }
 
 private {

@@ -1,3 +1,7 @@
+- Save separate list with just baseq3 servers?
+
+- Don't query all servers for baseq3.
+
 - ServerList._insertSorted() doesn't always sort right.
 
 - Implement some kind of server monitoring.

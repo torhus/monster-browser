@@ -17,6 +17,7 @@ private {
 	import qstat;
 }
 
+
 const char[][] defaultGameTypes = ["FFA", "1v1", "SP", "TDM", "CTF",
                                    /* "OFCTF", "Overload", "Harvester", */
                                   ];
@@ -31,15 +32,16 @@ static this() {
 	gameTypes["wop"] = split("FFA 1v1 2 SyC LPS TDM 6 SyCT BB");
 }
 
-private {
-	ServerList[char[]] serverLists;
-	bool saved_hasHumans = false, saved_notEmpty = false;
-}
-
 // should correspond to playertable.playerHeaders
 enum PlayerColumn { NAME, SCORE, PING };
 // should correspond to servertable.serverHeaders
 enum ServerColumn { NAME, PASSWORDED, PING, PLAYERS, GAMETYPE, MAP, ADDRESS };
+
+private {
+	ServerList activeServerList;
+	ServerList[char[]] serverLists;
+	bool saved_hasHumans = false, saved_notEmpty = false;
+}
 
 
 /** Stores all data for a server. */
@@ -545,6 +547,8 @@ bool setActiveServerList(char[] modName)
 	}
 }
 
+ServerList getActiveServerList() { return activeServerList; }
+
 
 void loadSavedList()
 {
@@ -560,7 +564,7 @@ void loadSavedList()
 			browserLoadSavedList(&callback);
 			// FIXME: only needed because ServerList._insertSorted() is
 			// unreliable
-			activeServerList.sort();
+			getActiveServerList.sort();
 			volatile if (!parselist.abortParsing) {
 				display.asyncExec(null, delegate void (Object o) {
 				                            serverTable.reset();
@@ -609,7 +613,7 @@ void getNewList()
 				browserRefreshList(&status, true);
 				// FIXME: only needed because ServerList._insertSorted() is
 				// unreliable
-				activeServerList.sort();
+				getActiveServerList.sort();
 				volatile if (!parselist.abortParsing) {
 					display.asyncExec(null, delegate void (Object o) {
 					                            serverTable.reset();
@@ -629,14 +633,14 @@ void getNewList()
 	assert(serverThread is null ||
 	                   serverThread.getState() == Thread.TS.TERMINATED);
 
-	activeServerList.clear();
+	getActiveServerList.clear();
 	serverTable.refresh();
 
-	activeServerList.filterNotEmpty(saved_notEmpty);
-	activeServerList.filterHasHumans(saved_hasHumans);
+	getActiveServerList.filterNotEmpty(saved_notEmpty);
+	getActiveServerList.filterHasHumans(saved_hasHumans);
 
 	auto sortCol = serverTable.getTable.getSortColumn();
-	activeServerList.sort(serverTable.getTable.indexOf(sortCol),
+	getActiveServerList.sort(serverTable.getTable.indexOf(sortCol),
 	                      (serverTable.getTable.getSortDirection() == DWT.DOWN));
 
 	fullCollect();
@@ -660,7 +664,7 @@ void refreshList()
 
 		void done(Object o)
 		{
-			if (activeServerList.length() > 0) {
+			if (getActiveServerList.length() > 0) {
 				serverTable.reset();
 			}
 			else {
@@ -673,7 +677,7 @@ void refreshList()
 			browserRefreshList(&status);
 			// FIXME: only needed because ServerList._insertSorted() is
 			// unreliable
-			activeServerList.sort();
+			getActiveServerList.sort();
 			volatile if (!parselist.abortParsing) {
 				display.asyncExec(null, &done);
 			}
@@ -692,14 +696,14 @@ void refreshList()
 	//}
 	statusBar.setLeft("Refreshing " ~
 	         std.string.toString(countServersInRefreshList()) ~ " servers...");
-	activeServerList.clear();
+	getActiveServerList.clear();
 	serverTable.refresh();
 
-	activeServerList.filterNotEmpty(saved_notEmpty);
-	activeServerList.filterHasHumans(saved_hasHumans);
+	getActiveServerList.filterNotEmpty(saved_notEmpty);
+	getActiveServerList.filterHasHumans(saved_hasHumans);
 
 	auto sortCol = serverTable.getTable.getSortColumn();
-	activeServerList.sort(serverTable.getTable.indexOf(sortCol),
+	getActiveServerList.sort(serverTable.getTable.indexOf(sortCol),
 	                      (serverTable.getTable.getSortDirection() == DWT.DOWN));
 
 	fullCollect();
@@ -717,19 +721,19 @@ void switchToActiveMod()
 	//activeServerList.clear();
 	//serverTable.refresh();
 
-	activeServerList.filters_.notEmpty = saved_notEmpty;
-	activeServerList.filters_.hasHumans = saved_hasHumans;
+	getActiveServerList.filters_.notEmpty = saved_notEmpty;
+	getActiveServerList.filters_.hasHumans = saved_hasHumans;
 
 	// need to do this, to avoid asserting in the invariant
 	// FIXME: find a way to avoid this, as the sort() call below also
 	// calls updateFilteredList()
-	activeServerList.updateFilteredList();
+	getActiveServerList.updateFilteredList();
 
 	auto sortCol = serverTable.getTable.getSortColumn();
-	activeServerList.sort(serverTable.getTable.indexOf(sortCol),
+	getActiveServerList.sort(serverTable.getTable.indexOf(sortCol),
 	                      (serverTable.getTable.getSortDirection() == DWT.DOWN));
 
 	serverTable.reset();
-	statusBar.setDefaultStatus(activeServerList.length,
-			                   activeServerList.filteredLength);
+	statusBar.setDefaultStatus(getActiveServerList.length,
+			                   getActiveServerList.filteredLength);
 }
