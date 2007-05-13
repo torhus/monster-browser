@@ -22,7 +22,6 @@ private {
 
 Display display;
 ServerTable serverTable;
-ServerList activeServerList;
 PlayerTable playerTable;
 CvarTable cvarTable;
 StatusBar statusBar;
@@ -308,12 +307,12 @@ class FilterBar : Composite
 		modCombo_.addSelectionListener(new class SelectionAdapter {
 			public void widgetSelected(SelectionEvent e)
 			{
-				settings.modName = (cast(Combo) e.widget).getText();				
+				settings.modName = (cast(Combo) e.widget).getText();
 				serverTable.getTable.setFocus();
 				if (setActiveServerList(modName)) {
 					threadDispatcher.run(&switchToActiveMod);
 				}
-				else {					
+				else {
 					if (common.useGslist)
 						threadDispatcher.run(&getNewList);
 					else
@@ -346,8 +345,8 @@ class FilterBar : Composite
 					if (common.useGslist)
 						threadDispatcher.run(&getNewList);
 					else
-						threadDispatcher.run(&refreshList);					
-				}				
+						threadDispatcher.run(&refreshList);
+				}
 			}
 		});
 

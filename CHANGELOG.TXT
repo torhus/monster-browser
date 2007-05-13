@@ -10,8 +10,8 @@ v0.2 - 2006-10-16
 - Change: Remember which server was selected when it's filtered out, reselect when it's not filtered out anymore.
 - Fix: Don't show players or cvars for a server that is not selected, or for the wrong server.
 
-After 0.2
--------------
+v0.3 - 2007-05-05
+-----------------
 - New: Doesn't get a new list when switching mods, just does a refresh instead.
        If the mod has been refreshed already , it just displays the list without refreshing.
        This makes it a lot faster to check the server lists for more than one mod.

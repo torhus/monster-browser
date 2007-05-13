@@ -5,7 +5,7 @@ pick up, due to its similarity to C/C++ and Java.
 Useful links
 ------------
 D compiler:
-http://ftp.digitalmars.com/dmd.1.010.zip
+http://ftp.digitalmars.com/dmd.1.009.zip
 Versions 0.174 to 1.0 should work.
 Versions 1.001 to 1.006 do not work properly with DWT apps.
 Versions 1.007 and 1.009 work.
