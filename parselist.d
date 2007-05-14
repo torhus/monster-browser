@@ -160,7 +160,8 @@ void browserRefreshList(void delegate(Object) callback, bool saveList=false)
 	}
 
 	try {
-		qstat.parseOutput(callback, &proc.readLine, null, "servers.tmp");
+		char[] tmpfile = saveList ? "servers.tmp" : null;
+		qstat.parseOutput(callback, &proc.readLine, null, tmpfile);
 	}
 	catch(PipeException e) {
 		getActiveServerList.complete = !abortParsing;

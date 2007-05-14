@@ -201,13 +201,32 @@ void filterServerFile(char[] readFrom, char writeTo[])
 
 			assert(fields.length == 9 || fields.length == 3);
 
-			if (fields.length >= 9) {
-				if (settings.modName != "baseq3" &&
-				             MOD_ONLY &&
-				             icmp(fields[8], settings.modName) != 0) {
-					continue;
-				}
+			if (fields.length < 9)
+				continue;  // server probably timed out
+
+			if (!MOD_ONLY) {
 				outfile.writeLine(fields[1]);
+			}
+			else if (settings.modName != "baseq3" &&
+			                                   icmp(fields[8], settings.modName) == 0) {
+				outfile.writeLine(fields[1]);
+			}
+			else {
+				// parse cvars, only done for baseq3 servers
+				line = infile.readLine();
+				char[][] temp = split(line, FIELDSEP);
+				foreach (char[] s; temp) {
+					char[][] cvar = split(s, "=");
+					switch (cvar[0]) {
+						case "gamename":
+							if (icmp(cvar[1], settings.modName) == 0) {
+								outfile.writeLine(fields[1]);
+							}
+							break;
+						default:
+							break;
+					}
+				}
 			}
 		}
 	}
@@ -224,7 +243,7 @@ void filterServerFile(char[] readFrom, char writeTo[])
  */
 void saveRefreshList()
 {
-	if (exists(SERVERFILE)) {
+	if (exists(SERVERFILE) && exists(REFRESHFILE)) {
 		filterServerFile(SERVERFILE, REFRESHFILE);
 	}
 
@@ -248,10 +267,13 @@ void saveRefreshList()
  */
 int countServersInRefreshList()
 {
-	int count = 0;
+	if (!exists(parselist.REFRESHFILE))
+		return 0;
+
 	scope BufferedFile f = new BufferedFile(parselist.REFRESHFILE);
 	scope(exit) f.close();
 
+	int count = 0;
 	foreach (char[] line; f) {
 		count++;
 	}

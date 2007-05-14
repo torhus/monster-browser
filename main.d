@@ -1,6 +1,7 @@
 module main;
 
 private {
+	import std.file;
 	import std.string;
 	import std.stdio;
 	import std.thread;
@@ -195,13 +196,10 @@ void main() {
 		else {
 			// Qstat is too slow to do a getNewList(), so just refresh
 			// the old list instead, if possible.
-			if (getSetting("lastMod") == settings.modName) {
+			if (exists(SERVERFILE))
 				refreshList();
-			}
-			else {
-				//getNewList();
-				refreshList();
-			}
+			else
+				getNewList();
 		}
 
 		threadDispatcher = new ThreadDispatcher();

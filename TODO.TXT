@@ -1,6 +1,6 @@
-- Save separate list with just baseq3 servers?
+- Fix baseq3 server list when using gslist.
 
-- Don't query all servers for baseq3.
+- Missing InstaUnlagged servers when using gslist.  Case sensitivity problem?
 
 - ServerList._insertSorted() doesn't always sort right.
 
@@ -22,4 +22,4 @@
 - DMD doesn't generate docs for all files, including serverlist.d.
 
 - The compile-*.bat files don't work anymore.  Is there any point in keeping
-  them around?  They're only needed if Build somehow is not available.
+  them around?  They're only needed if Bud/Build somehow is not available.
