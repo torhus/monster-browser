@@ -1,6 +1,6 @@
-- Fix baseq3 server list when using gslist.
+- Allow custom master servers and executables.
 
-- Missing InstaUnlagged servers when using gslist.  Case sensitivity problem?
+- Fix baseq3 server list when using gslist.
 
 - ServerList._insertSorted() doesn't always sort right.
 
