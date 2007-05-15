@@ -84,11 +84,14 @@ each_server:
 			display.syncExec(countWrapper, countDg);
 
 			if (fields.length >= 9) {
-				if (settings.modName != "baseq3" &&
+				/*if (settings.modName != "baseq3" &&
 				             MOD_ONLY &&
 				             icmp(fields[8], settings.modName) != 0) {
+					debug printf("skipped %.*s\n", line);
+					debug line = readLine();
+					debug printf("        %.*s\n", line);
 					continue each_server;
-				}
+				}*/
 
 				sd.server.length = ServerColumn.max + 1;
 
@@ -122,7 +125,8 @@ each_server:
 						//case "game":
 						case "gamename":
 							if (MOD_ONLY &&
-							          icmp(cvar[1], settings.modName) != 0) {
+							          icmp(cvar[1], settings.modName) != 0 &&
+							          icmp(fields[8], settings.modName) != 0) {
 								continue each_server;
 							}
 							break;
@@ -207,24 +211,18 @@ void filterServerFile(char[] readFrom, char writeTo[])
 			if (!MOD_ONLY) {
 				outfile.writeLine(fields[1]);
 			}
-			else if (settings.modName != "baseq3" &&
+			else if (/*settings.modName != "baseq3" &&*/
 			                                   icmp(fields[8], settings.modName) == 0) {
 				outfile.writeLine(fields[1]);
 			}
-			else {
-				// parse cvars, only done for baseq3 servers
+			else { // need to parse cvars to find out which mod this server runs
 				line = infile.readLine();
 				char[][] temp = split(line, FIELDSEP);
 				foreach (char[] s; temp) {
 					char[][] cvar = split(s, "=");
-					switch (cvar[0]) {
-						case "gamename":
-							if (icmp(cvar[1], settings.modName) == 0) {
-								outfile.writeLine(fields[1]);
-							}
-							break;
-						default:
-							break;
+					if (cvar[0] == "gamename" && icmp(cvar[1], settings.modName) == 0) {
+						outfile.writeLine(fields[1]);
+						break;
 					}
 				}
 			}
