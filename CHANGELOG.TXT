@@ -1,5 +1,6 @@
 v0.3 - 2007-05-15
 ------------------
+- New: Custom master server and executable for each mod.  Check out mods.ini.
 - New: Don't get a new list when switching mods, just do a refresh instead.
        If the mod has been refreshed already, just display the list without refreshing.
        This makes it a lot faster to check the server lists for more than one mod.

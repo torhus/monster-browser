@@ -56,8 +56,8 @@ bool parseOutput(void delegate(Object) countDg, char[] delegate() readLine,
 		                  std.string.toString(timer.secs) ~ " seconds.");
 	}
 
-	if (settings.modName in gameTypes) {
-		gtypes = gameTypes[settings.modName];
+	if (activeMod.name in gameTypes) {
+		gtypes = gameTypes[activeMod.name];
 	}
 	else {
 		gtypes = defaultGameTypes;
@@ -84,9 +84,9 @@ each_server:
 			display.syncExec(countWrapper, countDg);
 
 			if (fields.length >= 9) {
-				/*if (settings.modName != "baseq3" &&
+				/*if (activeMod.name != "baseq3" &&
 				             MOD_ONLY &&
-				             icmp(fields[8], settings.modName) != 0) {
+				             icmp(fields[8], activeMod.name) != 0) {
 					debug printf("skipped %.*s\n", line);
 					debug line = readLine();
 					debug printf("        %.*s\n", line);
@@ -125,8 +125,8 @@ each_server:
 						//case "game":
 						case "gamename":
 							if (MOD_ONLY &&
-							          icmp(cvar[1], settings.modName) != 0 &&
-							          icmp(fields[8], settings.modName) != 0) {
+							          icmp(cvar[1], activeMod.name) != 0 &&
+							          icmp(fields[8], activeMod.name) != 0) {
 								continue each_server;
 							}
 							break;
@@ -211,8 +211,8 @@ void filterServerFile(char[] readFrom, char writeTo[])
 			if (!MOD_ONLY) {
 				outfile.writeLine(fields[1]);
 			}
-			else if (/*settings.modName != "baseq3" &&*/
-			                                   icmp(fields[8], settings.modName) == 0) {
+			else if (/*activeMod.name != "baseq3" &&*/
+			                                   icmp(fields[8], activeMod.name) == 0) {
 				outfile.writeLine(fields[1]);
 			}
 			else { // need to parse cvars to find out which mod this server runs
@@ -220,7 +220,7 @@ void filterServerFile(char[] readFrom, char writeTo[])
 				char[][] temp = split(line, FIELDSEP);
 				foreach (char[] s; temp) {
 					char[][] cvar = split(s, "=");
-					if (cvar[0] == "gamename" && icmp(cvar[1], settings.modName) == 0) {
+					if (cvar[0] == "gamename" && icmp(cvar[1], activeMod.name) == 0) {
 						outfile.writeLine(fields[1]);
 						break;
 					}
@@ -241,8 +241,8 @@ void filterServerFile(char[] readFrom, char writeTo[])
  */
 void saveRefreshList()
 {
-	if (exists(SERVERFILE) && exists(REFRESHFILE)) {
-		filterServerFile(SERVERFILE, REFRESHFILE);
+	if (exists(activeMod.serverFile)/* && exists(REFRESHFILE)*/) {
+		filterServerFile(activeMod.serverFile, REFRESHFILE);
 	}
 
 	/*scope BufferedFile f = new BufferedFile(parselist.REFRESHFILE, FileMode.OutNew);

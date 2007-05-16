@@ -26,7 +26,7 @@ bool abortParsing = false;
 
 // Note: gslist only outputs to a file called quake3.gsl
 const char[] REFRESHFILE = "quake3.gsl";
-const char[] SERVERFILE = "servers.lst";
+//const char[] SERVERFILE = "servers.lst";
 
 
 int browserGetNewList()
@@ -38,13 +38,15 @@ int browserGetNewList()
 		cmdLine = "gslist -n quake3 -o 1";
 	}
 	else {
-		cmdLine = "qstat -q3m,68,outfile master3.idsoftware.com," ~
+		/*cmdLine = "qstat -q3m,68,outfile master3.idsoftware.com," ~
+		          REFRESHFILE;*/
+		cmdLine = "qstat -q3m,68,outfile " ~ activeMod.masterServer ~ "," ~
 		          REFRESHFILE;
 	}
 
 	//log("browserGetNewList():");
-	if (common.useGslist && MOD_ONLY && modName != "baseq3") {
-		cmdLine ~= " -f \"(gametype = \'" ~ modName ~ "\'\")";
+	if (common.useGslist && MOD_ONLY && activeMod.name!= "baseq3") {
+		cmdLine ~= " -f \"(gametype = \'" ~ activeMod.name ~ "\'\")";
 	}
 
 	proc = new Process();
@@ -121,12 +123,12 @@ void browserLoadSavedList(void delegate(Object) callback)
 	volatile abortParsing = false;
 
 	//log("browserLoadSavedList():");
-	if (!std.file.exists(SERVERFILE)) {
+	if (!std.file.exists(activeMod.serverFile)) {
 		return;
 	}
 
 	try {
-		f = new BufferedFile(SERVERFILE);
+		f = new BufferedFile(activeMod.serverFile);
 		getActiveServerList.clear();
 		qstat.parseOutput(callback, &f.readLine, &f.eof, null);
 		getActiveServerList.complete = !abortParsing;
@@ -169,9 +171,9 @@ void browserRefreshList(void delegate(Object) callback, bool saveList=false)
 		if (saveList) {
 			if (!abortParsing) {
 				try {
-					if (exists(SERVERFILE))
-						std.file.remove(SERVERFILE);
-					std.file.rename("servers.tmp", SERVERFILE);
+					if (exists(activeMod.serverFile))
+						std.file.remove(activeMod.serverFile);
+					std.file.rename("servers.tmp", activeMod.serverFile);
 				}
 				catch (FileException e) {
 					warning("Unable to save the server list to disk.");
