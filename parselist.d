@@ -26,7 +26,6 @@ bool abortParsing = false;
 
 // Note: gslist only outputs to a file called quake3.gsl
 const char[] REFRESHFILE = "quake3.gsl";
-//const char[] SERVERFILE = "servers.lst";
 
 
 int browserGetNewList()
@@ -38,8 +37,6 @@ int browserGetNewList()
 		cmdLine = "gslist -n quake3 -o 1";
 	}
 	else {
-		/*cmdLine = "qstat -q3m,68,outfile master3.idsoftware.com," ~
-		          REFRESHFILE;*/
 		cmdLine = "qstat -q3m,68,outfile " ~ activeMod.masterServer ~ "," ~
 		          REFRESHFILE;
 	}

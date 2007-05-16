@@ -5,6 +5,7 @@ module settings;
 private {
 	import std.string;
 	import std.file;
+	import std.c.stdio;
 
 	import lib.process;
 	import ini;
@@ -77,7 +78,9 @@ private {
 
 void setActiveMod(char[] name)
 {
-	assert(modsIni[name]);
+	if (modsIni[name] is null)
+		modsIni.addSection(name);
+
 	activeMod.name = name;
 	activeMod.section = modsIni[name];
 }
@@ -86,7 +89,7 @@ void setActiveMod(char[] name)
 void loadModFile()
 {
 	if (!exists(modFileName)) {
-		write(modFileName, defaultModsFile);
+		writeDefaultModsFile();
 	}
 
 	modsIni = new Ini(modFileName);
@@ -97,14 +100,13 @@ void loadModFile()
 	if (modsIni.sections.length < 1) {
 		// Invalid format, probably the old version.  Just overwrite with defaults
 		// and try again.
-		write(modFileName, defaultModsFile);
+		writeDefaultModsFile();
 		delete modsIni;
 		modsIni = new Ini(modFileName);
 		modsIni.remove("");
 	}
 
 	foreach (sec; modsIni) {
-		debug printf("[%.*s]\n", sec.name);
 		mods ~= sec.name;
 	}
 
@@ -113,6 +115,14 @@ void loadModFile()
 	}
 }
 
+
+void writeDefaultModsFile()
+{
+	// Use C IO to get line ending translation.
+	FILE* f = fopen((modFileName ~ '\0').ptr, "w");
+	fwrite(defaultModsFile.ptr, 1, defaultModsFile.length, f);
+	fclose(f);
+}
 
 void loadSettings()
 {
