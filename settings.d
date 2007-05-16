@@ -12,8 +12,31 @@ private {
 	import main;
 }
 
+
+struct Mod
+{
+	private IniSection section;
+
+	char[] name;
+
+	char[] masterServer()
+	{
+		char[] r = section["masterServer"];
+		return r ? r : "master3.idsoftware.com";
+	}
+
+	char[] serverFile() { return masterServer ~ ".lst"; }
+
+	char[] exePath()
+	{
+		char[] r = section["exePath"];
+		return r ? r : getSetting("gamePath");
+	}
+}
+
+
 char[][] mods;
-char[] modName;
+Mod activeMod;
 const char[] modFileName = "mods.ini";
 
 private {
@@ -22,7 +45,20 @@ private {
 	const char[][] defaultMods = ["westernq3", "baseq3", "osp", "cpma",
 	                              "InstaUnlagged", "q3ut4", "wop"];
 
+	const char[] defaultModsFile = "; Monster Browser mods configuration\n\n"
+	                                "[westernq3]\n\n"
+	                                "[baseq3]\n\n"
+	                                "[osp]\n\n"
+	                                "[cpma]\n\n"
+	                                "[InstaUnlagged]\n\n"
+	                                "[wop]\n"
+	                                "masterServer=wopmaster.kickchat.com\n"
+	                                "exePath=C:\\Program Files\\World of Padman\\wop.exe\n\n"
+	                                "[q3ut4]\n"
+	                                "masterServer=master.urbanterror.net\n\n";
+
 	Ini settingsIni;
+	Ini modsIni;
 
 	struct Setting {
 		char[] name;
@@ -39,16 +75,41 @@ private {
 }
 
 
+void setActiveMod(char[] name)
+{
+	assert(modsIni[name]);
+	activeMod.name = name;
+	activeMod.section = modsIni[name];
+}
+
+
 void loadModFile()
 {
 	if (!exists(modFileName)) {
-		write(modFileName, std.string.join(defaultMods, std.string.newline) ~
-		                                   std.string.newline);
+		write(modFileName, defaultModsFile);
 	}
 
-	mods = splitlines(cast(char[])read(modFileName));
-	if (!modName) {
-		modName = mods[0];
+	modsIni = new Ini(modFileName);
+
+	// remove the nameless section caused by comments
+	modsIni.remove("");
+
+	if (modsIni.sections.length < 1) {
+		// Invalid format, probably the old version.  Just overwrite with defaults
+		// and try again.
+		write(modFileName, defaultModsFile);
+		delete modsIni;
+		modsIni = new Ini(modFileName);
+		modsIni.remove("");
+	}
+
+	foreach (sec; modsIni) {
+		debug printf("[%.*s]\n", sec.name);
+		mods ~= sec.name;
+	}
+
+	if (!activeMod.name) {
+		setActiveMod(mods[0]);
 	}
 }
 
@@ -80,7 +141,7 @@ void saveSettings()
 	setSetting("windowMaximized", mainWindow.getMaximized() ?
 	                                                 "true" : "false");
 
-	setSetting("lastMod", modName);
+	setSetting("lastMod", activeMod.name);
 
 	if (settingsIni.modified) {
 		settingsIni.save();

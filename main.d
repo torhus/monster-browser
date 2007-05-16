@@ -108,7 +108,7 @@ void main() {
 		serverTable.getTable().setLayoutData(gridData);
 
 		// has to be instantied after the table
-		setActiveServerList(modName);
+		setActiveServerList(activeMod.name);
 
 		// parent for player and cvar tables
 		SashForm rightForm = new SashForm(middleForm, DWT.VERTICAL);
@@ -196,7 +196,7 @@ void main() {
 		else {
 			// Qstat is too slow to do a getNewList(), so just refresh
 			// the old list instead, if possible.
-			if (exists(SERVERFILE))
+			if (exists(activeMod.serverFile))
 				refreshList();
 			else
 				getNewList();
@@ -298,23 +298,25 @@ class FilterBar : Composite
 			else {
 				modCombo_.select(i);
 			}
-			settings.modName = s;
+			setActiveMod(s);
 		}
 
 		modCombo_.clearSelection();  // FIXME: doesn't seem to work
 		modCombo_.addSelectionListener(new class SelectionAdapter {
 			public void widgetSelected(SelectionEvent e)
 			{
-				settings.modName = (cast(Combo) e.widget).getText();
+				setActiveMod((cast(Combo) e.widget).getText());
 				serverTable.getTable.setFocus();
-				if (setActiveServerList(modName)) {
+				if (setActiveServerList(activeMod.name)) {
 					threadDispatcher.run(&switchToActiveMod);
 				}
 				else {
 					if (common.useGslist)
 						threadDispatcher.run(&getNewList);
-					else
+					else if (exists(activeMod.serverFile))
 						threadDispatcher.run(&refreshList);
+					else
+						threadDispatcher.run(&getNewList);
 				}
 			}
 
@@ -334,16 +336,18 @@ class FilterBar : Composite
 				else {
 					combo.select(i);
 				}
-				settings.modName = s;
+				setActiveMod(s);
 				serverTable.getTable.setFocus();
-				if (setActiveServerList(modName)) {
+				if (setActiveServerList(activeMod.name)) {
 					threadDispatcher.run(&switchToActiveMod);
 				}
 				else {
 					if (common.useGslist)
 						threadDispatcher.run(&getNewList);
-					else
+					else if (exists(activeMod.serverFile))
 						threadDispatcher.run(&refreshList);
+					else
+						threadDispatcher.run(&getNewList);
 				}
 			}
 		});

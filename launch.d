@@ -23,14 +23,14 @@ version (Windows) {
 void JoinServer(ServerData *sd)
 {
 	char[] argv;
-	char[] path = getSetting("gamePath");
+	char[] path = activeMod.exePath;
 	char[] dir = getDirName(path);
 	bool launch = true;
 	bool showDialog = false;
 	char[] msg;
 
 	if (MOD_ONLY) {
-		argv = "+set fs_game " ~ modName;
+		argv = "+set fs_game " ~ activeMod.name;
 	}
 	argv ~= " +connect " ~ sd.server[ServerColumn.ADDRESS];
 
