@@ -20,7 +20,7 @@ On first use, go into the settings and check that the path to your Quake 3 exe i
 
 To join a server, just select it and double click or press <enter>.  If the server requires a password, or has an optional password for reserved slots, a password dialog will pop up.  The password will be stored.
 
-By clicking on the 'Mods...' button in the settings, you can edit the list displayed in the combo box.  You can add, delete, and reorder gamenames as you please, one name per line.  The mod on the top of the list will be used as the default.  If you want the program to always start with the top mod, select 'Default mod' in the settings.  Otherwise it will start with the last selected mod.
+By clicking on the 'Mods...' button in the settings, you can edit the list displayed in the combo box.  The format of this file is explained in the file itself.  The mod on the top of the list will be used as the default.  If you want the program to always start with the top mod, select 'Default mod' in the settings.  Otherwise it will start with the last selected mod.
 
 
 Info and contact

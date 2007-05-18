@@ -1,4 +1,4 @@
-v0.3 - 2007-05-15
+v0.3 - 2007-05-18
 ------------------
 - New: Custom master server and executable for each mod.  Check out mods.ini.
 - New: Don't get a new list when switching mods, just do a refresh instead.
