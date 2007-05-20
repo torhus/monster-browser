@@ -29,7 +29,7 @@ debug {
 }
 else {
 	//const char[] VERSION = "- " ~ __DATE__ ;
-	const char[] VERSION = "0.3";
+	const char[] VERSION = "0.3a";
 }
 
 private {
