@@ -1,3 +1,5 @@
+- Make it work with the new World of Padman master, master.kickchat.com.
+
 - Fix baseq3 server list when using gslist.
 
 - ServerList._insertSorted() doesn't always sort right.
