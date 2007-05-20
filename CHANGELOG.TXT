@@ -1,3 +1,7 @@
+v0.3a - 2007-05-20
+------------------
+- Fix: Filters didn't always work when doing a refresh.
+
 v0.3 - 2007-05-18
 ------------------
 - New: Custom master server and executable for each mod.  Check out mods.ini.

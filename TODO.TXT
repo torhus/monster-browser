@@ -1,5 +1,3 @@
-- Allow custom master servers and executables.
-
 - Fix baseq3 server list when using gslist.
 
 - ServerList._insertSorted() doesn't always sort right.
