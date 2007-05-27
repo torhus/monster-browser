@@ -1,5 +1,8 @@
 - Make it work with the new World of Padman master, master.kickchat.com.
 
+- Add the ability to check servers not registered with a master server.
+  See: http://www.westernquake3.net/main/viewtopic.php?p=8331#8329
+
 - Fix baseq3 server list when using gslist.
 
 - ServerList._insertSorted() doesn't always sort right.
