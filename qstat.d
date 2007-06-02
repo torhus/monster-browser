@@ -84,6 +84,14 @@ each_server:
 			display.syncExec(countWrapper, countDg);
 
 			if (fields.length >= 9) {
+				bool keep_server = false;
+
+				if (!MOD_ONLY)
+					keep_server = true;
+
+				if (icmp(fields[8], activeMod.name) == 0)
+					keep_server = true;
+
 				/*if (activeMod.name != "baseq3" &&
 				             MOD_ONLY &&
 				             icmp(fields[8], activeMod.name) != 0) {
@@ -122,13 +130,21 @@ each_server:
 								                  std.string.toString(gt);
 							}
 							break;
-						//case "game":
-						case "gamename":
-							if (MOD_ONLY &&
-							          icmp(cvar[1], activeMod.name) != 0 &&
-							          icmp(fields[8], activeMod.name) != 0) {
-								continue each_server;
+						case "game":  // not sure if this is right, risk getting too many servers
+							if (!keep_server && icmp(cvar[1], activeMod.name) == 0) {
+								keep_server = true;
 							}
+							break;
+						case "gamename":  // has to come after case "game"
+							if (!keep_server && icmp(cvar[1], activeMod.name) == 0) {
+								keep_server = true;
+							}
+
+							// Since qstat's 'game' pseudo cvar always is listed before
+							// 'gamename', it's safe to abort parsing here in the case
+							// that keep_server still is false.
+							if (!keep_server)
+								continue each_server;
 							break;
 						case "g_needpass":
 							if (cvar[1] == "1")
@@ -139,6 +155,10 @@ each_server:
 					}
 					sd.cvars ~= cvar;
 				}
+
+				if (!keep_server)
+					continue each_server;
+
 				sortStringArray(sd.cvars);
 
 				// parse players
@@ -220,6 +240,12 @@ void filterServerFile(char[] readFrom, char writeTo[])
 				char[][] temp = split(line, FIELDSEP);
 				foreach (char[] s; temp) {
 					char[][] cvar = split(s, "=");
+					// Not sure if it's right to check 'game' or not.  Might end up
+					// including too many servers.
+					if (cvar[0] == "game" && icmp(cvar[1], activeMod.name) == 0) {
+						outfile.writeLine(fields[1]);
+						break;
+					}
 					if (cvar[0] == "gamename" && icmp(cvar[1], activeMod.name) == 0) {
 						outfile.writeLine(fields[1]);
 						break;

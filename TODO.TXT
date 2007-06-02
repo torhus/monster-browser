@@ -1,4 +1,3 @@
-- Shows too many servers after doing Get new list, a Refresh list corrects it.
 
 - Add the ability to check servers not registered with a master server.
   See: http://www.westernquake3.net/main/viewtopic.php?p=8331#8329
