@@ -1,3 +1,7 @@
+v0.3b - 2007-06-02
+------------------
+- Fix: 'Get new list' included too many servers, corrected to behave the same as 'Refresh list'.
+
 v0.3a - 2007-05-20
 ------------------
 - Fix: Filters didn't always work when doing a refresh.
