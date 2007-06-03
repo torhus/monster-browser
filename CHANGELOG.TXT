@@ -1,3 +1,7 @@
+Latest:
+-------
+- Fix: Don't overwrite important status bar messages by less important ones.
+
 v0.3b - 2007-06-02
 ------------------
 - Fix: 'Get new list' included too many servers, corrected to behave the same as 'Refresh list'.
