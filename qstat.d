@@ -263,7 +263,7 @@ void filterServerFile(char[] readFrom, char writeTo[])
 /**
  * Save the server list so that qstat can refresh servers
  *
- * Throws: OpenException, WriteException.
+ * Throws: OpenException, WriteException, FileException.
  */
 void saveRefreshList()
 {

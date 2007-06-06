@@ -408,9 +408,9 @@ private:
 
 ToolBar createToolbar(Composite parent)
 {
-   	auto toolBar = new ToolBar(parent, DWT.HORIZONTAL);
+	auto toolBar = new ToolBar(parent, DWT.HORIZONTAL);
 
-   	auto button1 = new ToolItem(toolBar, DWT.PUSH);
+	auto button1 = new ToolItem(toolBar, DWT.PUSH);
 	button1.setText("Get new list");
 	button1.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
@@ -419,7 +419,7 @@ ToolBar createToolbar(Composite parent)
 		}
 	});
 
- 	new ToolItem(toolBar, DWT.SEPARATOR);
+	new ToolItem(toolBar, DWT.SEPARATOR);
 
 	ToolItem button2 = new ToolItem(toolBar, DWT.PUSH);
 	button2.setText("Refresh list");
@@ -433,9 +433,9 @@ ToolBar createToolbar(Composite parent)
 	new ToolItem(toolBar, DWT.SEPARATOR);
 
 	auto button3 = new ToolItem(toolBar, DWT.PUSH);
-    button3.setText("Monitor...");
-    button3.setEnabled(false);
-    button3.addSelectionListener(new class SelectionAdapter {
+	button3.setText("Monitor...");
+	button3.setEnabled(false);
+	button3.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{
 			startMonitor(mainWindow);
@@ -445,7 +445,7 @@ ToolBar createToolbar(Composite parent)
 		}
 	});
 
-   	new ToolItem(toolBar, DWT.SEPARATOR);
+	new ToolItem(toolBar, DWT.SEPARATOR);
 
 	auto button4 = new ToolItem(toolBar, DWT.PUSH);
 	button4.setText("Settings...");
