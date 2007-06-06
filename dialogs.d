@@ -3,6 +3,10 @@ module dialogs;
 /* Dialog boxes */
 
 private {
+	import std.file;
+	import std.regexp;
+	import std.string;
+
 	import dwt.all;
 
 	import common;
@@ -175,6 +179,115 @@ class JoinDialog {
 private:
 	Shell parent_, shell_;
 	Button okButton_, cancelButton_;
+	Text pwdText_;
+	int result_ = DWT.CANCEL;
+}
+
+
+class SpecifyServerDialog {
+
+	char[] address;
+
+	this(Shell parent)
+	{
+		parent_ = parent;
+		shell_ = new Shell(parent_, DWT.DIALOG_TRIM | DWT.APPLICATION_MODAL);
+		GridLayout topLayout = new GridLayout();
+		shell_.setLayout(topLayout);
+		shell_.setText("Specify Server");
+
+		// command line
+		//Label labelA = new Label(shell_, DWT.NONE);
+		//labelA.setText("Join \"" ~ serverName ~ "\"\n\n" ~ message ~ "\n");
+
+		// password input
+		//Composite pwdComposite = new Composite(shell_, DWT.NONE);
+		//GridData pwdData = new GridData();
+		//pwdData.horizontalAlignment = GridData.CENTER;
+		//pwdComposite.setLayoutData(pwdData);
+
+		//RowLayout pwdLayout = new RowLayout();
+		//pwdComposite.setLayout(pwdLayout);
+		//Label labelB = new Label(pwdComposite, DWT.NONE);
+		Label labelB = new Label(shell_, DWT.NONE);
+		labelB.setText("Address (123.123.123.123 or 123.123.123.123:12345):");
+		//pwdText_ = new Text(pwdComposite, DWT.SINGLE | DWT.BORDER);
+		pwdText_ = new Text(shell_, DWT.SINGLE | DWT.BORDER);
+		GridData data = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+		data.horizontalAlignment = GridData.CENTER;
+		//labelB.setLayoutData(data);
+		pwdText_.setLayoutData(data);
+		saveButton_ = new Button (shell_, DWT.CHECK);
+		saveButton_.setText("Save server on file");
+
+		// main buttons
+		Composite buttonComposite = new Composite(shell_, DWT.NONE);
+		GridData buttonData = new GridData();
+		buttonData.horizontalAlignment = GridData.CENTER;
+		buttonComposite.setLayoutData(buttonData);
+
+		RowLayout buttonLayout = new RowLayout();
+		buttonComposite.setLayout(buttonLayout);
+
+		okButton_ = new Button (buttonComposite, DWT.PUSH);
+		okButton_.setText ("OK");
+		cancelButton_ = new Button (buttonComposite, DWT.PUSH);
+		cancelButton_.setText ("Cancel");
+
+		Listener listener = new class Listener {
+			public void handleEvent (Event event)
+			{
+				bool closeDialog = true;
+
+				if (event.widget == okButton_) {
+					result_ = DWT.OK;
+					address = pwdText_.getText;
+
+					// validate address
+					RegExp re = new RegExp(r"(\d{1,3}\.){3}\d{1,3}(:\d{1,5})?");
+					char[][] matches = re.exec(address);
+					if(!matches.length || matches[0].length != address.length) {
+						error("Invalid address");
+						pwdText_.setFocus();
+						pwdText_.selectAll();
+						closeDialog = false;
+					}
+					else {
+						if (saveButton_.getSelection()) {
+							append(activeMod.extraServersFile, address ~ newline);
+							// FIXME: error check here (FileException)
+						}
+					}
+				}
+
+				if (closeDialog)
+					shell_.close();
+			}
+		};
+
+		okButton_.addListener(DWT.Selection, listener);
+		cancelButton_.addListener(DWT.Selection, listener);
+		shell_.setDefaultButton(okButton_);
+		shell_.pack();
+		shell_.setLocation(center(parent_, shell_));
+	}
+
+	int open()
+	{
+		pwdText_.setText(address);
+		pwdText_.selectAll();
+		shell_.open();
+		while (!shell_.isDisposed()) {
+			if (!display.readAndDispatch()) {
+				display.sleep ();
+			}
+		}
+		return result_;
+	}
+
+private:
+	Shell parent_, shell_;
+	Button okButton_, cancelButton_, saveButton_;
 	Text pwdText_;
 	int result_ = DWT.CANCEL;
 }

@@ -159,7 +159,7 @@ void browserRefreshList(void delegate(Object) callback, bool saveList=false)
 	}
 
 	try {
-		char[] extraServersFile = activeMod.name ~ ".extra";
+		char[] extraServersFile = activeMod.extraServersFile();
 
 		if (exists(extraServersFile))
 			append(REFRESHFILE, read(extraServersFile));

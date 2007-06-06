@@ -28,6 +28,8 @@ struct Mod
 
 	char[] serverFile() { return masterServer ~ ".lst"; }
 
+	char[] extraServersFile() { return name ~ ".extra"; }
+
 	char[] exePath()
 	{
 		char[] r = section["exePath"];

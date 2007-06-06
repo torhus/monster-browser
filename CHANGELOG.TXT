@@ -1,6 +1,7 @@
 Latest:
 -------
 - Fix: Don't overwrite important status bar messages by less important ones.
+- New: Read extra servers from '<modname>.extra' file.
 
 v0.3b - 2007-06-02
 ------------------

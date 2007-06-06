@@ -433,9 +433,23 @@ ToolBar createToolbar(Composite parent)
 	new ToolItem(toolBar, DWT.SEPARATOR);
 
 	auto button3 = new ToolItem(toolBar, DWT.PUSH);
-	button3.setText("Monitor...");
-	button3.setEnabled(false);
+	button3.setText("Specify...");
 	button3.addSelectionListener(new class SelectionAdapter {
+		public void widgetSelected(SelectionEvent e)
+		{
+			auto dialog = new SpecifyServerDialog(mainWindow);
+			if (dialog.open() == DWT.OK) {
+				//saveSettings();
+			}
+		}
+	});
+
+	new ToolItem(toolBar, DWT.SEPARATOR);
+
+	auto button4 = new ToolItem(toolBar, DWT.PUSH);
+	button4.setText("Monitor...");
+	button4.setEnabled(false);
+	button4.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{
 			startMonitor(mainWindow);
@@ -447,9 +461,9 @@ ToolBar createToolbar(Composite parent)
 
 	new ToolItem(toolBar, DWT.SEPARATOR);
 
-	auto button4 = new ToolItem(toolBar, DWT.PUSH);
-	button4.setText("Settings...");
-	button4.addSelectionListener(new class SelectionAdapter {
+	auto button5 = new ToolItem(toolBar, DWT.PUSH);
+	button5.setText("Settings...");
+	button5.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{
 			SettingsDialog dialog = new SettingsDialog(mainWindow);
