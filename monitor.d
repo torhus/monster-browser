@@ -6,6 +6,9 @@ private {
 
 	import dwt.all;
 	import common;
+	import dialogs;
+	import main;
+	import serverlist;
 }
 
 private Shell shell;
@@ -18,28 +21,31 @@ void startMonitor(Shell shell)
 
 	void monitorDone(Object o)
 	{
-		warning("monitorDone");
+		//db("monitorDone");
+		scope dialog = new MonitorNotify(mainWindow, "testing");
+		//dialog.open();
 	}
 
 	int timerTest()
 	{
-		long start = getUTCtime()/TicksPerSecond;
+		/*long start = getUTCtime()/TicksPerSecond;
 		long now = getUTCtime()/TicksPerSecond;
 
-		while (now < start + 3) {
+		while (now < start + 2) {
 			now = getUTCtime()/TicksPerSecond;
-		}
+		}*/
 
 		// only the gui thread can display message boxes
 		Display.getDefault().syncExec(null, &monitorDone);
+		threadDispatcher.run(&refreshList);
 		return 0;
 	}
 
 	void f(Object shell)
 	{
 		try {
-		Thread monitorThread = new Thread(&timerTest);
-		monitorThread.start();
+			Thread monitorThread = new Thread(&timerTest);
+			monitorThread.start();
 		}
 		catch(Exception e) {
 			logx(__FILE__, __LINE__, e);
@@ -48,5 +54,5 @@ void startMonitor(Shell shell)
 
 	}
 
-	Display.getDefault().timerExec(shell, 1000, &f);
+	Display.getDefault().timerExec(shell, 2000, &f);
 }

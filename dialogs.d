@@ -3,10 +3,99 @@ module dialogs;
 /* Dialog boxes */
 
 private {
-	import common;
 	import dwt.all;
+
+	import common;
 	import main;
 	import settings;
+}
+
+
+class MonitorNotify {
+
+	char[] password;
+
+	this(Shell parent, char[] message)
+	{
+		parent_ = parent;
+		shell_ = new Shell(parent_, DWT.DIALOG_TRIM | DWT.APPLICATION_MODAL/* | DWT.ON_TOP*/);
+		GridLayout topLayout = new GridLayout();
+		shell_.setLayout(topLayout);
+		shell_.setText("Join Server");
+
+		shell_.open();
+		shell_.forceActive();
+		while (!shell_.isDisposed()) {
+			if (!display.readAndDispatch()) {
+				display.sleep ();
+			}
+		}
+
+		/*// command line
+		Label labelA = new Label(shell_, DWT.NONE);
+		labelA.setText("Join \"" ~ serverName ~ "\"\n\n" ~ message ~ "\n");
+
+		// password input
+		Composite pwdComposite = new Composite(shell_, DWT.NONE);
+		GridData pwdData = new GridData();
+		pwdData.horizontalAlignment = GridData.CENTER;
+		pwdComposite.setLayoutData(pwdData);
+
+		RowLayout pwdLayout = new RowLayout();
+		pwdComposite.setLayout(pwdLayout);
+		Label labelB = new Label(pwdComposite, DWT.NONE);
+		labelB.setText("Password:");
+		pwdText_ = new Text(pwdComposite, DWT.SINGLE | DWT.BORDER);
+
+		// main buttons
+		Composite buttonComposite = new Composite(shell_, DWT.NONE);
+		GridData buttonData = new GridData();
+		buttonData.horizontalAlignment = GridData.CENTER;
+		buttonComposite.setLayoutData(buttonData);
+
+		RowLayout buttonLayout = new RowLayout();
+		buttonComposite.setLayout(buttonLayout);
+
+		okButton_ = new Button (buttonComposite, DWT.PUSH);
+		okButton_.setText ("OK");
+		cancelButton_ = new Button (buttonComposite, DWT.PUSH);
+		cancelButton_.setText ("Cancel");
+
+		Listener listener = new class Listener {
+			public void handleEvent (Event event)
+			{
+				if (event.widget == okButton_) {
+					result_ = DWT.OK;
+					password = pwdText_.getText;
+				}
+				shell_.close();
+			}
+		};
+
+		okButton_.addListener(DWT.Selection, listener);
+		cancelButton_.addListener(DWT.Selection, listener);
+		shell_.setDefaultButton(okButton_);
+		shell_.pack();
+		shell_.setLocation(center(parent_, shell_));
+		*/
+	}
+
+	/*int open()
+	{
+		pwdText_.setText(password);
+		pwdText_.selectAll();
+		shell_.open();
+		while (!shell_.isDisposed()) {
+			if (!display.readAndDispatch()) {
+				display.sleep ();
+			}
+		}
+		return result_;
+	}*/
+
+private:
+	Shell parent_, shell_;
+
 }
 
 

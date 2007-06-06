@@ -408,39 +408,48 @@ private:
 
 ToolBar createToolbar(Composite parent)
 {
-   	ToolBar toolBar = new ToolBar(parent, DWT.HORIZONTAL);
+   	auto toolBar = new ToolBar(parent, DWT.HORIZONTAL);
 
-   	ToolItem item = new ToolItem(toolBar, DWT.PUSH);
-	item.setText("Get new list");
-	item.addSelectionListener(new class SelectionAdapter {
+   	auto button1 = new ToolItem(toolBar, DWT.PUSH);
+	button1.setText("Get new list");
+	button1.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{
 			threadDispatcher.run(&getNewList);
 		}
 	});
 
- 	item = new ToolItem(toolBar, DWT.SEPARATOR);
+ 	new ToolItem(toolBar, DWT.SEPARATOR);
 
-	item = new ToolItem(toolBar, DWT.PUSH);
-	item.setText("Refresh list");
-	item.addSelectionListener(new class SelectionAdapter {
+	ToolItem button2 = new ToolItem(toolBar, DWT.PUSH);
+	button2.setText("Refresh list");
+	button2.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{
 			threadDispatcher.run(&refreshList);
 		}
 	});
 
-	item = new ToolItem(toolBar, DWT.SEPARATOR);
+	new ToolItem(toolBar, DWT.SEPARATOR);
 
-	item = new ToolItem(toolBar, DWT.PUSH);
-    item.setText("Monitor...");
-    item.setEnabled(false);
+	auto button3 = new ToolItem(toolBar, DWT.PUSH);
+    button3.setText("Monitor...");
+    button3.setEnabled(false);
+    button3.addSelectionListener(new class SelectionAdapter {
+		public void widgetSelected(SelectionEvent e)
+		{
+			startMonitor(mainWindow);
+			//SettingsDialog dialog = new SettingsDialog(mainWindow);
+			/*if (dialog.open() == DWT.OK)
+				saveSettings();*/
+		}
+	});
 
-   	item = new ToolItem(toolBar, DWT.SEPARATOR);
+   	new ToolItem(toolBar, DWT.SEPARATOR);
 
-	item = new ToolItem(toolBar, DWT.PUSH);
-	item.setText("Settings...");
-	item.addSelectionListener(new class SelectionAdapter {
+	auto button4 = new ToolItem(toolBar, DWT.PUSH);
+	button4.setText("Settings...");
+	button4.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{
 			SettingsDialog dialog = new SettingsDialog(mainWindow);
