@@ -159,6 +159,11 @@ void browserRefreshList(void delegate(Object) callback, bool saveList=false)
 	}
 
 	try {
+		char[] extraServersFile = activeMod.name ~ ".extra";
+
+		if (exists(extraServersFile))
+			append(REFRESHFILE, read(extraServersFile));
+
 		char[] tmpfile = saveList ? "servers.tmp" : null;
 		qstat.parseOutput(callback, &proc.readLine, null, tmpfile);
 	}
