@@ -11,6 +11,7 @@ private {
 
 	import common;
 	import main;
+	import serverlist;
 	import settings;
 }
 
@@ -260,6 +261,7 @@ class SpecifyServerDialog {
 							append(activeMod.extraServersFile, address ~ newline);
 							// FIXME: error check here (FileException)
 						}
+						queryAndAddServer(address);
 					}
 				}
 

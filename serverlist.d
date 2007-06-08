@@ -609,6 +609,76 @@ void loadSavedList()
 }
 
 
+/**
+ * Queries a single server, adds it to the active server list, and refreshes
+ * the serverTable to make it show up.
+ *
+ * The querying is done in a new thread.  The function does not verify that the
+ * address is valid.
+ */
+void queryAndAddServer(in char[] address)
+{
+	static char[] total;
+	static char[] addressCopy;
+
+	int f()
+	{
+		void status(Object int_count)
+		{
+			statusBar.setLeft("Refreshing " ~  total ~ " servers..." ~
+			          std.string.toString((cast(IntWrapper) int_count).value));
+		}
+
+		void done(Object)
+		{
+			if (getActiveServerList.length() > 0) {
+				serverTable.reset();
+				// FIXME: selection not working
+				serverTable.refresh(new IntWrapper(
+				                       getActiveServerList.getFilteredIndex(addressCopy)));
+			}
+			else {
+				statusBar.setLeft("Nothing to refresh");
+			}
+		}
+
+		try {
+			//total = std.string.toString(countServersInRefreshList());
+			browserRefreshList(&status, false);
+			// FIXME: only needed because ServerList._insertSorted() is
+			// unreliable
+			getActiveServerList.sort();
+			volatile if (!parselist.abortParsing) {
+				display.asyncExec(null, &done);
+			}
+		}
+		catch(Exception e) {
+			logx(__FILE__, __LINE__, e);
+		}
+		return 0;
+	}
+
+	assert(serverThread is null ||
+	                   serverThread.getState() == Thread.TS.TERMINATED);
+
+	//if (!exists(REFRESHFILE)) {
+		//qstat.saveRefreshList();
+	//}
+	write(REFRESHFILE, address ~ newline);
+
+	addressCopy = address.dup;
+	total = std.string.toString(countServersInRefreshList());
+
+	statusBar.setLeft("Refreshing " ~ total ~ " servers...");
+	//getActiveServerList.clear();
+	//serverTable.refresh();
+
+	//fullCollect();
+	serverThread = new Thread(&f);
+	serverThread.start();
+}
+
+
 void getNewList()
 {
 	int f()
@@ -633,7 +703,7 @@ void getNewList()
 				                              total ~ " servers, querying...");
 			                        } );
 
-				browserRefreshList(&status, true);
+				browserRefreshList(&status, true, true);
 				// FIXME: only needed because ServerList._insertSorted() is
 				// unreliable
 				getActiveServerList.sort();
