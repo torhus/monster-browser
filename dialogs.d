@@ -200,23 +200,26 @@ class SpecifyServerDialog {
 		//Label labelA = new Label(shell_, DWT.NONE);
 		//labelA.setText("Join \"" ~ serverName ~ "\"\n\n" ~ message ~ "\n");
 
-		// password input
-		//Composite pwdComposite = new Composite(shell_, DWT.NONE);
-		//GridData pwdData = new GridData();
-		//pwdData.horizontalAlignment = GridData.CENTER;
-		//pwdComposite.setLayoutData(pwdData);
+		// address input
+		Composite addressComposite = new Composite(shell_, DWT.NONE);
+		GridData addressData = new GridData();
+		addressData.horizontalAlignment = GridData.CENTER;
+		addressComposite.setLayoutData(addressData);
 
-		//RowLayout pwdLayout = new RowLayout();
-		//pwdComposite.setLayout(pwdLayout);
-		//Label labelB = new Label(pwdComposite, DWT.NONE);
-		Label labelB = new Label(shell_, DWT.NONE);
+		auto addressLayout = new GridLayout();
+		addressComposite.setLayout(addressLayout);
+		Label labelB = new Label(addressComposite, DWT.NONE);
+		//Label labelB = new Label(shell_, DWT.NONE);
 		labelB.setText("Address (123.123.123.123 or 123.123.123.123:12345):");
-		//pwdText_ = new Text(pwdComposite, DWT.SINGLE | DWT.BORDER);
-		pwdText_ = new Text(shell_, DWT.SINGLE | DWT.BORDER);
-		GridData data = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
-		data.horizontalAlignment = GridData.CENTER;
+		addressText_ = new Text(addressComposite, DWT.SINGLE | DWT.BORDER);
+		//pwdText_ = new Text(shell_, DWT.SINGLE | DWT.BORDER);
+		auto addressTextData = new GridData(/*GridData.HORIZONTAL_ALIGN_FILL*/);
+		addressTextData.horizontalAlignment = GridData.CENTER;
 		//labelB.setLayoutData(data);
-		pwdText_.setLayoutData(data);
+		//adressTextData.minimumWidth = 200;
+		addressTextData.widthHint = 140;
+		addressText_.setLayoutData(addressTextData);
+
 		saveButton_ = new Button (shell_, DWT.CHECK);
 		saveButton_.setText("Save server on file");
 
@@ -241,15 +244,15 @@ class SpecifyServerDialog {
 
 				if (event.widget == okButton_) {
 					result_ = DWT.OK;
-					address = pwdText_.getText;
+					address = addressText_.getText;
 
 					// validate address
 					RegExp re = new RegExp(r"(\d{1,3}\.){3}\d{1,3}(:\d{1,5})?");
 					char[][] matches = re.exec(address);
 					if(!matches.length || matches[0].length != address.length) {
 						error("Invalid address");
-						pwdText_.setFocus();
-						pwdText_.selectAll();
+						addressText_.setFocus();
+						addressText_.selectAll();
 						closeDialog = false;
 					}
 					else {
@@ -274,8 +277,8 @@ class SpecifyServerDialog {
 
 	int open()
 	{
-		pwdText_.setText(address);
-		pwdText_.selectAll();
+		addressText_.setText(address);
+		addressText_.selectAll();
 		shell_.open();
 		while (!shell_.isDisposed()) {
 			if (!display.readAndDispatch()) {
@@ -288,7 +291,7 @@ class SpecifyServerDialog {
 private:
 	Shell parent_, shell_;
 	Button okButton_, cancelButton_, saveButton_;
-	Text pwdText_;
+	Text addressText_;
 	int result_ = DWT.CANCEL;
 }
 
