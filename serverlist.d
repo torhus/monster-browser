@@ -535,7 +535,7 @@ private:
  */
 bool setActiveServerList(char[] modName)
 {
-	bool _return;
+	bool retval;
 	bool saved_hasHumans = false, saved_notEmpty = false;
 
 	// hack to get the correct filtering set up for the new list,
@@ -547,12 +547,12 @@ bool setActiveServerList(char[] modName)
 
 	if (ServerList* slist = modName in serverLists) {
 		activeServerList = *slist;
-		_return = slist.complete;
+		retval = slist.complete;
 	}
 	else {
 		activeServerList = new ServerList;
 		serverLists[modName] = activeServerList;
-		_return = false;
+		retval = false;
 	}
 
 	activeServerList.filters_.notEmpty = saved_notEmpty;
@@ -567,7 +567,7 @@ bool setActiveServerList(char[] modName)
 	                      (serverTable.getTable.getSortDirection() == DWT.DOWN));
 	}
 
-	return _return;
+	return retval;
 }
 
 ServerList getActiveServerList() { return activeServerList; }
@@ -659,13 +659,6 @@ void getNewList()
 	getActiveServerList.clear();
 	serverTable.refresh();
 
-	/*getActiveServerList.filterNotEmpty(saved_notEmpty);
-	getActiveServerList.filterHasHumans(saved_hasHumans);
-
-	auto sortCol = serverTable.getTable.getSortColumn();
-	getActiveServerList.sort(serverTable.getTable.indexOf(sortCol),
-	                      (serverTable.getTable.getSortDirection() == DWT.DOWN));*/
-
 	fullCollect();
 	statusBar.setLeft("Getting new server list...");
 	serverThread = new Thread(&f);
@@ -721,15 +714,6 @@ void refreshList()
 	         std.string.toString(countServersInRefreshList()) ~ " servers...");
 	getActiveServerList.clear();
 	serverTable.refresh();
-
-	//getActiveServerList.filterNotEmpty(saved_notEmpty);
-	//getActiveServerList.filterHasHumans(saved_hasHumans);
-	//getActiveServerList.filters_.notEmpty = saved_notEmpty;
-	//getActiveServerList.filters_.hasHumans = saved_hasHumans;
-
-	/*auto sortCol = serverTable.getTable.getSortColumn();
-	getActiveServerList.sort(serverTable.getTable.indexOf(sortCol),
-	                      (serverTable.getTable.getSortDirection() == DWT.DOWN));*/
 
 	fullCollect();
 	serverThread = new Thread(&f);
