@@ -70,6 +70,12 @@ void messageBox(char[] title, int style, TypeInfo[] arguments, void* argptr)
 }
 
 
+void info(...)
+{
+	messageBox(APPNAME, DWT.ICON_INFORMATION, _arguments, _argptr);
+}
+
+
 void warning(...)
 {
 	messageBox("Warning", DWT.ICON_WARNING, _arguments, _argptr);
