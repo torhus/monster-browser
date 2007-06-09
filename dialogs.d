@@ -257,11 +257,20 @@ class SpecifyServerDialog {
 						closeDialog = false;
 					}
 					else {
-						if (saveButton_.getSelection()) {
-							append(activeMod.extraServersFile, address ~ newline);
-							// FIXME: error check here (FileException)
+						if (getActiveServerList.getIndex(address) == -1) {
+							if (saveButton_.getSelection()) {
+								append(activeMod.extraServersFile, address ~ newline);
+								// FIXME: error check here (FileException)
+							}
+							queryAndAddServer(address);
 						}
-						queryAndAddServer(address);
+						else {
+							info("That server is already on the list.  If you can't see it, "
+							        "try turning off the filters.");
+							int i = getActiveServerList.getFilteredIndex(address);
+							if (i != -1)
+								serverTable.reset(new IntWrapper(i));
+						}
 					}
 				}
 

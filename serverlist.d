@@ -188,6 +188,27 @@ class ServerList
 
 
 	/**
+	 * Given the IP and port number, find a server in the full list.
+	 *
+	 * Does a linear search.
+	 *
+	 * Returns: the server's index, or -1 if not found.
+	 */
+	synchronized
+	int getIndex(char[] ipAndPort)
+	{
+		if (!ipAndPort)
+			return -1;
+
+		foreach (int i, inout ServerData sd; list) {
+			if (sd.server[ServerColumn.ADDRESS] == ipAndPort)
+				return i;
+		}
+		return -1;
+	}
+
+
+	/**
 	 * Given the IP and port number, find a server in the filtered list.
 	 *
 	 * Does a linear search.
