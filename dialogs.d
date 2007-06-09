@@ -250,7 +250,7 @@ class SpecifyServerDialog {
 					// validate address
 					RegExp re = new RegExp(r"(\d{1,3}\.){3}\d{1,3}(:\d{1,5})?");
 					char[][] matches = re.exec(address);
-					if(!matches.length || matches[0].length != address.length) {
+					if(matches.length == 0 || matches[0].length != address.length) {
 						error("Invalid address");
 						addressText_.setFocus();
 						addressText_.selectAll();
