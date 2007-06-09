@@ -250,6 +250,24 @@ class ServerList
 
 
 	/**
+	 * Add an extra server to be included when doing a refresh.
+	 *
+	 * Useful for servers that are not on the master server's list.  Multiple
+	 * servers can be added this way.
+	 */
+	void addExtraServer(in char[] address)
+	{
+		// FIXME: avoid adding a server twice
+		extraServers_ ~= address;
+	}
+
+
+	/// Returns the list of extra servers.  Please don't change it.
+	// FIXME: This should probably return a const ref in D 2.0.
+	char[][] extraServers() { return extraServers_; }
+
+
+	/**
 	 * Sort the full list, then update the filtered list.
 	 *
 	 * Uses the previously selected _sort order, or the default
@@ -309,6 +327,7 @@ class ServerList
 private:
 	ServerData[] list;
 	ServerData*[] filteredList;
+	char[][] extraServers_;
 
 	int sortColumn_ = ServerColumn.NAME;
 	int oldSortColumn_ = -1;

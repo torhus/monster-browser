@@ -262,6 +262,7 @@ class SpecifyServerDialog {
 								append(activeMod.extraServersFile, address ~ newline);
 								// FIXME: error check here (FileException)
 							}
+							getActiveServerList.addExtraServer(address);
 							queryAndAddServer(address);
 						}
 						else {
