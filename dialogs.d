@@ -4,7 +4,6 @@ module dialogs;
 
 private {
 	import std.file;
-	import std.regexp;
 	import std.string;
 
 	import dwt.all;
@@ -197,10 +196,6 @@ class SpecifyServerDialog {
 		shell_.setLayout(topLayout);
 		shell_.setText("Specify Server");
 
-		// command line
-		//Label labelA = new Label(shell_, DWT.NONE);
-		//labelA.setText("Join \"" ~ serverName ~ "\"\n\n" ~ message ~ "\n");
-
 		// address input
 		Composite addressComposite = new Composite(shell_, DWT.NONE);
 		GridData addressData = new GridData();
@@ -210,19 +205,15 @@ class SpecifyServerDialog {
 		auto addressLayout = new GridLayout();
 		addressComposite.setLayout(addressLayout);
 		Label labelB = new Label(addressComposite, DWT.NONE);
-		//Label labelB = new Label(shell_, DWT.NONE);
 		labelB.setText("Address (123.123.123.123 or 123.123.123.123:12345):");
 		addressText_ = new Text(addressComposite, DWT.SINGLE | DWT.BORDER);
-		//pwdText_ = new Text(shell_, DWT.SINGLE | DWT.BORDER);
-		auto addressTextData = new GridData(/*GridData.HORIZONTAL_ALIGN_FILL*/);
+		auto addressTextData = new GridData();
 		addressTextData.horizontalAlignment = GridData.CENTER;
-		//labelB.setLayoutData(data);
-		//adressTextData.minimumWidth = 200;
 		addressTextData.widthHint = 140;
 		addressText_.setLayoutData(addressTextData);
 
 		saveButton_ = new Button (shell_, DWT.CHECK);
-		saveButton_.setText("Save server on file");
+		saveButton_.setText("Save server on file ('" ~ activeMod.extraServersFile ~ "')");
 
 		// main buttons
 		Composite buttonComposite = new Composite(shell_, DWT.NONE);
@@ -247,10 +238,7 @@ class SpecifyServerDialog {
 					result_ = DWT.OK;
 					address = addressText_.getText;
 
-					// validate address
-					RegExp re = new RegExp(r"(\d{1,3}\.){3}\d{1,3}(:\d{1,5})?");
-					char[][] matches = re.exec(address);
-					if(matches.length == 0 || matches[0].length != address.length) {
+					if (!isValidIpAddress(address)) {
 						error("Invalid address");
 						addressText_.setFocus();
 						addressText_.selectAll();
