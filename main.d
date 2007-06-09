@@ -71,6 +71,7 @@ void main() {
 		// restore saved size and state
 		char[] size = getSetting("windowSize");
 		int pos = std.string.find(size, 'x');
+		// FIXME: ArrayBoundsError if 'x' wasn't found
 		mainWindow.setSize(toInt(size[0..pos]), toInt(size[pos+1..length]));
 		if (getSetting("windowMaximized") == "true") {
 			mainWindow.setMaximized(true);

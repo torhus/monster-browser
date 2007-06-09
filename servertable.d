@@ -115,7 +115,7 @@ class ServerTable
 			table_.setItemCount(getActiveServerList.filteredLength);
 	}*/
 
-	void reset(Object dummy = null)
+	void reset(Object index = null)
 	{
 		if(table_.isDisposed())
 			return;
@@ -125,8 +125,17 @@ class ServerTable
 			statusBar.setDefaultStatus(getActiveServerList.length,
 			                           getActiveServerList.filteredLength);
 		}
-		assert(selectedIp_);
-		int i = getActiveServerList.getFilteredIndex(selectedIp_);
+
+		int i;
+		if (index !is null) {
+			i = (cast(IntWrapper)index).value;
+		}
+		else {
+			// Keep the same server selected.
+			assert(selectedIp_);
+			i = getActiveServerList.getFilteredIndex(selectedIp_);
+		}
+
 		if (i != -1) {
 			table_.setSelection(i);
 			playerTable.setSelectedServer(i);
@@ -146,7 +155,7 @@ class ServerTable
 
 		if (index) {
 			int selected = table_.getSelectionIndex();
-			int i = (cast(IntWrapper) index).value;
+			int i = (cast(IntWrapper)index).value;
 
 			if (i <= getBottomIndex() /*&& i >= table_.getTopIndex()*/) {
 				table_.clearAll();

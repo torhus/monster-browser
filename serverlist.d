@@ -618,23 +618,14 @@ void loadSavedList()
  */
 void queryAndAddServer(in char[] address)
 {
-	static char[] total;
 	static char[] addressCopy;
 
 	int f()
 	{
-		void status(Object int_count)
-		{
-			statusBar.setLeft("Refreshing " ~  total ~ " servers..." ~
-			          std.string.toString((cast(IntWrapper) int_count).value));
-		}
-
 		void done(Object)
 		{
 			if (getActiveServerList.length() > 0) {
-				serverTable.reset();
-				// FIXME: selection not working
-				serverTable.refresh(new IntWrapper(
+				serverTable.reset(new IntWrapper(
 				                       getActiveServerList.getFilteredIndex(addressCopy)));
 			}
 			else {
@@ -643,10 +634,8 @@ void queryAndAddServer(in char[] address)
 		}
 
 		try {
-			//total = std.string.toString(countServersInRefreshList());
-			browserRefreshList(&status, false);
-			// FIXME: only needed because ServerList._insertSorted() is
-			// unreliable
+			browserRefreshList(delegate void(Object) { }, false);
+			// FIXME: only needed because ServerList._insertSorted() is unreliable
 			getActiveServerList.sort();
 			volatile if (!parselist.abortParsing) {
 				display.asyncExec(null, &done);
@@ -661,19 +650,12 @@ void queryAndAddServer(in char[] address)
 	assert(serverThread is null ||
 	                   serverThread.getState() == Thread.TS.TERMINATED);
 
-	//if (!exists(REFRESHFILE)) {
-		//qstat.saveRefreshList();
-	//}
 	write(REFRESHFILE, address ~ newline);
 
 	addressCopy = address.dup;
-	total = std.string.toString(countServersInRefreshList());
 
-	statusBar.setLeft("Refreshing " ~ total ~ " servers...");
-	//getActiveServerList.clear();
-	//serverTable.refresh();
+	statusBar.setLeft("Querying server...");
 
-	//fullCollect();
 	serverThread = new Thread(&f);
 	serverThread.start();
 }
@@ -704,8 +686,7 @@ void getNewList()
 			                        } );
 
 				browserRefreshList(&status, true, true);
-				// FIXME: only needed because ServerList._insertSorted() is
-				// unreliable
+				// FIXME: only needed because ServerList._insertSorted() is unreliable
 				getActiveServerList.sort();
 				volatile if (!parselist.abortParsing) {
 					display.asyncExec(null, delegate void (Object o) {
@@ -761,8 +742,7 @@ void refreshList()
 		try {
 			total = std.string.toString(countServersInRefreshList());
 			browserRefreshList(&status);
-			// FIXME: only needed because ServerList._insertSorted() is
-			// unreliable
+			// FIXME: only needed because ServerList._insertSorted() is unreliable
 			getActiveServerList.sort();
 			volatile if (!parselist.abortParsing) {
 				display.asyncExec(null, &done);
