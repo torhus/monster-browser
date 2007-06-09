@@ -271,6 +271,10 @@ void saveRefreshList()
 		filterServerFile(activeMod.serverFile, REFRESHFILE);
 	}
 
+	foreach (address; getActiveServerList.extraServers) {
+		append(REFRESHFILE, address ~ newline);
+	}
+
 	/*scope BufferedFile f = new BufferedFile(parselist.REFRESHFILE, FileMode.OutNew);
 	scope(exit) f.close();
 
