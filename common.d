@@ -1,16 +1,18 @@
 module common;
 
 private {
-	import std.stdio;
-	import std.format;
 	import std.date;
-	import std.utf;
 	import std.file;
+	import std.format;
+	import std.regexp;
+	import std.stdio;
 	import std.stream;
-	import std.c.stdlib;
+	import std.utf;
 	import std.c.stdio;
+	import std.c.stdlib;
 
 	import dwt.all;
+
 	import main;
 }
 
@@ -29,7 +31,7 @@ debug {
 }
 else {
 	//const char[] VERSION = "- " ~ __DATE__ ;
-	const char[] VERSION = "0.3b";
+	const char[] VERSION = "0.3c";
 }
 
 private {
@@ -127,8 +129,23 @@ public:
 	int value;
 }
 
+
 /**
- * Find a string in an array of strings, ignoring case differences.
+ * Check if address is a valid IP _address, with or without a port number.
+ *
+ * No garbage at the beginning or end of the string is allowed.
+ */
+bool isValidIpAddress(in char[] address)
+{
+	RegExp re = new RegExp(r"(\d{1,3}\.){3}\d{1,3}(:\d{1,5})?");
+
+	char[][] matches = re.exec(address);
+	return (matches.length != 0 && matches[0].length == address.length);
+}
+
+
+/**
+ * Find a string in an _array of strings, ignoring case differences.
  *
  * Does a linear search.
  *
@@ -145,8 +162,8 @@ int findString(char[][] array, char[] str)
 }
 
 /**
- * Like the above findString, but search in a given column of a
- * 3-dimensional array.
+ * Like the above findString, but search in a given _column of a
+ * 3-dimensional _array.
  */
 int findString(char[][][] array, char[] str, int column)
 {
