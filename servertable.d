@@ -61,8 +61,8 @@ class ServerTable
 				selectedIp_ = getActiveServerList.getFiltered(i).server[ServerColumn.ADDRESS];
 				playerTable.setSelectedServer(i);
 				cvarTable.setItems(getActiveServerList.getFiltered(i).cvars);
-
 			}
+
 			void widgetDefaultSelected(SelectionEvent e)
 			{
 				widgetSelected(e);
