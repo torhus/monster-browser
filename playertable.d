@@ -146,7 +146,7 @@ private:
 	    else {  // numerical sort
 		    sortStringArrayStable(
 		                  getActiveServerList.getFiltered(selectedServerIndex_).players,
-		                  sortCol, (dir == DWT.UP) ? true : false, true);
+		                  sortCol, (dir == DWT.DOWN) ? false : true, true);
 		}
 	}
 
