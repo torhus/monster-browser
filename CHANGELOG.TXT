@@ -1,9 +1,9 @@
-Latest:
--------
+v0.3c - 2007-06-10
+------------------
 - New: Added 'Specify...' button that lets you add extra servers to the list.
 - New: Read extra servers from '<modname>.extra' file.
-- Fix: Player score sort order got messed up if you clicked on the server again.
 - Fix: Don't overwrite important status bar messages with less important ones.
+- Fix: Player score sort order got messed up if you clicked on the server again.
 
 v0.3b - 2007-06-02
 ------------------

@@ -141,6 +141,19 @@ void browserLoadSavedList(void delegate(Object) callback)
 void browserRefreshList(void delegate(Object) callback,
                         bool extraServers=true, bool saveList=false)
 {
+	if (extraServers) {
+		scope BufferedFile f = new BufferedFile(REFRESHFILE, FileMode.Append);
+
+		foreach (address; getActiveServerList.extraServers)
+			f.writeLine(address);
+
+		f.close();
+
+		char[] extraServersFile = activeMod.extraServersFile();
+		if (exists(extraServersFile))
+			append(REFRESHFILE, read(extraServersFile));
+	}
+
 	//log("browserRefreshList():");
 	proc = new Process();
 
@@ -160,13 +173,6 @@ void browserRefreshList(void delegate(Object) callback,
 	}
 
 	try {
-		if (extraServers) {
-			char[] extraServersFile = activeMod.extraServersFile();
-
-			if (exists(extraServersFile))
-				append(REFRESHFILE, read(extraServersFile));
-		}
-
 		char[] tmpfile = saveList ? "servers.tmp" : null;
 		qstat.parseOutput(callback, &proc.readLine, null, tmpfile);
 	}
