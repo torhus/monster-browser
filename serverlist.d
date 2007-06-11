@@ -734,13 +734,11 @@ void getNewList()
 					                        } );
 				}
 			}
-
-			qstat.saveRefreshList();
-
 		}
 		catch(Exception e) {
 			logx(__FILE__, __LINE__, e);
 		}
+
 		return 0;
 	}
 
