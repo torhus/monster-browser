@@ -1,6 +1,4 @@
-
-- Add the ability to check servers not registered with a master server.
-  See: http://www.westernquake3.net/main/viewtopic.php?p=8331#8329
+- Keep the same server selected when changing the sort order.
 
 - Make it work with the new World of Padman master, master.kickchat.com.
 
