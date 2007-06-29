@@ -5,15 +5,16 @@ pick up, due to its similarity to C/C++ and Java.
 Useful links
 ------------
 D compiler:
-http://ftp.digitalmars.com/dmd.1.009.zip
+http://ftp.digitalmars.com/dmd.1.017.zip
 Versions 0.174 to 1.0 should work.
 Versions 1.001 to 1.006 do not work properly with DWT apps.
 Versions 1.007 and 1.009 work.
-Versions 1.010 through 1.014 do not work.
+Versions 1.010 through 1.016 have not been tested, but will probably work.
+Version 1.017 works.
 
 D docs:
-Language: http://www.digitalmars.com/d/lex.html
-Standard library: http://www.digitalmars.com/d/phobos/phobos.html
+Language: http://www.digitalmars.com/d/1.0/lex.html
+Standard library: http://www.digitalmars.com/d/1.0/phobos/phobos.html
 http://www.prowiki.org/wiki4d/wiki.cgi?LanguageSpecification/KeywordIndex
 http://www.prowiki.org/wiki4d/wiki.cgi?FaqRoadmap
 
@@ -36,12 +37,12 @@ DWT  GUI library (included in the source download):
 http://www.dsource.org/projects/dwt
 http://help.eclipse.org/help30/nftopic/org.eclipse.platform.doc.isv/reference/api/org/eclipse/swt/widgets/package-tree.html
 There's also a DWT news group on news.digitalmars.com.
-The included version works with dmd 1.0 and Build 3.04, the official version
+The included version works with dmd 1.017 and Build 3.04, the official version
 doesn't.
 
 DWT is a D port of IBM's SWT for Java.  Unfortunately, it still only runs on
 Windows.  I'm hoping that someone will start working on Linux and Mac ports
-sometime.  But as of April 2007, the project seems to be dead.  However,
+sometime.  But as of June 2007, the project seems to be dead.  However,
 another SWT port (dsource.org/projects/tioport) is progressing quickly.
 
 DWT is based on SWT 3.0.  However, some of the 3.1 API also seems to be
