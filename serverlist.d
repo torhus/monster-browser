@@ -18,6 +18,9 @@ private {
 }
 
 
+/// Bitflags.
+enum Filter { NONE = 0, HAS_HUMANS = 1, NOT_EMPTY = 2 }
+
 const char[][] defaultGameTypes = ["FFA", "1v1", "SP", "TDM", "CTF",
                                    /* "OFCTF", "Overload", "Harvester", */
                                   ];
@@ -292,32 +295,22 @@ class ServerList
 	}
 
 
-	/** Filter Controls */
-	void filterNotEmpty(bool enable)
+	/// Sets filters and updates the list accordingly.
+	void setFilters(Filter newFilters)
 	{
-		if (enable == filters_.notEmpty)
+		if (newFilters == filters_)
 			return;
 
 		synchronized {
-			filters_.notEmpty = enable;
+			filters_ = newFilters;
 			updateFilteredList();
 		}
 		display.asyncExec(null, &serverTable.reset);
 	}
 
+	Filter getFilters() { return filters_; }
 
-	/// ditto
-	void filterHasHumans(bool enable)
-	{
-		if (enable == filters_.hasHumans)
-			return;
 
-		synchronized {
-			filters_.hasHumans = enable;
-			updateFilteredList();
-		}
-		display.asyncExec(null, &serverTable.reset);
-	}
 
 /***********************************************************************
  *                                                                     *
@@ -334,11 +327,7 @@ private:
 	bool reversed_ = false;
 	bool isSorted_= false;
 
-	struct Filters {
-		bool notEmpty = false;
-		bool hasHumans = false;
-	};
-	Filters filters_;
+	Filter filters_ = Filter.NONE;
 
 	synchronized invariant
 	{
@@ -347,12 +336,11 @@ private:
 			              "\nlist.length == ", list.length);
 			assert(0);
 		}
-		if (!(filters_.hasHumans || filters_.notEmpty ||
-		           filteredList.length == list.length ||
-		           filteredList.length == (list.length - 1))) {
+		if (!(filters_ || filteredList.length == list.length ||
+		                  filteredList.length == (list.length - 1))) {
 			error("ServerList invariant broken!\n",
-			              "\nfilters_.hasHumans: ", filters_.hasHumans,
-			              "\nfilters_.notEmpty: ", filters_.notEmpty,
+			              "\nfilters_ & Filter.HAS_HUMANS: ", filters_ & Filter.HAS_HUMANS,
+			              "\nfilters_ & Filter.NOT_EMPTY: ", filters_ & Filter.NOT_EMPTY,
 			              "\nlist.length: ", list.length,
 			              "\nfilteredList.length: ", filteredList.length);
 			assert(0);
@@ -496,11 +484,11 @@ private:
 
 	bool isFilteredOut(ServerData* sd)
 	{
-		if (!(filters_.hasHumans || filters_.notEmpty))
+		if (filters_ == 0)
 			return false;
-		if (filters_.hasHumans && !sd.hasHumans)
+		if (filters_ & Filter.HAS_HUMANS && !sd.hasHumans)
 			return true;
-		if (filters_.notEmpty && !(sd.hasHumans || sd.hasBots))
+		if (filters_ & Filter.NOT_EMPTY && !(sd.hasHumans || sd.hasBots))
 			return true;
 
 		return false;
@@ -518,14 +506,14 @@ private:
 			_sort();
 		}
 		filteredList.length = 0;
-		if (filters_.hasHumans) {
+		if (filters_ & Filter.HAS_HUMANS) {
 			for (size_t i = 0; i < list.length; i++) {
 				if (list[i].hasHumans) {
 					filteredList ~= &list[i];
 				}
 			}
 		}
-		else if (filters_.notEmpty) {
+		else if (filters_ & Filter.NOT_EMPTY) {
 			for (size_t i = 0; i < list.length; i++) {
 				if (list[i].hasBots || list[i].hasHumans) {
 					filteredList ~= &list[i];
@@ -576,13 +564,12 @@ private:
 bool setActiveServerList(char[] modName)
 {
 	bool retval;
-	bool saved_hasHumans = false, saved_notEmpty = false;
+	Filter saved_filters;
 
 	// hack to get the correct filtering set up for the new list,
 	// save the old one here for later use
 	if (activeServerList !is null) {
-		saved_hasHumans = activeServerList.filters_.hasHumans;
-		saved_notEmpty = activeServerList.filters_.notEmpty;
+		saved_filters = activeServerList.filters_;
 	}
 
 	if (ServerList* slist = modName in serverLists) {
@@ -595,11 +582,7 @@ bool setActiveServerList(char[] modName)
 		retval = false;
 	}
 
-	activeServerList.filters_.notEmpty = saved_notEmpty;
-	activeServerList.filters_.hasHumans = saved_hasHumans;
-
-	// to avoid triggering the invariant later
-	activeServerList.updateFilteredList();
+	activeServerList.filters_ = saved_filters;
 
 	auto sortCol = serverTable.getTable.getSortColumn();
 	synchronized (activeServerList) {
