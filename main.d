@@ -263,11 +263,18 @@ class FilterBar : Composite
 		button1_.addSelectionListener(new class SelectionAdapter {
 			public void widgetSelected(SelectionEvent e)
 			{
+				ServerList list = getActiveServerList();
+				bool notEmpty = button1_.getSelection() != 0;
+
 				if (button1_.getSelection()) {
 					button2_.setSelection(false);
-					getActiveServerList.filterHasHumans(false);
+					list.setFilters(list.getFilters() & ~Filter.HAS_HUMANS);
 				}
-				getActiveServerList.filterNotEmpty(button1_.getSelection() != 0);
+
+				if (notEmpty)
+					list.setFilters(list.getFilters() | Filter.NOT_EMPTY);
+				else
+					list.setFilters(list.getFilters() & ~Filter.NOT_EMPTY);
 			}
 		});
 
@@ -276,8 +283,14 @@ class FilterBar : Composite
 		button2_.addSelectionListener(new class SelectionAdapter {
 			public void widgetSelected(SelectionEvent e)
 			{
-				getActiveServerList.filterHasHumans(cast(bool) (cast(Button) e.widget).
-				                                               getSelection());
+				ServerList list = getActiveServerList();
+				bool hasHumans = button2_.getSelection() != 0;
+
+				if (hasHumans)
+					list.setFilters(list.getFilters() | Filter.HAS_HUMANS);
+				else
+					list.setFilters(list.getFilters() & ~Filter.HAS_HUMANS);
+
 			}
 		});
 
