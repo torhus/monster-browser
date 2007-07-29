@@ -201,7 +201,7 @@ void sortStringArray(char[][][] arr, int sortColumn=0, bool reverse=false,
 	_reverse = reverse;
 	_numeric = numeric;
 
-	qsort(arr.ptr, arr.length, arr.sizeof, &cmp);
+	qsort(arr.ptr, arr.length, arr[0].sizeof, &cmp);
 }
 
 
