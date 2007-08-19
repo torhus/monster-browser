@@ -456,6 +456,19 @@ private:
 			}
 		}
 
+		debug {
+			auto fL = filteredList;
+			auto i = index;
+
+			if (!((i == 0 || less(fL[i-1], fL[i])) &&
+			      (i == (fL.length - 1)	 || less(fL[i], fL[i + 1])))) {
+				db("_insertSorted, index = " ~ .toString(i) ~ "\n" ~
+				   "i-1:" ~ (i > 0 ? fL[i-1].server[ServerColumn.NAME]  : "START") ~ "\n" ~
+				   "i:  " ~ fL[i].server[ServerColumn.NAME] ~ "\n" ~
+				   "i+1:" ~ (i < (fL.length - 1) ? fL[i+1].server[ServerColumn.NAME] : "END"));
+			}
+		}
+
 		return index;
 	}
 
@@ -659,7 +672,7 @@ void queryAndAddServer(in char[] address)
 		try {
 			browserRefreshList(delegate void(Object) { }, false);
 			// FIXME: only needed because ServerList._insertSorted() is unreliable
-			getActiveServerList.sort();
+			//getActiveServerList.sort();
 			volatile if (!parselist.abortParsing) {
 				display.asyncExec(null, &done);
 			}
@@ -710,7 +723,7 @@ void getNewList()
 
 				browserRefreshList(&status, true, true);
 				// FIXME: only needed because ServerList._insertSorted() is unreliable
-				getActiveServerList.sort();
+				//getActiveServerList.sort();
 				volatile if (!parselist.abortParsing) {
 					display.asyncExec(null, delegate void (Object o) {
 					                            serverTable.reset();
@@ -764,7 +777,7 @@ void refreshList()
 			total = std.string.toString(countServersInRefreshList());
 			browserRefreshList(&status);
 			// FIXME: only needed because ServerList._insertSorted() is unreliable
-			getActiveServerList.sort();
+			//getActiveServerList.sort();
 			volatile if (!parselist.abortParsing) {
 				display.asyncExec(null, &done);
 			}
