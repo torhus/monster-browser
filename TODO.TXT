@@ -4,8 +4,6 @@
 
 - Fix baseq3 server list when using gslist.
 
-- ServerList._insertSorted() doesn't always sort right.
-
 - Implement some kind of server monitoring.
 
 - Give sensible errors messages in case of connection problems etc.
