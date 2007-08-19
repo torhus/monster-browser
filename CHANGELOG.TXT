@@ -1,3 +1,5 @@
+- Fix: Corrected incremental sort.
+
 v0.3c - 2007-06-10
 ------------------
 - New: Added 'Specify...' button that lets you add extra servers to the list.

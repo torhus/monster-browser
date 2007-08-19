@@ -392,25 +392,15 @@ private:
 			return (*a >= *b);
 		}
 
-		int index;
+		size_t index;
 
 		if (filteredList.length == 0) {
 			index = filteredList.length;
 			appendToFiltered(sd);
 		}
-		else if (filteredList.length == 1) {
-			if (less(sd, filteredList[0])) {
-				index = 0;
-				insertInFiltered(0, sd);
-			}
-			else {
-				index = filteredList.length;
-				appendToFiltered(sd);
-			}
-		}
 		else {
-			int i = filteredList.length / 2;
-			int delta = i;
+			size_t i = filteredList.length / 2;
+			size_t delta = i;
 			if (delta < 1) delta = 1;
 			for (;;) {
 				if (delta > 1) {
@@ -432,22 +422,15 @@ private:
 					}
 				}
 				else {
-					assert(i <= filteredList.length);
 					if (i == filteredList.length - 1) {
 						index = filteredList.length;
 						appendToFiltered(sd);
 						break;
 					}
-					else if (i == filteredList.length - 2) {
-						if (greaterOrEq(sd, filteredList[i])) {
-							index = filteredList.length;
-							appendToFiltered(sd);
-						}
-						else {
-							index = i;
-							insertInFiltered(i, sd);
-						}
-						break;
+					else if (less(sd, filteredList[i+1])) {
+							insertInFiltered(i+1, sd);
+							index = i+1;
+							break;
 					}
 					else {
 						i += delta;
@@ -460,9 +443,10 @@ private:
 			auto fL = filteredList;
 			auto i = index;
 
-			if (!((i == 0 || less(fL[i-1], fL[i])) &&
+			if (!((i == 0 || greaterOrEq(fL[i], fL[i-1])) &&
 			      (i == (fL.length - 1)	 || less(fL[i], fL[i + 1])))) {
 				db("_insertSorted, index = " ~ .toString(i) ~ "\n" ~
+				   "new: " ~ sd.server[ServerColumn.NAME] ~ "\n" ~
 				   "i-1:" ~ (i > 0 ? fL[i-1].server[ServerColumn.NAME]  : "START") ~ "\n" ~
 				   "i:  " ~ fL[i].server[ServerColumn.NAME] ~ "\n" ~
 				   "i+1:" ~ (i < (fL.length - 1) ? fL[i+1].server[ServerColumn.NAME] : "END"));
@@ -621,9 +605,6 @@ void loadSavedList()
 
 		try {
 			browserLoadSavedList(&callback);
-			// FIXME: only needed because ServerList._insertSorted() is
-			// unreliable
-			getActiveServerList.sort();
 			volatile if (!parselist.abortParsing) {
 				display.asyncExec(null, delegate void (Object o) {
 				                            serverTable.reset();
@@ -671,8 +652,6 @@ void queryAndAddServer(in char[] address)
 
 		try {
 			browserRefreshList(delegate void(Object) { }, false);
-			// FIXME: only needed because ServerList._insertSorted() is unreliable
-			//getActiveServerList.sort();
 			volatile if (!parselist.abortParsing) {
 				display.asyncExec(null, &done);
 			}
@@ -722,8 +701,6 @@ void getNewList()
 			                        } );
 
 				browserRefreshList(&status, true, true);
-				// FIXME: only needed because ServerList._insertSorted() is unreliable
-				//getActiveServerList.sort();
 				volatile if (!parselist.abortParsing) {
 					display.asyncExec(null, delegate void (Object o) {
 					                            serverTable.reset();
@@ -776,8 +753,6 @@ void refreshList()
 		try {
 			total = std.string.toString(countServersInRefreshList());
 			browserRefreshList(&status);
-			// FIXME: only needed because ServerList._insertSorted() is unreliable
-			//getActiveServerList.sort();
 			volatile if (!parselist.abortParsing) {
 				display.asyncExec(null, &done);
 			}
