@@ -121,7 +121,7 @@ class ServerTable
 			return;
 
 		refresh();
-		volatile if (!parselist.abortParsing && getActiveServerList.complete) {
+		volatile if (!runtools.abortParsing && getActiveServerList.complete) {
 			statusBar.setDefaultStatus(getActiveServerList.length,
 			                           getActiveServerList.filteredLength);
 		}
