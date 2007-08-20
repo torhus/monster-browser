@@ -8,7 +8,7 @@ private {
 	import common;
 	import dialogs;
 	import main;
-	import serverlist;
+	import serveractions;
 }
 
 private Shell shell;

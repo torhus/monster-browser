@@ -10,6 +10,7 @@ private {
 
 	import common;
 	import main;
+	import serveractions;
 	import serverlist;
 	import settings;
 }

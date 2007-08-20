@@ -9,7 +9,7 @@ private {
 	import std.conv;
 
 	import common;
-	import parselist;
+	import runtools;
 	import serverlist;
 	import servertable;
 	import main;
@@ -275,7 +275,7 @@ void saveRefreshList()
 		append(REFRESHFILE, address ~ newline);
 	}*/
 
-	/*scope BufferedFile f = new BufferedFile(parselist.REFRESHFILE, FileMode.OutNew);
+	/*scope BufferedFile f = new BufferedFile(runtools.REFRESHFILE, FileMode.OutNew);
 	scope(exit) f.close();
 
 	foreach (ServerData sd; getActiveServerList) {
@@ -295,10 +295,10 @@ void saveRefreshList()
  */
 int countServersInRefreshList()
 {
-	if (!exists(parselist.REFRESHFILE))
+	if (!exists(runtools.REFRESHFILE))
 		return 0;
 
-	scope BufferedFile f = new BufferedFile(parselist.REFRESHFILE);
+	scope BufferedFile f = new BufferedFile(runtools.REFRESHFILE);
 	scope(exit) f.close();
 
 	int count = 0;

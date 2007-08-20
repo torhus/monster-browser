@@ -8,8 +8,9 @@ private {
 	import std.conv;
 
 	import dwt.all;
-	import parselist;
+	import runtools;
 	import qstat;
+	import serveractions;
 	import serverlist;
 	import link;
 	import servertable;
@@ -165,14 +166,14 @@ void main() {
 		mainWindow.addShellListener(new class ShellAdapter {
 			public void shellClosed(ShellEvent e)
 			{
-				volatile parselist.abortParsing = true;
+				volatile runtools.abortParsing = true;
 				statusBar.setLeft("Saving settings...");
 				log("Saving settings...");
 				saveSettings();
 				statusBar.setLeft("Exiting...");
 				log("Exiting...");
 				log("Killing server browser...");
-				parselist.killServerBrowser();
+				runtools.killServerBrowser();
 				//qstat.SaveRefreshList();
 				/*log("Waiting for threads to terminate...");
 				foreach (int i, Thread t; Thread.getAll()) {
