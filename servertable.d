@@ -95,6 +95,12 @@ class ServerTable
 					table_.clearAll();
 					table_.setItemCount(getActiveServerList.filteredLength());
 				}
+
+				// keep the same server selected
+				int i = getActiveServerList.getFilteredIndex(selectedIp_);
+				if (i != -1)
+					table_.setSelection(i);
+
 			}
 		};
 
