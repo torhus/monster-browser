@@ -1,5 +1,3 @@
-- Keep the same server selected when changing the sort order.
-
 - Make it work with the new World of Padman master, master.kickchat.com.
 
 - Fix baseq3 server list when using gslist.
@@ -11,13 +9,6 @@
 - Show in the status bar how many servers didn't reply during a refresh.  ASE
   doesn't do that, so you need to turn off the filters to see if everything is
   ok, or if there was a connection problem etc.
-
-- Keep the same server(s) selected when new servers are added to the list during
-  a refresh.
-  - Could maybe have ServerTable save a list of pointers to the ServerData
-    structs for the currently selected servers, and then add a function to
-    ServerList that returns the index of the server in filteredList, based on
-    the pointer, or address field of the server.
 
 - DMD doesn't generate docs for all files, including serverlist.d.
 

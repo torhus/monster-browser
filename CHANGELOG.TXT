@@ -1,4 +1,5 @@
 - Fix: Corrected incremental sort.
+- Fix: Keep the same server selected when changing the sort order or column.
 
 v0.3c - 2007-06-10
 ------------------
