@@ -49,7 +49,7 @@ int browserGetNewList()
 	proc = new Process();
 
 	// bug workaround
-	for(int i = 0; _environ[i]; i++) {
+	for (int i = 0; _environ[i]; i++) {
 		proc.addEnv(std.string.toString(_environ[i]).dup);
 	}
 
@@ -158,7 +158,7 @@ void browserRefreshList(void delegate(Object) callback,
 	proc = new Process();
 
 	// bug workaround
-	for(int i = 0; _environ[i]; i++) {
+	for (int i = 0; _environ[i]; i++) {
 		proc.addEnv(std.string.toString(_environ[i]).dup);
 	}
 

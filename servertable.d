@@ -24,9 +24,9 @@ class ServerTable
 		table_.setHeaderVisible(true);
 		table_.setLinesVisible(true);
 
-		for (int i = 0; i < serverHeaders.length; i++) {
+		foreach (header; serverHeaders) {
 			TableColumn column = new TableColumn(table_, DWT.NONE);
-			column.setText(serverHeaders[i]);
+			column.setText(header);
 		}
 
 		table_.getColumn(ServerColumn.PASSWORDED).setAlignment(DWT.CENTER);
