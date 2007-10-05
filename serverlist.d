@@ -373,8 +373,6 @@ private:
 
 	/**
 	 * Insert a server in sorted order in the filtered list.
-	 *
-	 *  FIXME: doesn't always sort right.
 	 */
 	int _insertSorted(ServerData* sd)
 	{
@@ -439,8 +437,11 @@ private:
 			auto fL = filteredList;
 			auto i = index;
 
+			// Verify that the new element was inserted at the right location, by
+			// comparing it to the elements before and after it.
 			if (!((i == 0 || greaterOrEq(fL[i], fL[i-1])) &&
 			      (i == (fL.length - 1)	 || less(fL[i], fL[i + 1])))) {
+
 				db("_insertSorted, index = " ~ .toString(i) ~ "\n" ~
 				   "new: " ~ sd.server[ServerColumn.NAME] ~ "\n" ~
 				   "i-1:" ~ (i > 0 ? fL[i-1].server[ServerColumn.NAME]  : "START") ~ "\n" ~
