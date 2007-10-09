@@ -72,28 +72,15 @@ void messageBox(char[] title, int style, TypeInfo[] arguments, void* argptr)
 }
 
 
-void info(...)
+void _messageBox(char[] caption, int icon)(...)
 {
-	messageBox(APPNAME, DWT.ICON_INFORMATION, _arguments, _argptr);
+	messageBox(caption, icon, _arguments, _argptr);
 }
 
-
-void warning(...)
-{
-	messageBox("Warning", DWT.ICON_WARNING, _arguments, _argptr);
-}
-
-
-void error(...)
-{
-	messageBox("Error", DWT.ICON_ERROR, _arguments, _argptr);
-}
-
-
-void db(...)
-{
-	messageBox("Debug", DWT.NONE, _arguments, _argptr);
-}
+alias _messageBox!(APPNAME, DWT.ICON_INFORMATION) info;
+alias _messageBox!("Warning", DWT.ICON_WARNING) warning;
+alias _messageBox!("Error", DWT.ICON_ERROR) error;
+alias _messageBox!("Debug", DWT.NONE) db;
 
 
 void db(char[][] a)
