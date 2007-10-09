@@ -1,3 +1,6 @@
+- New: Added custom settings to be able to get servers for, and to launch, World of Padman.
+- Fix: Reloading of mods.ini after editing didn't work.
+- Fix: Saving of server lists when the master server address contains a port number
 - Fix: Corrected incremental sort.
 - Fix: Keep the same server selected when changing the sort order or column.
 

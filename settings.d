@@ -26,7 +26,7 @@ struct Mod
 		return r ? r : "master3.idsoftware.com";
 	}
 
-	char[] serverFile() { return masterServer ~ ".lst"; }
+	char[] serverFile() { return replace(masterServer, ":", "_") ~ ".lst"; }
 
 	char[] extraServersFile() { return name ~ ".extra"; }
 
@@ -38,36 +38,38 @@ struct Mod
 }
 
 
-char[][] mods;
+char[][] modNames;
 Mod activeMod;
 const char[] modFileName = "mods.ini";
 
 private {
 	const char[] settingsFileName = "settings.ini";
 
-	/*const char[][] defaultMods = ["westernq3", "baseq3", "osp", "cpma",
-	                              "InstaUnlagged", "q3ut4", "wop"];*/
-
-	const char[] defaultModsFile = "; Monster Browser mods configuration\n"
-	                               ";\n"
-	                               "; Just put each mod in square brackets, then you can list options under it, \n"
-	                               "; like this example:\n"
-	                               ";\n"
-	                               "; [mymod]\n"
-	                               "; masterServer=master.mymod.com\n"
-	                               "; exePath=C:\\Program Files\\My Mod Directory\\mymod.exe\n"
-	                               ";\n"
-	                               "; Lines beginning with a \";\" are comments.\n\n"
-	                                "[westernq3]\n\n"
-	                                //"[wop]\n"
-	                                //"masterServer=wopmaster.kickchat.com\n"
-	                                //"exePath=C:\\Program Files\\World of Padman\\wop.exe\n\n"
-	                                "[q3ut4]\n"
-	                                "masterServer=master.urbanterror.net\n\n"
-	                                "[baseq3]\n\n"
-	                                "[osp]\n\n"
-	                                "[cpma]\n\n"
-	                                "[InstaUnlagged]\n\n";
+	const char[] defaultModsFile =
+	    "; Monster Browser mods configuration\n"
+	    ";\n"
+	    "; Just put each mod in square brackets, then you can list options under it, \n"
+	    "; like this example:\n"
+	    ";\n"
+	    "; [mymod]\n"
+	    "; masterServer=master.mymod.com\n"
+	    "; exePath=C:\\Program Files\\My Mod Directory\\mymod.exe\n"
+	    ";\n"
+	    "; Lines beginning with a \";\" are comments.\n"
+	    "\n"
+	    "[westernq3]\n"
+	    "\n"
+	    "[wop]\n"
+	    "masterServer=wopmaster.kickchat.com:27955\n"
+	    "exePath=C:\\Program Files\\World of Padman\\wop.exe\n"
+	    "\n"
+	    "[q3ut4]\n"
+	    "masterServer=master.urbanterror.net\n"
+	    "\n"
+	    "[baseq3]\n\n"
+	    "[osp]\n\n"
+	    "[cpma]\n\n"
+	    "[InstaUnlagged]\n\n";
 
 	Ini settingsIni;
 	Ini modsIni;
@@ -102,9 +104,7 @@ void loadModFile()
 	if (!exists(modFileName))
 		writeDefaultModsFile();
 
-	if (modsIni !is null)
-		delete modsIni;
-
+	delete modsIni;
 	modsIni = new Ini(modFileName);
 
 	// remove the nameless section caused by comments
@@ -120,10 +120,13 @@ void loadModFile()
 	}
 
 	foreach (sec; modsIni)
-		mods ~= sec.name;
+		modNames ~= sec.name;
 
-	if (!activeMod.name)
-		setActiveMod(mods[0]);
+	if (activeMod.name)
+		setActiveMod(activeMod.name);
+	else
+		setActiveMod(modNames[0]);
+
 }
 
 
