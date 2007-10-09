@@ -11,11 +11,14 @@ private {
 // should correspond to serverlist.ServerColumn
 char[][] serverHeaders = ["Name", "PW", "Ping", "Players", "Game", "Map", "IP"];
 
+
+/**
+ * GUI for displaying the server list.  Also controls what the cvar and
+ * player tables displays.
+ */
 class ServerTable
 {
-	/*************************************************
-	               PUBLIC METHODS
-	*************************************************/
+	///
 	this(Composite parent)
 	{
 		parent_ = parent;
@@ -113,7 +116,10 @@ class ServerTable
 		table_.setSortDirection(DWT.UP);
 	}
 
+
+	/// Returns the server list's Table widget object.
 	Table getTable() { return table_; };
+
 
 	/*void update(Object dummy = null)
 	{
@@ -121,6 +127,57 @@ class ServerTable
 			table_.setItemCount(getActiveServerList.filteredLength);
 	}*/
 
+
+	/**
+	 * Clears the table and refills it with updated data.  Keeps the same server
+	 * selected, if there was one.
+	 *
+	 * Params:
+	 *     index = An IntWrapper object.  Set this to the index of the last added
+	 *             element.  If refilling the contents of the table would not
+	 *             make this element visible, the table is not refilled.  If the
+	 *             argument is null, the table is always refilled.
+	 *
+	 */
+	void refresh(Object index = null)
+	{
+		if(table_.isDisposed())
+			return;
+
+		if (index) {
+			int selected = table_.getSelectionIndex();
+			int i = (cast(IntWrapper)index).value;
+
+			if (i <= getBottomIndex() /*&& i >= table_.getTopIndex()*/) {
+				table_.clearAll();
+				table_.setItemCount(getActiveServerList.filteredLength);
+			}
+
+			if (selected != -1 && i <= selected) {
+					table_.deselectAll();
+					table_.select(selected + 1);
+			}
+		}
+		else {
+			table_.clearAll();
+			table_.setItemCount(getActiveServerList.filteredLength);
+		}
+	}
+
+
+	/**
+	 * In addition to clearing the table and refilling it with updated data
+	 * without losing the selection (like refresh()), it also:
+	 *
+	 * 1. Sets the status bar to the default status.
+	 * 2. Updates the cvar and player tables to show information for the selected
+	 *    server, or clears them if there is no server selected.
+	 * 3. Optionally sets the selection to the server specified by index.
+	 *
+	 * Params:
+	 *     index = An IntWrapper object.  If not null, the server with the given
+	 *             index is selected.
+	 */
 	void reset(Object index = null)
 	{
 		if(table_.isDisposed())
@@ -154,30 +211,6 @@ class ServerTable
 		}
 	}
 
-	void refresh(Object index = null)
-	{
-		if(table_.isDisposed())
-			return;
-
-		if (index) {
-			int selected = table_.getSelectionIndex();
-			int i = (cast(IntWrapper)index).value;
-
-			if (i <= getBottomIndex() /*&& i >= table_.getTopIndex()*/) {
-				table_.clearAll();
-				table_.setItemCount(getActiveServerList.filteredLength);
-			}
-
-			if (selected != -1 && i <= selected) {
-					table_.deselectAll();
-					table_.select(selected + 1);
-			}
-		}
-		else {
-			table_.clearAll();
-			table_.setItemCount(getActiveServerList.filteredLength);
-		}
-	}
 
 	/************************************************
 	            PRIVATE STUFF
