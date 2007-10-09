@@ -302,10 +302,10 @@ class FilterBar : Composite
 
 		// mod selection
 		modCombo_ = new Combo(filterComposite_, DWT.DROP_DOWN);
-		setMods(settings.mods);
+		setMods(settings.modNames);
 		if (getSetting("startWithLastMod") == "true") {
 			char[] s = getSetting("lastMod");
-			int i = findString(settings.mods, s);
+			int i = findString(settings.modNames, s);
 			if (i == -1) {
 				modCombo_.add(s);
 				modCombo_.select(modCombo_.getItemCount() - 1);
@@ -347,7 +347,7 @@ class FilterBar : Composite
 					return;
 				}
 
-				int i = findString(mods, s);
+				int i = findString(modNames, s);
 				Combo combo = (cast(Combo) e.widget);
 				if (i == -1) {
 					combo.add(s);

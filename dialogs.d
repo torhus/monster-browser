@@ -372,7 +372,7 @@ class SettingsDialog {
 				}
 				// in case the mod list was edited
 				settings.loadModFile();
-				main.filterBar.setMods(settings.mods);
+				main.filterBar.setMods(settings.modNames);
 
 				shell_.close();
 			}
