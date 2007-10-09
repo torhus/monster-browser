@@ -1,16 +1,21 @@
-This program is coded in the Digital Mars D language.  It should be easy to
-pick up, due to its similarity to C/C++ and Java.
+This program is written in the Digital Mars D programming language.  It should
+be easy to pick up, due to its similarity to C/C++, Java, and C#.
 
 
 Useful links
 ------------
 D compiler:
-http://ftp.digitalmars.com/dmd.1.017.zip
-Versions 0.174 to 1.0 should work.
-Versions 1.001 to 1.006 do not work properly with DWT apps.
-Versions 1.007 and 1.009 work.
-Versions 1.010 through 1.016 have not been tested, but will probably work.
-Version 1.017 works.
+http://digitalmars.com/d/1.0/dcompiler.html
+
+Compiler versions that do and don't work with this project:
+0.174-1.0 YES
+1.001-1.006 NO
+1.007 YES
+1.009 YES
+1.010-1.016 UNTESTED
+1.017 YES
+1.018-1.019 UNTESTED
+1.020-1.022 YES
 
 D docs:
 Language: http://www.digitalmars.com/d/1.0/lex.html
@@ -24,8 +29,8 @@ irc://irc.freenode.org/D
 
 Derek Parnell's Build, aka Bud, needed for building the project:
 http://www.dsource.org/projects/build
-http://trac.dsource.org/projects/build/browser/downloads/build_win_2.10.exe?format=raw
-Later versions than 2.10 currently don't work for this project.
+Recommended version:
+http://trac.dsource.org/projects/build/browser/downloads/bud_win_3.04.exe?format=raw
 
 
 Libraries used
@@ -42,8 +47,8 @@ doesn't.
 
 DWT is a D port of IBM's SWT for Java.  Unfortunately, it still only runs on
 Windows.  I'm hoping that someone will start working on Linux and Mac ports
-sometime.  But as of June 2007, the project seems to be dead.  However,
-another SWT port (dsource.org/projects/tioport) is progressing quickly.
+sometime.  But as of October 2007, the project seems to be dead.  However,
+another SWT port (dsource.org/projects/tioport) is in the works.
 
 DWT is based on SWT 3.0.  However, some of the 3.1 API also seems to be
 implemented.
