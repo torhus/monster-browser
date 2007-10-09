@@ -110,9 +110,10 @@ void log(char[] file, int line, char[] msg)
 
 void log(char[] s)
 {
-	logfile.writeLine(s);
 	version(NO_STDOUT) {}
 	else debug writefln("LOG: " ~ s);
+
+	logfile.writeLine(s);
 }
 
 
