@@ -54,6 +54,7 @@ int browserGetNewList()
 	}
 
 	try {
+		log("Executing '" ~ cmdLine ~ "'.");
 		proc.execute(cmdLine);
 	}
 	catch (Exception e) {
@@ -163,9 +164,12 @@ void browserRefreshList(void delegate(Object) callback,
 	}
 
 	try {
+		char[] cmdLine = "qstat -f " ~ REFRESHFILE ~ " -raw,game " ~ FIELDSEP ~
+		                  " -P -R -default q3s" /*-carets";*/;
+
+		log("Executing '" ~ cmdLine ~ "'.");
 		// FIXME: feed qstat through stdin (-f -)?
-		proc.execute("qstat -f " ~ REFRESHFILE ~ " -raw,game " ~ FIELDSEP ~
-		             " -P -R -default q3s" /*-carets";*/);
+		proc.execute(cmdLine);
 	}
 	catch (Exception e) {
 		error("qstat not found!\nPlease reinstall " ~ APPNAME ~ ".");
