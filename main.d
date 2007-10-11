@@ -458,7 +458,7 @@ ToolBar createToolbar(Composite parent)
 			}
 		}
 	});
-
+/+
 	new ToolItem(toolBar, DWT.SEPARATOR);
 
 	auto button4 = new ToolItem(toolBar, DWT.PUSH);
@@ -473,7 +473,7 @@ ToolBar createToolbar(Composite parent)
 				saveSettings();*/
 		}
 	});
-
++/
 	new ToolItem(toolBar, DWT.SEPARATOR);
 
 	auto button5 = new ToolItem(toolBar, DWT.PUSH);
