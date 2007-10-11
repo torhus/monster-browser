@@ -12,6 +12,35 @@ import qstat;
 import runtools;
 import serverlist;
 import servertable;
+import settings : setActiveMod, activeMod;
+
+
+/**
+ * Takes care of the serverList and activeMod side of switching mods.
+ *
+ * Makes sure that serverList and activeMod contains the data for the given
+ * mod.  Calls switchToActiveMod, switchToActiveMod, or getNewList as needed.
+ */
+void switchToMod(char[] name)
+{
+	// FIXME: race condition if qstat.Parseoutput calls Serverlist.add
+	// between the call to setActiveServerList and that threadDispatcher
+	// calls its argument?  What about setActiveMod?
+
+	setActiveMod(name);
+
+	if (setActiveServerList(activeMod.name)) {
+		threadDispatcher.run(&switchToActiveMod);
+	}
+	else {
+		if (common.useGslist)
+			threadDispatcher.run(&getNewList);
+		else if (exists(activeMod.serverFile))
+			threadDispatcher.run(&refreshList);
+		else
+			threadDispatcher.run(&getNewList);
+	}
+}
 
 
 /**
@@ -19,7 +48,7 @@ import servertable;
  *
  * Useful for updating the display after calling setActiveServerList.
  */
-void switchToActiveMod()
+private void switchToActiveMod()
 {
 	getActiveServerList.sort();
 
