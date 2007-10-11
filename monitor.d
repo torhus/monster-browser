@@ -8,6 +8,7 @@ private {
 	import common;
 	import dialogs;
 	import main;
+	import mainwindow;
 	import serveractions;
 }
 
@@ -22,7 +23,7 @@ void startMonitor(Shell shell)
 	void monitorDone(Object o)
 	{
 		//db("monitorDone");
-		scope dialog = new MonitorNotify(mainWindow, "testing");
+		scope dialog = new MonitorNotify(mainShell, "testing");
 		//dialog.open();
 	}
 

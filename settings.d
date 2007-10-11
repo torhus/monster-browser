@@ -11,6 +11,7 @@ private {
 	import ini;
 	import common;
 	import main;
+	import mainwindow;
 }
 
 
@@ -158,11 +159,11 @@ void loadSettings()
 
 void saveSettings()
 {
-	if (!mainWindow.getMaximized() && !mainWindow.getMinimized()) {
-		setSetting("windowSize", std.string.format(mainWindow.getSize().x, "x",
-		                                              mainWindow.getSize().y));
+	if (!mainShell.getMaximized() && !mainShell.getMinimized()) {
+		setSetting("windowSize", std.string.format(mainShell.getSize().x, "x",
+		                                              mainShell.getSize().y));
 	}
-	setSetting("windowMaximized", mainWindow.getMaximized() ?
+	setSetting("windowMaximized", mainShell.getMaximized() ?
 	                                                 "true" : "false");
 
 	setSetting("lastMod", activeMod.name);

@@ -14,6 +14,7 @@ private {
 	import dwt.all;
 
 	import main;
+	import mainwindow;
 }
 
 
@@ -61,7 +62,7 @@ void messageBox(char[] title, int style, TypeInfo[] arguments, void* argptr)
 		void f(dchar c) { std.utf.encode(s, c); }
 
 		std.format.doFormat(&f, arguments, argptr);
-		scope MessageBox mb = new MessageBox(mainWindow, style);
+		scope MessageBox mb = new MessageBox(mainShell, style);
 		mb.setText(title);
 		mb.setMessage(s);
 		log("messageBox (" ~ title ~ "): " ~ s);

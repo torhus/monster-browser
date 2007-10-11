@@ -13,6 +13,7 @@ private {
 	import common;
 	import settings;
 	import dialogs;
+	import mainwindow;
 	import serverlist;
 }
 
@@ -45,7 +46,7 @@ void JoinServer(ServerData *sd)
 	}
 
 	if (showDialog) {
-		scope JoinDialog dialog = new JoinDialog(mainWindow, sd.server[ServerColumn.NAME],
+		scope JoinDialog dialog = new JoinDialog(mainShell, sd.server[ServerColumn.NAME],
 		                                   msg);
 
 		dialog.password = getPassword(sd.server[ServerColumn.ADDRESS]);
@@ -76,7 +77,7 @@ void JoinServer(ServerData *sd)
 				db("GetLastError returned " ~ std.string.toString(e));
 			}
 			else if (getSetting("minimizeOnGameLaunch") == "true") {
-				mainWindow.setMinimized(true);
+				mainShell.setMinimized(true);
 			}
 		}
 		else {
