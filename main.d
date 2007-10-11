@@ -320,24 +320,8 @@ class FilterBar : Composite
 		modCombo_.addSelectionListener(new class SelectionAdapter {
 			public void widgetSelected(SelectionEvent e)
 			{
-				// FIXME: race condition if qstat.Parseoutput calls Serverlist.add
-				// between the call to setActiveServerList and that threadDispatcher
-				// calls its argument?  What about setActiveMod?
-
-				setActiveMod((cast(Combo) e.widget).getText());
 				serverTable.getTable.setFocus();
-
-				if (setActiveServerList(activeMod.name)) {
-					threadDispatcher.run(&switchToActiveMod);
-				}
-				else {
-					if (common.useGslist)
-						threadDispatcher.run(&getNewList);
-					else if (exists(activeMod.serverFile))
-						threadDispatcher.run(&refreshList);
-					else
-						threadDispatcher.run(&getNewList);
-				}
+				switchToMod((cast(Combo)e.widget).getText());
 			}
 
 			public void widgetDefaultSelected(SelectionEvent e)
@@ -357,23 +341,8 @@ class FilterBar : Composite
 					combo.select(i);
 				}
 
-				// FIXME: race condition if qstat.Parseoutput calls Serverlist.add
-				// between the call to setActiveServerList and that threadDispatcher
-				// calls its argument?  What about setActiveMod?
-
-				setActiveMod(s);
 				serverTable.getTable.setFocus();
-				if (setActiveServerList(activeMod.name)) {
-					threadDispatcher.run(&switchToActiveMod);
-				}
-				else {
-					if (common.useGslist)
-						threadDispatcher.run(&getNewList);
-					else if (exists(activeMod.serverFile))
-						threadDispatcher.run(&refreshList);
-					else
-						threadDispatcher.run(&getNewList);
-				}
+				switchToMod(s);
 			}
 		});
 
