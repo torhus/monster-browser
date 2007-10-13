@@ -1,3 +1,5 @@
+v0.3d - 2007-10-13
+------------------
 - New: Added custom settings to be able to get servers for, and to launch, World of Padman.
 - Fix: Reloading of mods.ini after editing didn't work.
 - Fix: Saving of server lists when the master server address contains a port number
