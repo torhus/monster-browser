@@ -1,4 +1,4 @@
-module cvartable;
+module gui.cvartable;
 
 private {
 	import dwt.all;

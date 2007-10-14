@@ -1,14 +1,16 @@
-module servertable;
+module gui.servertable;
 
 private {
 	import dwt.all;
-	import cvartable;
-	import playertable;
-	import serverlist;
-	import launch;
-	import main;
-	import mainwindow;
+		
 	import common;
+	import launch;	
+	import main;
+	import serverlist;
+	
+	import gui.cvartable;
+	import gui.mainwindow;
+	import gui.playertable;
 }
 
 

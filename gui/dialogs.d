@@ -1,4 +1,4 @@
-module dialogs;
+module gui.dialogs;
 
 /* Dialog boxes */
 
@@ -10,9 +10,10 @@ private {
 
 	import common;
 	import serveractions;
-	import serverlist;
-	import servertable;
+	import serverlist;	
 	import settings;
+	
+	import gui.servertable;
 }
 
 

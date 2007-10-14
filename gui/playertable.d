@@ -1,4 +1,4 @@
-module playertable;
+module gui.playertable;
 
 private {
 	import dwt.all;

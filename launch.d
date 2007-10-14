@@ -11,10 +11,10 @@ private {
 	import lib.process;
 	import main;
 	import common;
-	import settings;
-	import dialogs;
-	import mainwindow;
 	import serverlist;
+	import settings;	
+	import gui.dialogs;
+	import gui.mainwindow;	
 }
 
 version (Windows) {

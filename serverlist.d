@@ -1,17 +1,18 @@
 module serverlist;
 
 private {
-	import std.string;
 	debug import std.stdio;
+	import std.string;	
 	import std.c.string;
 
 	import dwt.all;
+
 	import common;
-	import main;
-	import mainwindow;
-	import servertable;	
+	import main;		
 	import runtools;
 	import qstat;
+	import gui.mainwindow;
+	import gui.servertable;
 }
 
 

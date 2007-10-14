@@ -14,7 +14,7 @@ private {
 	import dwt.all;
 
 	import main;
-	import mainwindow;
+	import gui.mainwindow;
 }
 
 

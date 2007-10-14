@@ -11,7 +11,7 @@ private {
 	import ini;
 	import common;
 	import main;
-	import mainwindow;
+	import gui.mainwindow;
 }
 
 

@@ -1,4 +1,4 @@
-module mainwindow;
+module gui.mainwindow;
 
 import std.conv : toInt;
 debug import std.stdio : writefln;
@@ -7,15 +7,15 @@ import std.string;
 import dwt.all;
 
 import common;
-import cvartable;
-import dialogs;
 import main;  /// FIXME: temporary?
-import playertable;
 import runtools;
 import serveractions;
 import serverlist;
-import servertable;
 import settings;
+import gui.cvartable;
+import gui.dialogs;
+import gui.playertable;
+import gui.servertable;
 
 
 FilterBar filterBar;

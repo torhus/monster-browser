@@ -5,15 +5,18 @@ private {
 	import std.string;
 	import std.stream;
 	import std.stdio;
-
-	import lib.process;
+	
 	import common;
 	import serverlist;
 	import qstat;
-	import main;
-	import servertable;
+	import main;	
 	import settings;
+	
+	import gui.servertable;
+	
+	import lib.process;
 }
+
 
 // workaround for process.d bug
 extern(C) extern char **_environ;

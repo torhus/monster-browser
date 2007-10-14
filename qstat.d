@@ -10,10 +10,11 @@ private {
 
 	import common;
 	import runtools;
-	import serverlist;
-	import servertable;
+	import serverlist;	
 	import main;
 	import settings;
+	
+	import gui.servertable;
 }
 
 const char[] FIELDSEP = "\x1e"; // \x1e = ascii record separator

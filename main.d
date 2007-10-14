@@ -8,19 +8,20 @@ private {
 	import std.conv;
 
 	import dwt.all;
+
 	import runtools;
 	import qstat;
 	import serveractions;
 	import serverlist;
 	import link;
-	import servertable;
-	import playertable;
-	import mainwindow;
-	import cvartable;
 	import common;
 	import settings;
-	import monitor;
-	import dialogs;
+	import monitor;		
+	import gui.cvartable;
+	import gui.dialogs;
+	import gui.mainwindow;
+	import gui.playertable;
+	import gui.servertable;	
 }
 
 Display display;

@@ -5,11 +5,12 @@ private {
 	import std.thread;
 
 	import dwt.all;
-	import common;
-	import dialogs;
+
+	import common;	
 	import main;
-	import mainwindow;
 	import serveractions;
+	import gui.dialogs;
+	import gui.mainwindow;
 }
 
 private Shell shell;
