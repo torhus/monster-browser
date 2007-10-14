@@ -9,9 +9,9 @@ private {
 	import dwt.all;
 
 	import common;
-	import main;
 	import serveractions;
 	import serverlist;
+	import servertable;
 	import settings;
 }
 
@@ -26,10 +26,11 @@ class MonitorNotify {
 		shell_ = new Shell(parent_, DWT.DIALOG_TRIM | DWT.APPLICATION_MODAL/* | DWT.ON_TOP*/);
 		GridLayout topLayout = new GridLayout();
 		shell_.setLayout(topLayout);
-		shell_.setText("Join Server");
+		shell_.setText("Monitor Alert");
 
 		shell_.open();
 		shell_.forceActive();
+		auto display = Display.getDefault();
 		while (!shell_.isDisposed()) {
 			if (!display.readAndDispatch()) {
 				display.sleep ();
@@ -169,6 +170,7 @@ class JoinDialog {
 		pwdText_.setText(password);
 		pwdText_.selectAll();
 		shell_.open();
+		auto display = Display.getDefault();
 		while (!shell_.isDisposed()) {
 			if (!display.readAndDispatch()) {
 				display.sleep ();
@@ -281,6 +283,7 @@ class SpecifyServerDialog {
 		addressText_.setText(address);
 		addressText_.selectAll();
 		shell_.open();
+		auto display = Display.getDefault();
 		while (!shell_.isDisposed()) {
 			if (!display.readAndDispatch()) {
 				display.sleep ();
@@ -387,6 +390,7 @@ class SettingsDialog {
 
 	int open() {
 		shell_.open();
+		auto display = Display.getDefault();
 		while (!shell_.isDisposed()) {
 			if (!display.readAndDispatch()) {
 				display.sleep();

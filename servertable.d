@@ -2,11 +2,17 @@ module servertable;
 
 private {
 	import dwt.all;
+	import cvartable;
+	import playertable;
 	import serverlist;
 	import launch;
 	import main;
+	import mainwindow;
 	import common;
 }
+
+
+ServerTable serverTable;
 
 // should correspond to serverlist.ServerColumn
 char[][] serverHeaders = ["Name", "PW", "Ping", "Players", "Game", "Map", "IP"];
@@ -121,13 +127,6 @@ class ServerTable
 	Table getTable() { return table_; };
 
 
-	/*void update(Object dummy = null)
-	{
-		if (!table_.isDisposed)
-			table_.setItemCount(getActiveServerList.filteredLength);
-	}*/
-
-
 	/**
 	 * Clears the table and refills it with updated data.  Keeps the same server
 	 * selected, if there was one.
@@ -212,6 +211,17 @@ class ServerTable
 	}
 
 
+	int sortColumnIndex()
+	{
+		return table_.indexOf(table_.getSortColumn());
+	}
+
+
+	bool reversedSortOrder()
+	{
+		return (table_.getSortDirection() == DWT.DOWN);
+	}
+		
 	/************************************************
 	            PRIVATE STUFF
 	 ************************************************/

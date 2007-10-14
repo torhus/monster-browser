@@ -18,6 +18,9 @@ import servertable;
 import settings;
 
 
+FilterBar filterBar;
+StatusBar statusBar;
+
 // FIXME: can this be made private?
 Shell mainShell;
 
@@ -192,9 +195,7 @@ void createToolbar(Composite parent)
 		public void widgetSelected(SelectionEvent e)
 		{
 			auto dialog = new SpecifyServerDialog(mainShell);
-			if (dialog.open() == DWT.OK) {
-				//saveSettings();
-			}
+			dialog.open();
 		}
 	});
 /+

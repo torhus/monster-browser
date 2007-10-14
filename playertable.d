@@ -7,6 +7,8 @@ private {
 	import main;
 }
 
+PlayerTable playerTable;
+
 // should correspond to serverlist.PlayerColumn
 char[][] playerHeaders = ["Name", "Score", "Ping"];
 

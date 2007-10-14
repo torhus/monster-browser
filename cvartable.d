@@ -7,6 +7,8 @@ private {
 	import main;
 }
 
+CvarTable cvarTable;
+
 class CvarTable
 {
 	/*************************************************

@@ -24,11 +24,6 @@ private {
 }
 
 Display display;
-ServerTable serverTable;
-PlayerTable playerTable;
-CvarTable cvarTable;
-StatusBar statusBar;
-FilterBar filterBar;
 MainWindow mainWindow;
 Thread serverThread;
 ThreadDispatcher threadDispatcher;

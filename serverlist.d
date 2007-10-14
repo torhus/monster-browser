@@ -8,7 +8,8 @@ private {
 	import dwt.all;
 	import common;
 	import main;
-	import servertable;
+	import mainwindow;
+	import servertable;	
 	import runtools;
 	import qstat;
 }
@@ -558,12 +559,13 @@ private:
 bool setActiveServerList(char[] modName)
 {
 	bool retval;
-	Filter saved_filters;
+	Filter oldFilters;
 
 	// hack to get the correct filtering set up for the new list,
 	// save the old one here for later use
 	if (activeServerList !is null) {
-		saved_filters = activeServerList.filters_;
+		oldFilters = activeServerList.filters_;
+		
 	}
 
 	if (ServerList* slist = modName in serverLists) {
@@ -576,12 +578,11 @@ bool setActiveServerList(char[] modName)
 		retval = false;
 	}
 
-	activeServerList.filters_ = saved_filters;
+	activeServerList.filters_ = oldFilters;
 
-	auto sortCol = serverTable.getTable.getSortColumn();
 	synchronized (activeServerList) {
-		activeServerList.setSort(serverTable.getTable.indexOf(sortCol),
-	                      (serverTable.getTable.getSortDirection() == DWT.DOWN));
+		activeServerList.setSort(serverTable.sortColumnIndex(),
+                                 serverTable.reversedSortOrder());
 	}
 
 	return retval;

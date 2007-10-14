@@ -8,6 +8,7 @@ import std.thread;
 
 import common;
 import main;
+import mainwindow;
 import qstat;
 import runtools;
 import serverlist;
