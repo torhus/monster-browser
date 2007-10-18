@@ -4,16 +4,54 @@ module gui.dialogs;
 
 private {
 	import std.file;
+	import std.format;
 	import std.string;
 
 	import dwt.all;
-
+	
 	import common;
 	import serveractions;
 	import serverlist;	
 	import settings;
 	
+	import gui.mainwindow;
 	import gui.servertable;
+}
+
+
+void messageBox(char[] title, int style, TypeInfo[] arguments, void* argptr)
+{
+	void f(Object o) {
+		char[] s;
+		void f(dchar c) { std.utf.encode(s, c); }
+
+		std.format.doFormat(&f, arguments, argptr);
+		scope MessageBox mb = new MessageBox(mainShell, style);
+		mb.setText(title);
+		mb.setMessage(s);
+		log("messageBox (" ~ title ~ "): " ~ s);
+		mb.open();
+	}
+	// only the gui thread can display message boxes
+	syncExec(null, &f);
+}
+
+
+void _messageBox(char[] caption, int icon)(...)
+{
+	messageBox(caption, icon, _arguments, _argptr);
+}
+
+
+alias _messageBox!(APPNAME, DWT.ICON_INFORMATION) info;
+alias _messageBox!("Warning", DWT.ICON_WARNING) warning;
+alias _messageBox!("Error", DWT.ICON_ERROR) error;
+alias _messageBox!("Debug", DWT.NONE) db;
+
+
+void db(char[][] a)
+{
+	db(std.string.join(a, "\n"));
 }
 
 
@@ -110,9 +148,9 @@ class JoinDialog {
 
 	char[] password;
 
-	this(Shell parent, char[] serverName, char[] message)
+	this(char[] serverName, char[] message)
 	{
-		parent_ = parent;
+		parent_ = mainShell;
 		shell_ = new Shell(parent_, DWT.DIALOG_TRIM | DWT.APPLICATION_MODAL);
 		GridLayout topLayout = new GridLayout();
 		shell_.setLayout(topLayout);
@@ -177,7 +215,7 @@ class JoinDialog {
 				display.sleep ();
 			}
 		}
-		return result_;
+		return result_ == DWT.OK;
 	}
 
 private:

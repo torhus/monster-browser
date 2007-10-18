@@ -11,7 +11,7 @@ import main;
 import qstat;
 import runtools;
 import serverlist;
-import settings : setActiveMod, activeMod;
+import settings;// : setActiveMod, activeMod;
 import gui.mainwindow;
 import gui.servertable;
 
@@ -73,7 +73,7 @@ void loadSavedList()
 		try {
 			browserLoadSavedList(&callback);
 			volatile if (!runtools.abortParsing) {
-				display.asyncExec(null, delegate void (Object o) {
+				asyncExec(null, delegate void (Object o) {
 				                            serverTable.reset();
 				                        } );
 			}
@@ -120,7 +120,7 @@ void queryAndAddServer(in char[] address)
 		try {
 			browserRefreshList(delegate void(Object) { }, false);
 			volatile if (!runtools.abortParsing) {
-				display.asyncExec(null, &done);
+				asyncExec(null, &done);
 			}
 		}
 		catch(Exception e) {
@@ -163,14 +163,14 @@ void getNewList()
 			debug writefln("serverCount = ", total);
 
 			if (serverCount >= 0) {
-				display.asyncExec(null, delegate void (Object o) {
+				asyncExec(null, delegate void (Object o) {
 				                        statusBar.setLeft("Got "  ~
 				                              total ~ " servers, querying...");
 			                        } );
 
 				browserRefreshList(&status, true, true);
 				volatile if (!runtools.abortParsing) {
-					display.asyncExec(null, delegate void (Object o) {
+					asyncExec(null, delegate void (Object o) {
 					                            serverTable.reset();
 					                        } );
 				}
@@ -223,7 +223,7 @@ void refreshList()
 			total = std.string.toString(countServersInRefreshList());
 			browserRefreshList(&status);
 			volatile if (!runtools.abortParsing) {
-				display.asyncExec(null, &done);
+				asyncExec(null, &done);
 			}
 		}
 		catch(Exception e) {

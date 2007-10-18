@@ -11,10 +11,7 @@ private {
 	import std.c.stdio;
 	import std.c.stdlib;
 
-	import dwt.all;
-
 	import main;
-	import gui.mainwindow;
 }
 
 
@@ -52,41 +49,6 @@ static this()
 	logfile = new File(LOGFILE, FileMode.Append);
 	logfile.writeLine("\n" ~ sep ~ "\n" ~ APPNAME ~ " started at " ~
 	                  std.date.toString(getUTCtime()) ~ "\n" ~ sep);
-}
-
-
-void messageBox(char[] title, int style, TypeInfo[] arguments, void* argptr)
-{
-	void f(Object o) {
-		char[] s;
-		void f(dchar c) { std.utf.encode(s, c); }
-
-		std.format.doFormat(&f, arguments, argptr);
-		scope MessageBox mb = new MessageBox(mainShell, style);
-		mb.setText(title);
-		mb.setMessage(s);
-		log("messageBox (" ~ title ~ "): " ~ s);
-		mb.open();
-	}
-	// only the gui thread can display message boxes
-	Display.getDefault().syncExec(null, &f);
-}
-
-
-void _messageBox(char[] caption, int icon)(...)
-{
-	messageBox(caption, icon, _arguments, _argptr);
-}
-
-alias _messageBox!(APPNAME, DWT.ICON_INFORMATION) info;
-alias _messageBox!("Warning", DWT.ICON_WARNING) warning;
-alias _messageBox!("Error", DWT.ICON_ERROR) error;
-alias _messageBox!("Debug", DWT.NONE) db;
-
-
-void db(char[][] a)
-{
-	db(std.string.join(a, "\n"));
 }
 
 

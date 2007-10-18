@@ -7,8 +7,6 @@ private {
 	import std.thread;
 	import std.conv;
 
-	import dwt.all;
-
 	import runtools;
 	import qstat;
 	import serveractions;
@@ -16,15 +14,11 @@ private {
 	import link;
 	import common;
 	import settings;
-	import monitor;		
-	import gui.cvartable;
+	import monitor;
 	import gui.dialogs;
 	import gui.mainwindow;
-	import gui.playertable;
-	import gui.servertable;	
 }
 
-Display display;
 MainWindow mainWindow;
 Thread serverThread;
 ThreadDispatcher threadDispatcher;
@@ -37,9 +31,6 @@ void main() {
 
 	try	{
 		loadSettings();
-
-		display = Display.getDefault();
-
 
 		// check for presence of Gslist
 		char[] gslistExe;
@@ -66,6 +57,29 @@ void main() {
 		}
 
 		mainWindow = new MainWindow;
+		
+		mainWindow.setCloseHandler(
+		{
+			volatile runtools.abortParsing = true;
+			statusBar.setLeft("Saving settings...");
+			log("Saving settings...");
+			saveSettings();
+			statusBar.setLeft("Exiting...");
+			log("Exiting...");
+			log("Killing server browser...");
+			runtools.killServerBrowser();
+			//qstat.SaveRefreshList();
+			/*log("Waiting for threads to terminate...");
+			foreach (int i, Thread t; Thread.getAll()) {
+				if (t != Thread.getThis()) {
+					log("Waiting for thread " ~
+					        common.std.string.toString(i) ~ "...");
+					t.wait();
+					log("    ...thread " ~
+					        common.std.string.toString(i) ~ " done.");
+				}
+			}*/
+		});
 
 		if (common.useGslist) {
 			getNewList();
@@ -82,16 +96,11 @@ void main() {
 
 		threadDispatcher = new ThreadDispatcher();
 
-		while (!mainWindow.isDisposed()) {
-			threadDispatcher.dispatch();
-			if (!display.readAndDispatch())
-				display.sleep();
-			}
-			display.dispose();
+		mainWindow.mainLoop(&threadDispatcher.dispatch);
 	}
 	catch(Exception e) {
 		logx(__FILE__, __LINE__, e);
-		MessageBox.showMsg(e.classinfo.name ~ "\n" ~ e.toString());
+		error(e.classinfo.name ~ "\n" ~ e.toString());
 	}
 }
 

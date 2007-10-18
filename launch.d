@@ -7,14 +7,13 @@ private {
 	import std.path;
 	import std.conv;
 
-	import dwt.all;
-	import lib.process;
-	import main;
 	import common;
+	import main;	
 	import serverlist;
 	import settings;	
 	import gui.dialogs;
-	import gui.mainwindow;	
+	import gui.mainwindow;
+	import lib.process;
 }
 
 version (Windows) {
@@ -46,17 +45,17 @@ void JoinServer(ServerData *sd)
 	}
 
 	if (showDialog) {
-		scope JoinDialog dialog = new JoinDialog(mainShell, sd.server[ServerColumn.NAME],
+		scope JoinDialog dialog = new JoinDialog(sd.server[ServerColumn.NAME],
 		                                   msg);
 
 		dialog.password = getPassword(sd.server[ServerColumn.ADDRESS]);
 
-		int res = dialog.open();
-		if (res == DWT.OK && dialog.password.length) {
+		int ok = dialog.open();
+		if (ok && dialog.password.length) {
 			argv ~= " +set password " ~ dialog.password;
 			setPassword(sd.server[ServerColumn.ADDRESS], dialog.password);
 		}
-		if (res != DWT.OK)
+		if (!ok)
 			launch = false;
 	}
 
@@ -77,7 +76,7 @@ void JoinServer(ServerData *sd)
 				db("GetLastError returned " ~ std.string.toString(e));
 			}
 			else if (getSetting("minimizeOnGameLaunch") == "true") {
-				mainShell.setMinimized(true);
+				mainWindow.minimized = true;
 			}
 		}
 		else {

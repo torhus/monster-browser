@@ -5,12 +5,12 @@ private {
 	import std.string;	
 	import std.c.string;
 
-	import dwt.all;
-
 	import common;
 	import main;		
 	import runtools;
 	import qstat;
+
+	import gui.dialogs;
 	import gui.mainwindow;
 	import gui.servertable;
 }
@@ -160,7 +160,7 @@ class ServerList
 			}
 		}
 		if (refresh)
-			display.syncExec(new IntWrapper(index), &serverTable.refresh);
+			syncExec(new IntWrapper(index), &serverTable.refresh);
 	}
 
 
@@ -303,7 +303,7 @@ class ServerList
 			filters_ = newFilters;
 			updateFilteredList();
 		}
-		display.asyncExec(null, &serverTable.reset);
+		asyncExec(null, &serverTable.reset);
 	}
 
 	Filter getFilters() { return filters_; }

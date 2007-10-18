@@ -12,6 +12,7 @@ private {
 	import main;	
 	import settings;
 	
+	import gui.dialogs;
 	import gui.servertable;
 	
 	import lib.process;

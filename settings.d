@@ -159,11 +159,11 @@ void loadSettings()
 
 void saveSettings()
 {
-	if (!mainShell.getMaximized() && !mainShell.getMinimized()) {
-		setSetting("windowSize", std.string.format(mainShell.getSize().x, "x",
-		                                              mainShell.getSize().y));
+	if (!mainWindow.maximized && !mainWindow.minimized) {
+		setSetting("windowSize", std.string.format(mainWindow.size.x, "x",
+		                                              mainWindow.size.y));
 	}
-	setSetting("windowMaximized", mainShell.getMaximized() ?
+	setSetting("windowMaximized", mainWindow.maximized ?
 	                                                 "true" : "false");
 
 	setSetting("lastMod", activeMod.name);

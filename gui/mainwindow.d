@@ -21,14 +21,16 @@ import gui.servertable;
 FilterBar filterBar;
 StatusBar statusBar;
 
-// FIXME: can this be made private?
-Shell mainShell;
+package Shell mainShell;
+
+private	Display display;
 
 
 class MainWindow
 {
 	this()
 	{
+		display = Display.getDefault();  // FIXME: remove?
 		mainShell = new Shell(Display.getDefault());
 		mainShell.setText(APPNAME ~ " " ~ VERSION);
 
@@ -126,40 +128,44 @@ class MainWindow
 			}
 		});
 
-		mainShell.addShellListener(new class ShellAdapter {
-			public void shellClosed(ShellEvent e)
-			{
-				volatile runtools.abortParsing = true;
-				statusBar.setLeft("Saving settings...");
-				log("Saving settings...");
-				saveSettings();
-				statusBar.setLeft("Exiting...");
-				log("Exiting...");
-				log("Killing server browser...");
-				runtools.killServerBrowser();
-				//qstat.SaveRefreshList();
-				/*log("Waiting for threads to terminate...");
-				foreach (int i, Thread t; Thread.getAll()) {
-					if (t != Thread.getThis()) {
-						log("Waiting for thread " ~
-						        common.std.string.toString(i) ~ "...");
-						t.wait();
-						log("    ...thread " ~
-						        common.std.string.toString(i) ~ " done.");
-					}
-				}*/
-			}
-		});
-
 		serverTable.getTable.setFocus();
 		mainShell.open();
 	}
 
-	int isDisposed() { return mainShell.isDisposed(); }
+	void setCloseHandler(void delegate() handler)
+	{
+		assert(mainShell !is null);
 
-	private {
-		//Shell mainShell;
+		mainShell.addShellListener(new class(handler) ShellAdapter {
+			typeof(handler) handler_;
+			
+			this(typeof(handler) handler) { handler_ = handler; }
+			
+			public void shellClosed(ShellEvent e) { handler_(); }
+		});
 	}
+
+	void mainLoop(void delegate() callInLoop)
+	{
+		auto display = Display.getDefault();
+
+		while (!isDisposed()) {
+				callInLoop();
+				if (!display.readAndDispatch())
+					display.sleep();
+				}
+				display.dispose();
+	}
+
+	int isDisposed() { return mainShell.isDisposed(); }
+	
+	int minimized() { return mainShell.getMinimized(); }
+	void minimized(bool v) { mainShell.setMinimized(v); }
+	
+	int maximized() { return mainShell.getMaximized(); }
+	
+	Point size() { return mainShell.getSize(); }
+
 }
 
 
@@ -398,4 +404,16 @@ private:
 	Composite filterComposite_;
 	Button button1_, button2_;
 	Combo modCombo_;
+}
+
+
+void asyncExec(Object o, void delegate(Object) handler)
+{
+	display.asyncExec(o, handler);
+}
+
+
+void syncExec(Object o, void delegate(Object) handler)
+{
+	display.syncExec(o, handler);
 }

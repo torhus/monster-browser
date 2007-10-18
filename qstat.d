@@ -14,7 +14,9 @@ private {
 	import main;
 	import settings;
 	
-	import gui.servertable;
+	import gui.dialogs;
+	import gui.mainwindow;  // FIXME: remove
+	import gui.servertable;	
 }
 
 const char[] FIELDSEP = "\x1e"; // \x1e = ascii record separator
@@ -82,7 +84,7 @@ each_server:
 			assert(fields.length == 9 || fields.length == 3);
 			count++;
 			countWrapper.value = count;
-			display.syncExec(countWrapper, countDg);
+			syncExec(countWrapper, countDg);
 
 			if (fields.length >= 9) {
 				bool keep_server = false;

@@ -9,6 +9,7 @@ private {
 	import serverlist;
 	
 	import gui.cvartable;
+	import gui.dialogs;
 	import gui.mainwindow;
 	import gui.playertable;
 }
