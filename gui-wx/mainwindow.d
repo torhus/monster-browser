@@ -4,7 +4,7 @@ import std.conv : toInt;
 debug import std.stdio : writefln;
 import std.string;
 
-import dwt.all;
+import wx.wx;
 
 import common;
 import main;  /// FIXME: temporary?
@@ -12,25 +12,33 @@ import runtools;
 import serveractions;
 import serverlist;
 import settings;
-import gui.cvartable;
-import gui.dialogs;
-import gui.playertable;
+//import gui.cvartable;
+//import gui.dialogs;
+//import gui.playertable;
 import gui.servertable;
 
 
 FilterBar filterBar;
 StatusBar statusBar;
 
-package Shell mainShell;
+//package Shell mainShell;
 
-private	Display display;
+//private	Display display;
+
+private {
+	Minimal theApp;
+	Frame mainFrame;
+}
 
 
 class MainWindow
 {
 	this()
 	{
-		display = Display.getDefault();  // FIXME: remove?
+		theApp = new Minimal();
+		//mainFrame = new MyFrame("Minimal wxWidgets App", Point(50,50), Size(450,340));
+
+/+		display = Display.getDefault();  // FIXME: remove?
 		mainShell = new Shell(Display.getDefault());
 		mainShell.setText(APPNAME ~ " " ~ VERSION);
 
@@ -57,26 +65,26 @@ class MainWindow
 		topComposite.setLayout(new FillLayout(DWT.HORIZONTAL));
 
 		createToolbar(topComposite);
-
++/
 		// filtering options
-		filterBar = new FilterBar(topComposite);
-
+		filterBar = new FilterBar(/*topComposite*/);
+/+
 
 		// ************** SERVER LIST, PLAYER LIST, CVARS LIST ***************
 		SashForm middleForm = new SashForm(mainShell, DWT.HORIZONTAL);
 		gridData = new GridData(GridData.FILL_BOTH);
 		middleForm.setLayoutData(gridData);
-
++/
 		// server table widget
-		serverTable = new ServerTable(middleForm);
-		gridData = new GridData(GridData.FILL_VERTICAL);
+		serverTable = new ServerTable(/*middleForm*/);
+/+		gridData = new GridData(GridData.FILL_VERTICAL);
 		// FIXME: doesn't work
 		//gridData.widthHint = 610;  // FIXME: automate using table's info
 		serverTable.getTable().setLayoutData(gridData);
-
++/
 		// has to be instantied after the table
 		setActiveServerList(activeMod.name);
-
+/+
 		// parent for player and cvar tables
 		SashForm rightForm = new SashForm(middleForm, DWT.VERTICAL);
 		gridData = new GridData(GridData.FILL_BOTH);
@@ -105,11 +113,12 @@ class MainWindow
 		gridData.horizontalSpan = 2;
 		statusComposite.setLayoutData(gridData);
 		statusComposite.setLayout(new FillLayout(DWT.HORIZONTAL));
-		statusBar = new StatusBar(statusComposite);
++/
+		statusBar = new StatusBar(/*statusComposite*/);
 		statusBar.setLeft(APPNAME ~ " is ready.");
 
 		// **********************************************************
-
+/+
 		mainShell.addKeyListener(new class KeyAdapter {
 			public void keyPressed (KeyEvent e)
 			{
@@ -130,10 +139,11 @@ class MainWindow
 
 		serverTable.getTable.setFocus();
 		mainShell.open();
++/		
 	}
 
 	void setCloseHandler(void delegate() handler)
-	{
+	{/+
 		assert(mainShell !is null);
 
 		mainShell.addShellListener(new class(handler) ShellAdapter {
@@ -142,11 +152,14 @@ class MainWindow
 			this(typeof(handler) handler) { handler_ = handler; }
 			
 			public void shellClosed(ShellEvent e) { handler_(); }
-		});
+		});+/
 	}
 
 	void mainLoop(void delegate() callInLoop)
 	{
+		theApp.Run();
+		
+		/+		
 		auto display = Display.getDefault();
 
 		while (!isDisposed()) {
@@ -154,24 +167,144 @@ class MainWindow
 				if (!display.readAndDispatch())
 					display.sleep();
 				}
-				display.dispose();
+				display.dispose()
+		+/
 	}
 
-	int isDisposed() { return mainShell.isDisposed(); }
+/+	int isDisposed() { return mainShell.isDisposed(); }+/
 	
-	int minimized() { return mainShell.getMinimized(); }
-	void minimized(bool v) { mainShell.setMinimized(v); }
+	int minimized() { return 0; }
+	void minimized(bool v) { /+mainShell.setMinimized(v);+/ }
 	
-	int maximized() { return mainShell.getMaximized(); }
+	int maximized() { return 0; }
 	
-	Point size() { return mainShell.getSize(); }
-
+	SizeStruct size()
+	{
+		//auto p = mainShell.getSize();
+		//return common.Point(p.x, p.y);
+		return SizeStruct(300, 200);
+	}
 }
 
 
-void createToolbar(Composite parent)
+private class MyFrame : Frame
 {
-	auto toolBar = new ToolBar(parent, DWT.HORIZONTAL);
+	enum Cmd
+	{
+		About = MenuIDs.wxID_ABOUT,
+		Quit = MenuIDs.wxID_EXIT,
+		Dialog = MenuIDs.wxID_HIGHEST + 1
+	}
+
+	//---------------------------------------------------------------------
+
+	public this(string title, Point pos, Size size)
+	{
+		super(title, pos, size);
+		// Set the window icon
+
+		//icon = new Icon("../Samples/Minimal/mondrian.png");
+		icon = new Icon("mondrian.png");
+
+		// Set up a menu
+
+		Menu fileMenu = new Menu();
+		fileMenu.Append(Cmd.Dialog, "&Show dialog\tAlt-D", "Show test dialog");
+		fileMenu.Append(Cmd.Quit, "E&xit\tAlt-X", "Quit this program");
+
+		Menu helpMenu = new Menu();
+		helpMenu.Append(Cmd.About, "&About...\tF1", "Show about dialog");
+
+		MenuBar menuBar = new MenuBar();
+		menuBar.Append(fileMenu, "&File");
+		menuBar.Append(helpMenu, "&Help");
+
+		this.menuBar = menuBar;
+
+		// Set up a status bar
+
+		CreateStatusBar(2);
+		StatusText = "Welcome to wxWidgets!";
+
+		// Set up the event table
+
+		EVT_MENU(Cmd.Quit,    &OnQuit);
+		EVT_MENU(Cmd.Dialog,  &OnDialog);
+		EVT_MENU(Cmd.About,   &OnAbout);
+	}
+
+	//---------------------------------------------------------------------
+
+	public void OnQuit(Object sender, Event e)
+	{
+		Close();
+	}
+
+	//---------------------------------------------------------------------
+
+	public void OnDialog(Object sender, Event e)
+	{
+        Dialog dialog = new Dialog( this, -1, "Test dialog", Point(50,50), Size(450,340) );
+        BoxSizer main_sizer = new BoxSizer( Orientation.wxVERTICAL );
+
+        StaticBoxSizer top_sizer = new StaticBoxSizer( new StaticBox( dialog, -1, "Bitmaps" ), Orientation.wxHORIZONTAL );
+        main_sizer.Add( top_sizer, 0, Direction.wxALL, 5 );
+
+        BitmapButton bb = new BitmapButton( dialog, -1, new Bitmap("mondrian.png") );
+        top_sizer.Add( bb, 0, Direction.wxALL, 10 );
+
+        StaticBitmap sb = new StaticBitmap( dialog, -1, new Bitmap("mondrian.png") );
+        top_sizer.Add( sb, 0, Direction.wxALL, 10 );
+
+        Button button = new Button( dialog, 5100, "OK" );
+        main_sizer.Add( button, 0, Direction.wxALL|Alignment.wxALIGN_CENTER, 5 );
+
+        dialog.SetSizer( main_sizer, true );
+        main_sizer.Fit( dialog );
+        main_sizer.SetSizeHints( dialog );
+
+        dialog.CentreOnParent();
+        dialog.ShowModal();
+	}
+
+	//---------------------------------------------------------------------
+
+	public void OnAbout(Object sender, Event e)
+	{
+		string msg = "This is the About dialog of the minimal sample.\nWelcome to " ~ wxVERSION_STRING;
+		MessageBox(this, msg, "About Minimal", Dialog.wxOK | Dialog.wxICON_INFORMATION);
+	}
+
+	//---------------------------------------------------------------------
+}
+
+public class Minimal : App
+{
+	//---------------------------------------------------------------------
+
+	public override bool OnInit()
+	{
+		MyFrame frame = new MyFrame("Minimal wxWidgets App", Point(50,50), Size(450,340));
+		frame.Show(true);
+
+		return true;
+	}
+
+	//---------------------------------------------------------------------
+
+	/+static void Main()
+	{
+		Minimal app = new Minimal();
+		app.Run();
+	}+/
+
+	//---------------------------------------------------------------------
+}
+
+
+void createToolbar(/*Composite parent*/)
+{
+/+	auto toolBar = new ToolBar(parent, DWT.HORIZONTAL);
 
 	auto button1 = new ToolItem(toolBar, DWT.PUSH);
 	button1.setText("Get new list");
@@ -232,25 +365,25 @@ void createToolbar(Composite parent)
 				saveSettings();
 		}
 	});
-
++/
 	//return toolBar;
 }
 
 
 class StatusBar
 {
-
+/+
 	this(Composite parent)
 	{
 		leftLabel_ = new Label(parent, DWT.NONE);
 		leftLabel_.setText(APPNAME ~ " is ready.");
 	}
-
++/
 	void setLeft(char[] text)
-	{
+	{/+
 		if (!leftLabel_.isDisposed) {
 			leftLabel_.setText(text);
-		}
+		}+/
 	}
 
 	void setDefaultStatus(size_t totalServers, size_t shownServers)
@@ -265,15 +398,16 @@ class StatusBar
 			         " servers");
 		}
 	}
-
+/+
 private:
 	Label leftLabel_;
++/
 }
 
 
-class FilterBar : Composite
+class FilterBar// : Composite
 {
-	this(Composite parent)
+/+	this(Composite parent)
 	{
 		filterComposite_ = new Composite(parent, DWT.NONE);
 		button1_ = new Button(filterComposite_, DWT.CHECK);
@@ -404,16 +538,17 @@ private:
 	Composite filterComposite_;
 	Button button1_, button2_;
 	Combo modCombo_;
++/
 }
 
 
 void asyncExec(Object o, void delegate(Object) handler)
 {
-	display.asyncExec(o, handler);
+	//display.asyncExec(o, handler);
 }
 
 
 void syncExec(Object o, void delegate(Object) handler)
 {
-	display.syncExec(o, handler);
+	//display.syncExec(o, handler);
 }

@@ -73,6 +73,9 @@ void logx(char[] file, int line, Exception e)
 }
 
 
+struct SizeStruct { int x; int y; }
+
+
 /// Wrapper for an int.  Needed because std.boxer is broken, as of dmd 0.160.
 class IntWrapper {
 public:

@@ -6,7 +6,7 @@ private {
 	import std.c.string;
 
 	import common;
-	import main;		
+	import main;
 	import runtools;
 	import qstat;
 
