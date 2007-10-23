@@ -4,10 +4,11 @@ import std.conv : toInt;
 debug import std.stdio : writefln;
 import std.string;
 
+//import wx.wx : Frame, App, MenuIDs, Point, Size, Event, MessageBox, Dialog;
 import wx.wx;
 
 import common;
-import main;  /// FIXME: temporary?
+import main;
 import runtools;
 import serveractions;
 import serverlist;
@@ -36,7 +37,6 @@ class MainWindow
 	this()
 	{
 		theApp = new Minimal();
-		//mainFrame = new MyFrame("Minimal wxWidgets App", Point(50,50), Size(450,340));
 
 /+		display = Display.getDefault();  // FIXME: remove?
 		mainShell = new Shell(Display.getDefault());
@@ -114,8 +114,6 @@ class MainWindow
 		statusComposite.setLayoutData(gridData);
 		statusComposite.setLayout(new FillLayout(DWT.HORIZONTAL));
 +/
-		statusBar = new StatusBar(/*statusComposite*/);
-		statusBar.setLeft(APPNAME ~ " is ready.");
 
 		// **********************************************************
 /+
@@ -221,10 +219,11 @@ private class MyFrame : Frame
 
 		this.menuBar = menuBar;
 
-		// Set up a status bar
-
-		CreateStatusBar(2);
-		StatusText = "Welcome to wxWidgets!";
+		/*CreateStatusBar(2);
+		StatusText = "Welcome to wxWidgets!";*/
+		
+		.statusBar = new StatusBar(this);
+		.statusBar.setLeft(APPNAME ~ " is ready.");
 
 		// Set up the event table
 
@@ -247,7 +246,9 @@ private class MyFrame : Frame
         Dialog dialog = new Dialog( this, -1, "Test dialog", Point(50,50), Size(450,340) );
         BoxSizer main_sizer = new BoxSizer( Orientation.wxVERTICAL );
 
-        StaticBoxSizer top_sizer = new StaticBoxSizer( new StaticBox( dialog, -1, "Bitmaps" ), Orientation.wxHORIZONTAL );
+        StaticBoxSizer top_sizer = new StaticBoxSizer(
+                                        new StaticBox( dialog, -1, "Bitmaps" ),
+                                        Orientation.wxHORIZONTAL );
         main_sizer.Add( top_sizer, 0, Direction.wxALL, 5 );
 
         BitmapButton bb = new BitmapButton( dialog, -1, new Bitmap("mondrian.png") );
@@ -284,8 +285,9 @@ public class Minimal : App
 
 	public override bool OnInit()
 	{
-		MyFrame frame = new MyFrame("Minimal wxWidgets App", Point(50,50), Size(450,340));
-		frame.Show(true);
+		mainFrame = new MyFrame(APPNAME ~ " " ~ VERSION,
+		                            Point(50,50), Size(450,340));
+		mainFrame.Show(true);
 
 		return true;
 	}
@@ -372,18 +374,21 @@ void createToolbar(/*Composite parent*/)
 
 class StatusBar
 {
-/+
-	this(Composite parent)
+
+	this(Frame parent)
 	{
-		leftLabel_ = new Label(parent, DWT.NONE);
-		leftLabel_.setText(APPNAME ~ " is ready.");
+		parent_ = parent;
+		parent_.CreateStatusBar(1);
+		parent_.StatusText = APPNAME ~ " is ready.";
 	}
-+/
+
 	void setLeft(char[] text)
 	{/+
 		if (!leftLabel_.isDisposed) {
 			leftLabel_.setText(text);
 		}+/
+		
+		parent_.StatusText = text;
 	}
 
 	void setDefaultStatus(size_t totalServers, size_t shownServers)
@@ -398,10 +403,10 @@ class StatusBar
 			         " servers");
 		}
 	}
-/+
+
 private:
-	Label leftLabel_;
-+/
+	Frame parent_;
+
 }
 
 

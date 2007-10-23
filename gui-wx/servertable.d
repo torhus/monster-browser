@@ -1,7 +1,7 @@
 module gui.servertable;
 
 private {
-	import dwt.all;
+	//import dwt.all;
 		
 	import common;
 	import launch;	

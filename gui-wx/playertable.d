@@ -1,7 +1,7 @@
 module gui.playertable;
 
 private {
-	import dwt.all;
+	//import dwt.all;
 	import common;
 	import serverlist;
 	import main;
@@ -17,9 +17,9 @@ class PlayerTable
 	/*************************************************
 	               PUBLIC METHODS
 	*************************************************/
-	this(Composite parent)
+	this(/*Composite parent*/)
 	{
-		parent_ = parent;
+		/+parent_ = parent;
 		table_ = new Table(parent, DWT.VIRTUAL |  DWT.BORDER |
 		                           DWT.HIDE_SELECTION);
 		table_.setHeaderVisible(true);
@@ -98,17 +98,17 @@ class PlayerTable
 		}
 
 		table_.setSortColumn(table_.getColumn(PlayerColumn.NAME));
-		table_.setSortDirection(DWT.UP);
+		table_.setSortDirection(DWT.UP);+/
 	}
 
-	Table getTable() { return table_; };
+	//Table getTable() { return table_; };
 
 	void reset()
 	{
-		table_.clearAll();
+		//table_.clearAll();
 		sort();
-		table_.setItemCount(getActiveServerList.getFiltered(
-		                                 selectedServerIndex_).players.length);
+		/+table_.setItemCount(getActiveServerList.getFiltered(
+		                                 selectedServerIndex_).players.length);+/
 	}
 
 	/** Set which server to show the playerlist for
@@ -124,19 +124,19 @@ class PlayerTable
 
 	void clear()
 	{
-		table_.removeAll();
+		//table_.removeAll();
 	}
 
 	/************************************************
 	            PRIVATE STUFF
 	 ************************************************/
 private:
-	Table table_;
-	Composite parent_;
+	//Table table_;
+	//Composite parent_;
 	int selectedServerIndex_;
 
 	void sort()
-	{
+	{/+
 		int sortCol = table_.indexOf(table_.getSortColumn());
 		int dir = table_.getSortDirection();
 
@@ -149,7 +149,7 @@ private:
 		    sortStringArrayStable(
 		                  getActiveServerList.getFiltered(selectedServerIndex_).players,
 		                  sortCol, (dir == DWT.DOWN) ? false : true, true);
-		}
+		}+/
 	}
 
 }

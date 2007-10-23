@@ -57,7 +57,7 @@ void main() {
 		}
 
 		mainWindow = new MainWindow;
-		
+
 		mainWindow.setCloseHandler(
 		{
 			volatile runtools.abortParsing = true;
@@ -81,6 +81,10 @@ void main() {
 			}*/
 		});
 
+		threadDispatcher = new ThreadDispatcher();
+
+		mainWindow.mainLoop(&threadDispatcher.dispatch);
+		
 		if (common.useGslist) {
 			getNewList();
 			//debug loadSavedList();
@@ -94,9 +98,9 @@ void main() {
 				getNewList();
 		}
 
-		threadDispatcher = new ThreadDispatcher();
+		//threadDispatcher = new ThreadDispatcher();
 
-		mainWindow.mainLoop(&threadDispatcher.dispatch);
+		//mainWindow.mainLoop(&threadDispatcher.dispatch);
 	}
 	catch(Exception e) {
 		logx(__FILE__, __LINE__, e);
