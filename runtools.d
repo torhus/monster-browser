@@ -209,7 +209,7 @@ void browserRefreshList(void delegate(Object) callback,
 		}
 	}
 	catch(Exception e) {
-		db(__FILE__ ~ std.string.toString(__LINE__) ~ ": " ~ e.toString());
+		logx(__FILE__, __LINE__, e);
 	}
 }
 

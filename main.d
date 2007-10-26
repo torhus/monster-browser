@@ -57,8 +57,24 @@ void main() {
 		}
 
 		mainWindow = new MainWindow;
+	
+		mainWindow.setInitDelegate(
+		{
+			if (common.useGslist) {
+			getNewList();
+			//debug loadSavedList();
+		}
+		else {
+			// Qstat is too slow to do a getNewList(), so just refresh
+			// the old list instead, if possible.
+			if (exists(activeMod.serverFile))
+				refreshList();
+			else
+				getNewList();
+		}
+		});
 
-		mainWindow.setCloseHandler(
+		mainWindow.setCleanupDelegate(
 		{
 			volatile runtools.abortParsing = true;
 			statusBar.setLeft("Saving settings...");
@@ -83,24 +99,8 @@ void main() {
 
 		threadDispatcher = new ThreadDispatcher();
 
-		mainWindow.mainLoop(&threadDispatcher.dispatch);
-		
-		if (common.useGslist) {
-			getNewList();
-			//debug loadSavedList();
-		}
-		else {
-			// Qstat is too slow to do a getNewList(), so just refresh
-			// the old list instead, if possible.
-			if (exists(activeMod.serverFile))
-				refreshList();
-			else
-				getNewList();
-		}
+		mainWindow.mainLoop();
 
-		//threadDispatcher = new ThreadDispatcher();
-
-		//mainWindow.mainLoop(&threadDispatcher.dispatch);
 	}
 	catch(Exception e) {
 		logx(__FILE__, __LINE__, e);
@@ -115,30 +115,127 @@ void main() {
  */
 class ThreadDispatcher
 {
-	void run(void function() fp) { fp_ = fp; }
-
-	void dispatch()
+	void run(void function() fp)
 	{
-		if (fp_ is null)
-			return;
+		debug (td) writefln("ThreadDispatcher.run()");
+		assert(fp);
+		fp_ = fp;
+		dispatch();
+	}
 
-		if (serverThread && serverThread.getState() != Thread.TS.TERMINATED) {
+
+	synchronized
+	private void dispatch()
+	in {
+		assert(fp_);
+	}
+	body {
+		debug (td) writefln("ThreadDispatcher.dispatch()");
+
+		if (serverThread !is null &&
+		                     serverThread.getState() != Thread.TS.TERMINATED) {
+			debug (td) writefln("...calling waitAndRun()");
 			volatile abortParsing = true;
+			waitAndRun();
 		}
 		else {
-			debug writefln("ThreadDispatcher.dispatch: Killing server browser...");
+			debug (td) writefln(
+			         "ThreadDispatcher.dispatch: Killing server browser...");
 			bool success = killServerBrowser();
 
-			debug if (!success)
+			debug (td) if (!success)
 				writefln("killServerBrowser() failed.");
 			else
 				writefln("killServerBrowser() succeeded.");
 
 
+			debug (td) writefln("...calling fp_()");
+			/*display.syncExec(null, delegate void (Object o) {
+				                            fp_();
+			});*/
 			fp_();
 			fp_ = null;
 		}
+
+		debug (td) writefln("ThreadDispatcher.dispatch() returning");
 	}
 
-	private void function() fp_ = null;
+
+	private void waitAndRun()
+	in {
+		assert(serverThread !is null);
+		assert(abortParsing);
+	}
+	body {
+		bool done = false;
+
+		debug (td) writefln("ThreadDispatcher.waitAndRun()");
+
+		while (!done) {
+			switch (serverThread.getState()) {
+				case Thread.TS.INITIAL:
+					debug (td) writefln("...TS.INITAL, waiting in loop");
+					while (serverThread.getState() == Thread.TS.INITIAL) {
+						// empty loop
+					}
+					break;
+				case Thread.TS.RUNNING:
+					debug (td) writefln("...TS.RUNNING");
+					if (waiterThread_ !is null &&
+					        waiterThread_.getState() != Thread.TS.TERMINATED) {
+						volatile abortWaiting_ = true;
+
+						debug
+							writefln("...waiting in loop for waiterThread_");
+
+						while (waiterThread_.getState() !=
+						                                Thread.TS.TERMINATED) {
+							// empty loop
+						}
+					}
+					volatile abortWaiting_ = false;
+					waiterThread_ = new Thread(&waitForThread);
+					waiterThread_.start();
+					debug (td) writefln("...started waitForThread in a new thread");
+					done = true;
+					break;
+				case Thread.TS.TERMINATED:
+					debug (td) writefln("...TS.TERMINATED, calling dispatch()");
+					dispatch();
+					done = true;
+					break;
+			}
+		}
+
+		debug (td) writefln("ThreadDispatcher.waitAndRun() returning");
+	}
+
+
+	private int waitForThread()
+	{
+		debug (td) writefln("ThreadDispatcher.waitForThread()");
+
+		volatile while (!abortWaiting_ &&
+		                     serverThread.getState() != Thread.TS.TERMINATED) {
+			Thread.getThis().yield();
+		}
+
+		if (!abortWaiting_) {
+			debug (td) writefln(
+			            "ThreadDispatcher.waitForThread() calling dispatch()");
+			syncExec(null, delegate void (Object o) {
+				dispatch();
+			});
+		}
+		debug (td) writefln("ThreadDispatcher.waitForThread() returning");
+
+		return 0;
+	}
+
+
+	private {
+		void function() fp_ = null;
+		Thread waiterThread_;
+		bool abortWaiting_;
+	}
 }

@@ -1,19 +1,22 @@
 module gui.servertable;
 
 private {
-	//import dwt.all;
-		
+	import std.string;
+	
+	import wx.wx;
+
 	import common;
-	import launch;	
+	import launch;
 	import main;
 	import serverlist;
-	
 	import gui.cvartable;
 	import gui.dialogs;
 	import gui.mainwindow;
 	import gui.playertable;
 }
 
+
+typedef int WindowID;
 
 ServerTable serverTable;
 
@@ -28,48 +31,37 @@ char[][] serverHeaders = ["Name", "PW", "Ping", "Players", "Game", "Map", "IP"];
 class ServerTable
 {
 	///
-/+	this(Composite parent)
+	this(Window parent)
 	{
 		parent_ = parent;
-		table_ = new Table(parent, DWT.VIRTUAL | DWT.FULL_SELECTION |
-		                           DWT.BORDER);
-		table_.setHeaderVisible(true);
-		table_.setLinesVisible(true);
 
-		foreach (header; serverHeaders) {
-			TableColumn column = new TableColumn(table_, DWT.NONE);
-			column.setText(header);
-		}
+		listCtrl_ = new ServerListCtrl(parent_, -1, ListCtrl.wxDefaultPosition,
+		                         ListCtrl.wxDefaultSize,
+		                         ListCtrl.wxLC_REPORT |
+		                         ListCtrl.wxLC_VIRTUAL |
+		                         ListCtrl.wxLC_SINGLE_SEL |
+		                         ListCtrl.wxLC_HRULES |
+		                         ListCtrl.wxLC_VRULES |
+		                         ListCtrl.wxSUNKEN_BORDER);
 
-		table_.getColumn(ServerColumn.PASSWORDED).setAlignment(DWT.CENTER);
+		foreach (i, header; serverHeaders)
+			listCtrl_.InsertColumn(i, header);
+/+
+		listCtrl_.getColumn(ServerColumn.PASSWORDED).setAlignment(DWT.CENTER);
++/
+		foreach (i, w; [250, 28, 32, 50, 40, 90, 130])
+			listCtrl_.SetColumnWidth(i, w);
 
-		int col = 0;
-		table_.getColumn(col++).setWidth(250);
-		table_.getColumn(col++).setWidth(28);
-		table_.getColumn(col++).setWidth(32);
-		table_.getColumn(col++).setWidth(50);
-		table_.getColumn(col++).setWidth(40);
-		table_.getColumn(col++).setWidth(90);
-		table_.getColumn(col++).setWidth(130);
+		/*listCtrl_.InsertItem(0, "item 1");
+		listCtrl_.SetItem(0, 1, "1 col 2");
+		listCtrl_.InsertItem(1, "item 2");
+		listCtrl_.SetItem(1, 1, "2 col 2");*/
 
-		table_.addListener(DWT.SetData, new class Listener {
-			public void handleEvent(Event e)
-			{
-				TableItem item = cast(TableItem) e.item;
-				int i = table_.indexOf(item);
-
-				debug if (i >= getActiveServerList.filteredLength) {
-					error(__FILE__, "(", __LINE__, "):\n",
-					          "i >= getActiveServerList.filteredLength");
-				}
-				item.setText(getActiveServerList.getFiltered(i).server);
-			}
-		});
-
-		table_.addSelectionListener(new class SelectionAdapter {
+/+		
+		listCtrl_.addSelectionListener(new class SelectionAdapter {
 			void widgetSelected(SelectionEvent e)
 			{
-				int i = table_.getSelectionIndex();
+				int i = listCtrl_.getSelectionIndex();
 				selectedIp_ = getActiveServerList.getFiltered(i).server[ServerColumn.ADDRESS];
 				playerTable.setSelectedServer(i);
 				cvarTable.setItems(getActiveServerList.getFiltered(i).cvars);
@@ -78,7 +70,7 @@ class ServerTable
 			void widgetDefaultSelected(SelectionEvent e)
 			{
 				widgetSelected(e);
-				JoinServer(getActiveServerList.getFiltered(table_.getSelectionIndex()));
+				JoinServer(getActiveServerList.getFiltered(listCtrl_.getSelectionIndex()));
 			}
 		});
 
@@ -89,47 +81,48 @@ class ServerTable
 				TableColumn sortColumn, newColumn;
 				int dir;
 
-				sortColumn = table_.getSortColumn();
+				sortColumn = listCtrl_.getSortColumn();
 				newColumn = cast(TableColumn) e.widget;
-				dir = table_.getSortDirection();
+				dir = listCtrl_.getSortDirection();
 
 				if (sortColumn is newColumn) {
 					dir = (dir == DWT.UP) ? DWT.DOWN : DWT.UP;
 				} else {
 					dir = DWT.UP;
-					table_.setSortColumn(newColumn);
+					listCtrl_.setSortColumn(newColumn);
 				}
 
-				getActiveServerList.sort(table_.indexOf(newColumn), (dir == DWT.DOWN));
+				getActiveServerList.sort(listCtrl_.indexOf(newColumn), (dir == DWT.DOWN));
 
-				table_.setSortDirection(dir);
+				listCtrl_.setSortDirection(dir);
 				synchronized (getActiveServerList) {
-					table_.clearAll();
-					table_.setItemCount(getActiveServerList.filteredLength());
+					listCtrl_.clearAll();
+					listCtrl_.setItemCount(getActiveServerList.filteredLength());
 				}
 
 				// keep the same server selected
 				int i = getActiveServerList.getFilteredIndex(selectedIp_);
 				if (i != -1)
-					table_.setSelection(i);
+					listCtrl_.setSelection(i);
 
 			}
 		};
 
-		for (int i = 0; i < table_.getColumnCount(); i++) {
-			TableColumn c = table_.getColumn(i);
+		for (int i = 0; i < listCtrl_.getColumnCount(); i++) {
+			TableColumn c = listCtrl_.getColumn(i);
 			c.addListener(DWT.Selection, sortListener);
 		}
 
-		table_.setSortColumn(table_.getColumn(ServerColumn.NAME));
-		table_.setSortDirection(DWT.UP);
+		listCtrl_.setSortColumn(listCtrl_.getColumn(ServerColumn.NAME));
+		listCtrl_.setSortDirection(DWT.UP);
++/
 	}
 
 
 	/// Returns the server list's Table widget object.
-	Table getTable() { return table_; };
+	ListCtrl getTable() { return listCtrl_; };
 
-+/
+
 	/**
 	 * Clears the table and refills it with updated data.  Keeps the same server
 	 * selected, if there was one.
@@ -143,26 +136,26 @@ class ServerTable
 	 */
 	void refresh(Object index = null)
 	{/+
-		if(table_.isDisposed())
+		if(listCtrl_.isDisposed())
 			return;
 
 		if (index) {
-			int selected = table_.getSelectionIndex();
+			int selected = listCtrl_.getSelectionIndex();
 			int i = (cast(IntWrapper)index).value;
 
-			if (i <= getBottomIndex() /*&& i >= table_.getTopIndex()*/) {
-				table_.clearAll();
-				table_.setItemCount(getActiveServerList.filteredLength);
+			if (i <= getBottomIndex() /*&& i >= listCtrl_.getTopIndex()*/) {
+				listCtrl_.clearAll();
+				listCtrl_.setItemCount(getActiveServerList.filteredLength);
 			}
 
 			if (selected != -1 && i <= selected) {
-					table_.deselectAll();
-					table_.select(selected + 1);
+					listCtrl_.deselectAll();
+					listCtrl_.select(selected + 1);
 			}
 		}
 		else {
-			table_.clearAll();
-			table_.setItemCount(getActiveServerList.filteredLength);
+			listCtrl_.clearAll();
+			listCtrl_.setItemCount(getActiveServerList.filteredLength);
 		}+/
 	}
 
@@ -182,7 +175,7 @@ class ServerTable
 	 */
 	void reset(Object index = null)
 	{/+
-		if(table_.isDisposed())
+		if(listCtrl_.isDisposed())
 			return;
 
 		refresh();
@@ -202,12 +195,12 @@ class ServerTable
 		}
 
 		if (i != -1) {
-			table_.setSelection(i);
+			listCtrl_.setSelection(i);
 			playerTable.setSelectedServer(i);
 			cvarTable.setItems(getActiveServerList.getFiltered(i).cvars);
 		}
 		else {
-			table_.deselectAll();
+			listCtrl_.deselectAll();
 			playerTable.clear();
 			cvarTable.clear();
 		}+/
@@ -216,29 +209,61 @@ class ServerTable
 
 	int sortColumnIndex()
 	{
-		//return table_.indexOf(table_.getSortColumn());
+		//return listCtrl_.indexOf(listCtrl_.getSortColumn());
 		return 0;
 	}
 
 
 	bool reversedSortOrder()
 	{
-		//return (table_.getSortDirection() == DWT.DOWN);
+		//return (listCtrl_.getSortDirection() == DWT.DOWN);
 		return false;
 	}
-/+
+
 	/************************************************
 	            PRIVATE STUFF
 	 ************************************************/
 private:
-	Table table_;
-	Composite parent_;
+	ListCtrl listCtrl_;
+	Window parent_;
 	char[] selectedIp_ = "";
 
 	private int getBottomIndex()
 	{
-		return table_.getClientArea().height / table_.getItemHeight() +
-		                                                  table_.getTopIndex();
+		/*return listCtrl_.getClientArea().height / listCtrl_.getItemHeight() +
+		                                                  listCtrl_.getTopIndex();*/
+		return int.max;
 	}
+
+}
+
+class ServerListCtrl : ListCtrl
+{
+	this(Window parent, WindowID id, Point pos, Size size, long style) {
+		super(parent, id, pos, size, style);
+	}
+	
+	// FIXME: does it crash if args are long instead of int?
+	// The wxD ListCtrl sample uses long instead of int, and crashes.
+	string OnGetItem(int item, int column)
+	{
+/+
+		listCtrl_.addListener(DWT.SetData, new class Listener {
+			public void handleEvent(Event e)
+			{
+				TableItem item = cast(TableItem) e.item;
+				int i = listCtrl_.indexOf(item);
+
+				debug if (i >= getActiveServerList.filteredLength) {
+					error(__FILE__, "(", __LINE__, "):\n",
+					          "i >= getActiveServerList.filteredLength");
+				}
+				item.setText(getActiveServerList.getFiltered(i).server);
+			}
+		});
 +/
+		
+		return .toString(item) ~ " " ~ .toString(column);
+	}
+
 }

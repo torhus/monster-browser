@@ -84,7 +84,9 @@ each_server:
 			assert(fields.length == 9 || fields.length == 3);
 			count++;
 			countWrapper.value = count;
+			debug (exec) writefln("before parseOutput calling countWrapper");
 			syncExec(countWrapper, countDg);
+			debug (exec) writefln("after parseOutput calling countWrapper");
 
 			if (fields.length >= 9) {
 				bool keep_server = false;

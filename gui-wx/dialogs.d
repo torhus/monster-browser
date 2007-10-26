@@ -7,7 +7,7 @@ private {
 	import std.format;
 	import std.string;
 
-	//import dwt.all;
+	import wx.wx;
 	
 	import common;
 	import serveractions;
@@ -21,33 +21,32 @@ private {
 
 void messageBox(char[] title, int style, TypeInfo[] arguments, void* argptr)
 {
-/+	void f(Object o) {
+	void f(Object o) {
 		char[] s;
 		void f(dchar c) { std.utf.encode(s, c); }
 
 		std.format.doFormat(&f, arguments, argptr);
-		scope MessageBox mb = new MessageBox(mainShell, style);
-		mb.setText(title);
-		mb.setMessage(s);
+		MessageBox(s, title, style);
+		       //wxWindow *parent = NULL, int x = -1, int y = -1)
 		log("messageBox (" ~ title ~ "): " ~ s);
-		mb.open();
+
 	}
-	// only the gui thread can display message boxes
-	syncExec(null, &f);
-+/
+
+	//syncExec(null, &f);
+	f(null);
 }
 
 
-void _messageBox(char[] caption, int icon)(...)
+void _messageBox(char[] caption, int icon=Dialog.wxOK)(...)
 {
 	messageBox(caption, icon, _arguments, _argptr);
 }
 
 
-alias _messageBox!(APPNAME, 0) info;
-alias _messageBox!("Warning", 0) warning;
-alias _messageBox!("Error", 0) error;
-alias _messageBox!("Debug", 0) db;
+alias _messageBox!(APPNAME, Dialog.wxICON_INFORMATION) info;
+alias _messageBox!("Warning", Dialog.wxICON_EXCLAMATION) warning;
+alias _messageBox!("Error", Dialog.wxICON_ERROR) error;
+alias _messageBox!("Debug") db;
 
 
 void db(char[][] a)

@@ -205,8 +205,8 @@ void refreshList()
 
 		void status(Object int_count)
 		{
-			statusBar.setLeft("Refreshing " ~  total ~ " servers..." ~
-			          std.string.toString((cast(IntWrapper) int_count).value));
+			/*statusBar.setLeft("Refreshing " ~  total ~ " servers..." ~
+			          std.string.toString((cast(IntWrapper) int_count).value));*/
 		}
 
 		void done(Object o)

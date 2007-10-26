@@ -3,6 +3,7 @@ module gui.mainwindow;
 import std.conv : toInt;
 debug import std.stdio : writefln;
 import std.string;
+import std.thread;
 
 //import wx.wx : Frame, App, MenuIDs, Point, Size, Event, MessageBox, Dialog;
 import wx.wx;
@@ -24,24 +25,30 @@ StatusBar statusBar;
 
 //package Shell mainShell;
 
-//private	Display display;
-
 private {
 	Minimal theApp;
 	Frame mainFrame;
+	Object execMutex;
+	Thread mainThread;
+
+	void delegate() initDelegate;	
+	void delegate() cleanupDelegate;
 }
 
 
+///
 class MainWindow
 {
 	this()
 	{
+		execMutex = new Object;
+		mainThread = Thread.getThis();
+		
+		//info("1");
 		theApp = new Minimal();
+		//info("2");
 
-/+		display = Display.getDefault();  // FIXME: remove?
-		mainShell = new Shell(Display.getDefault());
-		mainShell.setText(APPNAME ~ " " ~ VERSION);
-
+/+
 		// restore saved size and state
 		char[] size = getSetting("windowSize");
 		int pos = find(size, 'x');
@@ -76,14 +83,14 @@ class MainWindow
 		middleForm.setLayoutData(gridData);
 +/
 		// server table widget
-		serverTable = new ServerTable(/*middleForm*/);
+		//serverTable = new ServerTable(/*middleForm*/);
 /+		gridData = new GridData(GridData.FILL_VERTICAL);
 		// FIXME: doesn't work
 		//gridData.widthHint = 610;  // FIXME: automate using table's info
 		serverTable.getTable().setLayoutData(gridData);
 +/
 		// has to be instantied after the table
-		setActiveServerList(activeMod.name);
+		//setActiveServerList(activeMod.name);
 /+
 		// parent for player and cvar tables
 		SashForm rightForm = new SashForm(middleForm, DWT.VERTICAL);
@@ -137,50 +144,60 @@ class MainWindow
 
 		serverTable.getTable.setFocus();
 		mainShell.open();
-+/		
++/
 	}
 
-	void setCloseHandler(void delegate() handler)
+	/**
+	 * dg will be called after the main window is opened, but before entering
+	 * the event loop.
+	 */
+	void setInitDelegate(void delegate() dg) { initDelegate = dg; }
+
+
+	/**
+	 * dg will be called when the main window is about to be closed.
+	 */
+	void setCleanupDelegate(void delegate() dg)
 	{/+
 		assert(mainShell !is null);
 
 		mainShell.addShellListener(new class(handler) ShellAdapter {
 			typeof(handler) handler_;
-			
+
 			this(typeof(handler) handler) { handler_ = handler; }
-			
+
 			public void shellClosed(ShellEvent e) { handler_(); }
 		});+/
+
+		cleanupDelegate = dg;
 	}
 
-	void mainLoop(void delegate() callInLoop)
+	/**
+	 * Run the GUI library's event loop.
+	 * 
+	 * Basic order of actions:
+	 * 1. Create and show the main window
+	 * 2. Call the delegate set by setInitDelegate
+	 * 3. Run the event loop until the main window is closed
+	 * 4. Call the delegate set by setCleanupDelegate
+	 * 5. Destroy the main window and do all GUI-related cleanup 
+	 */
+	void mainLoop()
 	{
 		theApp.Run();
-		
-		/+		
-		auto display = Display.getDefault();
-
-		while (!isDisposed()) {
-				callInLoop();
-				if (!display.readAndDispatch())
-					display.sleep();
-				}
-				display.dispose()
-		+/
 	}
 
 /+	int isDisposed() { return mainShell.isDisposed(); }+/
-	
+
 	int minimized() { return 0; }
 	void minimized(bool v) { /+mainShell.setMinimized(v);+/ }
-	
+
 	int maximized() { return 0; }
-	
+
 	SizeStruct size()
 	{
-		//auto p = mainShell.getSize();
-		//return common.Point(p.x, p.y);
-		return SizeStruct(300, 200);
+		auto size = mainFrame.size();
+		return SizeStruct(size.Width, size.Height);
 	}
 }
 
@@ -189,9 +206,7 @@ private class MyFrame : Frame
 {
 	enum Cmd
 	{
-		About = MenuIDs.wxID_ABOUT,
 		Quit = MenuIDs.wxID_EXIT,
-		Dialog = MenuIDs.wxID_HIGHEST + 1
 	}
 
 	//---------------------------------------------------------------------
@@ -199,43 +214,32 @@ private class MyFrame : Frame
 	public this(string title, Point pos, Size size)
 	{
 		super(title, pos, size);
-		// Set the window icon
 
-		//icon = new Icon("../Samples/Minimal/mondrian.png");
+		// Set the window icon
 		icon = new Icon("mondrian.png");
 
-		// Set up a menu
-
-		Menu fileMenu = new Menu();
-		fileMenu.Append(Cmd.Dialog, "&Show dialog\tAlt-D", "Show test dialog");
-		fileMenu.Append(Cmd.Quit, "E&xit\tAlt-X", "Quit this program");
-
-		Menu helpMenu = new Menu();
-		helpMenu.Append(Cmd.About, "&About...\tF1", "Show about dialog");
-
-		MenuBar menuBar = new MenuBar();
-		menuBar.Append(fileMenu, "&File");
-		menuBar.Append(helpMenu, "&Help");
-
-		this.menuBar = menuBar;
+		// ************** SERVER LIST, PLAYER LIST, CVARS LIST ***************
+		// server table widget
+		serverTable = new ServerTable(this);
 
 		/*CreateStatusBar(2);
 		StatusText = "Welcome to wxWidgets!";*/
-		
+
 		.statusBar = new StatusBar(this);
 		.statusBar.setLeft(APPNAME ~ " is ready.");
 
 		// Set up the event table
+		EVT_MENU(Cmd.Quit, &OnQuit);
 
-		EVT_MENU(Cmd.Quit,    &OnQuit);
-		EVT_MENU(Cmd.Dialog,  &OnDialog);
-		EVT_MENU(Cmd.About,   &OnAbout);
+		// has to be instantied after the ServerTable
+		setActiveServerList(activeMod.name);
 	}
 
 	//---------------------------------------------------------------------
 
 	public void OnQuit(Object sender, Event e)
 	{
+		cleanupDelegate();
 		Close();
 	}
 
@@ -286,8 +290,10 @@ public class Minimal : App
 	public override bool OnInit()
 	{
 		mainFrame = new MyFrame(APPNAME ~ " " ~ VERSION,
-		                            Point(50,50), Size(450,340));
+		                            Point(50, 50), Size(836, 594));
 		mainFrame.Show(true);
+		
+		initDelegate();
 
 		return true;
 	}
@@ -372,6 +378,7 @@ void createToolbar(/*Composite parent*/)
 }
 
 
+///
 class StatusBar
 {
 
@@ -387,8 +394,15 @@ class StatusBar
 		if (!leftLabel_.isDisposed) {
 			leftLabel_.setText(text);
 		}+/
-		
-		parent_.StatusText = text;
+		debug writefln("setLeft 1");
+		synchronized (execMutex) {
+			if (!mainThread.isSelf())
+				MutexGuiEnter();
+			parent_.StatusText = text;
+			if (!mainThread.isSelf())
+				MutexGuiLeave();
+		}
+		debug writefln("setLeft 2");
 	}
 
 	void setDefaultStatus(size_t totalServers, size_t shownServers)
@@ -410,6 +424,7 @@ private:
 }
 
 
+///
 class FilterBar// : Composite
 {
 /+	this(Composite parent)
@@ -547,13 +562,37 @@ private:
 }
 
 
-void asyncExec(Object o, void delegate(Object) handler)
+///
+void asyncExec(Object o, void delegate(Object) dg)
 {
-	//display.asyncExec(o, handler);
+	debug (exec) writefln("asyncExec starting");
+	bool isMain = mainThread.isSelf();
+	
+	// FIXME: use wxIdleEvent or wxUpdateUIEvent?
+
+	synchronized (execMutex) {
+		if (!isMain)
+			MutexGuiEnter();
+		dg(o);
+		if (!isMain)
+			MutexGuiLeave();
+	}
+	debug (exec) writefln("asyncExec returning");
 }
 
 
-void syncExec(Object o, void delegate(Object) handler)
+///
+void syncExec(Object o, void delegate(Object) dg)
 {
-	//display.syncExec(o, handler);
+	debug (exec) writefln("syncExec starting");
+	bool isMain = mainThread.isSelf();
+
+	synchronized (execMutex) {
+		if (!isMain)
+			MutexGuiEnter();
+		dg(o);
+		if (!isMain)
+			MutexGuiLeave();
+	}
+	debug (exec) writefln("syncExec returning");
 }
