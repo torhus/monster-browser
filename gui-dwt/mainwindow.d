@@ -23,15 +23,19 @@ StatusBar statusBar;
 
 package Shell mainShell;
 
-private	Display display;
+private {
+	Display display;
+	void delegate() initDelegate;
+	void delegate() cleanupDelegate;
+}
 
 
 class MainWindow
 {
 	this()
 	{
-		display = Display.getDefault();  // FIXME: remove?
-		mainShell = new Shell(Display.getDefault());
+		display = Display.getDefault();
+		mainShell = new Shell(display);
 		mainShell.setText(APPNAME ~ " " ~ VERSION);
 
 		// restore saved size and state
@@ -132,42 +136,66 @@ class MainWindow
 		mainShell.open();
 	}
 
-	void setCloseHandler(void delegate() handler)
+
+	/**
+	 * dg will be called after the main window is opened, but before entering
+	 * the event loop.
+	 */
+	void setInitDelegate(void delegate() dg) { initDelegate = dg; }
+
+
+	/**
+	 * dg will be called when the main window is about to be closed.
+	 */
+	void setCleanupDelegate(void delegate() dg)
 	{
 		assert(mainShell !is null);
 
-		mainShell.addShellListener(new class(handler) ShellAdapter {
-			typeof(handler) handler_;
-			
-			this(typeof(handler) handler) { handler_ = handler; }
-			
+		mainShell.addShellListener(new class(dg) ShellAdapter {
+			typeof(dg) handler_;
+
+			this(typeof(dg) handler) { handler_ = handler; }
+
 			public void shellClosed(ShellEvent e) { handler_(); }
 		});
 	}
 
-	void mainLoop(void delegate() callInLoop)
+
+	/**
+	 * Run the GUI library's event loop.
+	 *
+	 * Basic order of actions:
+	 * 1. Create and show the main window, if it's not already done.
+	 * 2. Call the delegate set by setInitDelegate
+	 * 3. Run the event loop until the main window is closed
+	 * 4. Call the delegate set by setCleanupDelegate
+	 * 5. Destroy the main window and do all GUI-related cleanup
+	 */
+	void mainLoop()
 	{
 		auto display = Display.getDefault();
 
-		while (!isDisposed()) {
-				callInLoop();
+		if (initDelegate !is null)
+			initDelegate();
+
+		while (!mainShell.isDisposed()) {
 				if (!display.readAndDispatch())
 					display.sleep();
 				}
 				display.dispose();
 	}
 
-	int isDisposed() { return mainShell.isDisposed(); }
-	
+	//int isDisposed() { return mainShell.isDisposed(); }
+
 	int minimized() { return mainShell.getMinimized(); }
 	void minimized(bool v) { mainShell.setMinimized(v); }
-	
+
 	int maximized() { return mainShell.getMaximized(); }
-	
-	common.Point size()
+
+	SizeStruct size()
 	{
 		auto p = mainShell.getSize();
-		return common.Point(p.x, p.y);
+		return SizeStruct(p.x, p.y);
 	}
 
 }
@@ -411,13 +439,13 @@ private:
 }
 
 
-void asyncExec(Object o, void delegate(Object) handler)
+void asyncExec(Object o, void delegate(Object) dg)
 {
-	display.asyncExec(o, handler);
+	display.asyncExec(o, dg);
 }
 
 
-void syncExec(Object o, void delegate(Object) handler)
+void syncExec(Object o, void delegate(Object) dg)
 {
-	display.syncExec(o, handler);
+	display.syncExec(o, dg);
 }
