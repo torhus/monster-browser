@@ -173,7 +173,7 @@ class MainWindow
 
 private class MyFrame : Frame
 {
-	enum Cmd
+	enum Id
 	{
 		Quit = MenuIDs.wxID_EXIT,
 	}
@@ -191,17 +191,9 @@ private class MyFrame : Frame
 
 		
 //		 *********** MAIN WINDOW TOP ***************
-/+
-		createToolbar(topComposite);
-+/
 		auto topPanel = new Panel(this);
-		auto buttonSizer = new BoxSizer(Orientation.wxHORIZONTAL);		
-		topPanel.SetSizer(buttonSizer);
-
-		auto button1 = new Button(topPanel, "button 1");
-		auto button2 = new Button(topPanel, "button 2");
-		buttonSizer.Add(button1);
-		buttonSizer.Add(button2);
+		topPanel.sizer = new BoxSizer(Orientation.wxHORIZONTAL);
+		topPanel.sizer.Add(new MainToolBar(topPanel));
 		mainSizer.Add(topPanel, 0, Stretch.wxEXPAND);
 
 		// filtering options
@@ -219,10 +211,10 @@ private class MyFrame : Frame
 		.statusBar = new StatusBar(this);
 		.statusBar.setLeft(APPNAME ~ " is ready.");
 
-		SetSizer(mainSizer);
+		SetSizer(mainSizer);  // FIXME: use property
 		
 		// Set up the event table
-		EVT_MENU(Cmd.Quit, &OnQuit);
+		EVT_MENU(Id.Quit, &OnQuit);
 
 		// has to be instantied after the ServerTable
 		setActiveServerList(activeMod.name);
@@ -294,71 +286,55 @@ public class Minimal : App
 }
 
 
-void createToolbar(/*Composite parent*/)
+class MainToolBar : Panel
 {
-/+	auto toolBar = new ToolBar(parent, DWT.HORIZONTAL);
+	enum Id {
+		GetNewList = MenuIDs.wxID_HIGHEST + 1,
+		RefreshList,
+		SpecifyServer,
+		Settings
+	}
 
-	auto button1 = new ToolItem(toolBar, DWT.PUSH);
-	button1.setText("Get new list");
-	button1.addSelectionListener(new class SelectionAdapter {
-		public void widgetSelected(SelectionEvent e)
+	this(Window parent)
+	{
+		super(parent);
+
+		auto buttonSizer = new BoxSizer(Orientation.wxHORIZONTAL);
+		sizer = buttonSizer;
+
+		auto button1 = new Button(this, Id.GetNewList, "Get new list");
+		auto button2 = new Button(this, Id.RefreshList, "Refresh list");
+		auto button3 = new Button(this, Id.SpecifyServer, "Specify...");
+		auto button4 = new Button(this, Id.Settings, "Settings...");
+		buttonSizer.Add(button1);
+		buttonSizer.Add(button2);
+		buttonSizer.Add(button3);
+		buttonSizer.Add(button4);
+
+		EVT_BUTTON(Id.GetNewList, (Object sender, Event e)
 		{
 			threadDispatcher.run(&getNewList);
-		}
-	});
-
-	new ToolItem(toolBar, DWT.SEPARATOR);
-
-	ToolItem button2 = new ToolItem(toolBar, DWT.PUSH);
-	button2.setText("Refresh list");
-	button2.addSelectionListener(new class SelectionAdapter {
-		public void widgetSelected(SelectionEvent e)
+		});
+		
+		EVT_BUTTON(Id.RefreshList, (Object sender, Event e)
 		{
 			threadDispatcher.run(&refreshList);
-		}
-	});
+		});
 
-	new ToolItem(toolBar, DWT.SEPARATOR);
-
-	auto button3 = new ToolItem(toolBar, DWT.PUSH);
-	button3.setText("Specify...");
-	button3.addSelectionListener(new class SelectionAdapter {
-		public void widgetSelected(SelectionEvent e)
+		EVT_BUTTON(Id.SpecifyServer, (Object sender, Event e)
 		{
-			auto dialog = new SpecifyServerDialog(mainShell);
-			dialog.open();
-		}
-	});
-/+
-	new ToolItem(toolBar, DWT.SEPARATOR);
+			//auto dialog = new SpecifyServerDialog(mainShell);
+			//dialog.open();
+		});
 
-	auto button4 = new ToolItem(toolBar, DWT.PUSH);
-	button4.setText("Monitor...");
-	button4.setEnabled(false);
-	button4.addSelectionListener(new class SelectionAdapter {
-		public void widgetSelected(SelectionEvent e)
+		EVT_BUTTON(Id.Settings, (Object sender, Event e)
 		{
-			startMonitor(mainShell);
-			//SettingsDialog dialog = new SettingsDialog(mainShell);
-			/*if (dialog.open() == DWT.OK)
-				saveSettings();*/
-		}
-	});
-+/
-	new ToolItem(toolBar, DWT.SEPARATOR);
-
-	auto button5 = new ToolItem(toolBar, DWT.PUSH);
-	button5.setText("Settings...");
-	button5.addSelectionListener(new class SelectionAdapter {
-		public void widgetSelected(SelectionEvent e)
-		{
-			SettingsDialog dialog = new SettingsDialog(mainShell);
+			/*SettingsDialog dialog = new SettingsDialog(mainShell);
 			if (dialog.open() == DWT.OK)
-				saveSettings();
-		}
-	});
-+/
-	//return toolBar;
+				saveSettings();*/
+		});
+	}
+
 }
 
 
