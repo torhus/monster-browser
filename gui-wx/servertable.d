@@ -2,7 +2,7 @@ module gui.servertable;
 
 private {
 	import std.string;
-	
+
 	import wx.wx;
 
 	import common;
@@ -16,7 +16,7 @@ private {
 }
 
 
-typedef int WindowID;
+typedef int WindowID;  // This is missing from wxD.
 
 ServerTable serverTable;
 
@@ -38,7 +38,7 @@ class ServerTable
 		listCtrl_ = new ServerListCtrl(parent_, -1, ListCtrl.wxDefaultPosition,
 		                         ListCtrl.wxDefaultSize,
 		                         ListCtrl.wxLC_REPORT |
-		                         ListCtrl.wxLC_VIRTUAL |
+		                         //ListCtrl.wxLC_VIRTUAL |
 		                         ListCtrl.wxLC_SINGLE_SEL |
 		                         ListCtrl.wxLC_HRULES |
 		                         ListCtrl.wxLC_VRULES |
@@ -52,12 +52,14 @@ class ServerTable
 		foreach (i, w; [250, 28, 32, 50, 40, 90, 130])
 			listCtrl_.SetColumnWidth(i, w);
 
-		/*listCtrl_.InsertItem(0, "item 1");
+		listCtrl_.InsertItem(0, "item 1");
 		listCtrl_.SetItem(0, 1, "1 col 2");
 		listCtrl_.InsertItem(1, "item 2");
-		listCtrl_.SetItem(1, 1, "2 col 2");*/
+		listCtrl_.SetItem(1, 1, "2 col 2");
 
-/+		
+		//listCtrl_.ItemCount = 1;
+
+/+
 		listCtrl_.addSelectionListener(new class SelectionAdapter {
 			void widgetSelected(SelectionEvent e)
 			{
@@ -120,7 +122,7 @@ class ServerTable
 
 
 	/// Returns the server list's Table widget object.
-	ListCtrl getTable() { return listCtrl_; };
+	ListCtrl getHandle() { return listCtrl_; };
 
 
 	/**
@@ -224,7 +226,7 @@ class ServerTable
 	            PRIVATE STUFF
 	 ************************************************/
 private:
-	ListCtrl listCtrl_;
+	ServerListCtrl listCtrl_;
 	Window parent_;
 	char[] selectedIp_ = "";
 
@@ -242,7 +244,7 @@ class ServerListCtrl : ListCtrl
 	this(Window parent, WindowID id, Point pos, Size size, long style) {
 		super(parent, id, pos, size, style);
 	}
-	
+
 	// FIXME: does it crash if args are long instead of int?
 	// The wxD ListCtrl sample uses long instead of int, and crashes.
 	string OnGetItem(int item, int column)
@@ -262,7 +264,7 @@ class ServerListCtrl : ListCtrl
 			}
 		});
 +/
-		
+
 		return .toString(item) ~ " " ~ .toString(column);
 	}
 

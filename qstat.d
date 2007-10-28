@@ -4,6 +4,7 @@ module qstat;
 
 private {
 	import std.file;
+	debug (exec) import std.stdio;
 	import std.string;
 	import std.stream;
 	import std.conv;

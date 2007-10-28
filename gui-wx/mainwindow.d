@@ -1,7 +1,7 @@
 module gui.mainwindow;
 
-import std.conv : toInt;
-debug import std.stdio : writefln;
+import std.conv;// : toInt;
+debug import std.stdio;// : writefln;
 import std.string;
 import std.thread;
 
@@ -31,7 +31,7 @@ private {
 	Object execMutex;
 	Thread mainThread;
 
-	void delegate() initDelegate;	
+	void delegate() initDelegate;
 	void delegate() cleanupDelegate;
 }
 
@@ -43,7 +43,7 @@ class MainWindow
 	{
 		execMutex = new Object;
 		mainThread = Thread.getThis();
-		
+
 		//info("1");
 		theApp = new Minimal();
 		//info("2");
@@ -57,25 +57,6 @@ class MainWindow
 		if (getSetting("windowMaximized") == "true") {
 			mainShell.setMaximized(true);
 		}
-
-		GridLayout gridLayout = new GridLayout();
-		gridLayout.numColumns = 2;
-		mainShell.setLayout(gridLayout);
-
-
-		// *********** MAIN WINDOW TOP ***************
-		Composite topComposite = new Composite(mainShell, DWT.NONE);
-		GridData gridData = new GridData(GridData.HORIZONTAL_ALIGN_FILL |
-		                                 GridData.GRAB_HORIZONTAL);
-		gridData.horizontalSpan = 2;
-		topComposite.setLayoutData(gridData);
-		topComposite.setLayout(new FillLayout(DWT.HORIZONTAL));
-
-		createToolbar(topComposite);
-+/
-		// filtering options
-		filterBar = new FilterBar(/*topComposite*/);
-/+
 
 		// ************** SERVER LIST, PLAYER LIST, CVARS LIST ***************
 		SashForm middleForm = new SashForm(mainShell, DWT.HORIZONTAL);
@@ -157,40 +138,28 @@ class MainWindow
 	/**
 	 * dg will be called when the main window is about to be closed.
 	 */
-	void setCleanupDelegate(void delegate() dg)
-	{/+
-		assert(mainShell !is null);
+	void setCleanupDelegate(void delegate() dg) { cleanupDelegate = dg; }
 
-		mainShell.addShellListener(new class(handler) ShellAdapter {
-			typeof(handler) handler_;
-
-			this(typeof(handler) handler) { handler_ = handler; }
-
-			public void shellClosed(ShellEvent e) { handler_(); }
-		});+/
-
-		cleanupDelegate = dg;
-	}
 
 	/**
 	 * Run the GUI library's event loop.
-	 * 
+	 *
 	 * Basic order of actions:
-	 * 1. Create and show the main window
+	 * 1. Create and show the main window, if it's not already done.
 	 * 2. Call the delegate set by setInitDelegate
 	 * 3. Run the event loop until the main window is closed
 	 * 4. Call the delegate set by setCleanupDelegate
-	 * 5. Destroy the main window and do all GUI-related cleanup 
+	 * 5. Destroy the main window and do all GUI-related cleanup
 	 */
 	void mainLoop()
 	{
 		theApp.Run();
 	}
 
-/+	int isDisposed() { return mainShell.isDisposed(); }+/
+	//int isDisposed() { return mainShell.isDisposed(); }
 
 	int minimized() { return 0; }
-	void minimized(bool v) { /+mainShell.setMinimized(v);+/ }
+	void minimized(bool v) { /*mainShell.setMinimized(v);*/ }
 
 	int maximized() { return 0; }
 
@@ -218,9 +187,31 @@ private class MyFrame : Frame
 		// Set the window icon
 		icon = new Icon("mondrian.png");
 
+		auto mainSizer = new BoxSizer(Orientation.wxVERTICAL);
+
+		
+//		 *********** MAIN WINDOW TOP ***************
+/+
+		createToolbar(topComposite);
++/
+		auto topPanel = new Panel(this);
+		auto buttonSizer = new BoxSizer(Orientation.wxHORIZONTAL);		
+		topPanel.SetSizer(buttonSizer);
+
+		auto button1 = new Button(topPanel, "button 1");
+		auto button2 = new Button(topPanel, "button 2");
+		buttonSizer.Add(button1);
+		buttonSizer.Add(button2);
+		mainSizer.Add(topPanel, 0, Stretch.wxEXPAND);
+
+		// filtering options
+		filterBar = new FilterBar(/*topComposite*/);
+
+
 		// ************** SERVER LIST, PLAYER LIST, CVARS LIST ***************
 		// server table widget
 		serverTable = new ServerTable(this);
+		mainSizer.Add(serverTable.getHandle(), 1, Stretch.wxEXPAND);
 
 		/*CreateStatusBar(2);
 		StatusText = "Welcome to wxWidgets!";*/
@@ -228,6 +219,8 @@ private class MyFrame : Frame
 		.statusBar = new StatusBar(this);
 		.statusBar.setLeft(APPNAME ~ " is ready.");
 
+		SetSizer(mainSizer);
+		
 		// Set up the event table
 		EVT_MENU(Cmd.Quit, &OnQuit);
 
@@ -239,6 +232,7 @@ private class MyFrame : Frame
 
 	public void OnQuit(Object sender, Event e)
 	{
+		assert(cleanupDelegate !is null);
 		cleanupDelegate();
 		Close();
 	}
@@ -247,7 +241,8 @@ private class MyFrame : Frame
 
 	public void OnDialog(Object sender, Event e)
 	{
-        Dialog dialog = new Dialog( this, -1, "Test dialog", Point(50,50), Size(450,340) );
+        Dialog dialog = new Dialog(this, -1, "Test dialog", Point(50,50),
+                                   Size(450,340));
         BoxSizer main_sizer = new BoxSizer( Orientation.wxVERTICAL );
 
         StaticBoxSizer top_sizer = new StaticBoxSizer(
@@ -285,28 +280,17 @@ private class MyFrame : Frame
 
 public class Minimal : App
 {
-	//---------------------------------------------------------------------
-
 	public override bool OnInit()
 	{
 		mainFrame = new MyFrame(APPNAME ~ " " ~ VERSION,
 		                            Point(50, 50), Size(836, 594));
 		mainFrame.Show(true);
-		
+
+		assert(initDelegate !is null);
 		initDelegate();
 
 		return true;
 	}
-
-	//---------------------------------------------------------------------
-
-	/+static void Main()
-	{
-		Minimal app = new Minimal();
-		app.Run();
-	}+/
-
-	//---------------------------------------------------------------------
 }
 
 
@@ -567,7 +551,7 @@ void asyncExec(Object o, void delegate(Object) dg)
 {
 	debug (exec) writefln("asyncExec starting");
 	bool isMain = mainThread.isSelf();
-	
+
 	// FIXME: use wxIdleEvent or wxUpdateUIEvent?
 
 	synchronized (execMutex) {
