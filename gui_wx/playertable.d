@@ -12,6 +12,10 @@ private {
 // should correspond to serverlist.PlayerColumn
 char[][] playerHeaders = ["Name", "Score", "Ping"];
 
+
+/*
+ * Manages the players list control.
+ */
 class PlayerTable
 {
 	/*************************************************
@@ -20,7 +24,7 @@ class PlayerTable
 	this(Window parent)
 	{
 		parent_ = parent;
-	
+
 		listCtrl_ = new ListCtrl(parent, -1, ListCtrl.wxDefaultPosition,
 	                                   ListCtrl.wxDefaultSize,
 	                                   ListCtrl.wxLC_REPORT |
@@ -38,7 +42,7 @@ class PlayerTable
 		listCtrl_.InsertItem(0, "item 1");
 		listCtrl_.SetItem(0, 1, "1 col 2");
 		listCtrl_.InsertItem(0, "item 2");
-		listCtrl_.SetItem(0, 1, "2 col 2");		
+		listCtrl_.SetItem(0, 1, "2 col 2");
 		listCtrl_.InsertItem(3, "item 4");
 		listCtrl_.SetItem(2, 1, "4 col 2");
 
@@ -107,7 +111,8 @@ class PlayerTable
 		}
 
 		table_.setSortColumn(table_.getColumn(PlayerColumn.NAME));
-		table_.setSortDirection(DWT.UP);+/
+		table_.setSortDirection(DWT.UP);
++/
 	}
 
 	Window getHandle() { return listCtrl_; };
@@ -116,8 +121,8 @@ class PlayerTable
 	{
 		//table_.clearAll();
 		sort();
-		/+table_.setItemCount(getActiveServerList.getFiltered(
-		                                selectedServerIndex_).players.length);+/
+		/*table_.setItemCount(getActiveServerList.getFiltered(
+		                                selectedServerIndex_).players.length);*/
 	}
 
 	/**

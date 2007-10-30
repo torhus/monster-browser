@@ -8,17 +8,14 @@ private {
 	import main;
 }
 
-//CvarTable cvarTable;
 
+/*
+ * Manages the cvars list control.
+ */
 class CvarTable
 {
-	/*************************************************
-	               PUBLIC METHODS
-	*************************************************/
 	this(Window parent)
 	{
-		parent_ = parent;
-		
 		listCtrl_ = new ListCtrl(parent, -1, ListCtrl.wxDefaultPosition,
                                  ListCtrl.wxDefaultSize,
                                  ListCtrl.wxLC_REPORT |
@@ -29,41 +26,60 @@ class CvarTable
 
 		foreach (i, header; ["Key", "Value"])
 			listCtrl_.InsertColumn(i, header);
-		
+
 		foreach (i, w; [90, 90])
 			listCtrl_.SetColumnWidth(i, w);
-		
-		listCtrl_.InsertItem(0, "item 1");
+
+		/*listCtrl_.InsertItem(0, "item 1");
 		listCtrl_.SetItem(0, 1, "1 col 2");
 		listCtrl_.InsertItem(0, "item 2");
-		listCtrl_.SetItem(0, 1, "2 col 2");		
+		listCtrl_.SetItem(0, 1, "2 col 2");
 		listCtrl_.InsertItem(3, "item 4");
-		listCtrl_.SetItem(2, 1, "4 col 2");
+		listCtrl_.SetItem(2, 1, "4 col 2");*/
+
+		setItems([["item 1", "1 col 2"],
+		          ["item 2", "2 col 2"]
+		         ]);
 
 	}
+
 
 	Window getHandle() { return listCtrl_; }
 
+
+	/**
+	 * Set the contents of the list control.
+	 */
 	void setItems(char[][][] items)
 	{
 		assert (items && items.length);
-		//table_.setItemCount(0);
-		foreach (v; items) {
-			//TableItem item = new TableItem(table_, DWT.NONE);
-      		//item.setText(v);
+		listCtrl_.DeleteAllItems();
+		foreach (i, v; items) {
+      		insertFullItem(i, v);
       	}
   	}
 
-	void clear()
+	/**
+	 * Fill all columns in a line.
+	 */
+	void insertFullItem(int index, char[][] items)
 	{
-		//table_.removeAll();
+		assert(items.length == listCtrl_.ColumnCount);
+
+		listCtrl_.InsertItem(index, items[0]);
+		foreach (col, s; items[1..$])
+			listCtrl_.SetItem(index, col+1, s);
+
 	}
 
-	/************************************************
-	            PRIVATE STUFF
-	 ************************************************/
-private:
-	Panel panel_;
-	ListCtrl listCtrl_;
-	Window parent_;
+	/// Clear the list control.
+	void clear()
+	{
+		listCtrl_.DeleteAllItems();
+	}
+
+
+	private {
+		ListCtrl listCtrl_;
+	}
 }

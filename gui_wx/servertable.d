@@ -60,7 +60,7 @@ class ServerTable
 		/*listCtrl_.InsertItem(0, "item 1");
 		listCtrl_.SetItem(0, 1, "1 col 2");
 		listCtrl_.InsertItem(0, "item 2");
-		listCtrl_.SetItem(0, 1, "2 col 2");		
+		listCtrl_.SetItem(0, 1, "2 col 2");
 		listCtrl_.InsertItem(3, "item 4");
 		listCtrl_.SetItem(2, 1, "4 col 2");*/
 
@@ -128,7 +128,7 @@ class ServerTable
 
 		auto rightPanel = new Panel(mainPanel_);
 		rightPanel.sizer = new BoxSizer(Orientation.wxVERTICAL);
-		mainPanel_.sizer.Add(rightPanel, 1, Stretch.wxEXPAND);		
+		mainPanel_.sizer.Add(rightPanel, 1, Stretch.wxEXPAND);
 		//auto rightSash = new wxSashWindow(rightPanel);
 		//rightSash.sizer = new BoxSizer(Orientation.wxVERTICAL);
 
@@ -191,7 +191,7 @@ class ServerTable
 			listCtrl_.clearAll();
 			listCtrl_.setItemCount(getActiveServerList.filteredLength);
 		}+/
-		
+
 		refreshNonVirtual(index);
 	}
 
@@ -219,13 +219,13 @@ class ServerTable
 			listCtrl_.clearAll();
 			listCtrl_.setItemCount(getActiveServerList.filteredLength);
 		}+/
-		
+
 		assert(listCtrl_ !is null);
 
 		if (index is null) {
 			assert(getActiveServerList.length == 0);
 			listCtrl_.DeleteAllItems();
-			
+
 			auto list = getActiveServerList();
 			for (int i = 0; i < list.filteredLength; i++)
 				listCtrl_.InsertFullItem(i, list.getFiltered(i).server);
@@ -234,7 +234,7 @@ class ServerTable
 			int i = (cast(IntWrapper)index).value;
 			listCtrl_.InsertFullItem(i,
 			                         getActiveServerList.getFiltered(i).server);
-		}		
+		}
 	}
 
 	/**
@@ -281,7 +281,7 @@ class ServerTable
 			playerTable.clear();
 			cvarTable.clear();
 		}+/
-		
+
 		resetNonVirtual(index);
 	}
 
@@ -317,14 +317,14 @@ class ServerTable
 			playerTable.clear();
 			cvarTable.clear();
 		}+/
-		
+
 		assert(listCtrl_ !is null);
 		refresh();
-		
+
 		volatile if (!runtools.abortParsing && getActiveServerList.complete) {
 			statusBar.setDefaultStatus(getActiveServerList.length,
 			                           getActiveServerList.filteredLength);
-		}		
+		}
 	}
 
 
@@ -367,7 +367,7 @@ class ServerListCtrl : ListCtrl
 		super(parent, id, pos, size, style);
 	}
 
-	
+
 	/**
 	 * Fill all columns in a line.
 	 */
@@ -377,8 +377,8 @@ class ServerListCtrl : ListCtrl
 
 		InsertItem(index, items[0]);
 		foreach (col, s; items[1..$])
-			SetItem(index, col, s);
-			
+			SetItem(index, col+1, s);
+
 	}
 
 
