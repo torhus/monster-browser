@@ -1,4 +1,4 @@
-module gui.servertable;
+module gui_dwt.servertable;
 
 private {
 	import dwt.all;

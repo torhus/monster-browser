@@ -120,21 +120,24 @@ int browserGetNewList()
 
 void browserLoadSavedList(void delegate(Object) callback)
 {
-	BufferedFile f;
-
 	volatile abortParsing = false;
+	
+	auto fname = activeMod.serverFile;
 
-	//log("browserLoadSavedList():");
-	if (!std.file.exists(activeMod.serverFile)) {
+	if (!std.file.exists(fname)) {
+		log("browserLoadSavedList(): " ~ fname ~ " not found.");
 		return;
 	}
 
 	try {
-		f = new BufferedFile(activeMod.serverFile);
+		log("browserLoadSavedList(): loading servers from " ~ fname ~ ".");
+		auto f = new BufferedFile(fname);
 		getActiveServerList.clear();
 		qstat.parseOutput(callback, &f.readLine, &f.eof, null);
 		getActiveServerList.complete = !abortParsing;
 		f.close();
+		debug writefln(getActiveServerList.length);
+		debug writefln(getActiveServerList.filteredLength);
 	}
 	catch (OpenException o) {
 		warning("Unable to load the server list from disk,\n"

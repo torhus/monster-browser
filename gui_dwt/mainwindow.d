@@ -1,54 +1,43 @@
-module gui.mainwindow;
+module gui_dwt.mainwindow;
 
-import std.conv;// : toInt;
-debug import std.stdio;// : writefln;
+import std.conv : toInt;
+debug import std.stdio : writefln;
 import std.string;
-import std.thread;
 
-//import wx.wx : Frame, App, MenuIDs, Point, Size, Event, MessageBox, Dialog;
-import wx.wx;
+import dwt.all;
 
 import common;
-import main;
+import main;  /// FIXME: temporary?
 import runtools;
 import serveractions;
 import serverlist;
 import settings;
-//import gui.cvartable;
-//import gui.dialogs;
-//import gui.playertable;
+import gui.cvartable;
+import gui.dialogs;
+import gui.playertable;
 import gui.servertable;
 
 
 FilterBar filterBar;
 StatusBar statusBar;
 
-//package Shell mainShell;
+package Shell mainShell;
 
 private {
-	Minimal theApp;
-	Frame mainFrame;
-	Object execMutex;
-	Thread mainThread;
-
+	Display display;
 	void delegate() initDelegate;
 	void delegate() cleanupDelegate;
 }
 
 
-///
 class MainWindow
 {
 	this()
 	{
-		execMutex = new Object;
-		mainThread = Thread.getThis();
+		display = Display.getDefault();
+		mainShell = new Shell(display);
+		mainShell.setText(APPNAME ~ " " ~ VERSION);
 
-		//info("1");
-		theApp = new Minimal();
-		//info("2");
-
-/+
 		// restore saved size and state
 		char[] size = getSetting("windowSize");
 		int pos = find(size, 'x');
@@ -58,21 +47,40 @@ class MainWindow
 			mainShell.setMaximized(true);
 		}
 
+		GridLayout gridLayout = new GridLayout();
+		gridLayout.numColumns = 2;
+		mainShell.setLayout(gridLayout);
+
+
+		// *********** MAIN WINDOW TOP ***************
+		Composite topComposite = new Composite(mainShell, DWT.NONE);
+		GridData gridData = new GridData(GridData.HORIZONTAL_ALIGN_FILL |
+		                                 GridData.GRAB_HORIZONTAL);
+		gridData.horizontalSpan = 2;
+		topComposite.setLayoutData(gridData);
+		topComposite.setLayout(new FillLayout(DWT.HORIZONTAL));
+
+		createToolbar(topComposite);
+
+		// filtering options
+		filterBar = new FilterBar(topComposite);
+
+
 		// ************** SERVER LIST, PLAYER LIST, CVARS LIST ***************
 		SashForm middleForm = new SashForm(mainShell, DWT.HORIZONTAL);
 		gridData = new GridData(GridData.FILL_BOTH);
 		middleForm.setLayoutData(gridData);
-+/
+
 		// server table widget
-		//serverTable = new ServerTable(/*middleForm*/);
-/+		gridData = new GridData(GridData.FILL_VERTICAL);
+		serverTable = new ServerTable(middleForm);
+		gridData = new GridData(GridData.FILL_VERTICAL);
 		// FIXME: doesn't work
 		//gridData.widthHint = 610;  // FIXME: automate using table's info
 		serverTable.getTable().setLayoutData(gridData);
-+/
+
 		// has to be instantied after the table
-		//setActiveServerList(activeMod.name);
-/+
+		setActiveServerList(activeMod.name);
+
 		// parent for player and cvar tables
 		SashForm rightForm = new SashForm(middleForm, DWT.VERTICAL);
 		gridData = new GridData(GridData.FILL_BOTH);
@@ -101,10 +109,11 @@ class MainWindow
 		gridData.horizontalSpan = 2;
 		statusComposite.setLayoutData(gridData);
 		statusComposite.setLayout(new FillLayout(DWT.HORIZONTAL));
-+/
+		statusBar = new StatusBar(statusComposite);
+		statusBar.setLeft(APPNAME ~ " is ready.");
 
 		// **********************************************************
-/+
+
 		mainShell.addKeyListener(new class KeyAdapter {
 			public void keyPressed (KeyEvent e)
 			{
@@ -125,8 +134,8 @@ class MainWindow
 
 		serverTable.getTable.setFocus();
 		mainShell.open();
-+/
 	}
+
 
 	/**
 	 * dg will be called after the main window is opened, but before entering
@@ -138,7 +147,18 @@ class MainWindow
 	/**
 	 * dg will be called when the main window is about to be closed.
 	 */
-	void setCleanupDelegate(void delegate() dg) { cleanupDelegate = dg; }
+	void setCleanupDelegate(void delegate() dg)
+	{
+		assert(mainShell !is null);
+
+		mainShell.addShellListener(new class(dg) ShellAdapter {
+			typeof(dg) handler_;
+
+			this(typeof(dg) handler) { handler_ = handler; }
+
+			public void shellClosed(ShellEvent e) { handler_(); }
+		});
+	}
 
 
 	/**
@@ -153,216 +173,116 @@ class MainWindow
 	 */
 	void mainLoop()
 	{
-		theApp.Run();
+		auto display = Display.getDefault();
+
+		if (initDelegate !is null)
+			initDelegate();
+
+		while (!mainShell.isDisposed()) {
+				if (!display.readAndDispatch())
+					display.sleep();
+				}
+				display.dispose();
 	}
 
 	//int isDisposed() { return mainShell.isDisposed(); }
 
-	int minimized() { return 0; }
-	void minimized(bool v) { /*mainShell.setMinimized(v);*/ }
+	int minimized() { return mainShell.getMinimized(); }
+	void minimized(bool v) { mainShell.setMinimized(v); }
 
-	int maximized() { return 0; }
+	int maximized() { return mainShell.getMaximized(); }
 
 	SizeStruct size()
 	{
-		auto size = mainFrame.size();
-		return SizeStruct(size.Width, size.Height);
+		auto p = mainShell.getSize();
+		return SizeStruct(p.x, p.y);
 	}
+
 }
 
 
-private class MyFrame : Frame
+void createToolbar(Composite parent)
 {
-	enum Id
-	{
-		Quit = MenuIDs.wxID_EXIT,
-	}
+	auto toolBar = new ToolBar(parent, DWT.HORIZONTAL);
 
-	//---------------------------------------------------------------------
-
-	public this(string title, Point pos, Size size)
-	{
-		super(title, pos, size);
-
-		// Set the window icon
-		icon = new Icon("mondrian.png");
-
-		auto mainSizer = new BoxSizer(Orientation.wxVERTICAL);
-
-		
-//		 *********** MAIN WINDOW TOP ***************
-		auto topPanel = new Panel(this);
-		topPanel.sizer = new BoxSizer(Orientation.wxHORIZONTAL);
-		topPanel.sizer.Add(new MainToolBar(topPanel));
-		mainSizer.Add(topPanel, 0, Stretch.wxEXPAND);
-
-		// filtering options
-		filterBar = new FilterBar(/*topComposite*/);
-
-
-		// ************** SERVER LIST, PLAYER LIST, CVARS LIST ***************
-		// server table widget
-		serverTable = new ServerTable(this);
-		mainSizer.Add(serverTable.getHandle(), 1, Stretch.wxEXPAND);
-
-		/*CreateStatusBar(2);
-		StatusText = "Welcome to wxWidgets!";*/
-
-		.statusBar = new StatusBar(this);
-		.statusBar.setLeft(APPNAME ~ " is ready.");
-
-		SetSizer(mainSizer);  // FIXME: use property
-		
-		// Set up the event table
-		EVT_MENU(Id.Quit, &OnQuit);
-
-		// has to be instantied after the ServerTable
-		setActiveServerList(activeMod.name);
-	}
-
-	//---------------------------------------------------------------------
-
-	public void OnQuit(Object sender, Event e)
-	{
-		assert(cleanupDelegate !is null);
-		cleanupDelegate();
-		Close();
-	}
-
-	//---------------------------------------------------------------------
-
-	public void OnDialog(Object sender, Event e)
-	{
-        Dialog dialog = new Dialog(this, -1, "Test dialog", Point(50,50),
-                                   Size(450,340));
-        BoxSizer main_sizer = new BoxSizer( Orientation.wxVERTICAL );
-
-        StaticBoxSizer top_sizer = new StaticBoxSizer(
-                                        new StaticBox( dialog, -1, "Bitmaps" ),
-                                        Orientation.wxHORIZONTAL );
-        main_sizer.Add( top_sizer, 0, Direction.wxALL, 5 );
-
-        BitmapButton bb = new BitmapButton( dialog, -1, new Bitmap("mondrian.png") );
-        top_sizer.Add( bb, 0, Direction.wxALL, 10 );
-
-        StaticBitmap sb = new StaticBitmap( dialog, -1, new Bitmap("mondrian.png") );
-        top_sizer.Add( sb, 0, Direction.wxALL, 10 );
-
-        Button button = new Button( dialog, 5100, "OK" );
-        main_sizer.Add( button, 0, Direction.wxALL|Alignment.wxALIGN_CENTER, 5 );
-
-        dialog.SetSizer( main_sizer, true );
-        main_sizer.Fit( dialog );
-        main_sizer.SetSizeHints( dialog );
-
-        dialog.CentreOnParent();
-        dialog.ShowModal();
-	}
-
-	//---------------------------------------------------------------------
-
-	public void OnAbout(Object sender, Event e)
-	{
-		string msg = "This is the About dialog of the minimal sample.\nWelcome to " ~ wxVERSION_STRING;
-		MessageBox(this, msg, "About Minimal", Dialog.wxOK | Dialog.wxICON_INFORMATION);
-	}
-
-	//---------------------------------------------------------------------
-}
-
-public class Minimal : App
-{
-	public override bool OnInit()
-	{
-		mainFrame = new MyFrame(APPNAME ~ " " ~ VERSION,
-		                            Point(50, 50), Size(836, 594));
-		mainFrame.Show(true);
-
-		assert(initDelegate !is null);
-		initDelegate();
-
-		return true;
-	}
-}
-
-
-class MainToolBar : Panel
-{
-	enum Id {
-		GetNewList = MenuIDs.wxID_HIGHEST + 1,
-		RefreshList,
-		SpecifyServer,
-		Settings
-	}
-
-	this(Window parent)
-	{
-		super(parent);
-
-		auto buttonSizer = new BoxSizer(Orientation.wxHORIZONTAL);
-		sizer = buttonSizer;
-
-		auto button1 = new Button(this, Id.GetNewList, "Get new list");
-		auto button2 = new Button(this, Id.RefreshList, "Refresh list");
-		auto button3 = new Button(this, Id.SpecifyServer, "Specify...");
-		auto button4 = new Button(this, Id.Settings, "Settings...");
-		buttonSizer.Add(button1);
-		buttonSizer.Add(button2);
-		buttonSizer.Add(button3);
-		buttonSizer.Add(button4);
-
-		EVT_BUTTON(Id.GetNewList, (Object sender, Event e)
+	auto button1 = new ToolItem(toolBar, DWT.PUSH);
+	button1.setText("Get new list");
+	button1.addSelectionListener(new class SelectionAdapter {
+		public void widgetSelected(SelectionEvent e)
 		{
 			threadDispatcher.run(&getNewList);
-		});
-		
-		EVT_BUTTON(Id.RefreshList, (Object sender, Event e)
+		}
+	});
+
+	new ToolItem(toolBar, DWT.SEPARATOR);
+
+	ToolItem button2 = new ToolItem(toolBar, DWT.PUSH);
+	button2.setText("Refresh list");
+	button2.addSelectionListener(new class SelectionAdapter {
+		public void widgetSelected(SelectionEvent e)
 		{
 			threadDispatcher.run(&refreshList);
-		});
+		}
+	});
 
-		EVT_BUTTON(Id.SpecifyServer, (Object sender, Event e)
-		{
-			//auto dialog = new SpecifyServerDialog(mainShell);
-			//dialog.open();
-		});
+	new ToolItem(toolBar, DWT.SEPARATOR);
 
-		EVT_BUTTON(Id.Settings, (Object sender, Event e)
+	auto button3 = new ToolItem(toolBar, DWT.PUSH);
+	button3.setText("Specify...");
+	button3.addSelectionListener(new class SelectionAdapter {
+		public void widgetSelected(SelectionEvent e)
 		{
-			/*SettingsDialog dialog = new SettingsDialog(mainShell);
-			if (dialog.open() == DWT.OK)
+			auto dialog = new SpecifyServerDialog(mainShell);
+			dialog.open();
+		}
+	});
+/+
+	new ToolItem(toolBar, DWT.SEPARATOR);
+
+	auto button4 = new ToolItem(toolBar, DWT.PUSH);
+	button4.setText("Monitor...");
+	button4.setEnabled(false);
+	button4.addSelectionListener(new class SelectionAdapter {
+		public void widgetSelected(SelectionEvent e)
+		{
+			startMonitor(mainShell);
+			//SettingsDialog dialog = new SettingsDialog(mainShell);
+			/*if (dialog.open() == DWT.OK)
 				saveSettings();*/
-		});
-	}
+		}
+	});
++/
+	new ToolItem(toolBar, DWT.SEPARATOR);
 
+	auto button5 = new ToolItem(toolBar, DWT.PUSH);
+	button5.setText("Settings...");
+	button5.addSelectionListener(new class SelectionAdapter {
+		public void widgetSelected(SelectionEvent e)
+		{
+			SettingsDialog dialog = new SettingsDialog(mainShell);
+			if (dialog.open() == DWT.OK)
+				saveSettings();
+		}
+	});
+
+	//return toolBar;
 }
 
 
-///
 class StatusBar
 {
 
-	this(Frame parent)
+	this(Composite parent)
 	{
-		parent_ = parent;
-		parent_.CreateStatusBar(1);
-		parent_.StatusText = APPNAME ~ " is ready.";
+		leftLabel_ = new Label(parent, DWT.NONE);
+		leftLabel_.setText(APPNAME ~ " is ready.");
 	}
 
 	void setLeft(char[] text)
-	{/+
+	{
 		if (!leftLabel_.isDisposed) {
 			leftLabel_.setText(text);
-		}+/
-		debug writefln("setLeft 1");
-		synchronized (execMutex) {
-			if (!mainThread.isSelf())
-				MutexGuiEnter();
-			parent_.StatusText = text;
-			if (!mainThread.isSelf())
-				MutexGuiLeave();
 		}
-		debug writefln("setLeft 2");
 	}
 
 	void setDefaultStatus(size_t totalServers, size_t shownServers)
@@ -379,15 +299,13 @@ class StatusBar
 	}
 
 private:
-	Frame parent_;
-
+	Label leftLabel_;
 }
 
 
-///
-class FilterBar// : Composite
+class FilterBar : Composite
 {
-/+	this(Composite parent)
+	this(Composite parent)
 	{
 		filterComposite_ = new Composite(parent, DWT.NONE);
 		button1_ = new Button(filterComposite_, DWT.CHECK);
@@ -518,41 +436,16 @@ private:
 	Composite filterComposite_;
 	Button button1_, button2_;
 	Combo modCombo_;
-+/
 }
 
 
-///
 void asyncExec(Object o, void delegate(Object) dg)
 {
-	debug (exec) writefln("asyncExec starting");
-	bool isMain = mainThread.isSelf();
-
-	// FIXME: use wxIdleEvent or wxUpdateUIEvent?
-
-	synchronized (execMutex) {
-		if (!isMain)
-			MutexGuiEnter();
-		dg(o);
-		if (!isMain)
-			MutexGuiLeave();
-	}
-	debug (exec) writefln("asyncExec returning");
+	display.asyncExec(o, dg);
 }
 
 
-///
 void syncExec(Object o, void delegate(Object) dg)
 {
-	debug (exec) writefln("syncExec starting");
-	bool isMain = mainThread.isSelf();
-
-	synchronized (execMutex) {
-		if (!isMain)
-			MutexGuiEnter();
-		dg(o);
-		if (!isMain)
-			MutexGuiLeave();
-	}
-	debug (exec) writefln("syncExec returning");
+	display.syncExec(o, dg);
 }

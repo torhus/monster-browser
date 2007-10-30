@@ -15,12 +15,15 @@ private {
 }
 
 
-/* SETTINGS */
-const bool MOD_ONLY = true;
-//debug const bool MOD_ONLY = false;
+version (allMods) {
+	// Don't filter on mod name, only for testing purposes.
+	const bool MOD_ONLY = false;
+}
+else {
+	const bool MOD_ONLY = true;
+}
 
 bool useGslist;
-
 
 const char[] APPNAME = "Monster Browser";
 

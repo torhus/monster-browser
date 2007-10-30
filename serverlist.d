@@ -439,8 +439,8 @@ private:
 			auto fL = filteredList;
 			auto i = index;
 
-			// Verify that the new element was inserted at the right location, by
-			// comparing it to the elements before and after it.
+			// Verify that the new element was inserted at the right location,
+			// by comparing it to the elements before and after it.
 			if (!((i == 0 || greaterOrEq(fL[i], fL[i-1])) &&
 			      (i == (fL.length - 1)	 || less(fL[i], fL[i + 1])))) {
 

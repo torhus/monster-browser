@@ -60,18 +60,22 @@ void main() {
 	
 		mainWindow.setInitDelegate(
 		{
-			if (common.useGslist) {
-			getNewList();
-			//debug loadSavedList();
-		}
-		else {
-			// Qstat is too slow to do a getNewList(), so just refresh
-			// the old list instead, if possible.
-			if (exists(activeMod.serverFile))
-				refreshList();
-			else
-				getNewList();
-		}
+			version (loadSavedList) {
+				loadSavedList();  // just for testing stuff
+			}
+			else {
+				if (common.useGslist) {
+					getNewList();
+				}
+				else {
+					// Qstat is too slow to do a getNewList(), so just refresh
+					// the old list instead, if possible.
+					if (exists(activeMod.serverFile))
+						refreshList();
+					else
+						getNewList();
+				}
+			}
 		});
 
 		mainWindow.setCleanupDelegate(
@@ -115,6 +119,7 @@ void main() {
  */
 class ThreadDispatcher
 {
+	synchronized
 	void run(void function() fp)
 	{
 		debug (td) writefln("ThreadDispatcher.run()");
@@ -185,7 +190,7 @@ class ThreadDispatcher
 					        waiterThread_.getState() != Thread.TS.TERMINATED) {
 						volatile abortWaiting_ = true;
 
-						debug
+						debug (td)
 							writefln("...waiting in loop for waiterThread_");
 
 						while (waiterThread_.getState() !=

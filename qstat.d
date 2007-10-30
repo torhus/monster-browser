@@ -238,7 +238,7 @@ void filterServerFile(char[] readFrom, char writeTo[])
 				outfile.writeLine(fields[1]);
 			}
 			else if (/*activeMod.name != "baseq3" &&*/
-			                                   icmp(fields[8], activeMod.name) == 0) {
+			                             icmp(fields[8], activeMod.name) == 0) {
 				outfile.writeLine(fields[1]);
 			}
 			else { // need to parse cvars to find out which mod this server runs
@@ -246,13 +246,15 @@ void filterServerFile(char[] readFrom, char writeTo[])
 				char[][] temp = split(line, FIELDSEP);
 				foreach (char[] s; temp) {
 					char[][] cvar = split(s, "=");
-					// Not sure if it's right to check 'game' or not.  Might end up
-					// including too many servers.
-					if (cvar[0] == "game" && icmp(cvar[1], activeMod.name) == 0) {
+					// Not sure if it's right to check 'game' or not.  Might end
+					// up including too many servers.
+					if (cvar[0] == "game" &&
+							                icmp(cvar[1], activeMod.name) == 0){
 						outfile.writeLine(fields[1]);
 						break;
 					}
-					if (cvar[0] == "gamename" && icmp(cvar[1], activeMod.name) == 0) {
+					if (cvar[0] == "gamename" && 
+							               icmp(cvar[1], activeMod.name) == 0) {
 						outfile.writeLine(fields[1]);
 						break;
 					}

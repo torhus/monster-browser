@@ -1,4 +1,4 @@
-module gui.dialogs;
+module gui_dwt.dialogs;
 
 /* Dialog boxes */
 

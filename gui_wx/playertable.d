@@ -1,13 +1,13 @@
-module gui.playertable;
+module gui_wx.playertable;
 
 private {
-	import dwt.all;
+	import wx.wx;
+
 	import common;
-	import serverlist;
 	import main;
+	import serverlist;
 }
 
-PlayerTable playerTable;
 
 // should correspond to serverlist.PlayerColumn
 char[][] playerHeaders = ["Name", "Score", "Ping"];
@@ -17,23 +17,32 @@ class PlayerTable
 	/*************************************************
 	               PUBLIC METHODS
 	*************************************************/
-	this(Composite parent)
+	this(Window parent)
 	{
 		parent_ = parent;
-		table_ = new Table(parent, DWT.VIRTUAL |  DWT.BORDER |
-		                           DWT.HIDE_SELECTION);
-		table_.setHeaderVisible(true);
-		table_.setLinesVisible(true);
+	
+		listCtrl_ = new ListCtrl(parent, -1, ListCtrl.wxDefaultPosition,
+	                                   ListCtrl.wxDefaultSize,
+	                                   ListCtrl.wxLC_REPORT |
+	                                   ListCtrl.wxLC_SINGLE_SEL |
+	                                   ListCtrl.wxLC_HRULES |
+	                                   ListCtrl.wxLC_VRULES |
+	                                   ListCtrl.wxSUNKEN_BORDER);
 
-		foreach (header; playerHeaders) {
-			TableColumn column = new TableColumn(table_, DWT.NONE);
-			column.setText(header);
-		}
+		foreach (i, header; playerHeaders)
+			listCtrl_.InsertColumn(i, header);
 
-		table_.getColumn(0).setWidth(100);
-		table_.getColumn(1).setWidth(40);
-		table_.getColumn(2).setWidth(40);
+		foreach (i, w; [100, 40, 40])
+			listCtrl_.SetColumnWidth(i, w);
 
+		listCtrl_.InsertItem(0, "item 1");
+		listCtrl_.SetItem(0, 1, "1 col 2");
+		listCtrl_.InsertItem(0, "item 2");
+		listCtrl_.SetItem(0, 1, "2 col 2");		
+		listCtrl_.InsertItem(3, "item 4");
+		listCtrl_.SetItem(2, 1, "4 col 2");
+
+/+
 		table_.addListener(DWT.SetData, new class Listener {
 			public void handleEvent(Event e)
 			{
@@ -98,20 +107,21 @@ class PlayerTable
 		}
 
 		table_.setSortColumn(table_.getColumn(PlayerColumn.NAME));
-		table_.setSortDirection(DWT.UP);
+		table_.setSortDirection(DWT.UP);+/
 	}
 
-	Table getTable() { return table_; };
+	Window getHandle() { return listCtrl_; };
 
 	void reset()
 	{
-		table_.clearAll();
+		//table_.clearAll();
 		sort();
-		table_.setItemCount(getActiveServerList.getFiltered(
-		                                 selectedServerIndex_).players.length);
+		/+table_.setItemCount(getActiveServerList.getFiltered(
+		                                selectedServerIndex_).players.length);+/
 	}
 
-	/** Set which server to show the playerlist for
+	/**
+	 * Set which server to show the playerlist for
 	 *
 	 * Mainly for use by serverTable.
 	 */
@@ -124,19 +134,19 @@ class PlayerTable
 
 	void clear()
 	{
-		table_.removeAll();
+		//table_.removeAll();
 	}
 
 	/************************************************
 	            PRIVATE STUFF
 	 ************************************************/
 private:
-	Table table_;
-	Composite parent_;
+	Window parent_;
+	ListCtrl listCtrl_;
 	int selectedServerIndex_;
 
 	void sort()
-	{
+	{/+
 		int sortCol = table_.indexOf(table_.getSortColumn());
 		int dir = table_.getSortDirection();
 
@@ -149,7 +159,7 @@ private:
 		    sortStringArrayStable(
 		                  getActiveServerList.getFiltered(selectedServerIndex_).players,
 		                  sortCol, (dir == DWT.DOWN) ? false : true, true);
-		}
+		}+/
 	}
 
 }
