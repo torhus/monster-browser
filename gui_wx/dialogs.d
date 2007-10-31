@@ -238,9 +238,7 @@ class SpecifyServerDialog {
 		parent_ = parent;
 
 		dialog_ = new Dialog(parent_, -1, "Specify Server");
-		dialog_.sizer = new BoxSizer(Orientation.wxVERTICAL);
 		auto panel = new Panel(dialog_, -1);
-		dialog_.sizer.Add(panel, 1, Stretch.wxEXPAND);
 		panel.sizer = new BoxSizer(Orientation.wxVERTICAL);
 	
 		auto addressLabel = new wxStaticText(panel, -1,
@@ -255,7 +253,7 @@ class SpecifyServerDialog {
 			      "Save server on file ('" ~ activeMod.extraServersFile ~ "')");
 		panel.sizer.Add(saveButton_,0 , Alignment.wxALIGN_CENTER_HORIZONTAL);
 		
-		// main buttons
+		// Ok and cancel buttons
 		auto buttonSizer = new BoxSizer(Orientation.wxHORIZONTAL);
 		panel.sizer.Add(buttonSizer, 0, Alignment.wxALIGN_CENTER_HORIZONTAL);
 		
@@ -263,23 +261,11 @@ class SpecifyServerDialog {
 		buttonSizer.Add(okButton_);
 		cancelButton_ = new wxButton(panel, MenuIDs.wxID_CANCEL);
 		buttonSizer.Add(cancelButton_);
-		
+	
+		panel.Fit();
 		dialog_.Fit();
 	
 /+
-		// main buttons
-		Composite buttonComposite = new Composite(dialog_, DWT.NONE);
-		GridData buttonData = new GridData();
-		buttonData.horizontalAlignment = GridData.CENTER;
-		buttonComposite.setLayoutData(buttonData);
-
-		RowLayout buttonLayout = new RowLayout();
-		buttonComposite.setLayout(buttonLayout);
-
-		okButton_ = new Button (buttonComposite, DWT.PUSH);
-		okButton_.setText ("OK");
-		cancelButton_ = new Button (buttonComposite, DWT.PUSH);
-		cancelButton_.setText ("Cancel");
 
 		Listener listener = new class Listener {
 			public void handleEvent (Event event)
