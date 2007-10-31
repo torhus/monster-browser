@@ -30,13 +30,6 @@ class CvarTable
 		foreach (i, w; [90, 90])
 			listCtrl_.SetColumnWidth(i, w);
 
-		/*listCtrl_.InsertItem(0, "item 1");
-		listCtrl_.SetItem(0, 1, "1 col 2");
-		listCtrl_.InsertItem(0, "item 2");
-		listCtrl_.SetItem(0, 1, "2 col 2");
-		listCtrl_.InsertItem(3, "item 4");
-		listCtrl_.SetItem(2, 1, "4 col 2");*/
-
 		setItems([["item 1", "1 col 2"],
 		          ["item 2", "2 col 2"]
 		         ]);

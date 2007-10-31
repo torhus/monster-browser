@@ -232,36 +232,43 @@ class JoinDialog {
 class SpecifyServerDialog {
 
 	char[] address;
-/+
-	this(Shell parent)
+
+	this(Window parent)
 	{
 		parent_ = parent;
-		shell_ = new Shell(parent_, DWT.DIALOG_TRIM | DWT.APPLICATION_MODAL);
-		GridLayout topLayout = new GridLayout();
-		shell_.setLayout(topLayout);
-		shell_.setText("Specify Server");
 
-		// address input
-		Composite addressComposite = new Composite(shell_, DWT.NONE);
-		GridData addressData = new GridData();
-		addressData.horizontalAlignment = GridData.CENTER;
-		addressComposite.setLayoutData(addressData);
+		dialog_ = new Dialog(parent_, -1, "Specify Server");
+		dialog_.sizer = new BoxSizer(Orientation.wxVERTICAL);
+		auto panel = new Panel(dialog_, -1);
+		dialog_.sizer.Add(panel, 1, Stretch.wxEXPAND);
+		panel.sizer = new BoxSizer(Orientation.wxVERTICAL);
+	
+		auto addressLabel = new wxStaticText(panel, -1,
+		                 "Address (123.123.123.123 or 123.123.123.123:12345):");		
+		panel.sizer.Add(addressLabel, 0, Alignment.wxALIGN_CENTER_HORIZONTAL);
 
-		auto addressLayout = new GridLayout();
-		addressComposite.setLayout(addressLayout);
-		Label labelB = new Label(addressComposite, DWT.NONE);
-		labelB.setText("Address (123.123.123.123 or 123.123.123.123:12345):");
-		addressText_ = new Text(addressComposite, DWT.SINGLE | DWT.BORDER);
-		auto addressTextData = new GridData();
-		addressTextData.horizontalAlignment = GridData.CENTER;
-		addressTextData.widthHint = 140;
-		addressText_.setLayoutData(addressTextData);
-
-		saveButton_ = new Button (shell_, DWT.CHECK);
-		saveButton_.setText("Save server on file ('" ~ activeMod.extraServersFile ~ "')");
-
+		addressField_ = new wxTextCtrl(panel, -1, "testing 1 2 3");
+		addressField_.SetSizeHints(140, -1);
+		panel.sizer.Add(addressField_, 0, Alignment.wxALIGN_CENTER_HORIZONTAL);
+		
+		saveButton_ = new wxCheckBox(panel, -1,
+			      "Save server on file ('" ~ activeMod.extraServersFile ~ "')");
+		panel.sizer.Add(saveButton_,0 , Alignment.wxALIGN_CENTER_HORIZONTAL);
+		
 		// main buttons
-		Composite buttonComposite = new Composite(shell_, DWT.NONE);
+		auto buttonSizer = new BoxSizer(Orientation.wxHORIZONTAL);
+		panel.sizer.Add(buttonSizer, 0, Alignment.wxALIGN_CENTER_HORIZONTAL);
+		
+		okButton_ = new wxButton(panel, MenuIDs.wxID_OK);
+		buttonSizer.Add(okButton_);
+		cancelButton_ = new wxButton(panel, MenuIDs.wxID_CANCEL);
+		buttonSizer.Add(cancelButton_);
+		
+		dialog_.Fit();
+	
+/+
+		// main buttons
+		Composite buttonComposite = new Composite(dialog_, DWT.NONE);
 		GridData buttonData = new GridData();
 		buttonData.horizontalAlignment = GridData.CENTER;
 		buttonComposite.setLayoutData(buttonData);
@@ -309,37 +316,43 @@ class SpecifyServerDialog {
 				}
 
 				if (closeDialog)
-					shell_.close();
+					dialog_.close();
 			}
 		};
 
 		okButton_.addListener(DWT.Selection, listener);
 		cancelButton_.addListener(DWT.Selection, listener);
-		shell_.setDefaultButton(okButton_);
-		shell_.pack();
-		shell_.setLocation(center(parent_, shell_));
+		dialog_.setDefaultButton(okButton_);
+		dialog_.pack();
+		dialog_.setLocation(center(parent_, dialog_));
++/
 	}
 
 	int open()
 	{
-		addressText_.setText(address);
+/+		addressText_.setText(address);
 		addressText_.selectAll();
-		shell_.open();
+		dialog_.open();
 		auto display = Display.getDefault();
-		while (!shell_.isDisposed()) {
+		while (!dialog_.isDisposed()) {
 			if (!display.readAndDispatch()) {
 				display.sleep ();
 			}
 		}
 		return result_;
++/
+		dialog_.ShowModal();
+		return 0;
 	}
 
 private:
-	Shell parent_, shell_;
-	Button okButton_, cancelButton_, saveButton_;
-	Text addressText_;
-	int result_ = DWT.CANCEL;
-+/
+	Window parent_;
+	Dialog dialog_;
+	Button okButton_, cancelButton_;
+	CheckBox saveButton_;
+	TextCtrl addressField_;
+	//int result_ = DWT.CANCEL;
+
 }
 
 
@@ -451,14 +464,14 @@ private:
 +/
 }
 
-/+
-private Point center(Control parent, Control child)
+
+private Point center(Window parent, Window child)
 {
-	Rectangle p = parent.getBounds();
+	/*Rectangle p = parent.getBounds();
 	Rectangle c = child.getBounds();
 	int x = p.x + (p.width - c.width) / 2;
 	int y = p.y + (p.height - c.height) / 2;
 
-	return new Point(x, y);
+	return Point(x, y);*/
+	return Point(-1, -1);
 }
-+/

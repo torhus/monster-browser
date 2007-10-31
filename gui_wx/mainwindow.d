@@ -15,7 +15,7 @@ import serveractions;
 import serverlist;
 import settings;
 //import gui.cvartable;
-//import gui.dialogs;
+import gui.dialogs;
 //import gui.playertable;
 import gui.servertable;
 
@@ -27,9 +27,9 @@ StatusBar statusBar;
 
 private {
 	Minimal theApp;
-	Frame mainFrame;
 	Object execMutex;
 	Thread mainThread;
+	Frame mainFrame;
 
 	void delegate() initDelegate;
 	void delegate() cleanupDelegate;
@@ -276,7 +276,7 @@ public class Minimal : App
 		mainFrame.Show(true);
 
 		assert(initDelegate !is null);
-		initDelegate();
+		//initDelegate(); // FIXME: reenable
 
 		return true;
 	}
@@ -312,7 +312,7 @@ class MainToolBar : Panel
 		{
 			threadDispatcher.run(&getNewList);
 		});
-		
+
 		EVT_BUTTON(Id.RefreshList, (Object sender, Event e)
 		{
 			threadDispatcher.run(&refreshList);
@@ -320,8 +320,8 @@ class MainToolBar : Panel
 
 		EVT_BUTTON(Id.SpecifyServer, (Object sender, Event e)
 		{
-			//auto dialog = new SpecifyServerDialog(mainShell);
-			//dialog.open();
+			auto dialog = new SpecifyServerDialog(mainFrame);
+			dialog.open();
 		});
 
 		EVT_BUTTON(Id.Settings, (Object sender, Event e)
