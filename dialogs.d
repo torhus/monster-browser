@@ -7,9 +7,20 @@ private {
 	import std.string;
 
 	import dwt.DWT;
+	import dwt.events.SelectionAdapter;
+	import dwt.events.SelectionEvent;
 	import dwt.graphics.Point;
+	import dwt.graphics.Rectangle;
+	import dwt.layout.GridData;
+	import dwt.layout.GridLayout;
+	import dwt.layout.RowLayout;
 	import dwt.widgets.Button;
-	import dwt.widgets.Control;	
+	import dwt.widgets.Composite;
+	import dwt.widgets.Control;
+	import dwt.widgets.Event;
+	import dwt.widgets.Group;
+	import dwt.widgets.Label;
+	import dwt.widgets.Listener;
 	import dwt.widgets.Shell;
 	import dwt.widgets.Text;
 
@@ -346,7 +357,10 @@ class SettingsDialog {
 		modsButton.addSelectionListener(new class SelectionAdapter {
 			public void widgetSelected(SelectionEvent e)
 			{
-				Program.launch(settings.modFileName);
+				version (linux)  //FIXME
+					error("dwt.Program is missing");
+				else
+					Program.launch(settings.modFileName);
 			}
 		});
 
