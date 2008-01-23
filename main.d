@@ -7,7 +7,29 @@ private {
 	import std.thread;
 	import std.conv;
 
-	import dwt.all;
+	import dwt.DWT;
+	import dwt.custom.SashForm;
+	import dwt.events.KeyAdapter;
+	import dwt.events.KeyEvent;
+	import dwt.events.ShellAdapter;
+	import dwt.events.ShellEvent;
+	import dwt.events.SelectionAdapter;
+	import dwt.events.SelectionEvent;
+	import dwt.graphics.Point;
+	import dwt.layout.FillLayout;
+	import dwt.layout.GridData;
+	import dwt.layout.GridLayout;
+	import dwt.layout.RowLayout;
+	import dwt.widgets.Button;
+	import dwt.widgets.Combo;
+	import dwt.widgets.Composite;
+	import dwt.widgets.Display;
+	import dwt.widgets.Label;
+	import dwt.widgets.MessageBox;
+	import dwt.widgets.Shell;
+	import dwt.widgets.ToolBar;
+	import dwt.widgets.ToolItem;
+
 	import runtools;
 	import qstat;
 	import serveractions;
@@ -18,7 +40,6 @@ private {
 	import cvartable;
 	import common;
 	import settings;
-	import monitor;
 	import dialogs;
 }
 
@@ -215,7 +236,8 @@ void main() {
 	}
 	catch(Exception e) {
 		logx(__FILE__, __LINE__, e);
-		MessageBox.showMsg(e.classinfo.name ~ "\n" ~ e.toString());
+		//MessageBox.showMsg(e.classinfo.name ~ "\n" ~ e.toString());
+		error(e.classinfo.name ~ "\n" ~ e.toString());
 	}
 }
 
