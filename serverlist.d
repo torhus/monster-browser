@@ -333,7 +333,7 @@ private:
 
 	Filter filters_ = Filter.NONE;
 
-	synchronized invariant
+	synchronized invariant()
 	{
 		if (filteredList.length > list.length) {
 			error("filteredlist.length == ", filteredList.length,
