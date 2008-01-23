@@ -1,8 +1,15 @@
 module servertable;
 
 private {
+	import dwt.DWT;
+	import dwt.events.SelectionAdapter;
+	import dwt.events.SelectionEvent;
 	import dwt.widgets.Composite;
-	import dwt.widgets.Table;	
+	import dwt.widgets.Event;
+	import dwt.widgets.Listener;	
+	import dwt.widgets.Table;
+	import dwt.widgets.TableColumn;
+	import dwt.widgets.TableItem;
 
 	import serverlist;
 	import launch;
