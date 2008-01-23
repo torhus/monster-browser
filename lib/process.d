@@ -154,6 +154,23 @@ version(Windows) {
 }
 
 version(linux) {
+	import std.string;
+	import std.c.stdio;
+	import std.c.linux.linux;
+	import tango.stdc.posix.unistd : usleep;
+
+	enum {
+	       F_SETFD = 2,
+
+	       STDIN_FILENO = 0,
+	       STDOUT_FILENO = 1,
+	       STDERR_FILENO = 2,
+
+	       WNOHANG = 1,
+	       WUNTRACED = 2,
+    }
+
+	extern (C) int execve(char*, char**, char**);
 	extern (C) char* strerror(int);
 }
 
@@ -331,7 +348,7 @@ private:
 			free(block);
 		}
 
-		char[][] splitArgs(char[] string, char[] delims)
+		char[][] splitArgs(char[] string/*, char[] delims*/)
 		{
 			char[] delims = " \t\r\n";
 			char[][] results = null;
@@ -384,7 +401,7 @@ private:
 					//if (setuid(uid) == -1) throw new ProcessException("setuid");
 					//if (setgid(gid) == -1) throw new ProcessException("setgid");
 
-					execve(args[0],makeBlock(splitArgs(command)),makeBlock(enviroment)); //this does not return on success
+					execve("FIXME, exe name here",makeBlock(splitArgs(command)),makeBlock(enviroment)); //this does not return on success
 					//can we throw? how to notify parent of failure?
 					exit(1);
 				}
@@ -410,7 +427,7 @@ private:
 
 			if (pid == 0) return;
 
-			if (kill(pid, SIGTERM) == -1) throw new ProcessException("kill");
+			if (.kill(pid, SIGTERM) == -1) throw new ProcessException("kill");
 
 			for(uint i = 0; i < 100; i++) {
 				r = waitpid(pid,null,WNOHANG|WUNTRACED);
@@ -419,8 +436,12 @@ private:
 				usleep(50000);
 			}
 			running = false;
-			close(output);
-			close(input);
+			//info = null;
+			pout = null;
+			perr = null;
+			pin = null;
+			//close(output);
+			//close(input);
 			pid = 0;
 		}
 	}

@@ -1,8 +1,15 @@
 module cvartable;
 
 private {
-	import dwt.widgets.Composite;
-	import dwt.widgets.Table;
+	version (Windows)
+		import dwt.all;
+	else {
+		import dwt.DWT;
+		import dwt.widgets.Composite;
+		import dwt.widgets.Table;
+		import dwt.widgets.TableColumn;
+		import dwt.widgets.TableItem;
+	}
 
 	import common;
 	import serverlist;

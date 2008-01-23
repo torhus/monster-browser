@@ -7,7 +7,11 @@ private {
 	import std.path;
 	import std.conv;
 
-	//import dwt.all;
+	version (Windows)
+		import dwt.all;
+	else
+		import dwt.DWT;
+		
 	import lib.process;
 	import main;
 	import common;
@@ -81,7 +85,7 @@ void JoinServer(ServerData *sd)
 		}
 		else {
 			// Need a platform specific way of launching the game.
-			assert(0);
+			error("Not implemented on linux");
 		}
 	}
 }
