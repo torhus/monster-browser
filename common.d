@@ -11,7 +11,10 @@ private {
 	import std.c.stdio;
 	import std.c.stdlib;
 
-	import dwt.all;
+	import dwt.DWT;
+	import dwt.dwthelper.Runnable;
+	import dwt.widgets.Display;
+	import dwt.widgets.MessageBox;
 
 	import main;
 }
@@ -56,6 +59,7 @@ static this()
 
 void messageBox(char[] title, int style, TypeInfo[] arguments, void* argptr)
 {
+/+
 	void f(Object o) {
 		char[] s;
 		void f(dchar c) { std.utf.encode(s, c); }
@@ -69,6 +73,22 @@ void messageBox(char[] title, int style, TypeInfo[] arguments, void* argptr)
 	}
 	// only the gui thread can display message boxes
 	Display.getDefault().syncExec(null, &f);
++/
+	// only the gui thread can display message boxes
+	Display.getDefault().syncExec(new class Runnable {
+		void run() {
+			char[] s;
+			void f(dchar c) { std.utf.encode(s, c); }
+
+			std.format.doFormat(&f, arguments, argptr);
+			scope MessageBox mb = new MessageBox(mainWindow, style);
+			mb.setText(title);
+			mb.setMessage(s);
+			log("messageBox (" ~ title ~ "): " ~ s);
+			mb.open();
+		}
+	});
+	
 }
 
 

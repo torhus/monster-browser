@@ -1,7 +1,9 @@
 module servertable;
 
 private {
-	import dwt.all;
+	import dwt.widgets.Composite;
+	import dwt.widgets.Table;	
+
 	import serverlist;
 	import launch;
 	import main;

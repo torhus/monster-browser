@@ -6,7 +6,12 @@ private {
 	import std.file;
 	import std.string;
 
-	import dwt.all;
+	import dwt.DWT;
+	import dwt.graphics.Point;
+	import dwt.widgets.Button;
+	import dwt.widgets.Control;	
+	import dwt.widgets.Shell;
+	import dwt.widgets.Text;
 
 	import common;
 	import main;

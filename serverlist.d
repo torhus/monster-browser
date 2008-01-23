@@ -5,7 +5,9 @@ private {
 	debug import std.stdio;
 	import std.c.string;
 
-	import dwt.all;
+	import dwt.DWT;
+	import dwt.dwthelper.Runnable;
+
 	import common;
 	import main;
 	import servertable;
@@ -158,7 +160,10 @@ class ServerList
 			}
 		}
 		if (refresh)
-			display.syncExec(new IntWrapper(index), &serverTable.refresh);
+			//display.syncExec(new IntWrapper(index), &serverTable.refresh);
+			display.syncExec(new class Runnable {
+				void run() { serverTable.refresh(new IntWrapper(index)); }
+			});
 	}
 
 
@@ -301,7 +306,10 @@ class ServerList
 			filters_ = newFilters;
 			updateFilteredList();
 		}
-		display.asyncExec(null, &serverTable.reset);
+		//display.asyncExec(null, &serverTable.reset);
+		display.asyncExec(new class Runnable {
+			void run() { serverTable.reset(); }
+		});
 	}
 
 	Filter getFilters() { return filters_; }

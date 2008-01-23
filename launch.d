@@ -7,7 +7,7 @@ private {
 	import std.path;
 	import std.conv;
 
-	import dwt.all;
+	//import dwt.all;
 	import lib.process;
 	import main;
 	import common;

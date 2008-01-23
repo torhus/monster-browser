@@ -1,7 +1,9 @@
 module playertable;
 
 private {
-	import dwt.all;
+	import dwt.widgets.Composite;
+	import dwt.widgets.Table;
+
 	import common;
 	import serverlist;
 	import main;
