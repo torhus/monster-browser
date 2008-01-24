@@ -1,7 +1,7 @@
 module link;
 
 // used by the Build tool
-version(build) {
+version (Windows) version(build) {
 	debug {
 		pragma(link, "dwtd.lib");
 	}
