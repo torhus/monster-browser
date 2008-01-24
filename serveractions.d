@@ -6,6 +6,11 @@ import std.stdio;
 import std.string;
 import std.thread;
 
+version (Windows) { }
+else
+	import dwt.dwthelper.Runnable;
+
+
 import common;
 import main;
 import qstat;
@@ -72,9 +77,16 @@ void loadSavedList()
 		try {
 			browserLoadSavedList(&callback);
 			volatile if (!runtools.abortParsing) {
-				display.asyncExec(null, delegate void (Object o) {
-				                            serverTable.reset();
-				                        } );
+				version (Windows) {
+					display.asyncExec(null, delegate void (Object o) {
+					                            serverTable.reset();
+					                        });
+				}
+				else {				
+					display.asyncExec(new class Runnable {
+						void run() { serverTable.reset(); }
+				    });
+				}
 			}
 		}
 		catch(Exception e) {
@@ -118,9 +130,20 @@ void queryAndAddServer(in char[] address)
 
 		try {
 			browserRefreshList(delegate void(Object) { }, false);
-			volatile if (!runtools.abortParsing) {
-				display.asyncExec(null, &done);
+
+			version (Windows) {
+				volatile if (!runtools.abortParsing) {
+					display.asyncExec(null, &done);
+				}
 			}
+			else {
+				volatile if (!runtools.abortParsing) {
+					display.asyncExec(new class Runnable {
+						void run() { done(null); }
+					});
+				}
+			}
+
 		}
 		catch(Exception e) {
 			logx(__FILE__, __LINE__, e);
@@ -162,16 +185,33 @@ void getNewList()
 			debug writefln("serverCount = ", total);
 
 			if (serverCount >= 0) {
-				display.asyncExec(null, delegate void (Object o) {
-				                        statusBar.setLeft("Got "  ~
-				                              total ~ " servers, querying...");
-			                        } );
+				version (Windows) {
+					display.asyncExec(null, delegate void (Object o) {
+					                        statusBar.setLeft("Got "  ~
+					                              total ~ " servers, querying...");
+				                        } );
+				}
+				else {
+					display.asyncExec(new class Runnable {
+						void run() { statusBar.setLeft("Got "  ~
+					                          total ~ " servers, querying...");
+				        }
+				    });
+				        
+				}
 
 				browserRefreshList(&status, true, true);
 				volatile if (!runtools.abortParsing) {
-					display.asyncExec(null, delegate void (Object o) {
-					                            serverTable.reset();
-					                        } );
+					version (Windows) {
+						display.asyncExec(null, delegate void (Object o) {
+					                                serverTable.reset();
+					                            });
+					}
+					else {				
+						display.asyncExec(new class Runnable {
+							void run() { serverTable.reset(); }
+					    });
+					}
 				}
 			}
 		}
@@ -221,8 +261,17 @@ void refreshList()
 		try {
 			total = std.string.toString(countServersInRefreshList());
 			browserRefreshList(&status);
-			volatile if (!runtools.abortParsing) {
-				display.asyncExec(null, &done);
+			version (Windows) {
+				volatile if (!runtools.abortParsing) {
+					display.asyncExec(null, &done);
+				}
+			}
+			else {
+				volatile if (!runtools.abortParsing) {
+					display.asyncExec(new class Runnable {
+						void run() { done(null); }
+					});
+				}
 			}
 		}
 		catch(Exception e) {

@@ -8,6 +8,10 @@ private {
 	import std.stream;
 	import std.conv;
 
+	version (Windows) { }
+	else
+		import dwt.dwthelper.Runnable;
+
 	import common;
 	import runtools;
 	import serverlist;
@@ -81,7 +85,14 @@ each_server:
 			assert(fields.length == 9 || fields.length == 3);
 			count++;
 			countWrapper.value = count;
-			display.syncExec(countWrapper, countDg);
+			version (Windows) {
+				display.syncExec(countWrapper, countDg);
+			}
+			else {
+				display.syncExec(new class Runnable {
+					void run() { countDg(countWrapper); }
+				});
+			}
 
 			if (fields.length >= 9) {
 				bool keep_server = false;
