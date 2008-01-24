@@ -159,11 +159,11 @@ version(linux)
 	{
 		this(uint dummy = 0)
 		{
-			if (pipe(handle) == -1) throw new PipeException("pipe(handle)");
+			/*if (pipe(handle) == -1) throw new PipeException("pipe(handle)");
 			writeable = true;
 			readable = true;
 			seekable = false;
-			isopen = true;
+			isopen = true;*/
 		}
 
 		int readHandle()
@@ -178,16 +178,16 @@ version(linux)
 
 		void closeRead()
 		{
-			close(readHandle);
+			/*close(readHandle);
 			readable = false;
-			if (!writeable) isopen = false;
+			if (!writeable) isopen = false;*/
 		}
 
 		void closeWrite()
 		{
-			close(writeHandle);
+			/*close(writeHandle);
 			writeable = false;
-			if (!readable) isopen = false;
+			if (!readable) isopen = false;*/
 		}
 
 		override void close()
@@ -199,32 +199,36 @@ version(linux)
 		override ulong seek(long offset, SeekPos whence)
 		{
 			assertSeekable();
+			return 0;
 		}
 
 		override size_t readBlock(void* buffer, size_t size)
 		{
-			size_t bytes;
+			/*size_t bytes;
 			assertReadable();
 			bytes = read(readHandle,buffer,size);
 			if (bytes == -1) throw new PipeException("read(handle[0])");
-			return bytes;
+			return bytes;*/
+			return 0;
 		}
 
 		override size_t available()
 		{
-			size_t bytes;
+			/*size_t bytes;
 			assertReadable();
 			if (ioctl(readHandle,FIONREAD,&bytes) == -1) throw new PipeException("ioctl(handle[0])");
-			return bytes;
+			return bytes;*/
+			return 0;
 		}
 
 		override size_t writeBlock(void* buffer, size_t size)
 		{
-			size_t bytes;
+			/*size_t bytes;
 			assertWriteable();
 			bytes = write(writeHandle,buffer,size);
 			if (bytes == -1) throw new PipeException("write(handle[1])");
-			return bytes;
+			return bytes;*/
+			return 0;
 		}
 
 		override void flush()
