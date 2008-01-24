@@ -333,6 +333,8 @@ private:
 
 	Filter filters_ = Filter.NONE;
 
+
+	version (Windows)  // DMD bugzilla issue 235
 	synchronized invariant()
 	{
 		if (filteredList.length > list.length) {
