@@ -12,7 +12,11 @@ private {
 	else
 		import dwt.DWT;
 		
-	import lib.process;
+	version (Windows)
+		import lib.process;
+	else
+		import tango.sys.Process;
+
 	import main;
 	import common;
 	import settings;

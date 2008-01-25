@@ -6,7 +6,11 @@ private {
 	import std.stream;
 	import std.stdio;
 
-	import lib.process;
+	version (Windows)
+		import lib.process;
+	else
+		import tango.sys.Process;
+
 	import common;
 	import serverlist;
 	import qstat;
@@ -48,7 +52,11 @@ int browserGetNewList()
 
 	proc = new Process();
 
+	version (Windows) { }
+	else scope (exit) if (proc) proc.wait();
+
 	// bug workaround
+	version (Windows)
 	for (int i = 0; _environ[i]; i++) {
 		proc.addEnv(std.string.toString(_environ[i]).dup);
 	}
@@ -66,11 +74,13 @@ int browserGetNewList()
 
 	if (proc) {
 		try {
+			readLineWrapper(proc, false);
+			
 			// Just swallow gslist or qstat's output, but get the server count.
 			// The IPs are written to a file.
 			if (common.useGslist) {
 				for (;;) {
-					char[] s = proc.readLine();
+					char[] s = readLineWrapper(null);
 					if (s.length > 0 && std.ctype.isdigit(s[0])) {
 						count = std.conv.toInt(s[0..find(s, ' ')]);
 						log("gslist retrieving " ~ std.string.toString(count) ~
@@ -82,8 +92,8 @@ int browserGetNewList()
 				char[] s;
 				int r;
 
-				proc.readLine();
-				s = proc.readLine();
+				readLineWrapper(null);
+				s = readLineWrapper(null);
 				r = sscanf(toStringz(s), "%*s %*s %d", &count);
 				log("qstat retrieving " ~ std.string.toString(count) ~
 				                              " servers.");
@@ -157,8 +167,12 @@ void browserRefreshList(void delegate(Object) callback,
 
 	//log("browserRefreshList():");
 	proc = new Process();
+	
+	version (Windows) { }
+	else scope (exit) if (proc) proc.wait();
 
 	// bug workaround
+	version (Windows)
 	for (int i = 0; _environ[i]; i++) {
 		proc.addEnv(std.string.toString(_environ[i]).dup);
 	}
@@ -178,7 +192,9 @@ void browserRefreshList(void delegate(Object) callback,
 
 	try {
 		char[] tmpfile = saveList ? "servers.tmp" : null;
-		qstat.parseOutput(callback, &proc.readLine, null, tmpfile);
+		readLineWrapper(proc, false);
+		char[] readLine() { return readLineWrapper(null); }
+		qstat.parseOutput(callback, &readLine, null, tmpfile);
 	}
 	catch(PipeException e) {
 		getActiveServerList.complete = !abortParsing;
