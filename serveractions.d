@@ -17,7 +17,7 @@ import qstat;
 import runtools;
 import serverlist;
 import servertable;
-import settings : setActiveMod, activeMod;
+import settings; //: setActiveMod, activeMod;
 
 
 /**

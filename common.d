@@ -11,6 +11,15 @@ private {
 	import std.c.stdio;
 	import std.c.stdlib;
 
+	version (Windows)  // FIXME: temporary, for readLine
+		import lib.process;
+	else {
+		import tango.sys.Process;
+		import tango.text.stream.LineIterator;
+		
+		class PipeException : Exception { this(char[] msg) { super(msg); } }
+	}
+
 	import dwt.DWT;
 	import dwt.dwthelper.Runnable;
 	import dwt.widgets.Display;
@@ -54,6 +63,32 @@ static this()
 	logfile = new File(LOGFILE, FileMode.Append);
 	logfile.writeLine("\n" ~ sep ~ "\n" ~ APPNAME ~ " started at " ~
 	                  std.date.toString(getUTCtime()) ~ "\n" ~ sep);
+}
+
+
+char[] readLineWrapper(Process newproc, bool returnNext=true)
+{
+	static Process proc = null;
+	
+	if (newproc)
+		proc = newproc;
+
+	version (Windows)
+		return returnNext ? proc.readLine() : null;
+	else {
+		static LineIterator!(char) iter;
+		if (newproc) 
+			iter = new LineIterator!(char)(proc.stdout);
+		if (returnNext) {
+			if (iter.next)
+				return iter.get;
+			else
+				throw new PipeException("iter.next returned null");
+		}
+		else {
+			return null;
+		}
+	}
 }
 
 
