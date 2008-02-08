@@ -8,8 +8,7 @@ private {
 	import std.stream;
 	import std.conv;
 
-	version (Windows) { }
-	else
+	version (Tango)
 		import dwt.dwthelper.Runnable;
 
 	import common;
@@ -85,13 +84,13 @@ each_server:
 			assert(fields.length == 9 || fields.length == 3);
 			count++;
 			countWrapper.value = count;
-			version (Windows) {
-				display.syncExec(countWrapper, countDg);
-			}
-			else {
+			version (Tango) {
 				display.syncExec(new class Runnable {
 					void run() { countDg(countWrapper); }
 				});
+			}
+			else {
+				display.syncExec(countWrapper, countDg);
 			}
 
 			if (fields.length >= 9) {

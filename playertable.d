@@ -1,9 +1,7 @@
 module playertable;
 
 private {
-	version (Windows)
-		import dwt.all;
-	else {
+	version (Tango) {
 		import dwt.DWT;
 		import dwt.widgets.Composite;
 		import dwt.widgets.Event;
@@ -11,8 +9,8 @@ private {
 		import dwt.widgets.Table;
 		import dwt.widgets.TableColumn;
 		import dwt.widgets.TableItem;
-		
 	}
+	else import dwt.all;
 
 	import common;
 	import serverlist;

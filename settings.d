@@ -7,10 +7,11 @@ private {
 	import std.file;
 	import std.c.stdio;
 
-	version (Windows)
-		import lib.process;
-	else
+	version (Tango)
 		import tango.sys.Process;
+	else
+		import lib.process;
+
 
 	import ini;
 	import common;

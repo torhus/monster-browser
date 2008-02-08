@@ -11,13 +11,14 @@ private {
 	import std.c.stdio;
 	import std.c.stdlib;
 
-	version (Windows)  // FIXME: temporary, for readLine
-		import lib.process;
-	else {
+	version (Tango) {  // FIXME: temporary, for readLine
 		import tango.sys.Process;
 		import tango.text.stream.LineIterator;
-		
+
 		class PipeException : Exception { this(char[] msg) { super(msg); } }
+	}
+	else {
+		import lib.process;
 	}
 
 	import dwt.DWT;
@@ -69,15 +70,13 @@ static this()
 char[] readLineWrapper(Process newproc, bool returnNext=true)
 {
 	static Process proc = null;
-	
+
 	if (newproc)
 		proc = newproc;
 
-	version (Windows)
-		return returnNext ? proc.readLine() : null;
-	else {
+	version (Tango) {
 		static LineIterator!(char) iter;
-		if (newproc) 
+		if (newproc)
 			iter = new LineIterator!(char)(proc.stdout);
 		if (returnNext) {
 			if (iter.next)
@@ -88,6 +87,9 @@ char[] readLineWrapper(Process newproc, bool returnNext=true)
 		else {
 			return null;
 		}
+	}
+	else {
+		return returnNext ? proc.readLine() : null;
 	}
 }
 
@@ -123,7 +125,7 @@ void messageBox(char[] title, int style, TypeInfo[] arguments, void* argptr)
 			mb.open();
 		}
 	});
-	
+
 }
 
 
