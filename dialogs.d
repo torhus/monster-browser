@@ -357,10 +357,10 @@ class SettingsDialog {
 		modsButton.addSelectionListener(new class SelectionAdapter {
 			public void widgetSelected(SelectionEvent e)
 			{
-				version (linux)  //FIXME
+				/+version (linux)  //FIXME
 					error("dwt.Program is missing");
 				else
-					Program.launch(settings.modFileName);
+					Program.launch(settings.modFileName);+/
 			}
 		});
 

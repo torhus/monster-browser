@@ -7,15 +7,15 @@ private {
 	import std.path;
 	import std.conv;
 
-	version (Windows)
-		import dwt.all;
-	else
+	version (Tango)
 		import dwt.DWT;
-		
-	version (Windows)
-		import lib.process;
 	else
+		import dwt.all;
+
+	version (Tango)
 		import tango.sys.Process;
+	else
+		import lib.process;
 
 	import main;
 	import common;
@@ -24,7 +24,8 @@ private {
 	import serverlist;
 }
 
-version (Windows) {
+version (Tango) { }
+else {
 	private PROCESS_INFORMATION *info = null;
 }
 
@@ -68,7 +69,11 @@ void JoinServer(ServerData *sd)
 	}
 
 	if (launch) {
-		version (Windows) {
+		version (Tango) {
+			// Need a platform specific way of launching the game.
+			error("Not implemented in the Tango version.");
+		}
+		else {
 			STARTUPINFOA startup;
 
 			GetStartupInfoA(&startup);
@@ -86,10 +91,6 @@ void JoinServer(ServerData *sd)
 			else if (getSetting("minimizeOnGameLaunch") == "true") {
 				mainWindow.setMinimized(true);
 			}
-		}
-		else {
-			// Need a platform specific way of launching the game.
-			error("Not implemented on linux");
 		}
 	}
 }

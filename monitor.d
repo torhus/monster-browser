@@ -4,7 +4,7 @@ private {
 	import std.date;
 	import std.thread;
 
-	import dwt.all;
+	//import dwt.all;
 	import common;
 	import dialogs;
 	import main;

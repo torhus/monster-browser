@@ -6,10 +6,10 @@ private {
 	import std.stream;
 	import std.stdio;
 
-	version (Windows)
-		import lib.process;
-	else
+	version (Tango)
 		import tango.sys.Process;
+	else
+		import lib.process;
 
 	import common;
 	import serverlist;
@@ -56,8 +56,8 @@ int browserGetNewList()
 	else scope (exit) if (proc) proc.wait();
 
 	// bug workaround
-	version (Windows)
-	for (int i = 0; _environ[i]; i++) {
+	version (Tango) { }
+	else for (int i = 0; _environ[i]; i++) {
 		proc.addEnv(std.string.toString(_environ[i]).dup);
 	}
 
@@ -75,7 +75,7 @@ int browserGetNewList()
 	if (proc) {
 		try {
 			readLineWrapper(proc, false);
-			
+
 			// Just swallow gslist or qstat's output, but get the server count.
 			// The IPs are written to a file.
 			if (common.useGslist) {
@@ -167,13 +167,13 @@ void browserRefreshList(void delegate(Object) callback,
 
 	//log("browserRefreshList():");
 	proc = new Process();
-	
+
 	version (Windows) { }
 	else scope (exit) if (proc) proc.wait();
 
 	// bug workaround
-	version (Windows)
-	for (int i = 0; _environ[i]; i++) {
+	version (Tango) { }
+	else for (int i = 0; _environ[i]; i++) {
 		proc.addEnv(std.string.toString(_environ[i]).dup);
 	}
 
