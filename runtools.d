@@ -63,7 +63,10 @@ int browserGetNewList()
 
 	try {
 		log("Executing '" ~ cmdLine ~ "'.");
-		proc.execute(cmdLine);
+		version (Tango)
+			proc.execute(cmdLine, null);
+		else
+			proc.execute(cmdLine);
 	}
 	catch (Exception e) {
 		char[] s = common.useGslist ? "gslist" : "qstat";
@@ -183,7 +186,10 @@ void browserRefreshList(void delegate(Object) callback,
 
 		log("Executing '" ~ cmdLine ~ "'.");
 		// FIXME: feed qstat through stdin (-f -)?
-		proc.execute(cmdLine);
+		version (Tango)
+			proc.execute(cmdLine, null);
+		else
+			proc.execute(cmdLine);
 	}
 	catch (Exception e) {
 		error("qstat not found!\nPlease reinstall " ~ APPNAME ~ ".");
