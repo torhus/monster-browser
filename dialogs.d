@@ -122,7 +122,7 @@ private:
 
 class JoinDialog {
 
-	char[] password;
+	char[] password = "";
 
 	this(Shell parent, char[] serverName, char[] message)
 	{

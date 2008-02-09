@@ -203,8 +203,8 @@ char[] getPassword(char[] ip)
 {
 	IniSection sec = settingsIni.section("Passwords");
 	if (sec is null)
-		return null;
-	return sec.getValue(ip);
+		return "";
+	return sec.getValue(ip, "");
 }
 
 
