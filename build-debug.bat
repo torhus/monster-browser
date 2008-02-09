@@ -1,2 +1,1 @@
-@rem build -TMonsterBrowser main.d -v1 -oddebug -debug -g -Xdwt -version=OLE_COM -exec %*
-bud -TMonsterBrowser main.d -v1 -oddebug -debug -g -Xdwt -Xphobos -version=OLE_COM -exec %*
+bud -TMonsterBrowser main.d -oddebug -debug -g -Xdwt -Xtango -L/subsystem:console:4.0 -version=Tango tangobos.lib tango-user-dmd.lib debug-DD-dwt.lib tango_sys_win32\CodePage.d tango_sys_win32\Types.d %*
