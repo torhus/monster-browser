@@ -203,7 +203,7 @@ private:
 
 class SpecifyServerDialog {
 
-	char[] address;
+	char[] address = "";
 
 	this(Shell parent)
 	{
