@@ -80,7 +80,7 @@ char[] readLineWrapper(Process newproc, bool returnNext=true)
 			iter = new LineIterator!(char)(proc.stdout);
 		if (returnNext) {
 			if (iter.next)
-				return iter.get;
+				return iter.get.dup;  // FIXME: avoid duping?
 			else
 				throw new PipeException("iter.next returned null");
 		}

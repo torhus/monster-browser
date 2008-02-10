@@ -227,7 +227,7 @@ void filterServerFile(char[] readFrom, char writeTo[])
 	scope BufferedFile outfile = new BufferedFile(writeTo, FileMode.OutNew);
 
 	while (!infile.eof()) {
-		char[] line = infile.readLine();
+		char[] line = infile.readLine();  // FIXME: tango reuses buffer, should dup?
 
 		if (line && line.length >= 3 && line[0..3] == "Q3S") {
 			char[][] fields = split(line, FIELDSEP);
@@ -246,7 +246,7 @@ void filterServerFile(char[] readFrom, char writeTo[])
 				outfile.writeLine(fields[1]);
 			}
 			else { // need to parse cvars to find out which mod this server runs
-				line = infile.readLine();
+				line = infile.readLine();  // FIXME: tango reuses buffer, should dup?
 				char[][] temp = split(line, FIELDSEP);
 				foreach (char[] s; temp) {
 					char[][] cvar = split(s, "=");

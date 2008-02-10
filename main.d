@@ -236,7 +236,6 @@ void main() {
 	}
 	catch(Exception e) {
 		logx(__FILE__, __LINE__, e);
-		//MessageBox.showMsg(e.classinfo.name ~ "\n" ~ e.toString());
 		error(e.classinfo.name ~ "\n" ~ e.toString());
 	}
 }
