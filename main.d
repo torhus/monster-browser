@@ -34,7 +34,7 @@ private {
 	import qstat;
 	import serveractions;
 	import serverlist;
-	import link;
+	version (Windows) import link;
 	import servertable;
 	import playertable;
 	import cvartable;
