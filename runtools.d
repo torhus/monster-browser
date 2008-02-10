@@ -6,10 +6,13 @@ private {
 	import std.stream;
 	import std.stdio;
 
-	version (Tango)
+	version (Tango) {
+		import tango.core.Exception : ProcessException;
 		import tango.sys.Process;
-	else
+	}
+	else {
 		import lib.process;
+	}
 
 	import common;
 	import serverlist;
@@ -68,7 +71,7 @@ int browserGetNewList()
 		else
 			proc.execute(cmdLine);
 	}
-	catch (Exception e) {
+	catch (ProcessException e) {
 		char[] s = common.useGslist ? "gslist" : "qstat";
 		error(s ~ " not found!\nPlease reinstall " ~ APPNAME ~ ".");
 		logx(__FILE__, __LINE__, e);
@@ -191,7 +194,7 @@ void browserRefreshList(void delegate(Object) callback,
 		else
 			proc.execute(cmdLine);
 	}
-	catch (Exception e) {
+	catch (ProcessException e) {
 		error("qstat not found!\nPlease reinstall " ~ APPNAME ~ ".");
 		return;
 	}
@@ -247,7 +250,7 @@ bool killServerBrowser()
 		proc.kill();
 		proc = null;
 	}
-	catch (Exception e) {
+	catch (ProcessException e) {
 		logx(__FILE__, __LINE__, e);
 		return false;
 	}
