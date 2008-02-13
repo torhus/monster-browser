@@ -1,1 +1,1 @@
-bud -TMonsterBrowser main.d -oddebug -debug -g -Xdwt -Xstd -Xtango -L/subsystem:console:4.0 -version=Tango tangobos.lib tango-user-dmd.lib debug-DD-dwt.lib tango_sys_win32\CodePage.d tango_sys_win32\Types.d %*
+bud -TMonsterBrowser main.d -oddebug -debug -g -Xdwt -Xstd -Xtango -L/subsystem:console:4.0 -version=Tango tangobos.lib tango-user-dmd.lib debug-DD-dwt.lib %*
