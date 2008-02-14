@@ -12,10 +12,8 @@ private {
 	else
 		import dwt.all;
 
-	version (Tango)
-		import tango.sys.Process;
-	else
-		import lib.process;
+	version (Windows)
+		import tango.sys.win32.UserGdi;
 
 	import main;
 	import common;
@@ -24,7 +22,7 @@ private {
 	import serverlist;
 }
 
-version (Tango) { }
+version (Posix) { }
 else {
 	private PROCESS_INFORMATION *info = null;
 }
@@ -69,12 +67,12 @@ void JoinServer(ServerData *sd)
 	}
 
 	if (launch) {
-		version (Tango) {
+		version (Posix) {
 			// Need a platform specific way of launching the game.
-			error("Not implemented in the Tango version.");
+			error("Not implemented on Unix.");
 		}
 		else {
-			STARTUPINFOA startup;
+			STARTUPINFO startup;
 
 			GetStartupInfoA(&startup);
 			startup.dwFlags = STARTF_USESTDHANDLES;
