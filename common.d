@@ -39,12 +39,17 @@ bool useGslist;
 
 const char[] APPNAME = "Monster Browser";
 
+version (Windows)
+	const char[] SVN = import("svnversion.txt")[0..$-2];
+else
+	const char[] SVN = import("svnversion.txt")[0..$-1];
+
 debug {
-	const char[] VERSION = "- " ~ __DATE__ ~ " *DEBUG BUILD*";
+	const char[] VERSION = "- " ~ __DATE__ ~ " (svnversion " ~ SVN ~ ") *DEBUG BUILD*";
 }
 else {
-	//const char[] VERSION = "- " ~ __DATE__ ;
-	const char[] VERSION = "0.3d";
+	const char[] VERSION = "- " ~ __DATE__ ~  " (svnversion " ~ SVN ~ ")";
+	//const char[] VERSION = "0.3e";
 }
 
 private {
