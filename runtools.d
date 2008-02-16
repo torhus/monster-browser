@@ -48,6 +48,9 @@ int browserGetNewList()
 		          REFRESHFILE;
 	}
 
+	version (linux)
+		cmdLine = "./" ~ cmdLine;
+
 	//log("browserGetNewList():");
 	if (common.useGslist && MOD_ONLY && activeMod.name!= "baseq3") {
 		cmdLine ~= " -f \"(gametype = \'" ~ activeMod.name ~ "\'\")";
@@ -186,6 +189,9 @@ void browserRefreshList(void delegate(Object) callback,
 	try {
 		char[] cmdLine = "qstat -f " ~ REFRESHFILE ~ " -raw,game " ~ FIELDSEP ~
 		                  " -P -R -default q3s" /*-carets";*/;
+
+		version (linux)
+			cmdLine = "./" ~ cmdLine;
 
 		log("Executing '" ~ cmdLine ~ "'.");
 		// FIXME: feed qstat through stdin (-f -)?

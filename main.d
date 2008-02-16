@@ -235,6 +235,7 @@ void main() {
 			display.dispose();
 	}
 	catch(Exception e) {
+		debug throw new Exception("rethrow from main()", e);
 		logx(__FILE__, __LINE__, e);
 		error(e.classinfo.name ~ "\n" ~ e.toString());
 	}
