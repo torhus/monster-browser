@@ -54,7 +54,7 @@ Thread serverThread;
 ThreadDispatcher threadDispatcher;
 
 
-void main() {
+void main(char[][] args) {
 	version (NO_STDOUT) {
 		freopen("STDOUT.TXT", "w", stdout);
 	}
@@ -212,17 +212,21 @@ void main() {
 		serverTable.getTable.setFocus();
 		mainWindow.open();
 
-		if (common.useGslist) {
-			getNewList();
-			//debug loadSavedList();
+		if (args.length > 1 && args[1] == "fromfile") {
+			loadSavedList();
 		}
 		else {
-			// Qstat is too slow to do a getNewList(), so just refresh
-			// the old list instead, if possible.
-			if (exists(activeMod.serverFile))
-				refreshList();
-			else
+			if (common.useGslist) {
 				getNewList();
+			}
+			else {
+				// Qstat is too slow to do a getNewList(), so just refresh
+				// the old list instead, if possible.
+				if (exists(activeMod.serverFile))
+					refreshList();
+				else
+					getNewList();
+			}
 		}
 
 		threadDispatcher = new ThreadDispatcher();
