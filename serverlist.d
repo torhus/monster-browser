@@ -7,6 +7,7 @@ private {
 
 	import dwt.DWT;
 	import dwt.dwthelper.Runnable;
+	import dwt.graphics.TextLayout;
 
 	import common;
 	import main;
@@ -52,6 +53,8 @@ struct ServerData {
 	char[][][] players;
 	/// list of cvars, with key and value for each
 	char[][][] cvars;
+
+	TextLayout customData = null;
 
 	/// Compares according to activeServerList's settings.
 	int opCmp(ServerData other)

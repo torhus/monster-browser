@@ -4,13 +4,15 @@ private {
 	import dwt.DWT;
 	import dwt.events.SelectionAdapter;
 	import dwt.events.SelectionEvent;
+	import dwt.graphics.TextLayout;
 	import dwt.widgets.Composite;
 	import dwt.widgets.Event;
-	import dwt.widgets.Listener;	
+	import dwt.widgets.Listener;
 	import dwt.widgets.Table;
 	import dwt.widgets.TableColumn;
 	import dwt.widgets.TableItem;
 
+	import colorednames;
 	import serverlist;
 	import launch;
 	import main;
@@ -53,7 +55,7 @@ class ServerTable
 		table_.getColumn(col++).setWidth(130);
 
 		table_.addListener(DWT.SetData, new class Listener {
-			public void handleEvent(Event e)
+			void handleEvent(Event e)
 			{
 				TableItem item = cast(TableItem) e.item;
 				int i = table_.indexOf(item);
@@ -63,6 +65,39 @@ class ServerTable
 					          "i >= getActiveServerList.filteredLength");
 				}
 				item.setText(getActiveServerList.getFiltered(i).server);
+			}
+		});
+
+		table_.addListener(DWT.EraseItem, new class Listener {
+			void handleEvent(Event e) {
+				if (e.index == ServerColumn.NAME)
+					e.detail &= ~DWT.FOREGROUND;
+			}
+		});
+
+		table_.addListener(DWT.PaintItem, new class Listener {
+			void handleEvent(Event e) {
+				if (e.index != ServerColumn.NAME)
+					return;
+
+				TableItem item = cast(TableItem) e.item;
+				auto i = table_.indexOf(item);
+				ServerData* sd = getActiveServerList.getFiltered(i);
+				TextLayout tl = sd.customData;
+
+				if (tl is null) {
+					// FIXME: all TextLayouts need to be disposed() somewhere
+					tl = new TextLayout(display);
+					tl.setText(item.getText(e.index));
+
+					auto parsed = parseColors(tl.getText());
+					tl.setText(parsed.cleanName);
+					foreach (r; parsed.ranges)
+						tl.setStyle(r.style, r.start, r.end);
+
+					sd.customData = tl;  // cache it
+				}
+				tl.draw(e.gc, e.x, e.y);
 			}
 		});
 
@@ -83,7 +118,7 @@ class ServerTable
 		});
 
 		Listener sortListener = new class Listener {
-			public void handleEvent(Event e)
+			void handleEvent(Event e)
 			{
 				// determine new sort column and direction
 				TableColumn sortColumn, newColumn;
