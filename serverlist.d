@@ -570,26 +570,26 @@ private:
  */
 bool setActiveServerList(char[] modName)
 {
-	bool retval;
-	Filter saved_filters;
+	bool thereAlready;
+	Filter savedFilters;
 
 	// hack to get the correct filtering set up for the new list,
 	// save the old one here for later use
 	if (activeServerList !is null) {
-		saved_filters = activeServerList.filters_;
+		savedFilters = activeServerList.filters_;
 	}
 
 	if (ServerList* slist = modName in serverLists) {
 		activeServerList = *slist;
-		retval = slist.complete;
+		thereAlready = slist.complete;
 	}
 	else {
 		activeServerList = new ServerList;
 		serverLists[modName] = activeServerList;
-		retval = false;
+		thereAlready = false;
 	}
 
-	activeServerList.filters_ = saved_filters;
+	activeServerList.filters_ = savedFilters;
 
 	auto sortCol = serverTable.getTable.getSortColumn();
 	synchronized (activeServerList) {
@@ -597,7 +597,7 @@ bool setActiveServerList(char[] modName)
 	                      (serverTable.getTable.getSortDirection() == DWT.DOWN));
 	}
 
-	return retval;
+	return thereAlready;
 }
 
 ServerList getActiveServerList() { return activeServerList; }

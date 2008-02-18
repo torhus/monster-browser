@@ -26,13 +26,28 @@ import settings; //: setActiveMod, activeMod;
  */
 void switchToMod(char[] name)
 {
-	// FIXME: race condition if qstat.Parseoutput calls Serverlist.add
-	// between the call to setActiveServerList and that threadDispatcher
-	// calls its argument?  What about setActiveMod?
+	static char[] nameCopy;
 
-	setActiveMod(name);
+	static void f() {
+		setActiveMod(nameCopy);
 
-	if (setActiveServerList(activeMod.name)) {
+		if (setActiveServerList(activeMod.name)) {
+			switchToActiveMod();
+		}
+		else {
+			if (common.useGslist)
+				getNewList();
+			else if (exists(activeMod.serverFile))
+				refreshList();
+			else
+				getNewList();
+		}
+	}
+
+	nameCopy = name;
+	threadDispatcher.run(&f);
+
+	/*if (setActiveServerList(activeMod.name)) {
 		threadDispatcher.run(&switchToActiveMod);
 	}
 	else {
@@ -42,7 +57,7 @@ void switchToMod(char[] name)
 			threadDispatcher.run(&refreshList);
 		else
 			threadDispatcher.run(&getNewList);
-	}
+	}*/
 }
 
 
