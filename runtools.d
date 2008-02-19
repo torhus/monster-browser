@@ -188,8 +188,9 @@ void browserRefreshList(void delegate(Object) callback,
 
 	try {
 		char[] cmdLine = "qstat -f " ~ REFRESHFILE ~ " -raw,game " ~ FIELDSEP ~
-		                  " -P -R -default q3s -carets";
-
+		                  " -P -R -default q3s";
+		if (getSetting("coloredNames") == "true")
+			cmdLine ~= " -carets";
 		version (linux)
 			cmdLine = "./" ~ cmdLine;
 

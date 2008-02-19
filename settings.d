@@ -83,13 +83,14 @@ private {
 		char[] name;
 		char[] value;
 	}
-	Setting[] defaults = [{"gamePath",
+	Setting[] defaults = [{"coloredNames", "true"},
+	                      {"gamePath",
 	                           r"C:\Program Files\Quake III Arena\quake3.exe"},
-	                      {"windowSize", "800x568"},
-	                      {"windowMaximized", "false"},
-	                      {"minimizeOnGameLaunch", "true"},
 	                      {"lastMod", "westernq3"},
+	                      {"minimizeOnGameLaunch", "true"},
 	                      {"startWithLastMod", "true"},
+	                      {"windowMaximized", "false"},
+	                      {"windowSize", "800x568"},
 	                     ];
 }
 

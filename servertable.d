@@ -14,6 +14,7 @@ private {
 
 	import colorednames;
 	import serverlist;
+	import settings;
 	import launch;
 	import main;
 	import common;
@@ -68,36 +69,41 @@ class ServerTable
 			}
 		});
 
-		table_.addListener(DWT.EraseItem, new class Listener {
-			void handleEvent(Event e) {
-				if (e.index == ServerColumn.NAME)
-					e.detail &= ~DWT.FOREGROUND;
-			}
-		});
-
-		table_.addListener(DWT.PaintItem, new class Listener {
-			void handleEvent(Event e) {
-				if (e.index != ServerColumn.NAME)
-					return;
-
-				TableItem item = cast(TableItem) e.item;
-				auto i = table_.indexOf(item);
-				ServerData* sd = getActiveServerList.getFiltered(i);
-				TextLayout tl = sd.customData;
-
-				if (tl is null) {
-					auto parsed = parseColors(item.getText(e.index));
-					// FIXME: all TextLayouts need to be disposed() somewhere
-					tl = new TextLayout(display);
-					tl.setText(parsed.cleanName);
-					foreach (r; parsed.ranges)
-						tl.setStyle(r.style, r.start, r.end);
-
-					sd.customData = tl;  // cache it
+		/* Allow users to disable colored server names, since drawing them is so
+		 * slow.
+		 */
+		if (getSetting("coloredNames") == "true") {
+			table_.addListener(DWT.EraseItem, new class Listener {
+				void handleEvent(Event e) {
+					if (e.index == ServerColumn.NAME)
+						e.detail &= ~DWT.FOREGROUND;
 				}
-				tl.draw(e.gc, e.x, e.y);
-			}
-		});
+			});
+
+			table_.addListener(DWT.PaintItem, new class Listener {
+				void handleEvent(Event e) {
+					if (e.index != ServerColumn.NAME)
+						return;
+
+					TableItem item = cast(TableItem) e.item;
+					auto i = table_.indexOf(item);
+					ServerData* sd = getActiveServerList.getFiltered(i);
+					TextLayout tl = sd.customData;
+
+					if (tl is null) {
+						auto parsed = parseColors(item.getText(e.index));
+						// FIXME: all TextLayouts need to be disposed() somewhere
+						tl = new TextLayout(display);
+						tl.setText(parsed.cleanName);
+						foreach (r; parsed.ranges)
+							tl.setStyle(r.style, r.start, r.end);
+
+						sd.customData = tl;  // cache it
+					}
+					tl.draw(e.gc, e.x, e.y);
+				}
+			});
+		}
 
 		table_.addSelectionListener(new class SelectionAdapter {
 			void widgetSelected(SelectionEvent e)
