@@ -3,6 +3,7 @@ module playertable;
 private {
 	version (Tango) {
 		import dwt.DWT;
+		import dwt.graphics.TextLayout;
 		import dwt.widgets.Composite;
 		import dwt.widgets.Event;
 		import dwt.widgets.Listener;
@@ -12,6 +13,7 @@ private {
 	}
 	else import dwt.all;
 
+	import colorednames;
 	import common;
 	import serverlist;
 	import main;
@@ -48,6 +50,38 @@ class PlayerTable
 				TableItem item = cast(TableItem) e.item;
 				item.setText(getActiveServerList.getFiltered(
 				          selectedServerIndex_).players[table_.indexOf(item)]);
+			}
+		});
+
+		table_.addListener(DWT.EraseItem, new class Listener {
+			void handleEvent(Event e) {
+				if (e.index == PlayerColumn.NAME)
+					e.detail &= ~DWT.FOREGROUND;
+			}
+		});
+
+		table_.addListener(DWT.PaintItem, new class Listener {
+			void handleEvent(Event e) {
+				if (e.index != PlayerColumn.NAME)
+					return;
+
+				TableItem item = cast(TableItem) e.item;
+				auto i = table_.indexOf(item);
+				//ServerData* sd = getActiveServerList.getFiltered(selectedServerIndex_);
+				//TextLayout tl = sd.customData;
+				TextLayout tl = null;
+
+				if (tl is null) {
+					auto parsed = parseColors(item.getText(e.index));
+					// FIXME: all TextLayouts need to be disposed() somewhere
+					tl = new TextLayout(display);
+					tl.setText(parsed.cleanName);
+					foreach (r; parsed.ranges)
+						tl.setStyle(r.style, r.start, r.end);
+
+					//sd.customData = tl;  // cache it
+				}
+				tl.draw(e.gc, e.x, e.y);
 			}
 		});
 
