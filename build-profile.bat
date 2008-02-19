@@ -1,2 +1,2 @@
-bud -TMonsterBrowser main.d -v1 -gui -debug -profile -g -Xdwt -Xphobos -full -clean -odprofile -version=NO_STDOUT -version=OLE_COM -exec %*
-
+@svnversion . branches/linux > svnversion.txt
+bud -TMonsterBrowser main.d -version=Tango -gui -profile -O -release -g -J. -Xdwt -Xstd -Xtango -odprofile tangobos.lib tango-user-dmd.lib DD-dwt.lib %*

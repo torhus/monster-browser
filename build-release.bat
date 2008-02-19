@@ -1,2 +1,2 @@
 @svnversion . branches/linux > svnversion.txt
-bud -TMonsterBrowser main.d -gui -release -O -inline -J. -Xdwt -Xstd -Xtango -full -clean tangobos.lib tango-user-dmd.lib DD-dwt.lib %*
+bud -TMonsterBrowser main.d -version=Tango -gui -O -release -inline -J. -full -Xdwt -Xstd -Xtango -odrelease tangobos.lib tango-user-dmd.lib DD-dwt.lib %*

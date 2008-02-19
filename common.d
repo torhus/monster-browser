@@ -31,8 +31,10 @@ private {
 
 
 /* SETTINGS */
-const bool MOD_ONLY = true;
-//debug const bool MOD_ONLY = false;
+version (allservers)  // useful for speed testing
+	const bool MOD_ONLY = false;
+else
+	const bool MOD_ONLY = true;
 
 bool useGslist;
 
