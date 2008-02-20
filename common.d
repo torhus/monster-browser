@@ -11,14 +11,15 @@ private {
 	import std.c.stdio;
 	import std.c.stdlib;
 
-	version (Tango) {  // FIXME: temporary, for readLine
+	version (UseOldProcess) {
+		import lib.process;
+	}
+	else {
+		// FIXME: temporary, for readLine
 		import tango.sys.Process;
 		import tango.text.stream.LineIterator;
 
 		class PipeException : Exception { this(char[] msg) { super(msg); } }
-	}
-	else {
-		import lib.process;
 	}
 
 	import dwt.DWT;
@@ -81,7 +82,10 @@ char[] readLineWrapper(Process newproc, bool returnNext=true)
 	if (newproc)
 		proc = newproc;
 
-	version (Tango) {
+	version (UseOldProcess){
+		return returnNext ? proc.readLine() : null;
+	}
+	else {
 		static LineIterator!(char) iter;
 		if (newproc)
 			iter = new LineIterator!(char)(proc.stdout);
@@ -94,9 +98,6 @@ char[] readLineWrapper(Process newproc, bool returnNext=true)
 		else {
 			return null;
 		}
-	}
-	else {
-		return returnNext ? proc.readLine() : null;
 	}
 }
 
