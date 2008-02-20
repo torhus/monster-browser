@@ -16,6 +16,7 @@ private {
 		import tango.sys.win32.UserGdi;
 
 	import main;
+	import colorednames;
 	import common;
 	import settings;
 	import dialogs;
@@ -52,8 +53,9 @@ void JoinServer(ServerData *sd)
 	}
 
 	if (showDialog) {
-		scope JoinDialog dialog = new JoinDialog(mainWindow, sd.server[ServerColumn.NAME],
-		                                   msg);
+		scope JoinDialog dialog = new JoinDialog(mainWindow,
+		                              stripColorCodes(sd.server[ServerColumn.NAME]),
+		                              msg);
 
 		dialog.password = getPassword(sd.server[ServerColumn.ADDRESS]);
 

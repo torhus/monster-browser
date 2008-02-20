@@ -99,7 +99,7 @@ ColoredName parseColors(char[] s)
 
 
 unittest {
-	printf("colorednames unit test starting...\n");
+	printf("colorednames.parseColors unit test starting...\n");
 
 	assert(parseColors("mon^1S^7ter").cleanName == "monSter");
 	assert(parseColors("^wwhite^8black").cleanName == "whiteblack");
@@ -107,5 +107,16 @@ unittest {
 	assert(parseColors("^^0blackie").cleanName == "^blackie");
 	//assert(parseColors("^1").cleanName == "UnnamedPlayer");
 
-	printf("colorednames unit test succeeded.\n");
+	printf("colorednames.parseColors unit test succeeded.\n");
+}
+
+
+/**
+ *  Strip color codes from quake3 names.
+ *
+ *  Note: Presently rather inefficient.
+ */
+char[] stripColorCodes(char[] s)
+{
+	return parseColors(s).cleanName;
 }
