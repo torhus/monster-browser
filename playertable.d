@@ -67,21 +67,15 @@ class PlayerTable
 
 				TableItem item = cast(TableItem) e.item;
 				auto i = table_.indexOf(item);
-				//ServerData* sd = getActiveServerList.getFiltered(selectedServerIndex_);
-				//TextLayout tl = sd.customData;
-				TextLayout tl = null;
+				scope parsed = parseColors(item.getText(e.index));
+				scope tl = new TextLayout(display);
 
-				if (tl is null) {
-					auto parsed = parseColors(item.getText(e.index));
-					// FIXME: all TextLayouts need to be disposed() somewhere
-					tl = new TextLayout(display);
-					tl.setText(parsed.cleanName);
-					foreach (r; parsed.ranges)
-						tl.setStyle(r.style, r.start, r.end);
+				tl.setText(parsed.cleanName);
+				foreach (r; parsed.ranges)
+					tl.setStyle(r.style, r.start, r.end);
 
-					//sd.customData = tl;  // cache it
-				}
 				tl.draw(e.gc, e.x, e.y);
+				tl.dispose();
 			}
 		});
 
