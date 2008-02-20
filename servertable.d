@@ -92,7 +92,6 @@ class ServerTable
 
 					if (tl is null) {
 						auto parsed = parseColors(item.getText(e.index));
-						// FIXME: all TextLayouts need to be disposed() somewhere
 						tl = new TextLayout(display);
 						tl.setText(parsed.cleanName);
 						foreach (r; parsed.ranges)

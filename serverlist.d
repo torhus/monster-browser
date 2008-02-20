@@ -12,6 +12,7 @@ private {
 	import common;
 	import main;
 	import servertable;
+	import settings;
 	import runtools;
 	import qstat;
 }
@@ -246,6 +247,12 @@ class ServerList
 	synchronized
 	ServerList clear()
 	{
+		if (getSetting("coloredNames") == "true") {
+			foreach (ref sd; list) {
+				if (sd.customData)
+					sd.customData.dispose();
+			}
+		}
 		//filteredList.length = 0;
 		//list.length = 0;
 		delete filteredList;
