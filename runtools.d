@@ -6,12 +6,13 @@ private {
 	import std.stream;
 	import std.stdio;
 
-	version (Tango) {
-		import tango.core.Exception : ProcessException;
-		import tango.sys.Process;
+	version (UseOldProcess) {
+		import lib.process;
 	}
 	else {
-		import lib.process;
+		import tango.core.Exception : ProcessException;
+		import tango.sys.Process;
+
 	}
 
 	import common;
@@ -62,17 +63,17 @@ int browserGetNewList()
 	else scope (exit) if (proc) proc.wait();
 
 	// bug workaround
-	version (Tango) { }
-	else for (int i = 0; _environ[i]; i++) {
-		proc.addEnv(std.string.toString(_environ[i]).dup);
+	version (UseOldProcess) {
+		for (int i = 0; _environ[i]; i++)
+			proc.addEnv(std.string.toString(_environ[i]).dup);
 	}
 
 	try {
 		log("Executing '" ~ cmdLine ~ "'.");
-		version (Tango)
-			proc.execute(cmdLine, null);
-		else
+		version (UseOldProcess)
 			proc.execute(cmdLine);
+		else
+			proc.execute(cmdLine, null);
 	}
 	catch (ProcessException e) {
 		char[] s = common.useGslist ? "gslist" : "qstat";
@@ -181,9 +182,9 @@ void browserRefreshList(void delegate(Object) callback,
 	else scope (exit) if (proc) proc.wait();
 
 	// bug workaround
-	version (Tango) { }
-	else for (int i = 0; _environ[i]; i++) {
-		proc.addEnv(std.string.toString(_environ[i]).dup);
+	version (UseOldProcess) {
+		for (int i = 0; _environ[i]; i++)
+			proc.addEnv(std.string.toString(_environ[i]).dup);
 	}
 
 	try {
@@ -196,10 +197,10 @@ void browserRefreshList(void delegate(Object) callback,
 
 		log("Executing '" ~ cmdLine ~ "'.");
 		// FIXME: feed qstat through stdin (-f -)?
-		version (Tango)
-			proc.execute(cmdLine, null);
-		else
+		version (UseOldProcess)
 			proc.execute(cmdLine);
+		else
+			proc.execute(cmdLine, null);
 	}
 	catch (ProcessException e) {
 		error("qstat not found!\nPlease reinstall " ~ APPNAME ~ ".");
