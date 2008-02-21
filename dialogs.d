@@ -6,6 +6,9 @@ private {
 	import std.file;
 	import std.string;
 
+	import tango.sys.win32.Types : SW_SHOW;
+	import tango.sys.win32.UserGdi : ShellExecuteA;
+
 	import dwt.DWT;
 	import dwt.events.SelectionAdapter;
 	import dwt.events.SelectionEvent;
@@ -357,10 +360,19 @@ class SettingsDialog {
 		modsButton.addSelectionListener(new class SelectionAdapter {
 			public void widgetSelected(SelectionEvent e)
 			{
-				/+version (linux)  //FIXME
-					error("dwt.Program is missing");
-				else
-					Program.launch(settings.modFileName);+/
+				version (Tango) {
+					version (Windows) {
+						char* file = (settings.modFileName ~ '\0').ptr;
+						ShellExecuteA(null, null, file, null, null, SW_SHOW);
+					}
+					else {  //FIXME
+						info("This is not yet implemented on linux\n"
+						      "Please locate " ~ settings.modFileName ~ " manually for now.");
+					}
+				}
+				else {
+					Program.launch(settings.modFileName);
+				}
 			}
 		});
 
