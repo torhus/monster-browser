@@ -54,8 +54,7 @@ void JoinServer(ServerData *sd)
 
 	if (showDialog) {
 		scope JoinDialog dialog = new JoinDialog(mainWindow,
-		                              stripColorCodes(sd.server[ServerColumn.NAME]),
-		                              msg);
+		                                         sd.server[ServerColumn.NAME], msg);
 
 		dialog.password = getPassword(sd.server[ServerColumn.ADDRESS]);
 

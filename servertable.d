@@ -91,7 +91,7 @@ class ServerTable
 					TextLayout tl = sd.customData;
 
 					if (tl is null) {
-						auto parsed = parseColors(item.getText(e.index));
+						auto parsed = parseColors(sd.rawName);
 						tl = new TextLayout(display);
 						tl.setText(parsed.cleanName);
 						foreach (r; parsed.ranges)

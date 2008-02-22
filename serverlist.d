@@ -48,7 +48,9 @@ private {
 
 /** Stores all data for a server. */
 struct ServerData {
-	/// name, ping, playercount, map, etc.
+	/// server name, with any color codes intact
+	char[] rawName;
+	/// name (without color codes), ping, playercount, map, etc.
 	char[][] server;
 	/// list of players, with name, score and ping for each
 	char[][][] players;

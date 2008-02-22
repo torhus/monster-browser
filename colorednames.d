@@ -21,11 +21,11 @@ static this() {
 	// green
 	q3Colors[2] = new TextStyle(null, new Color(display,   0, 255,   0), null);
 	// yellow
-	q3Colors[3] = new TextStyle(null, new Color(display, 255, 255,   0), null);
+	q3Colors[3] = new TextStyle(null, new Color(display, 215, 215,   0), null);
 	// blue
 	q3Colors[4] = new TextStyle(null, new Color(display,   0,   0, 255), null);
 	// cyan
-	q3Colors[5] = new TextStyle(null, new Color(display,   0, 255, 255), null);
+	q3Colors[5] = new TextStyle(null, new Color(display,   0, 240, 240), null);
 	// magenta
 	q3Colors[6] = new TextStyle(null, new Color(display, 255,   0, 255), null);
 	// white
@@ -113,10 +113,18 @@ unittest {
 
 /**
  *  Strip color codes from quake3 names.
- *
- *  Note: Presently rather inefficient.
  */
 char[] stripColorCodes(char[] s)
 {
-	return parseColors(s).cleanName;
+	char[] name;
+
+	for (int i=0; i < s.length; i++) {
+		if (s[i] == '^' && (i == s.length-1 || s[i+1] != '^')) {
+			i++;
+			continue;
+		}
+		name ~= s[i];
+	}
+
+	return name;
 }
