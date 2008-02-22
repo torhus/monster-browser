@@ -11,6 +11,7 @@ private {
 	version (Tango)
 		import dwt.dwthelper.Runnable;
 
+	import colorednames;
 	import common;
 	import runtools;
 	import serverlist;
@@ -113,8 +114,8 @@ each_server:
 
 				sd.server.length = ServerColumn.max + 1;
 
+				sd.rawName = fields[2];
 				sd.server[ServerColumn.PASSWORDED] = "";
-				sd.server[ServerColumn.NAME] = fields[2];
 				sd.server[ServerColumn.PING] = fields[6];
 				sd.server[ServerColumn.PLAYERS] = "";
 				sd.server[ServerColumn.GAMETYPE] = "";
@@ -192,6 +193,8 @@ each_server:
 				sd.server[ServerColumn.PLAYERS] = std.string.toString(humans) ~
 				                  "+" ~ (std.string.toString(bots)) ~
 				                  "/" ~ fields[4];
+
+				sd.server[ServerColumn.NAME] = stripColorCodes(sd.rawName);
 
 				getActiveServerList.add(&sd);
 			}
