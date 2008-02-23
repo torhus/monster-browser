@@ -82,48 +82,19 @@ class PlayerTable
 		Listener sortListener = new class Listener {
 			public void handleEvent(Event e)
 			{
-				// determine new sort column and direction
-				TableColumn sortColumn;
-				TableColumn currentColumn;
-				int dir, sortCol;
+				auto oldColumn = table_.getSortColumn();
+				auto newColumn = cast(TableColumn)e.widget;
+				int dir = table_.getSortDirection();
 
-				sortColumn = table_.getSortColumn();
-				currentColumn = cast(TableColumn) e.widget;
-				dir = table_.getSortDirection();
-
-				if (sortColumn is currentColumn) {
-					dir = dir == DWT.UP ? DWT.DOWN : DWT.UP;
+				if (newColumn is oldColumn) {
+					dir = (dir == DWT.UP) ? DWT.DOWN : DWT.UP;
 				} else {
-					table_.setSortColumn(currentColumn);
+					table_.setSortColumn(newColumn);
 					dir = DWT.UP;
 				}
 
-				sortCol = table_.indexOf(table_.getSortColumn());
-
-				switch (sortCol) {
-					case PlayerColumn.NAME:
-						sortStringArrayStable(getActiveServerList.getFiltered(
-						                        selectedServerIndex_).players,
-				                        sortCol,
-				                        ((dir == DWT.UP) ? false : true));
-				    	break;
-					case PlayerColumn.SCORE:
-				    sortStringArrayStable(getActiveServerList.getFiltered(
-				                               selectedServerIndex_).players,
-				                    sortCol,
-				                    ((dir == DWT.DOWN) ? false : true), true);
-						break;
-					case PlayerColumn.PING:
-				    sortStringArrayStable(getActiveServerList.getFiltered(
-				                                selectedServerIndex_).players,
-				                    sortCol,
-				                    ((dir == DWT.UP) ? false : true), true);
-						break;
-					default:
-						assert(0);
-				}
-
 				table_.setSortDirection(dir);
+				sort();
 				table_.clearAll();
 			}
 		};
@@ -173,18 +144,25 @@ private:
 
 	void sort()
 	{
+		auto sd = getActiveServerList.getFiltered(selectedServerIndex_);
 		int sortCol = table_.indexOf(table_.getSortColumn());
 		int dir = table_.getSortDirection();
 
-		if (sortCol== 0) {
-			sortStringArrayStable(
-			            getActiveServerList.getFiltered(selectedServerIndex_).players,
-		                sortCol, (dir == DWT.UP) ? false : true);
-	    }
-	    else {  // numerical sort
-		    sortStringArrayStable(
-		                  getActiveServerList.getFiltered(selectedServerIndex_).players,
-		                  sortCol, (dir == DWT.DOWN) ? false : true, true);
+		switch (sortCol) {
+			case PlayerColumn.NAME:
+				sortStringArrayStable(sd.players, sortCol,
+		                              ((dir == DWT.UP) ? false : true));
+		    	break;
+			case PlayerColumn.SCORE:
+		    sortStringArrayStable(sd.players, sortCol,
+		                          ((dir == DWT.DOWN) ? false : true), true);
+				break;
+			case PlayerColumn.PING:
+		    sortStringArrayStable(sd.players, sortCol,
+		                          ((dir == DWT.UP) ? false : true), true);
+				break;
+			default:
+				assert(0);
 		}
 	}
 
