@@ -3,9 +3,10 @@ module launch;
 /* Launch the game, etc. */
 
 private {
-	import std.string;
 	import std.path;
-	import std.conv;
+
+	import tango.stdc.stringz;
+	import tango.text.convert.Integer;
 
 	version (Tango)
 		import dwt.DWT;
@@ -84,8 +85,8 @@ void JoinServer(ServerData *sd)
 			                     toStringz(dir),&startup,info);
 			if (!r) {
 				int e = GetLastError();
-				db("CreatProcessA returned " ~ std.string.toString(r));
-				db("GetLastError returned " ~ std.string.toString(e));
+				db("CreatProcessA returned " ~ toString(r));
+				db("GetLastError returned " ~ toString(e));
 			}
 			else if (getSetting("minimizeOnGameLaunch") == "true") {
 				mainWindow.setMinimized(true);

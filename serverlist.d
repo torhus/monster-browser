@@ -1,9 +1,12 @@
 module serverlist;
 
 private {
-	import std.string;
 	debug import std.stdio;
 	import std.c.string;
+
+	import tango.text.Ascii;
+	import tango.text.Util;
+	import Integer = tango.text.convert.Integer;
 
 	import dwt.DWT;
 	import dwt.dwthelper.Runnable;
@@ -28,11 +31,11 @@ const char[][] defaultGameTypes = ["FFA", "1v1", "SP", "TDM", "CTF",
 char[][][char[]] gameTypes;
 
 static this() {
-	gameTypes["osp"] = split("FFA 1v1 SP TDM CTF CA");
-	gameTypes["q3ut3"] = split("FFA FFA FFA TDM TS FtL C&H CTF B&D");
-	gameTypes["q3ut4"] = split("FFA FFA FFA TDM TS FtL C&H CTF B&D");
-	gameTypes["westernq3"] = split("FFA Duel 2 TDM RTP BR");
-	gameTypes["wop"] = split("FFA 1v1 2 SyC LPS TDM 6 SyCT BB");
+	gameTypes["osp"] = split("FFA 1v1 SP TDM CTF CA", " ");
+	gameTypes["q3ut3"] = split("FFA FFA FFA TDM TS FtL C&H CTF B&D", " ");
+	gameTypes["q3ut4"] = split("FFA FFA FFA TDM TS FtL C&H CTF B&D", " ");
+	gameTypes["westernq3"] = split("FFA Duel 2 TDM RTP BR", " ");
+	gameTypes["wop"] = split("FFA 1v1 2 SyC LPS TDM 6 SyCT BB", " ");
 }
 
 // should correspond to playertable.playerHeaders
@@ -95,13 +98,13 @@ struct ServerData {
 				break;
 
 			case ServerColumn.PING:
-				result = std.conv.toInt(server[activeServerList.sortColumn_]) -
-				          std.conv.toInt(other.server[activeServerList.sortColumn_]);
+				result = Integer.toInt(server[ServerColumn.PING]) -
+				         Integer.toInt(other.server[ServerColumn.PING]);
 				break;
 
 			default:
-				result = std.string.icmp(server[activeServerList.sortColumn_],
-				                       other.server[activeServerList.sortColumn_]);
+				result = icompare(server[activeServerList.sortColumn_],
+				                  other.server[activeServerList.sortColumn_]);
 		}
 
 		return (activeServerList.reversed_ ? -result : result);
@@ -111,22 +114,21 @@ struct ServerData {
 	/// Extract some info about the server.
 	int humanCount()
 	{
-		char[] s = server[ServerColumn.PLAYERS];
-		return std.conv.toInt(s[0..find(s, '+')]);
+		return Integer.convert(server[ServerColumn.PLAYERS]);
 	}
 
 	/// ditto
 	int botCount()
 	{
 		char[] s = server[ServerColumn.PLAYERS];
-		return std.conv.toInt(s[find(s, '+')+1 .. find(s, "/")]);
+		return Integer.convert(s[locate(s, '+')+1 .. $]);
 	}
 
 	/// ditto
 	int maxClients()
 	{
 		char[] s = server[ServerColumn.PLAYERS];
-		return std.conv.toInt(s[find(s, "/")+1 .. length]);
+		return Integer.convert(s[locate(s, '/')+1 .. $]);
 	}
 
 	/// ditto
@@ -136,7 +138,7 @@ struct ServerData {
 	bool hasBots()
 	{
 		char[] s = server[ServerColumn.PLAYERS];
-		return (s[find(s, '+')+1] != '0');
+		return (s[locate(s, '+')+1] != '0');
 	}
 }
 
@@ -390,7 +392,7 @@ private:
 		}
 
 		debug log("ServerList._sort() took " ~
-		          std.string.toString(timer.millis) ~ " milliseconds.");
+		          Integer.toString(timer.millis) ~ " milliseconds.");
 	}
 
 	/**
@@ -464,7 +466,7 @@ private:
 			if (!((i == 0 || greaterOrEq(fL[i], fL[i-1])) &&
 			      (i == (fL.length - 1)	 || less(fL[i], fL[i + 1])))) {
 
-				db("_insertSorted, index = " ~ .toString(i) ~ "\n" ~
+				db("_insertSorted, index = " ~ Integer.toString(i) ~ "\n" ~
 				   "new: " ~ sd.server[ServerColumn.NAME] ~ "\n" ~
 				   "i-1:" ~ (i > 0 ? fL[i-1].server[ServerColumn.NAME]  : "START") ~ "\n" ~
 				   "i:  " ~ fL[i].server[ServerColumn.NAME] ~ "\n" ~

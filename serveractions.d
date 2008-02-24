@@ -3,11 +3,11 @@ module serveractions;
 import std.file;
 import std.gc;
 import std.stdio;
-import std.string;
 import std.thread;
 
-version (Tango)
-	import dwt.dwthelper.Runnable;
+import tango.text.convert.Integer;
+
+import dwt.dwthelper.Runnable;
 
 import common;
 import main;
@@ -84,7 +84,7 @@ void loadSavedList()
 		void callback(Object int_count)
 		{
 			statusBar.setLeft("Loading saved server list... " ~
-			          std.string.toString((cast(IntWrapper) int_count).value));
+			                  toString((cast(IntWrapper) int_count).value));
 		}
 
 		try {
@@ -189,12 +189,12 @@ void getNewList()
 		void status(Object int_count)
 		{
 			statusBar.setLeft("Got " ~  total ~ " servers, querying..." ~
-			          std.string.toString((cast(IntWrapper) int_count).value));
+			                  toString((cast(IntWrapper)int_count).value));
 		}
 
 		try {
 			serverCount = browserGetNewList();
-			total = std.string.toString(serverCount);
+			total = toString(serverCount);
 			debug writefln("serverCount = ", total);
 
 			if (serverCount >= 0) {
@@ -258,7 +258,7 @@ void refreshList()
 		void status(Object int_count)
 		{
 			statusBar.setLeft("Refreshing " ~  total ~ " servers..." ~
-			          std.string.toString((cast(IntWrapper) int_count).value));
+			                  toString((cast(IntWrapper)int_count).value));
 		}
 
 		void done(Object o)
@@ -272,7 +272,7 @@ void refreshList()
 		}
 
 		try {
-			total = std.string.toString(countServersInRefreshList());
+			total = toString(countServersInRefreshList());
 			browserRefreshList(&status);
 			version (Tango) {
 				volatile if (!runtools.abortParsing) {
@@ -300,7 +300,7 @@ void refreshList()
 		qstat.saveRefreshList();
 	//}
 	statusBar.setLeft("Refreshing " ~
-	         std.string.toString(countServersInRefreshList()) ~ " servers...");
+	             toString(countServersInRefreshList()) ~ " servers...");
 	getActiveServerList.clear();
 	serverTable.refresh();
 

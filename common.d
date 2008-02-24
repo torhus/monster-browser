@@ -11,6 +11,10 @@ private {
 	import std.c.stdio;
 	import std.c.stdlib;
 
+	import tango.text.Ascii;
+	import tango.text.Util;
+	import Integer = tango.text.convert.Integer;
+
 	version (UseOldProcess) {
 		import lib.process;
 	}
@@ -150,13 +154,13 @@ alias _messageBox!("Debug", DWT.NONE) db;
 
 void db(char[][] a)
 {
-	db(std.string.join(a, "\n"));
+	db(join(a, "\n"));
 }
 
 
 void log(char[] file, int line, char[] msg)
 {
-	log(file ~ "(" ~ std.string.toString(line) ~ "): " ~ msg);
+	log(file ~ "(" ~ Integer.toString(line) ~ "): " ~ msg);
 }
 
 
@@ -183,6 +187,12 @@ public:
 }
 
 
+version (Windows)
+	const char[] newline = "\r\n";
+else
+	const char[] newline = "\n";
+
+
 /**
  * Check if address is a valid IP _address, with or without a port number.
  *
@@ -207,7 +217,7 @@ bool isValidIpAddress(in char[] address)
 int findString(char[][] array, char[] str)
 {
 	foreach (int i, char[] s; array) {
-		if (std.string.tolower(str) == std.string.tolower(s)) {
+		if (toLower(str.dup) == toLower(s.dup)) {
 			return i;
 		}
 	}
@@ -221,7 +231,7 @@ int findString(char[][] array, char[] str)
 int findString(char[][][] array, char[] str, int column)
 {
 	foreach (int i, char[][] s; array) {
-		if (std.string.tolower(str) == std.string.tolower(s[column])) {
+		if (toLower(str.dup) == toLower(s[column].dup)) {
 			return i;
 		}
 	}
@@ -242,10 +252,11 @@ void sortStringArray(char[][][] arr, int sortColumn=0, bool reverse=false,
 		int result;
 
 		if (_numeric) {
-			result = std.conv.toInt(first) - std.conv.toInt(second);
+			assert(first[0] >= '0' && first[0] <= '9');
+			result = Integer.atoi(first) - Integer.atoi(second);
 		}
 		else {
-			result = std.string.icmp(first, second);
+			result = icompare(first, second);
 		}
 		return (_reverse ? -result : result);
 	}
@@ -267,11 +278,12 @@ void sortStringArrayStable(char[][][] arr, int sortColumn=0,
 		int result;
 
 		if (numeric) {
-			result = std.conv.toInt(a[sortColumn]) -
-			                             std.conv.toInt(b[sortColumn]);
+			assert(a[sortColumn][0] >= '0' && a[sortColumn][0] <= '9');
+			result = Integer.atoi(a[sortColumn]) -
+			         Integer.atoi(b[sortColumn]);
 		}
 		else {
-			result = std.string.icmp(a[sortColumn], b[sortColumn]);
+			result = icompare(a[sortColumn], b[sortColumn]);
 		}
 		return (reverse ? -result <= 0 : result <= 0);
 	}

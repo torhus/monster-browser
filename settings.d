@@ -3,15 +3,11 @@ module settings;
 /* Load and store settings, and saved passwords. */
 
 private {
-	import std.string;
 	import std.file;
 	import std.c.stdio;
 
-	version (Tango)
-		import tango.sys.Process;
-	else
-		import lib.process;
-
+	import tango.text.Util;
+	import tango.text.convert.Integer;
 
 	import ini;
 	import common;
@@ -31,7 +27,7 @@ struct Mod
 		return r ? r : "master3.idsoftware.com";
 	}
 
-	char[] serverFile() { return replace(masterServer, ":", "_") ~ ".lst"; }
+	char[] serverFile() { return replace(masterServer, ':', '_') ~ ".lst"; }
 
 	char[] extraServersFile() { return name ~ ".extra"; }
 
@@ -165,8 +161,9 @@ void loadSettings()
 void saveSettings()
 {
 	if (!mainWindow.getMaximized() && !mainWindow.getMinimized()) {
-		setSetting("windowSize", std.string.format(mainWindow.getSize().x, "x",
-		                                              mainWindow.getSize().y));
+		char[] width  = toString(mainWindow.getSize().x);
+		char[] height = toString(mainWindow.getSize().y);
+		setSetting("windowSize", width ~ "x" ~ height);
 	}
 	setSetting("windowMaximized", mainWindow.getMaximized() ?
 	                                                 "true" : "false");
