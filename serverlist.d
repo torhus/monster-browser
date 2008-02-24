@@ -177,7 +177,7 @@ class ServerList
 
 	/// Iterate over the full list.
 	synchronized
-	int opApply(int delegate(inout ServerData) dg)
+	int opApply(int delegate(ref ServerData) dg)
 	{
 		int result = 0;
 
@@ -212,7 +212,7 @@ class ServerList
 		if (!ipAndPort)
 			return -1;
 
-		foreach (int i, inout ServerData sd; list) {
+		foreach (int i, ref ServerData sd; list) {
 			if (sd.server[ServerColumn.ADDRESS] == ipAndPort)
 				return i;
 		}
@@ -495,7 +495,7 @@ private:
 	void copyListToFilteredList()
 	{
 		filteredList.length = list.length;
-		for (size_t i; i < list.length; i++) {
+		for (size_t i=0; i < list.length; i++) {
 			filteredList[i] = &list[i];
 		}
 	}
@@ -525,16 +525,16 @@ private:
 		}
 		filteredList.length = 0;
 		if (filters_ & Filter.HAS_HUMANS) {
-			for (size_t i = 0; i < list.length; i++) {
-				if (list[i].hasHumans) {
-					filteredList ~= &list[i];
+			foreach (ref sd; list) {
+				if (sd.hasHumans) {
+					filteredList ~= &sd;
 				}
 			}
 		}
 		else if (filters_ & Filter.NOT_EMPTY) {
-			for (size_t i = 0; i < list.length; i++) {
-				if (list[i].hasBots || list[i].hasHumans) {
-					filteredList ~= &list[i];
+			foreach (ref sd; list) {
+				if (sd.hasBots || sd.hasHumans) {
+					filteredList ~= &sd;
 				}
 			}
 		}

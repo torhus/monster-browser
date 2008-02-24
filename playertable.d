@@ -48,8 +48,9 @@ class PlayerTable
 			public void handleEvent(Event e)
 			{
 				TableItem item = cast(TableItem) e.item;
-				item.setText(getActiveServerList.getFiltered(
-				          selectedServerIndex_).players[table_.indexOf(item)]);
+				auto sd = getActiveServerList.getFiltered(selectedServerIndex_);
+				auto player = sd.players[table_.indexOf(item)];
+				item.setText(player[0 .. table_.getColumnCount()]);
 			}
 		});
 
