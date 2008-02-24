@@ -153,13 +153,13 @@ private:
 			case PlayerColumn.NAME:
 				sortStringArrayStable(sd.players, sortCol,
 		                              ((dir == DWT.UP) ? false : true));
-		    	break;
+				break;
 			case PlayerColumn.SCORE:
-		    sortStringArrayStable(sd.players, sortCol,
+				sortStringArrayStable(sd.players, sortCol,
 		                          ((dir == DWT.DOWN) ? false : true), true);
 				break;
 			case PlayerColumn.PING:
-		    sortStringArrayStable(sd.players, sortCol,
+				sortStringArrayStable(sd.players, sortCol,
 		                          ((dir == DWT.UP) ? false : true), true);
 				break;
 			default:

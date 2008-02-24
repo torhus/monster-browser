@@ -252,8 +252,7 @@ void sortStringArray(char[][][] arr, int sortColumn=0, bool reverse=false,
 		int result;
 
 		if (_numeric) {
-			assert(first[0] >= '0' && first[0] <= '9');
-			result = Integer.atoi(first) - Integer.atoi(second);
+			result = Integer.toInt(first) - Integer.toInt(second);
 		}
 		else {
 			result = icompare(first, second);
@@ -278,9 +277,8 @@ void sortStringArrayStable(char[][][] arr, int sortColumn=0,
 		int result;
 
 		if (numeric) {
-			assert(a[sortColumn][0] >= '0' && a[sortColumn][0] <= '9');
-			result = Integer.atoi(a[sortColumn]) -
-			         Integer.atoi(b[sortColumn]);
+			result = Integer.toInt(a[sortColumn]) -
+			         Integer.toInt(b[sortColumn]);
 		}
 		else {
 			result = icompare(a[sortColumn], b[sortColumn]);
