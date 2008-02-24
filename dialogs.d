@@ -4,7 +4,6 @@ module dialogs;
 
 private {
 	import std.file;
-	import std.string;
 
 	import tango.sys.win32.Types : SW_SHOW;
 	import tango.sys.win32.UserGdi : ShellExecuteA;

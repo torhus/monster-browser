@@ -2,10 +2,11 @@ module main;
 
 private {
 	import std.file;
-	import std.string;
 	import std.stdio;
 	import std.thread;
-	import std.conv;
+
+	import tango.text.Util;
+	import Integer = tango.text.convert.Integer;
 
 	import dwt.DWT;
 	import dwt.custom.SashForm;
@@ -92,9 +93,10 @@ void main(char[][] args) {
 
 		// restore saved size and state
 		char[] size = getSetting("windowSize");
-		int pos = std.string.find(size, 'x');
-		// FIXME: ArrayBoundsError if 'x' wasn't found
-		mainWindow.setSize(toInt(size[0..pos]), toInt(size[pos+1..length]));
+		int pos = locate(size, 'x');
+		// FIXME: handle the case of 'x' not being found
+		mainWindow.setSize(Integer.toInt(size[0..pos]),
+		                   Integer.toInt(size[pos+1..length]));
 		if (getSetting("windowMaximized") == "true") {
 			mainWindow.setMaximized(true);
 		}
@@ -200,10 +202,10 @@ void main(char[][] args) {
 				foreach (int i, Thread t; Thread.getAll()) {
 					if (t != Thread.getThis()) {
 						log("Waiting for thread " ~
-						        common.std.string.toString(i) ~ "...");
+						        .toString(i) ~ "...");
 						t.wait();
 						log("    ...thread " ~
-						        common.std.string.toString(i) ~ " done.");
+						        .toString(i) ~ " done.");
 					}
 				}*/
 			}
@@ -265,13 +267,11 @@ class StatusBar
 	void setDefaultStatus(size_t totalServers, size_t shownServers)
 	{
 		if (shownServers != totalServers) {
-			setLeft("Showing " ~
-			         std.string.toString(shownServers) ~ " of " ~
-			         std.string.toString(totalServers) ~ " servers");
+			setLeft("Showing " ~ Integer.toString(shownServers) ~ " of " ~
+			        Integer.toString(totalServers) ~ " servers");
 		}
 		else {
-			setLeft("Showing " ~ std.string.toString(totalServers) ~
-			         " servers");
+			setLeft("Showing " ~ Integer.toString(totalServers) ~ " servers");
 		}
 	}
 
@@ -352,7 +352,7 @@ class FilterBar : Composite
 
 			public void widgetDefaultSelected(SelectionEvent e)
 			{
-				char[] s = strip((cast(Combo) e.widget).getText());
+				char[] s = trim((cast(Combo)e.widget).getText());
 				if (s.length == 0) {
 					return;
 				}

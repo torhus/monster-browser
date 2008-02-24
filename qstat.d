@@ -4,9 +4,12 @@ module qstat;
 
 private {
 	import std.file;
-	import std.string;
 	import std.stream;
-	import std.conv;
+
+	import tango.text.Ascii;
+	import tango.text.Util;
+	import Float = tango.text.convert.Float;
+	import tango.text.convert.Integer;
 
 	version (Tango)
 		import dwt.dwthelper.Runnable;
@@ -57,7 +60,7 @@ bool parseOutput(void delegate(Object) countDg, char[] delegate() readLine,
 			delete outfile;
 		}
 		debug log("	qstat.parseOutput took " ~
-		                  std.string.toString(timer.secs) ~ " seconds.");
+		                  Float.toString(timer.secs) ~ " seconds.");
 	}
 
 	if (activeMod.name in gameTypes) {
@@ -82,6 +85,10 @@ each_server:
 			char[][] fields = split(line, FIELDSEP);
 			ServerData sd;
 
+			// FIXME: workaround for tango split() bug, issue #942
+			if (fields.length == 8)
+				fields ~=  "";
+
 			assert(fields.length == 9 || fields.length == 3);
 			count++;
 			countWrapper.value = count;
@@ -100,7 +107,7 @@ each_server:
 				if (!MOD_ONLY)
 					keep_server = true;
 
-				if (icmp(fields[8], activeMod.name) == 0)
+				if (icompare(fields[8], activeMod.name) == 0)
 					keep_server = true;
 
 				/*if (activeMod.name != "baseq3" &&
@@ -137,17 +144,18 @@ each_server:
 								sd.server[ServerColumn.GAMETYPE] = gtypes[gt];
 							}
 							else {
-								sd.server[ServerColumn.GAMETYPE] =
-								                  std.string.toString(gt);
+								sd.server[ServerColumn.GAMETYPE] = toString(gt);
 							}
 							break;
 						case "game":  // not sure if this is right, risk getting too many servers
-							if (!keep_server && icmp(cvar[1], activeMod.name) == 0) {
+							if (!keep_server &&
+							          icompare(cvar[1], activeMod.name) == 0) {
 								keep_server = true;
 							}
 							break;
 						case "gamename":  // has to come after case "game"
-							if (!keep_server && icmp(cvar[1], activeMod.name) == 0) {
+							if (!keep_server &&
+							          icompare(cvar[1], activeMod.name) == 0) {
 								keep_server = true;
 							}
 
@@ -190,8 +198,8 @@ each_server:
 				if (bots < 0) {
 					bots = 0;
 				}
-				sd.server[ServerColumn.PLAYERS] = std.string.toString(humans) ~
-				                  "+" ~ (std.string.toString(bots)) ~
+				sd.server[ServerColumn.PLAYERS] = toString(humans) ~
+				                  "+" ~ toString(bots) ~
 				                  "/" ~ fields[4];
 
 				sd.server[ServerColumn.NAME] = stripColorCodes(sd.rawName);
@@ -230,11 +238,15 @@ void filterServerFile(char[] readFrom, char writeTo[])
 	scope BufferedFile outfile = new BufferedFile(writeTo, FileMode.OutNew);
 
 	while (!infile.eof()) {
-		char[] line = infile.readLine();  // FIXME: tango reuses buffer, should dup?
+		char[] line = infile.readLine();  // FIXME: tango reuses buffer, .dup?
 
 		if (line && line.length >= 3 && line[0..3] == "Q3S") {
 			char[][] fields = split(line, FIELDSEP);
 			ServerData sd;
+
+			// FIXME: workaround for tango split() bug, issue #942
+			if (fields.length == 8)
+				fields ~=  "";
 
 			assert(fields.length == 9 || fields.length == 3);
 
@@ -245,21 +257,23 @@ void filterServerFile(char[] readFrom, char writeTo[])
 				outfile.writeLine(fields[1]);
 			}
 			else if (/*activeMod.name != "baseq3" &&*/
-			                                   icmp(fields[8], activeMod.name) == 0) {
+			                        icompare(fields[8], activeMod.name) == 0) {
 				outfile.writeLine(fields[1]);
 			}
 			else { // need to parse cvars to find out which mod this server runs
-				line = infile.readLine();  // FIXME: tango reuses buffer, should dup?
+				line = infile.readLine();  // FIXME: tango reuses buffer, .dup?
 				char[][] temp = split(line, FIELDSEP);
 				foreach (char[] s; temp) {
 					char[][] cvar = split(s, "=");
-					// Not sure if it's right to check 'game' or not.  Might end up
-					// including too many servers.
-					if (cvar[0] == "game" && icmp(cvar[1], activeMod.name) == 0) {
+					// Not sure if it's right to check 'game' or not.  Might
+					// end up including too many servers.
+					if (cvar[0] == "game" &&
+					                  icompare(cvar[1], activeMod.name) == 0) {
 						outfile.writeLine(fields[1]);
 						break;
 					}
-					if (cvar[0] == "gamename" && icmp(cvar[1], activeMod.name) == 0) {
+					if (cvar[0] == "gamename" &&
+					                  icompare(cvar[1], activeMod.name) == 0) {
 						outfile.writeLine(fields[1]);
 						break;
 					}

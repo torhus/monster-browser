@@ -2,9 +2,11 @@ module runtools;
 
 private {
 	import std.file;
-	import std.string;
 	import std.stream;
 	import std.stdio;
+
+	import tango.stdc.stringz;
+	import Integer = tango.text.convert.Integer;
 
 	version (UseOldProcess) {
 		import lib.process;
@@ -65,7 +67,7 @@ int browserGetNewList()
 	// bug workaround
 	version (UseOldProcess) {
 		for (int i = 0; _environ[i]; i++)
-			proc.addEnv(std.string.toString(_environ[i]).dup);
+			proc.addEnv(fromStringz(_environ[i]).dup);
 	}
 
 	try {
@@ -92,8 +94,8 @@ int browserGetNewList()
 				for (;;) {
 					char[] s = readLineWrapper(null);
 					if (s.length > 0 && std.ctype.isdigit(s[0])) {
-						count = std.conv.toInt(s[0..find(s, ' ')]);
-						log("gslist retrieving " ~ std.string.toString(count) ~
+						count = Integer.convert(s);
+						log("gslist retrieving " ~ Integer.toString(count) ~
 						               " servers.");
 					}
 				}
@@ -105,7 +107,7 @@ int browserGetNewList()
 				readLineWrapper(null);
 				s = readLineWrapper(null);
 				r = sscanf(toStringz(s), "%*s %*s %d", &count);
-				log("qstat retrieving " ~ std.string.toString(count) ~
+				log("qstat retrieving " ~ Integer.toString(count) ~
 				                              " servers.");
 			}
 		}
@@ -114,7 +116,7 @@ int browserGetNewList()
 		}
 		catch(Exception e) {
 			logx(__FILE__, __LINE__,e);
-			error(__FILE__ ~ std.string.toString(__LINE__) ~
+			error(__FILE__ ~ Integer.toString(__LINE__) ~
 			                 ": Unkown exception: " ~ e.classinfo.name ~ ": " ~
 			                 e.toString());
 		}
@@ -184,7 +186,7 @@ void browserRefreshList(void delegate(Object) callback,
 	// bug workaround
 	version (UseOldProcess) {
 		for (int i = 0; _environ[i]; i++)
-			proc.addEnv(std.string.toString(_environ[i]).dup);
+			proc.addEnv(fromStringz(_environ[i]).dup);
 	}
 
 	try {
@@ -238,7 +240,7 @@ void browserRefreshList(void delegate(Object) callback,
 		}
 	}
 	catch(Exception e) {
-		db(__FILE__ ~ std.string.toString(__LINE__) ~ ": " ~ e.toString());
+		db(__FILE__ ~ Integer.toString(__LINE__) ~ ": " ~ e.toString());
 	}
 }
 
