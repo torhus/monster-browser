@@ -5,6 +5,7 @@ module dialogs;
 private {
 	import std.file;
 
+	import tango.text.Util;
 	import tango.sys.win32.Types : SW_SHOW;
 	import tango.sys.win32.UserGdi : ShellExecuteA;
 
@@ -255,7 +256,7 @@ class SpecifyServerDialog {
 
 				if (event.widget == okButton_) {
 					result_ = DWT.OK;
-					address = addressText_.getText;
+					address = trim(addressText_.getText);
 
 					if (!isValidIpAddress(address)) {
 						error("Invalid address");

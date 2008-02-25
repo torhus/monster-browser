@@ -116,7 +116,7 @@ class ServerTable
 			void widgetDefaultSelected(SelectionEvent e)
 			{
 				widgetSelected(e);
-				JoinServer(getActiveServerList.getFiltered(table_.getSelectionIndex()));
+				joinServer(getActiveServerList.getFiltered(table_.getSelectionIndex()));
 			}
 		});
 
