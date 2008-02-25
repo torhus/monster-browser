@@ -55,8 +55,11 @@ Differences with Windows' profile (INI) functions:
 /// Module for reading and writing _INI files. _ini.d version 0.5
 module ini;
 
-private import std.file, std.string, std.stream;
+import std.file, std.stream;
 
+import tango.stdc.stringz;
+import tango.text.Ascii;
+import tango.text.Util;
 
 //debug = INI; //show file being parsed
 
@@ -326,7 +329,7 @@ protected:
 
 		try
 		{
-			data = cast(char[])std.file.read(_file);
+			data = cast(char[])read(_file);
 			/+
 			File f = new File(_file, FileMode.In);
 			data = f.readString(f.size());
@@ -374,7 +377,7 @@ protected:
 			IniLine iline = new IniLine;
 			iline.data = data[lineStartIndex .. i];
 			debug(INI)
-				printf("INI line: '%.*s'\n", std.string.replace(std.string.replace(std.string.replace(iline.data, "\\", "\\\\"), "\r", "\\r"), "\n", "\\n"));
+				printf("INI line: '%.*s'\n", substitute(substitute(substitute(iline.data.dup, "\\", "\\\\"), "\r", "\\r"), "\n", "\\n"));
 			isec.lines ~= iline;
 		}
 
@@ -603,7 +606,7 @@ protected:
 	void firstOpen(char[] file)
 	{
 		//null terminated just to make it easier for the implementation
-		_file = toStringz(file)[0 .. file.length];
+		_file = toStringz(file.dup)[0 .. file.length];
 		parse();
 	}
 
@@ -642,7 +645,7 @@ public:
 	/// Comparison function for section and key names. Override to change behavior.
 	bool match(char[] s1, char[] s2)
 	{
-		return !std.string.icmp(s1, s2);
+		return !icompare(s1, s2);
 	}
 
 
