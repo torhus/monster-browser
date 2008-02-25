@@ -27,7 +27,7 @@ struct Mod
 		return r ? r : "master3.idsoftware.com";
 	}
 
-	char[] serverFile() { return replace(masterServer, ':', '_') ~ ".lst"; }
+	char[] serverFile() { return replace(masterServer.dup, ':', '_') ~ ".lst"; }
 
 	char[] extraServersFile() { return name ~ ".extra"; }
 
