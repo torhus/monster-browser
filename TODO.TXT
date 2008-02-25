@@ -1,4 +1,4 @@
-- Make it work with the new World of Padman master, master.kickchat.com.
+- Player names with color codes are sorted wrong.
 
 - Fix baseq3 server list when using gslist.
 
@@ -9,6 +9,10 @@
 - Show in the status bar how many servers didn't reply during a refresh.  ASE
   doesn't do that, so you need to turn off the filters to see if everything is
   ok, or if there was a connection problem etc.
+
+- Use Integer.parse instead of toInt to avoid exceptions?  parse will just
+  return 0 if there's garbage in the string, which is usually better than
+  stopping the app with an exception.  Might also speed up sorting.
 
 - DMD doesn't generate docs for all files, including serverlist.d.
 

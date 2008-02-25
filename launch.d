@@ -29,7 +29,7 @@ else {
 	private PROCESS_INFORMATION *info = null;
 }
 
-void JoinServer(ServerData *sd)
+void joinServer(ServerData *sd)
 {
 	char[] argv;
 	char[] path = activeMod.exePath;
