@@ -20,6 +20,8 @@
 
 /*
 
+This file was modified 26 Feb 2008 by torhu (tango port).
+
 Update:
 The Ini object no longer saves in the destructor because if it is the
 garbage collector deleting it, some value or section object could have
@@ -55,8 +57,8 @@ Differences with Windows' profile (INI) functions:
 /// Module for reading and writing _INI files. _ini.d version 0.5
 module ini;
 
-import std.file, std.stream;
-
+import tango.io.File;
+import tango.io.stream.TextFileStream;
 import tango.stdc.stringz;
 import tango.text.Ascii;
 import tango.text.Util;
@@ -65,7 +67,7 @@ import tango.text.Util;
 
 
 debug(INI)
-	private import std.cstream;
+	import tango.io.Stdout;
 
 
 private class IniLine
@@ -73,7 +75,7 @@ private class IniLine
 	~this()
 	{
 		debug(PRINT_DTORS)
-			printf("~IniLine\n");
+			Stdout("~IniLine").newline;
 	}
 
 
@@ -101,7 +103,7 @@ protected:
 	~this()
 	{
 		debug(PRINT_DTORS)
-			printf("~IniKey '%.*s'\n", _name);
+			Stdout.formatln("~IniKey '{}'", _name);
 	}
 
 
@@ -140,7 +142,7 @@ protected:
 	~this()
 	{
 		debug(PRINT_DTORS)
-			printf("~IniSection '%.*s'\n", _name);
+			Stdout.formatln("~IniSection '{}'", _name);
 	}
 
 
@@ -320,7 +322,7 @@ protected:
 	void parse()
 	{
 		debug(INI)
-			printf("INI parsing file '%.*s'\n", _file);
+			Stdout.formatln("INI parsing file '{}'\n", _file);
 
 		char[] data;
 		int i = -1;
@@ -329,7 +331,7 @@ protected:
 
 		try
 		{
-			data = cast(char[])read(_file);
+			data = cast(char[])File(_file).read();
 			/+
 			File f = new File(_file, FileMode.In);
 			data = f.readString(f.size());
@@ -339,13 +341,13 @@ protected:
 		catch(Object o)
 		{
 			debug(INI)
-				std.cstream.dout.writeString("INI no file to parse\n");
+				Stdout("INI no file to parse").newline;
 			return;
 		}
 		if(!data.length)
 		{
 			debug(INI)
-				std.cstream.dout.writeString("INI nothing to parse\n");
+				Stdout("INI nothing to parse").newline;
 			return;
 		}
 
@@ -377,7 +379,7 @@ protected:
 			IniLine iline = new IniLine;
 			iline.data = data[lineStartIndex .. i];
 			debug(INI)
-				printf("INI line: '%.*s'\n", substitute(substitute(substitute(iline.data.dup, "\\", "\\\\"), "\r", "\\r"), "\n", "\\n"));
+				Stdout.formatln("INI line: '{}'", substitute(substitute(substitute(iline.data, "\\", "\\\\"), "\r", "\\r"), "\n", "\\n"));
 			isec.lines ~= iline;
 		}
 
@@ -414,7 +416,7 @@ protected:
 					if(!isecs[0].lines)
 						isecs = isecs[1 .. isecs.length];
 					debug(INI)
-						std.cstream.dout.writeString("INI done parsing\n\n");
+						Stdout("INI done parsing").newline.newline;
 					return;
 
 				case ' ':
@@ -484,7 +486,7 @@ protected:
 										isecs ~= isec;
 										isec = new IniSection(this, data[i2 .. i]);
 										debug(INI)
-											printf("INI section: '%.*s'\n", isec._name);
+											Stdout.formatln("INI section: '{}'", isec._name);
 										for(;;)
 										{
 											ch2 = getc();
@@ -560,7 +562,7 @@ protected:
 										ikey._value = data[i2 .. i];
 										isec.lines ~= ikey;
 										debug(INI)
-											printf("INI key: '%.*s' = '%.*s'\n", ikey._name, ikey._value);
+											Stdout.formatln("INI key: '{}' = '{}'", ikey._name, ikey._value);
 									}
 
 
@@ -632,7 +634,7 @@ public:
 	~this()
 	{
 		debug(PRINT_DTORS)
-			printf("~Ini '%.*s'\n", _file);
+			Stdout.formatln("~Ini '{}'", _file);
 
 		// The reason this is commented is explained above.
 		/+
@@ -697,9 +699,9 @@ public:
 		IniKey ikey;
 		IniSection isec;
 		uint i = 0, j;
-		scope File f = new File;
-
-		f.create(_file, FileMode.Out);
+		scope TextFileOutput f = new TextFileOutput(_file);
+		scope (exit)
+			f.flush.close;
 
 		if(isecs[0]._name.length)
 			goto write_name;
@@ -709,7 +711,7 @@ public:
 		for(; i != isecs.length; i++)
 		{
 			write_name:
-			f.printf("%c%.*s%c\r\n", secStart, isecs[i]._name, secEnd);
+			f(secStart)(isecs[i]._name)(secEnd).newline;
 			after_name:
 			isec = isecs[i];
 			for(j = 0; j != isec.lines.length; j++)
@@ -720,8 +722,7 @@ public:
 					if(ikey)
 						ikey.data = ikey._name ~ "=" ~ ikey._value;
 				}
-				f.writeString(isec.lines[j].data);
-				f.writeString("\r\n");
+				f(isec.lines[j].data).newline;
 			}
 		}
 	}
