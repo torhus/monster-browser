@@ -1,10 +1,11 @@
 module serveractions;
 
-import std.file;
 import std.gc;
 import std.stdio;
 import std.thread;
 
+import tango.io.File;
+import tango.io.FilePath;
 import tango.text.convert.Integer;
 
 import dwt.dwthelper.Runnable;
@@ -37,7 +38,7 @@ void switchToMod(char[] name)
 		else {
 			if (common.useGslist)
 				getNewList();
-			else if (exists(activeMod.serverFile))
+			else if (FilePath(activeMod.serverFile).exists)
 				refreshList();
 			else
 				getNewList();
@@ -167,7 +168,7 @@ void queryAndAddServer(in char[] address)
 	assert(serverThread is null ||
 	                   serverThread.getState() == Thread.TS.TERMINATED);
 
-	write(REFRESHFILE, address ~ newline);
+	File(REFRESHFILE).write(address ~ newline);
 
 	addressCopy = address.dup;
 

@@ -2,15 +2,15 @@ module common;
 
 private {
 	import std.date;
-	import std.file;
 	import std.format;
 	import std.regexp;
 	import std.stdio;
-	import std.stream;
 	import std.utf;
 	import std.c.stdio;
 	import std.c.stdlib;
 
+	import tango.io.FileConduit;
+	import tango.io.FilePath;
 	import tango.text.Ascii;
 	import tango.text.Util;
 	import Integer = tango.text.convert.Integer;
@@ -59,20 +59,31 @@ else {
 private {
 	const char[] LOGFILE = "LOG.TXT";
 	const int MAX_LOG_SIZE = 100 * 1024;
-	File logfile;
+	FileConduit logfile;
 }
 
 
 static this()
 {
 	const char[] sep = "-------------------------------------------------------------";
+	FileConduit.Style mode;
 
-	if (std.file.exists(LOGFILE) && std.file.getSize(LOGFILE) > MAX_LOG_SIZE) {
-		std.file.remove(LOGFILE);
+	with (FilePath(LOGFILE)) {
+		if (exists && fileSize < MAX_LOG_SIZE)
+			mode = FileConduit.WriteExisting;
+		else
+			mode = FileConduit.WriteCreate;
 	}
-	logfile = new File(LOGFILE, FileMode.Append);
-	logfile.writeLine("\n" ~ sep ~ "\n" ~ APPNAME ~ " started at " ~
-	                  std.date.toString(getUTCtime()) ~ "\n" ~ sep);
+	logfile = new FileConduit(LOGFILE, mode);
+	logfile.seek(0, FileConduit.Anchor.End);
+	logfile.write(newline ~ sep ~ newline ~ APPNAME ~ " started at " ~
+	                std.date.toString(getUTCtime()) ~ newline ~ sep ~ newline);
+}
+
+
+static ~this()
+{
+	logfile.close();
 }
 
 
@@ -166,7 +177,8 @@ void log(char[] s)
 	version(NO_STDOUT) {}
 	else debug writefln("LOG: " ~ s);
 
-	logfile.writeLine(s);
+	logfile.write(s);
+	logfile.write(newline);
 }
 
 
