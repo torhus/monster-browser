@@ -3,9 +3,11 @@ module qstat;
 /* What's specific for qstat */
 
 private {
-	import std.file;
-	import std.stream;
-
+	import tango.core.Exception;
+	import tango.io.FileConduit;
+	import tango.io.FilePath;
+	import tango.io.stream.BufferStream;
+	import tango.io.stream.TextFileStream;
 	import tango.text.Ascii;
 	import tango.text.Util;
 	import Float = tango.text.convert.Float;
@@ -30,13 +32,13 @@ const char[] FIELDSEP = "\x1e"; // \x1e = ascii record separator
 /**
  * Parse Qstat's output.
  *
- * Throws: when outputFileName is given: OpenException and WriteException.
+ * Throws: when outputFileName is given: IOException.
  */
 bool parseOutput(void delegate(Object) countDg, char[] delegate() readLine,
                  bool delegate() eof=null, char[] outputFileName=null)
 {
 	char[][] gtypes;
-	BufferedFile outfile;
+	BufferOutput outfile;
 	debug scope timer = new Timer;
 	int count = 0;
 	scope countWrapper = new IntWrapper(-1);
@@ -45,10 +47,11 @@ bool parseOutput(void delegate(Object) countDg, char[] delegate() readLine,
 
 	if (outputFileName) {
 		try {
-			outfile = new BufferedFile(outputFileName, FileMode.OutNew);
+			outfile = new BufferOutput(new FileConduit(
+			                         outputFileName, FileConduit.WriteCreate));
 		}
-		catch (OpenException e) {
-			error("Unable to open \'" ~ outputFileName~ "\', the\n"
+		catch (IOException e) {
+			error("Unable to open \'" ~ outputFileName ~ "\', the\n"
 			      "server list will not be saved to disk.");
 			outfile = null;
 		}
@@ -56,7 +59,7 @@ bool parseOutput(void delegate(Object) countDg, char[] delegate() readLine,
 
 	scope (exit) {
 		if (outfile) {
-			outfile.close();
+			outfile.flush.close;
 			delete outfile;
 		}
 		debug log("	qstat.parseOutput took " ~
@@ -78,8 +81,10 @@ each_server:
 			break;
 
 		char[] line = readLine();
-		if (outfile)
-			outfile.writeLine(line);
+		if (outfile) {
+			outfile.write(line);
+			outfile.write(newline);
+		}
 
 		if (line && line.length >= 3 && line[0..3] == "Q3S") {
 			char[][] fields = split(line, FIELDSEP);
@@ -132,7 +137,8 @@ each_server:
 				// parse cvars
 				line = readLine();
 				if (outfile) {
-					outfile.writeLine(line);
+					outfile.write(line);
+					outfile.write(newline);
 				}
 				char[][] temp = split(line, FIELDSEP);
 				foreach (char[] s; temp) {
@@ -184,7 +190,8 @@ each_server:
 				int humans = 0;
 				while ((line = readLine()) !is null && line.length) {
 					if (outfile) {
-						outfile.writeLine(line);
+						outfile.write(line);
+						outfile.write(newline);
 					}
 					char[][] s = split(line, FIELDSEP);
 					sd.players ~= s;
@@ -212,7 +219,7 @@ each_server:
 				getActiveServerList.add(sd);*/
 			}
 			if (outfile) {
-				outfile.writeLine("");
+				outfile.write(newline);
 			}
 		}
 	}
@@ -230,19 +237,19 @@ each_server:
  *                qstat's raw output.
  *     writeTo  = File to write to. The format is one IP:PORT combo per line.
  *
- * Throws: OpenException, WriteException.
+ * Throws: IOException.
  */
 void filterServerFile(char[] readFrom, char writeTo[])
 {
-	scope BufferedFile infile = new BufferedFile(readFrom);
-	scope BufferedFile outfile = new BufferedFile(writeTo, FileMode.OutNew);
+	scope infile = new TextFileInput(readFrom);
+	scope outfile = new BufferOutput(
+	                        new FileConduit(writeTo, FileConduit.WriteCreate));
 
-	while (!infile.eof()) {
-		char[] line = infile.readLine();  // FIXME: tango reuses buffer, .dup?
+	while (infile.next()) {
+		char[] line = infile.get();
 
-		if (line && line.length >= 3 && line[0..3] == "Q3S") {
+		if (line.length >= 3 && line[0..3] == "Q3S") {
 			char[][] fields = split(line, FIELDSEP);
-			ServerData sd;
 
 			// FIXME: workaround for tango split() bug, issue #942
 			if (fields.length == 8)
@@ -254,14 +261,16 @@ void filterServerFile(char[] readFrom, char writeTo[])
 				continue;  // server probably timed out
 
 			if (!MOD_ONLY) {
-				outfile.writeLine(fields[1]);
+				outfile.write(fields[1]);
+				outfile.write(newline);
 			}
 			else if (/*activeMod.name != "baseq3" &&*/
 			                        icompare(fields[8], activeMod.name) == 0) {
-				outfile.writeLine(fields[1]);
+				outfile.write(fields[1]);
+				outfile.write(newline);
 			}
 			else { // need to parse cvars to find out which mod this server runs
-				line = infile.readLine();  // FIXME: tango reuses buffer, .dup?
+				line = infile.next();
 				char[][] temp = split(line, FIELDSEP);
 				foreach (char[] s; temp) {
 					char[][] cvar = split(s, "=");
@@ -269,12 +278,14 @@ void filterServerFile(char[] readFrom, char writeTo[])
 					// end up including too many servers.
 					if (cvar[0] == "game" &&
 					                  icompare(cvar[1], activeMod.name) == 0) {
-						outfile.writeLine(fields[1]);
+						outfile.write(fields[1]);
+						outfile.write(newline);
 						break;
 					}
 					if (cvar[0] == "gamename" &&
 					                  icompare(cvar[1], activeMod.name) == 0) {
-						outfile.writeLine(fields[1]);
+						outfile.write(fields[1]);
+						outfile.write(newline);
 						break;
 					}
 				}
@@ -283,18 +294,18 @@ void filterServerFile(char[] readFrom, char writeTo[])
 	}
 
 	infile.close();
-	outfile.close();
+	outfile.flush().close();
 }
 
 
 /**
  * Save the server list so that qstat can refresh servers
  *
- * Throws: OpenException, WriteException, FileException.
+ * Throws: IOException.
  */
 void saveRefreshList()
 {
-	if (exists(activeMod.serverFile)/* && exists(REFRESHFILE)*/) {
+	if (FilePath(activeMod.serverFile).exists /* && exists(REFRESHFILE)*/) {
 		filterServerFile(activeMod.serverFile, REFRESHFILE);
 	}
 
@@ -318,14 +329,14 @@ void saveRefreshList()
  * Useful for getting the number of servers before qstat has started
  * to retrieve them.
  *
- * Throws: OpenException.
+ * Throws: IOException.
  */
 int countServersInRefreshList()
 {
-	if (!exists(runtools.REFRESHFILE))
+	if (!FilePath(runtools.REFRESHFILE).exists)
 		return 0;
 
-	scope BufferedFile f = new BufferedFile(runtools.REFRESHFILE);
+	scope f = new TextFileInput(runtools.REFRESHFILE);
 	scope(exit) f.close();
 
 	int count = 0;
