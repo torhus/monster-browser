@@ -304,9 +304,9 @@ void sortStringArrayStable(char[][][] arr, int sortColumn=0,
 class Timer
 {
 	this() { time_ = Clock.now(); }
-	TimeSpan raw() { return Clock.now() - time_; }
-	long millis() { return raw.millis(); }
-	double secs() { return raw.interval(); }
+	TimeSpan span() { return Clock.now() - time_; }
+	long millis() { return span.millis(); }
+	double secs() { return span.interval(); }
 	void restart() { time_ = Clock.now(); }
 	private Time time_;
 }
