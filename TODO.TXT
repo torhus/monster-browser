@@ -14,6 +14,8 @@
   return 0 if there's garbage in the string, which is usually better than
   stopping the app with an exception.  Might also speed up sorting.
 
+- tango.text.convert.TimeStamp always outputs GMT (used for LOG.TXT).
+
 - DMD doesn't generate docs for all files, including serverlist.d.
 
 - The compile-*.bat files don't work anymore.  Is there any point in keeping
