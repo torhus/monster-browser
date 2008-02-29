@@ -10,10 +10,11 @@ private {
 
 	import tango.io.FileConduit;
 	import tango.io.FilePath;
+	import tango.stdc.string;
+	import tango.stdc.time;
 	import tango.text.Ascii;
 	import tango.text.Util;
 	import Integer = tango.text.convert.Integer;
-	import TimeStamp = tango.text.convert.TimeStamp;
 	import tango.time.Clock;
 	import tango.time.Time;
 
@@ -78,8 +79,10 @@ static this()
 	}
 	logfile = new FileConduit(LOGFILE, mode);
 	logfile.seek(0, FileConduit.Anchor.End);
+	auto t = time(null);
+	char[] timestamp = ctime(&t)[0..24];
 	logfile.write(newline ~ sep ~ newline ~ APPNAME ~ " started at " ~
-	              TimeStamp.toString(Clock.now()) ~ newline ~ sep ~ newline);
+	              timestamp ~ newline ~ sep ~ newline);
 }
 
 
