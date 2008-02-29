@@ -1,7 +1,6 @@
 module common;
 
 private {
-	import std.date;
 	import std.format;
 	import std.regexp;
 	import std.stdio;
@@ -14,6 +13,9 @@ private {
 	import tango.text.Ascii;
 	import tango.text.Util;
 	import Integer = tango.text.convert.Integer;
+	import TimeStamp = tango.text.convert.TimeStamp;
+	import tango.time.Clock;
+	import tango.time.Time;
 
 	version (UseOldProcess) {
 		import lib.process;
@@ -77,7 +79,7 @@ static this()
 	logfile = new FileConduit(LOGFILE, mode);
 	logfile.seek(0, FileConduit.Anchor.End);
 	logfile.write(newline ~ sep ~ newline ~ APPNAME ~ " started at " ~
-	                std.date.toString(getUTCtime()) ~ newline ~ sep ~ newline);
+	              TimeStamp.toString(Clock.now()) ~ newline ~ sep ~ newline);
 }
 
 
@@ -301,12 +303,12 @@ void sortStringArrayStable(char[][][] arr, int sortColumn=0,
 
 class Timer
 {
-	this() { time_ = std.date.getUTCtime();	}
-	d_time raw() { return std.date.getUTCtime() - time_; }
-	long millis() { return raw * (1000 / TicksPerSecond); }
-	double secs() { return cast(double) raw / TicksPerSecond; }
-	void restart() { time_ = std.date.getUTCtime(); }
-	private d_time time_;
+	this() { time_ = Clock.now(); }
+	TimeSpan raw() { return Clock.now() - time_; }
+	long millis() { return raw.millis(); }
+	double secs() { return raw.interval(); }
+	void restart() { time_ = Clock.now(); }
+	private Time time_;
 }
 
 
