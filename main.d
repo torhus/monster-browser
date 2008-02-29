@@ -1,10 +1,10 @@
 module main;
 
 private {
-	import std.file;
 	import std.stdio;
 	import std.thread;
 
+	import tango.io.FilePath;
 	import tango.text.Util;
 	import Integer = tango.text.convert.Integer;
 
@@ -79,7 +79,7 @@ void main(char[][] args) {
 			static assert(0);
 		}
 
-		common.useGslist = cast(bool) std.file.exists(gslistExe);
+		common.useGslist = FilePath(gslistExe).exists();
 
 		if (common.useGslist) {
 			log(gslistExe ~
@@ -224,7 +224,7 @@ void main(char[][] args) {
 			else {
 				// Qstat is too slow to do a getNewList(), so just refresh
 				// the old list instead, if possible.
-				if (exists(activeMod.serverFile))
+				if (FilePath(activeMod.serverFile).exists())
 					refreshList();
 				else
 					getNewList();

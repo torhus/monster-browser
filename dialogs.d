@@ -3,8 +3,7 @@ module dialogs;
 /* Dialog boxes */
 
 private {
-	import std.file;
-
+	import tango.io.File;
 	import tango.text.Util;
 	import tango.sys.win32.Types : SW_SHOW;
 	import tango.sys.win32.UserGdi : ShellExecuteA;
@@ -267,7 +266,8 @@ class SpecifyServerDialog {
 					else {
 						if (getActiveServerList.getIndex(address) == -1) {
 							if (saveButton_.getSelection()) {
-								append(activeMod.extraServersFile, address ~ newline);
+								File(activeMod.extraServersFile)
+								                    .append(address ~ newline);
 								// FIXME: error check here (FileException)
 							}
 							getActiveServerList.addExtraServer(address);

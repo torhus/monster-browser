@@ -3,8 +3,7 @@ module launch;
 /* Launch the game, etc. */
 
 private {
-	import std.path;
-
+	import tango.io.FilePath;
 	import tango.stdc.stringz;
 	import tango.text.convert.Integer;
 
@@ -33,7 +32,7 @@ void joinServer(ServerData *sd)
 {
 	char[] argv;
 	char[] path = activeMod.exePath;
-	char[] dir = getDirName(path);
+	char[] dir = FilePath(path).path();
 	bool launch = true;
 	bool showDialog = false;
 	char[] msg;

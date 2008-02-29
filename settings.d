@@ -3,9 +3,9 @@ module settings;
 /* Load and store settings, and saved passwords. */
 
 private {
-	import std.file;
 	import std.c.stdio;
 
+	import tango.io.FilePath;
 	import tango.text.Util;
 	import tango.text.convert.Integer;
 
@@ -103,7 +103,7 @@ void setActiveMod(char[] name)
 
 void loadModFile()
 {
-	if (!exists(modFileName))
+	if (!FilePath(modFileName).exists)
 		writeDefaultModsFile();
 
 	delete modsIni;
