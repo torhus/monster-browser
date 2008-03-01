@@ -2,12 +2,12 @@ module common;
 
 private {
 	import std.regexp;
-	import std.c.stdio;
-	import std.c.stdlib;
 
 	debug import tango.io.Console;
 	import tango.io.FileConduit;
 	import tango.io.FilePath;
+	debug import tango.stdc.stdio : fgets, stdin;
+	import tango.stdc.stdlib : qsort;
 	import tango.stdc.string;
 	import tango.stdc.time;
 	import tango.text.Ascii;

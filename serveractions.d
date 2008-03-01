@@ -1,8 +1,8 @@
 module serveractions;
 
-import std.gc;
 import std.thread;
 
+import tango.core.Memory;
 import tango.io.File;
 import tango.io.FilePath;
 debug import tango.io.Stdout;
@@ -16,7 +16,7 @@ import qstat;
 import runtools;
 import serverlist;
 import servertable;
-import settings; //: setActiveMod, activeMod;
+import settings;
 
 
 /**
@@ -242,7 +242,7 @@ void getNewList()
 	getActiveServerList.clear();
 	serverTable.refresh();
 
-	fullCollect();
+	GC.collect();
 	statusBar.setLeft("Getting new server list...");
 	serverThread = new Thread(&f);
 	serverThread.start();
@@ -305,7 +305,7 @@ void refreshList()
 	getActiveServerList.clear();
 	serverTable.refresh();
 
-	fullCollect();
+	GC.collect();
 	serverThread = new Thread(&f);
 	serverThread.start();
 }

@@ -3,11 +3,10 @@ module settings;
 /* Load and store settings, and saved passwords. */
 
 private {
-	import std.c.stdio;
-
 	import tango.io.FilePath;
 	import tango.text.Util;
 	import tango.text.convert.Integer;
+	import tango.stdc.stdio;
 
 	import ini;
 	import common;
