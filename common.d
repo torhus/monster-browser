@@ -83,21 +83,6 @@ static ~this()
 
 void messageBox(char[] title, int style, TypeInfo[] arguments, void* argptr)
 {
-/+
-	void f(Object o) {
-		char[] s;
-		void f(dchar c) { std.utf.encode(s, c); }
-
-		std.format.doFormat(&f, arguments, argptr);
-		scope MessageBox mb = new MessageBox(mainWindow, style);
-		mb.setText(title);
-		mb.setMessage(s);
-		log("messageBox (" ~ title ~ "): " ~ s);
-		mb.open();
-	}
-	// only the gui thread can display message boxes
-	Display.getDefault().syncExec(null, &f);
-+/
 	// only the gui thread can display message boxes
 	Display.getDefault().syncExec(new class Runnable {
 		void run() {
@@ -112,7 +97,6 @@ void messageBox(char[] title, int style, TypeInfo[] arguments, void* argptr)
 			mb.open();
 		}
 	});
-
 }
 
 
