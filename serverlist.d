@@ -1,9 +1,9 @@
 module serverlist;
 
 private {
-	debug import std.stdio;
 	import std.c.string;
 
+	debug import tango.io.Stdout;
 	import tango.text.Ascii;
 	import tango.text.Util;
 	import Integer = tango.text.convert.Integer;
@@ -546,23 +546,23 @@ private:
 	/// Prints the filtered list and its length to stdout.
 	debug void printFiltered()
 	{
-		writefln("printFiltered(): ", filteredList.length,
-		                              " elements in filteredList.");
+		Stdout.formatln("printFiltered(): {} elements in filteredList.",
+		                filteredList.length);
 		foreach (i, ServerData* sd; filteredList) {
-			writefln(/*i, ": ",*/ sd.server[ServerColumn.NAME]);
+			Stdout(/*i, ": ",*/ sd.server[ServerColumn.NAME]).newline;
 		}
-		writefln();
+		Stdout.newline;
 	}
 
 	/// Prints the full list and its length to stdout.
 	debug void printList()
 	{
-		writefln("printList(): ", list.length, " elements in full list.");
+		Stdout.formatln("printList(): {} elements in full list.", list.length);
 		int i = 0;
 		foreach (ServerData sd; list) {
-			writefln(/*i++, ": ",*/ sd.server[ServerColumn.NAME]);
+			Stdout(/*i++, ": ",*/ sd.server[ServerColumn.NAME]).newline;
 		}
-		writefln();
+		Stdout.newline;
 	}
 }
 

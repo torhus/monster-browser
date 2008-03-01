@@ -2,11 +2,10 @@ module common;
 
 private {
 	import std.regexp;
-	import std.stdio;
-	import std.utf;
 	import std.c.stdio;
 	import std.c.stdlib;
 
+	debug import tango.io.Console;
 	import tango.io.FileConduit;
 	import tango.io.FilePath;
 	import tango.stdc.string;
@@ -130,7 +129,7 @@ void log(char[] file, int line, char[] msg)
 void log(char[] s)
 {
 	version(NO_STDOUT) {}
-	else debug writefln("LOG: " ~ s);
+	else debug Cout("LOG: ")(s).newline;
 
 	logfile.write(s);
 	logfile.write(newline);

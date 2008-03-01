@@ -1,11 +1,11 @@
 module serveractions;
 
 import std.gc;
-import std.stdio;
 import std.thread;
 
 import tango.io.File;
 import tango.io.FilePath;
+debug import tango.io.Stdout;
 import tango.text.convert.Integer;
 
 import dwt.dwthelper.Runnable;
@@ -196,7 +196,7 @@ void getNewList()
 		try {
 			serverCount = browserGetNewList();
 			total = toString(serverCount);
-			debug writefln("serverCount = ", total);
+			debug Stdout("serverCount = ")(total).newline;
 
 			if (serverCount >= 0) {
 				version (Tango) {
