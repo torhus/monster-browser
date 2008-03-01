@@ -1,9 +1,9 @@
 module main;
 
 private {
-	import std.stdio;
 	import std.thread;
 
+	debug import tango.io.Console;
 	import tango.io.FilePath;
 	import tango.text.Util;
 	import Integer = tango.text.convert.Integer;
@@ -172,7 +172,7 @@ void main(char[][] args) {
 			public void keyPressed (KeyEvent e)
 			{
 				//FIXME: this function never gets called
-				debug writefln("Keypressed");
+				debug Cout("Keypressed").newline;
 				switch (e.keyCode) {
 					case DWT.F4:
 						threadDispatcher.run(&getNewList);
@@ -503,13 +503,14 @@ class ThreadDispatcher
 			volatile abortParsing = true;
 		}
 		else {
-			debug writefln("ThreadDispatcher.dispatch: Killing server browser...");
+			debug Cout("ThreadDispatcher.dispatch: Killing server browser...")
+			                                                          .newline;
 			bool success = killServerBrowser();
 
 			debug if (!success)
-				writefln("killServerBrowser() failed.");
+				Cout("killServerBrowser() failed.").newline;
 			else
-				writefln("killServerBrowser() succeeded.");
+				Cout("killServerBrowser() succeeded.").newline;
 
 
 			fp_();

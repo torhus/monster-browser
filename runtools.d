@@ -1,13 +1,13 @@
 module runtools;
 
 private {
-	import std.stdio;
-
+	debug import tango.io.Console;
 	import tango.io.File;
 	import tango.io.FileConduit;
 	import tango.io.FilePath;
 	import tango.io.stream.BufferStream;
 	import tango.io.stream.TextFileStream;
+	import tango.stdc.stdio : sscanf;
 	import tango.stdc.stringz;
 	import Integer = tango.text.convert.Integer;
 	import tango.text.stream.LineIterator;
@@ -232,7 +232,7 @@ void browserRefreshList(void delegate(Object) callback,
 bool killServerBrowser()
 {
 	if (proc is null) {
-		debug writefln("proc is null");
+		debug Cout("proc is null").newline;
 		return true;
 	}
 
