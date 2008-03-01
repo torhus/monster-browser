@@ -1,12 +1,11 @@
 module serverlist;
 
 private {
-	import std.c.string;
-
 	debug import tango.io.Stdout;
 	import tango.text.Ascii;
 	import tango.text.Util;
 	import Integer = tango.text.convert.Integer;
+	import tango.stdc.string : memmove;
 
 	import dwt.DWT;
 	import dwt.dwthelper.Runnable;
