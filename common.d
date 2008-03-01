@@ -1,7 +1,6 @@
 module common;
 
 private {
-	import std.format;
 	import std.regexp;
 	import std.stdio;
 	import std.utf;
@@ -14,6 +13,7 @@ private {
 	import tango.stdc.time;
 	import tango.text.Ascii;
 	import tango.text.Util;
+	import tango.text.convert.Format;
 	import Integer = tango.text.convert.Integer;
 	import tango.time.Clock;
 	import tango.time.Time;
@@ -33,7 +33,7 @@ version (allservers)  // useful for speed testing
 else
 	const bool MOD_ONLY = true;
 
-bool useGslist;
+bool useGslist;  /// Will be true if gslist was found during startup.
 
 
 const char[] APPNAME = "Monster Browser";
@@ -81,48 +81,52 @@ static ~this()
 }
 
 
-void messageBox(char[] title, int style, TypeInfo[] arguments, void* argptr)
+/// Displays a message box.
+void messageBox(char[] msg, char[] title, int style)
 {
-	// only the gui thread can display message boxes
 	Display.getDefault().syncExec(new class Runnable {
 		void run() {
-			char[] s;
-			void f(dchar c) { std.utf.encode(s, c); }
-
-			std.format.doFormat(&f, arguments, argptr);
-			scope MessageBox mb = new MessageBox(mainWindow, style);
+			scope mb = new MessageBox(mainWindow, style);
 			mb.setText(title);
-			mb.setMessage(s);
-			log("messageBox (" ~ title ~ "): " ~ s);
+			mb.setMessage(msg);
+			log("messageBox (" ~ title ~ "): " ~ msg);
 			mb.open();
 		}
 	});
 }
 
 
-void _messageBox(char[] caption, int icon)(...)
+void _messageBox(char[] title, int style)(char[] fmt, ...)
 {
-	messageBox(caption, icon, _arguments, _argptr);
+	char[] msg = Format.convert(_arguments, _argptr, fmt);
+	messageBox(msg, title, style);
 }
 
+/**
+ * Displays message boxes with preset titles and icons.
+ * Does formatting, the argument list is: (char[] fmt, ...)
+ */
 alias _messageBox!(APPNAME, DWT.ICON_INFORMATION) info;
-alias _messageBox!("Warning", DWT.ICON_WARNING) warning;
-alias _messageBox!("Error", DWT.ICON_ERROR) error;
-alias _messageBox!("Debug", DWT.NONE) db;
+alias _messageBox!("Warning", DWT.ICON_WARNING) warning;  /// ditto
+alias _messageBox!("Error", DWT.ICON_ERROR) error;        /// ditto
+alias _messageBox!("Debug", DWT.NONE) db;                 /// ditto
 
 
-void db(char[][] a)
+/// Opens a dialog box for displaying a multi-line debug message.
+void db(char[][] array)
 {
-	db(join(a, "\n"));
+	db(join(array, "\n"));
 }
 
 
+/// Logging.
 void log(char[] file, int line, char[] msg)
 {
 	log(file ~ "(" ~ Integer.toString(line) ~ "): " ~ msg);
 }
 
 
+/// ditto
 void log(char[] s)
 {
 	version(NO_STDOUT) {}
@@ -133,6 +137,7 @@ void log(char[] s)
 }
 
 
+/// ditto
 void logx(char[] file, int line, Exception e)
 {
 	log(file, line, e.classinfo.name ~ ": " ~ e.toString());

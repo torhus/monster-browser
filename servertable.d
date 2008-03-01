@@ -62,8 +62,9 @@ class ServerTable
 				int i = table_.indexOf(item);
 
 				debug if (i >= getActiveServerList.filteredLength) {
-					error(__FILE__, "(", __LINE__, "):\n",
-					          "i >= getActiveServerList.filteredLength");
+					error("{}({}):\n"
+					      "i >= getActiveServerList.filteredLength",
+					      __FILE__, __LINE__);
 				}
 				item.setText(getActiveServerList.getFiltered(i).server);
 			}
