@@ -18,17 +18,6 @@ private {
 	import tango.time.Clock;
 	import tango.time.Time;
 
-	version (UseOldProcess) {
-		import lib.process;
-	}
-	else {
-		// FIXME: temporary, for readLine
-		import tango.sys.Process;
-		import tango.text.stream.LineIterator;
-
-		class PipeException : Exception { this(char[] msg) { super(msg); } }
-	}
-
 	import dwt.DWT;
 	import dwt.dwthelper.Runnable;
 	import dwt.widgets.Display;
@@ -89,33 +78,6 @@ static this()
 static ~this()
 {
 	logfile.close();
-}
-
-
-char[] readLineWrapper(Process newproc, bool returnNext=true)
-{
-	static Process proc = null;
-
-	if (newproc)
-		proc = newproc;
-
-	version (UseOldProcess){
-		return returnNext ? proc.readLine() : null;
-	}
-	else {
-		static LineIterator!(char) iter;
-		if (newproc)
-			iter = new LineIterator!(char)(proc.stdout);
-		if (returnNext) {
-			if (iter.next)
-				return iter.get.dup;  // FIXME: avoid duping?
-			else
-				throw new PipeException("iter.next returned null");
-		}
-		else {
-			return null;
-		}
-	}
 }
 
 

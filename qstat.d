@@ -10,6 +10,7 @@ private {
 	import tango.io.stream.TextFileStream;
 	import tango.text.Ascii;
 	import tango.text.Util;
+	import tango.text.stream.LineIterator;
 	import Float = tango.text.convert.Float;
 	import tango.text.convert.Integer;
 
@@ -34,8 +35,8 @@ const char[] FIELDSEP = "\x1e"; // \x1e = ascii record separator
  *
  * Throws: when outputFileName is given: IOException.
  */
-bool parseOutput(void delegate(Object) countDg, char[] delegate() readLine,
-                 bool delegate() eof=null, char[] outputFileName=null)
+bool parseOutput(void delegate(Object) countDg, LineIterator!(char) iter,
+                 char[] outputFileName=null)
 {
 	char[][] gtypes;
 	BufferOutput outfile;
@@ -77,17 +78,20 @@ bool parseOutput(void delegate(Object) countDg, char[] delegate() readLine,
 
 each_server:
 	while (true) {
-		volatile if (abortParsing || (eof && eof()))
+		volatile if (abortParsing)
 			break;
 
-		char[] line = readLine();
+		char[] line = iter.next();
+		if (line is null)
+			break;
+
 		if (outfile) {
 			outfile.write(line);
 			outfile.write(newline);
 		}
 
-		if (line && line.length >= 3 && line[0..3] == "Q3S") {
-			char[][] fields = split(line, FIELDSEP);
+		if (line.length >= 3 && line[0..3] == "Q3S") {
+			char[][] fields = split(line.dup, FIELDSEP);
 			ServerData sd;
 
 			// FIXME: workaround for tango split() bug, issue #942
@@ -135,12 +139,12 @@ each_server:
 				sd.server[ServerColumn.ADDRESS] = fields[1];
 
 				// parse cvars
-				line = readLine();
+				line = iter.next();
 				if (outfile) {
 					outfile.write(line);
 					outfile.write(newline);
 				}
-				char[][] temp = split(line, FIELDSEP);
+				char[][] temp = split(line.dup, FIELDSEP);
 				foreach (char[] s; temp) {
 					char[][] cvar = split(s, "=");
 					switch (cvar[0]) {
@@ -188,12 +192,12 @@ each_server:
 
 				// parse players
 				int humans = 0;
-				while ((line = readLine()) !is null && line.length) {
+				while ((line = iter.next()) !is null && line.length) {
 					if (outfile) {
 						outfile.write(line);
 						outfile.write(newline);
 					}
-					char[][] s = split(line, FIELDSEP);
+					char[][] s = split(line.dup, FIELDSEP);
 					sd.players ~= s;
 					if (s[PlayerColumn.PING] != "0") {
 						humans++;
@@ -249,7 +253,7 @@ void filterServerFile(char[] readFrom, char writeTo[])
 		char[] line = infile.get();
 
 		if (line.length >= 3 && line[0..3] == "Q3S") {
-			char[][] fields = split(line, FIELDSEP);
+			char[][] fields = split(line.dup, FIELDSEP);
 
 			// FIXME: workaround for tango split() bug, issue #942
 			if (fields.length == 8)

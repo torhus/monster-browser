@@ -1,21 +1,19 @@
 module runtools;
 
 private {
-	import std.file;
-	import std.stream;
 	import std.stdio;
 
+	import tango.io.File;
+	import tango.io.FileConduit;
+	import tango.io.FilePath;
+	import tango.io.stream.BufferStream;
+	import tango.io.stream.TextFileStream;
 	import tango.stdc.stringz;
 	import Integer = tango.text.convert.Integer;
+	import tango.text.stream.LineIterator;
 
-	version (UseOldProcess) {
-		import lib.process;
-	}
-	else {
-		import tango.core.Exception : ProcessException;
-		import tango.sys.Process;
-
-	}
+	import tango.core.Exception : IOException, ProcessException;
+	import tango.sys.Process;
 
 	import common;
 	import serverlist;
@@ -64,18 +62,9 @@ int browserGetNewList()
 	version (Windows) { }
 	else scope (exit) if (proc) proc.wait();
 
-	// bug workaround
-	version (UseOldProcess) {
-		for (int i = 0; _environ[i]; i++)
-			proc.addEnv(fromStringz(_environ[i]).dup);
-	}
-
 	try {
 		log("Executing '" ~ cmdLine ~ "'.");
-		version (UseOldProcess)
-			proc.execute(cmdLine);
-		else
-			proc.execute(cmdLine, null);
+		proc.execute(cmdLine, null);
 	}
 	catch (ProcessException e) {
 		char[] s = common.useGslist ? "gslist" : "qstat";
@@ -86,13 +75,12 @@ int browserGetNewList()
 
 	if (proc) {
 		try {
-			readLineWrapper(proc, false);
-
+			auto lineIter= new LineIterator!(char)(proc.stdout);
 			// Just swallow gslist or qstat's output, but get the server count.
 			// The IPs are written to a file.
 			if (common.useGslist) {
 				for (;;) {
-					char[] s = readLineWrapper(null);
+					char[] s = lineIter.next();
 					if (s.length > 0 && std.ctype.isdigit(s[0])) {
 						count = Integer.convert(s);
 						log("gslist retrieving " ~ Integer.toString(count) ~
@@ -104,14 +92,14 @@ int browserGetNewList()
 				char[] s;
 				int r;
 
-				readLineWrapper(null);
-				s = readLineWrapper(null);
+				lineIter.next();
+				s = lineIter.next();
 				r = sscanf(toStringz(s), "%*s %*s %d", &count);
 				log("qstat retrieving " ~ Integer.toString(count) ~
 				                              " servers.");
 			}
 		}
-		catch (PipeException e) {
+		catch (IOException e) {
 			//logx(__FILE__, __LINE__, e);
 		}
 		catch(Exception e) {
@@ -138,23 +126,21 @@ int browserGetNewList()
 
 void browserLoadSavedList(void delegate(Object) callback)
 {
-	BufferedFile f;
-
 	volatile abortParsing = false;
 
 	//log("browserLoadSavedList():");
-	if (!std.file.exists(activeMod.serverFile)) {
+	if (!FilePath(activeMod.serverFile).exists) {
 		return;
 	}
 
 	try {
-		f = new BufferedFile(activeMod.serverFile);
+		scope input = new TextFileInput(activeMod.serverFile);
 		getActiveServerList.clear();
-		qstat.parseOutput(callback, &f.readLine, &f.eof, null);
+		qstat.parseOutput(callback, input, null);
 		getActiveServerList.complete = !abortParsing;
-		f.close();
+		input.close();
 	}
-	catch (OpenException o) {
+	catch (IOException o) {
 		warning("Unable to load the server list from disk,\n"
 		      "press \'Get new list\' to download a new list.");
 	}
@@ -165,16 +151,19 @@ void browserRefreshList(void delegate(Object) callback,
                         bool extraServers=true, bool saveList=false)
 {
 	if (extraServers) {
-		scope BufferedFile f = new BufferedFile(REFRESHFILE, FileMode.Append);
+		scope output = new BufferOutput(
+		             new FileConduit(REFRESHFILE, FileConduit.WriteAppending));
 
-		foreach (address; getActiveServerList.extraServers)
-			f.writeLine(address);
+		foreach (address; getActiveServerList.extraServers) {
+			output.write(address);
+			output.write(newline);
+		}
 
-		f.close();
+		auto extraFile = File(activeMod.extraServersFile);
+		if (extraFile.path.exists())
+			output.write(extraFile.read());
 
-		char[] extraServersFile = activeMod.extraServersFile();
-		if (exists(extraServersFile))
-			append(REFRESHFILE, read(extraServersFile));
+		output.flush.close;
 	}
 
 	//log("browserRefreshList():");
@@ -182,12 +171,6 @@ void browserRefreshList(void delegate(Object) callback,
 
 	version (Windows) { }
 	else scope (exit) if (proc) proc.wait();
-
-	// bug workaround
-	version (UseOldProcess) {
-		for (int i = 0; _environ[i]; i++)
-			proc.addEnv(fromStringz(_environ[i]).dup);
-	}
 
 	try {
 		char[] cmdLine = "qstat -f " ~ REFRESHFILE ~ " -raw,game " ~ FIELDSEP ~
@@ -199,10 +182,7 @@ void browserRefreshList(void delegate(Object) callback,
 
 		log("Executing '" ~ cmdLine ~ "'.");
 		// FIXME: feed qstat through stdin (-f -)?
-		version (UseOldProcess)
-			proc.execute(cmdLine);
-		else
-			proc.execute(cmdLine, null);
+		proc.execute(cmdLine, null);
 	}
 	catch (ProcessException e) {
 		error("qstat not found!\nPlease reinstall " ~ APPNAME ~ ".");
@@ -211,29 +191,29 @@ void browserRefreshList(void delegate(Object) callback,
 
 	try {
 		char[] tmpfile = saveList ? "servers.tmp" : null;
-		readLineWrapper(proc, false);
-		char[] readLine() { return readLineWrapper(null); }
-		qstat.parseOutput(callback, &readLine, null, tmpfile);
-	}
-	catch(PipeException e) {
+		scope iter = new LineIterator!(char)(proc.stdout);
+		qstat.parseOutput(callback, iter, tmpfile);
+	/*}
+	catch(PipeException e) {*/
 		getActiveServerList.complete = !abortParsing;
 
 		if (saveList) {
 			if (!abortParsing) {
 				try {
-					if (exists(activeMod.serverFile))
-						std.file.remove(activeMod.serverFile);
-					std.file.rename("servers.tmp", activeMod.serverFile);
+					auto serverFile = FilePath(activeMod.serverFile);
+					if (serverFile.exists())
+						serverFile.remove();
+					FilePath("servers.tmp").rename(serverFile);
 				}
-				catch (FileException e) {
+				catch (IOException e) {
 					warning("Unable to save the server list to disk.");
 				}
 			}
 			else {
 				try {
-					std.file.remove("servers.tmp");
+					FilePath("servers.tmp").remove();
 				}
-				catch (FileException e) {
+				catch (IOException e) {
 					warning(e.toString());
 				}
 			}
