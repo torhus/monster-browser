@@ -100,7 +100,7 @@ class ServerTable
 
 						sd.customData = tl;  // cache it
 					}
-					tl.draw(e.gc, e.x, e.y);
+					tl.draw(e.gc, e.x+2, e.y);
 				}
 			});
 		}
