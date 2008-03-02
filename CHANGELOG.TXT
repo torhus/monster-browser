@@ -1,3 +1,9 @@
+Work in progress - 2008-03-01
+-----------------------------
+- New: Colored names for servers and players
+- New: Use Windows theming.
+- New: Allow whitespace before and after address in Specify Server dialog.
+
 v0.3d - 2007-10-13
 ------------------
 - New: Added custom settings to be able to get servers for, and to launch, World of Padman.

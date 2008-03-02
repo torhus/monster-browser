@@ -1,6 +1,6 @@
 Monster Browser
 ---------------
-This program is copyright (c) 2007 Tor Husabø.
+This program is copyright (c) 2008 Tor Husabø.
 
 
 Installation
@@ -35,9 +35,12 @@ If you have more than a couple of servers to add, it's easier to add them direct
 
 Info and contact
 ----------------
+Web site: http://monsterbrowser.googlepages.com/
+Source code: http://monsterbrowser.googlecode.com/
+
 I'm open for requests to change the licence, I just haven't bothered deciding which licence to use yet.
 
 Check out westernquake3.net, I'm registered as torhu.  Send me a PM there if I don't reply to your emails.
 
-Send comments, patches etc. to:
+Email:
 torhu at yahoo dot com.

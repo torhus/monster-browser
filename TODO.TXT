@@ -1,5 +1,3 @@
-- Player names with color codes are sorted wrong.
-
 - Fix baseq3 server list when using gslist.
 
 - Implement some kind of server monitoring.
@@ -13,10 +11,3 @@
 - Use Integer.parse instead of toInt to avoid exceptions?  parse will just
   return 0 if there's garbage in the string, which is usually better than
   stopping the app with an exception.  Might also speed up sorting.
-
-- tango.text.convert.TimeStamp always outputs GMT (used for LOG.TXT).
-
-- DMD doesn't generate docs for all files, including serverlist.d.
-
-- The compile-*.bat files don't work anymore.  Is there any point in keeping
-  them around?  They're only needed if Bud/Build somehow is not available.

@@ -1,5 +1,5 @@
 This program is written in the Digital Mars D programming language.  It should
-be easy to pick up, due to its similarity to C/C++, Java, and C#.
+be easy to pick up, due to its similarity to C/C++ and Java.
 
 
 Useful links
@@ -7,30 +7,28 @@ Useful links
 D compiler:
 http://digitalmars.com/d/1.0/dcompiler.html
 
-Compiler versions that do and don't work with this project:
-0.174-1.0 YES
-1.001-1.006 NO
-1.007 YES
-1.009 YES
-1.010-1.016 UNTESTED
-1.017 YES
-1.018-1.019 UNTESTED
-1.020-1.022 YES
+Compiler versions that are know to work or not work with this project:
+DMD 1.025-1.027 WORKS
 
 D docs:
 Language: http://www.digitalmars.com/d/1.0/lex.html
-Standard library: http://www.digitalmars.com/d/1.0/phobos/phobos.html
+Tango library (used instead of Phobos): http://dsource.org/projects/tango/
 http://www.prowiki.org/wiki4d/wiki.cgi?LanguageSpecification/KeywordIndex
 http://www.prowiki.org/wiki4d/wiki.cgi?FaqRoadmap
 
 D support:
 http://www.digitalmars.com/NewsGroup.html
 irc://irc.freenode.org/D
+irc://irc.freenode.org/d.tango
 
-Derek Parnell's Build, aka Bud, needed for building the project:
+Derek Parnell's Build, aka Bud, needed for building the project on Windows:
 http://www.dsource.org/projects/build
 Recommended version:
 http://trac.dsource.org/projects/build/browser/downloads/bud_win_3.04.exe?format=raw
+
+DSSS, needed for building the project on Linux:
+http://dsource.org/projects/dsss
+Version 0.75 is known to work.
 
 
 Libraries used
@@ -38,20 +36,11 @@ Libraries used
 ini.d (included in the source download):
 http://www.dprogramming.com/ini.php
 
-DWT  GUI library (included in the source download):
+DWT GUI library. DWT is a D port of IBM's SWT 3.3 for Java.
 http://www.dsource.org/projects/dwt
-http://help.eclipse.org/help30/nftopic/org.eclipse.platform.doc.isv/reference/api/org/eclipse/swt/widgets/package-tree.html
-There's also a DWT news group on news.digitalmars.com.
-The included version works with dmd 1.017 and Build 3.04, the official version
-doesn't.
-
-DWT is a D port of IBM's SWT for Java.  Unfortunately, it still only runs on
-Windows.  I'm hoping that someone will start working on Linux and Mac ports
-sometime.  But as of October 2007, the project seems to be dead.  However,
-another SWT port (dsource.org/projects/tioport) is in the works.
-
-DWT is based on SWT 3.0.  However, some of the 3.1 API also seems to be
-implemented.
+http://help.eclipse.org/help32/nftopic/org.eclipse.platform.doc.isv/reference/api/org/eclipse/swt/widgets/package-tree.html
+There's also a DWT news group on news.digitalmars.com, and a #dwt channel on
+freenode (IRC).
 
 
 -----------
@@ -73,4 +62,4 @@ ad hoc, step by step way, so the code organization is a bit random in some
 places.  Sorry about that.
 
 
--torhu, aka monSter
+-torhu at yahoo com
