@@ -1,8 +1,7 @@
 module serveractions;
 
-import std.thread;
-
 import tango.core.Memory;
+import tango.core.Thread;
 import tango.io.File;
 import tango.io.FilePath;
 debug import tango.io.Stdout;
@@ -80,7 +79,7 @@ private void switchToActiveMod()
 /** Loads the list from disk. */
 void loadSavedList()
 {
-	int f()
+	void f()
 	{
 		void callback(Object int_count)
 		{
@@ -106,11 +105,9 @@ void loadSavedList()
 		catch(Exception e) {
 			logx(__FILE__, __LINE__, e);
 		}
-		return 0;
 	}
 
-	assert(serverThread is null ||
-	                   serverThread.getState() == Thread.TS.TERMINATED);
+	assert(serverThread is null || !serverThread.isRunning);
 
 	statusBar.setLeft("Loading saved server list...");
 	serverThread = new Thread(&f);
@@ -129,7 +126,7 @@ void queryAndAddServer(in char[] address)
 {
 	static char[] addressCopy;
 
-	int f()
+	void f()
 	{
 		void done(Object)
 		{
@@ -162,11 +159,9 @@ void queryAndAddServer(in char[] address)
 		catch(Exception e) {
 			logx(__FILE__, __LINE__, e);
 		}
-		return 0;
 	}
 
-	assert(serverThread is null ||
-	                   serverThread.getState() == Thread.TS.TERMINATED);
+	assert(serverThread is null || !serverThread.isRunning);
 
 	File(REFRESHFILE).write(address ~ newline);
 
@@ -182,7 +177,7 @@ void queryAndAddServer(in char[] address)
 /** Retrieves a new list from the master server. */
 void getNewList()
 {
-	int f()
+	void f()
 	{
 		int serverCount = -1;
 		static char[] total;
@@ -233,11 +228,9 @@ void getNewList()
 			logx(__FILE__, __LINE__, e);
 		}
 
-		return 0;
 	}
 
-	assert(serverThread is null ||
-	                   serverThread.getState() == Thread.TS.TERMINATED);
+	assert(serverThread is null || !serverThread.isRunning);
 
 	getActiveServerList.clear();
 	serverTable.refresh();
@@ -252,7 +245,7 @@ void getNewList()
 /** Refreshes the list. */
 void refreshList()
 {
-	int f()
+	void f()
 	{
 		static char[] total;
 
@@ -291,11 +284,9 @@ void refreshList()
 		catch(Exception e) {
 			logx(__FILE__, __LINE__, e);
 		}
-		return 0;
 	}
 
-	assert(serverThread is null ||
-	                   serverThread.getState() == Thread.TS.TERMINATED);
+	assert(serverThread is null || !serverThread.isRunning);
 
 	//if (!exists(REFRESHFILE)) {
 		qstat.saveRefreshList();
