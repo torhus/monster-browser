@@ -198,8 +198,15 @@ each_server:
 						outfile.write(newline);
 					}
 					char[][] s = split(line.dup, FIELDSEP);
-					sd.players ~= s;
-					if (s[PlayerColumn.PING] != "0") {
+					char player[][];
+					player.length = PlayerColumn.max + 1;
+					player[PlayerColumn.RAWNAME] = s[0];
+					player[PlayerColumn.SCORE]   = s[1];
+					player[PlayerColumn.PING]    = s[2];
+					player[PlayerColumn.NAME]    = null;
+					sd.players ~= player;
+
+					if (player[PlayerColumn.PING] != "0") {
 						humans++;
 					}
 				}

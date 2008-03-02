@@ -67,11 +67,12 @@ class PlayerTable
 					return;
 
 				TableItem item = cast(TableItem) e.item;
-				auto i = table_.indexOf(item);
-				scope parsed = parseColors(item.getText(e.index));
+				auto sd = getActiveServerList.getFiltered(selectedServerIndex_);
+				auto player = sd.players[table_.indexOf(item)];
+				scope parsed = parseColors(player[PlayerColumn.RAWNAME]);
 				scope tl = new TextLayout(display);
 
-				tl.setText(parsed.cleanName);
+				tl.setText(player[PlayerColumn.NAME]);
 				foreach (r; parsed.ranges)
 					tl.setStyle(r.style, r.start, r.end);
 
@@ -127,6 +128,9 @@ class PlayerTable
 	{
 		// FIXME: show players for all selected servers at once (like ASE)
 		selectedServerIndex_ = i;
+		auto sd = getActiveServerList.getFiltered(selectedServerIndex_);
+		if (sd.players.length && sd.players[0][PlayerColumn.NAME] is null)
+			addCleanPlayerNames(sd.players);
 		reset();
 	}
 
@@ -165,6 +169,13 @@ private:
 			default:
 				assert(0);
 		}
+	}
+
+
+	void addCleanPlayerNames(char[][][] players)
+	{
+		foreach (p; players)
+			p[PlayerColumn.NAME] = stripColorCodes(p[PlayerColumn.RAWNAME]);
 	}
 
 }
