@@ -61,7 +61,7 @@ struct ColorRange {
  * Parse colored names.
  *
  */
-ColoredName parseColors(char[] s)
+ColoredName parseColors(in char[] s)
 {
 	ColoredName cname = new ColoredName;
 	ColorRange crange;
@@ -114,7 +114,7 @@ unittest {
 /**
  *  Strip color codes from quake3 names.
  */
-char[] stripColorCodes(char[] s)
+char[] stripColorCodes(in char[] s)
 {
 	char[] name;
 
