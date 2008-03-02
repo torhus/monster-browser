@@ -228,14 +228,17 @@ void browserRefreshList(void delegate(Object) callback,
 
 /** Kill the command line server browser process
  *
- * Returns: true if succeeded, false if not.
+ * Returns: true if the process was running, false if not.
  */
 bool killServerBrowser()
 {
 	if (proc is null) {
 		debug Cout("proc is null").newline;
-		return true;
+		return false;
 	}
+
+	if (!proc.isRunning)
+		return false;
 
 	try {
 		proc.kill();
@@ -243,7 +246,6 @@ bool killServerBrowser()
 	}
 	catch (ProcessException e) {
 		logx(__FILE__, __LINE__, e);
-		return false;
 	}
 	return true;
 }

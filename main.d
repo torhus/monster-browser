@@ -503,13 +503,7 @@ class ThreadDispatcher
 		else {
 			debug Cout("ThreadDispatcher.dispatch: Killing server browser...")
 			                                                          .newline;
-			bool success = killServerBrowser();
-
-			debug if (!success)
-				Cout("killServerBrowser() failed.").newline;
-			else
-				Cout("killServerBrowser() succeeded.").newline;
-
+			killServerBrowser();
 
 			fp_();
 			fp_ = null;
