@@ -1,11 +1,10 @@
 module common;
 
 private {
-	import std.regexp;
-
 	debug import tango.io.Console;
 	import tango.io.FileConduit;
 	import tango.io.FilePath;
+	import tango.stdc.ctype : isdigit;  // temporary, for isValidIpAddress
 	debug import tango.stdc.stdio : fgets, stdin;
 	import tango.stdc.stdlib : qsort;
 	import tango.stdc.string;
@@ -162,12 +161,52 @@ else
  *
  * No garbage at the beginning or end of the string is allowed.
  */
+/*bool isValidIpAddress(in char[] address)
+{
+	static Regex re = null;
+	if (re is null)
+		re = Regex(r"(\d{1,3}\.){3}\d{1,3}(:\d{1,5})?");
+
+	return re.test(address) && (re.match(0).length == address.length);
+}*/
+
+// workaround, see http://dsource.org/projects/tango/ticket/956
 bool isValidIpAddress(in char[] address)
 {
-	RegExp re = new RegExp(r"(\d{1,3}\.){3}\d{1,3}(:\d{1,5})?");
+	uint skipDigits(ref char[] s, uint maxDigits=uint.max) {
+		size_t i = 0;
+		while (i < s.length && isdigit(s[i]) && i < maxDigits)
+			i++;
+		s = s[i..$];
+		return i;
+	}
 
-	char[][] matches = re.exec(address);
-	return (matches.length != 0 && matches[0].length == address.length);
+	for (int i=0; i < 3; i++) {
+		if (address.length == 0 || !isdigit(address[0]))
+			return false;
+		if (skipDigits(address, 3) == 0)
+			return false;
+		if (address.length == 0 || address[0] != '.')
+			return false;
+		address = address[1..$];
+	}
+
+	if (address.length == 0 || !isdigit(address[0]))
+		return false;
+	if (skipDigits(address, 3) == 0)
+		return false;
+
+	if (address.length == 0)
+		return true;
+
+	if (address[0] == ':' && address.length >= 2) {
+		address = address[1..$];
+		if (isdigit(address[0]) && skipDigits(address) <= 5 &&
+		                                                   address.length == 0)
+			return true;
+	}
+
+	return false;
 }
 
 
@@ -187,6 +226,7 @@ int findString(char[][] array, char[] str)
 	}
 	return -1;
 }
+
 
 /**
  * Like the above findString, but search in a given _column of a
