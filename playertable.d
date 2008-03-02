@@ -76,7 +76,7 @@ class PlayerTable
 				foreach (r; parsed.ranges)
 					tl.setStyle(r.style, r.start, r.end);
 
-				tl.draw(e.gc, e.x, e.y);
+				tl.draw(e.gc, e.x+2, e.y);
 				tl.dispose();
 			}
 		});
