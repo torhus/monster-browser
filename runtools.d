@@ -1,6 +1,7 @@
 module runtools;
 
 private {
+	import tango.core.Exception : IOException, ProcessException;
 	debug import tango.io.Console;
 	import tango.io.File;
 	import tango.io.FileConduit;
@@ -10,11 +11,9 @@ private {
 	import tango.stdc.ctype : isdigit;
 	import tango.stdc.stdio : sscanf;
 	import tango.stdc.stringz;
+	import tango.sys.Process;
 	import Integer = tango.text.convert.Integer;
 	import tango.text.stream.LineIterator;
-
-	import tango.core.Exception : IOException, ProcessException;
-	import tango.sys.Process;
 
 	import common;
 	import serverlist;
@@ -194,8 +193,7 @@ void browserRefreshList(void delegate(Object) callback,
 		char[] tmpfile = saveList ? "servers.tmp" : null;
 		scope iter = new LineIterator!(char)(proc.stdout);
 		qstat.parseOutput(callback, iter, tmpfile);
-	/*}
-	catch(PipeException e) {*/
+
 		getActiveServerList.complete = !abortParsing;
 
 		if (saveList) {
