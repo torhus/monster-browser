@@ -1,8 +1,7 @@
 module main;
 
 private {
-	import std.thread;
-
+	import tango.core.Thread;
 	debug import tango.io.Console;
 	import tango.io.FilePath;
 	import tango.text.Util;
@@ -199,13 +198,12 @@ void main(char[][] args) {
 				runtools.killServerBrowser();
 				//qstat.SaveRefreshList();
 				/*log("Waiting for threads to terminate...");
-				foreach (int i, Thread t; Thread.getAll()) {
+				foreach (i, t; Thread.getAll()) {
 					if (t != Thread.getThis()) {
 						log("Waiting for thread " ~
-						        .toString(i) ~ "...");
-						t.wait();
-						log("    ...thread " ~
-						        .toString(i) ~ " done.");
+						                          Integer.toString(i) ~ "...");
+						t.join();
+						log("    ...thread " ~ Integer.toString(i) ~ " done.");
 					}
 				}*/
 			}
@@ -499,7 +497,7 @@ class ThreadDispatcher
 		if (fp_ is null)
 			return;
 
-		if (serverThread && serverThread.getState() != Thread.TS.TERMINATED) {
+		if (serverThread && serverThread.isRunning) {
 			volatile abortParsing = true;
 		}
 		else {

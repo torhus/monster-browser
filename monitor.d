@@ -1,10 +1,10 @@
 module monitor;
 
 private {
-	import std.date;
-	import std.thread;
+	//import std.date;
 
-	//import dwt.all;
+	import tango.core.Thread;
+
 	import common;
 	import dialogs;
 	import main;
