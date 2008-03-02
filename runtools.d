@@ -7,6 +7,7 @@ private {
 	import tango.io.FilePath;
 	import tango.io.stream.BufferStream;
 	import tango.io.stream.TextFileStream;
+	import tango.stdc.ctype : isdigit;
 	import tango.stdc.stdio : sscanf;
 	import tango.stdc.stringz;
 	import Integer = tango.text.convert.Integer;
@@ -81,7 +82,7 @@ int browserGetNewList()
 			if (common.useGslist) {
 				for (;;) {
 					char[] s = lineIter.next();
-					if (s.length > 0 && std.ctype.isdigit(s[0])) {
+					if (s.length > 0 && isdigit(s[0])) {
 						count = Integer.convert(s);
 						log("gslist retrieving " ~ Integer.toString(count) ~
 						               " servers.");
