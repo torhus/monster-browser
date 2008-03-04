@@ -15,6 +15,7 @@ private {
 	import dwt.graphics.Rectangle;
 	import dwt.layout.GridData;
 	import dwt.layout.GridLayout;
+	import dwt.layout.RowData;
 	import dwt.layout.RowLayout;
 	import dwt.widgets.Button;
 	import dwt.widgets.Composite;
@@ -61,7 +62,7 @@ class MonitorNotify {
 		// password input
 		Composite pwdComposite = new Composite(shell_, DWT.NONE);
 		GridData pwdData = new GridData();
-		pwdData.horizontalAlignment = GridData.CENTER;
+		pwdData.horizontalAlignment = DWT.CENTER;
 		pwdComposite.setLayoutData(pwdData);
 
 		RowLayout pwdLayout = new RowLayout();
@@ -73,7 +74,7 @@ class MonitorNotify {
 		// main buttons
 		Composite buttonComposite = new Composite(shell_, DWT.NONE);
 		GridData buttonData = new GridData();
-		buttonData.horizontalAlignment = GridData.CENTER;
+		buttonData.horizontalAlignment = DWT.CENTER;
 		buttonComposite.setLayoutData(buttonData);
 
 		RowLayout buttonLayout = new RowLayout();
@@ -141,7 +142,7 @@ class JoinDialog {
 		// password input
 		Composite pwdComposite = new Composite(shell_, DWT.NONE);
 		GridData pwdData = new GridData();
-		pwdData.horizontalAlignment = GridData.CENTER;
+		pwdData.horizontalAlignment = DWT.CENTER;
 		pwdComposite.setLayoutData(pwdData);
 
 		RowLayout pwdLayout = new RowLayout();
@@ -153,16 +154,19 @@ class JoinDialog {
 		// main buttons
 		Composite buttonComposite = new Composite(shell_, DWT.NONE);
 		GridData buttonData = new GridData();
-		buttonData.horizontalAlignment = GridData.CENTER;
+		buttonData.horizontalAlignment = DWT.CENTER;
 		buttonComposite.setLayoutData(buttonData);
 
 		RowLayout buttonLayout = new RowLayout();
+		buttonLayout.spacing = BUTTON_SPACING;
 		buttonComposite.setLayout(buttonLayout);
 
 		okButton_ = new Button (buttonComposite, DWT.PUSH);
 		okButton_.setText ("OK");
+		okButton_.setLayoutData(new RowData(BUTTON_SIZE));
 		cancelButton_ = new Button (buttonComposite, DWT.PUSH);
 		cancelButton_.setText ("Cancel");
+		cancelButton_.setLayoutData(new RowData(BUTTON_SIZE));
 
 		Listener listener = new class Listener {
 			public void handleEvent (Event event)
@@ -218,7 +222,7 @@ class SpecifyServerDialog {
 		// address input
 		Composite addressComposite = new Composite(shell_, DWT.NONE);
 		GridData addressData = new GridData();
-		addressData.horizontalAlignment = GridData.CENTER;
+		addressData.horizontalAlignment = DWT.CENTER;
 		addressComposite.setLayoutData(addressData);
 
 		auto addressLayout = new GridLayout();
@@ -227,26 +231,32 @@ class SpecifyServerDialog {
 		labelB.setText("Address (123.123.123.123 or 123.123.123.123:12345):");
 		addressText_ = new Text(addressComposite, DWT.SINGLE | DWT.BORDER);
 		auto addressTextData = new GridData();
-		addressTextData.horizontalAlignment = GridData.CENTER;
+		addressTextData.horizontalAlignment = DWT.CENTER;
 		addressTextData.widthHint = 140;
 		addressText_.setLayoutData(addressTextData);
 
 		saveButton_ = new Button (shell_, DWT.CHECK);
 		saveButton_.setText("Save server on file ('" ~ activeMod.extraServersFile ~ "')");
+		auto saveButtonData = new GridData;
+		saveButtonData.horizontalAlignment = DWT.CENTER;
+		saveButton_.setLayoutData(saveButtonData);
 
 		// main buttons
 		Composite buttonComposite = new Composite(shell_, DWT.NONE);
 		GridData buttonData = new GridData();
-		buttonData.horizontalAlignment = GridData.CENTER;
+		buttonData.horizontalAlignment = DWT.CENTER;
 		buttonComposite.setLayoutData(buttonData);
 
 		RowLayout buttonLayout = new RowLayout();
+		buttonLayout.spacing = BUTTON_SPACING;
 		buttonComposite.setLayout(buttonLayout);
 
 		okButton_ = new Button (buttonComposite, DWT.PUSH);
 		okButton_.setText ("OK");
+		okButton_.setLayoutData(new RowData(BUTTON_SIZE));
 		cancelButton_ = new Button (buttonComposite, DWT.PUSH);
 		cancelButton_.setText ("Cancel");
+		cancelButton_.setLayoutData(new RowData(BUTTON_SIZE));
 
 		Listener listener = new class Listener {
 			public void handleEvent (Event event)
@@ -326,7 +336,7 @@ class SettingsDialog {
 
 		Composite mainComposite = new Composite(shell_, DWT.NONE);
 		GridData gridData = new GridData();
-		gridData.horizontalAlignment = GridData.CENTER;
+		gridData.horizontalAlignment = DWT.CENTER;
 		mainComposite.setLayoutData(gridData);
 		GridLayout mainLayout = new GridLayout();
 		mainComposite.setLayout(mainLayout);
@@ -357,6 +367,7 @@ class SettingsDialog {
 		// mods button
 		Button modsButton = new Button(mainComposite, DWT.PUSH);
 		modsButton.setText("Mods...");
+		modsButton.setLayoutData(new GridData(BUTTON_SIZE));
 		modsButton.addSelectionListener(new class SelectionAdapter {
 			public void widgetSelected(SelectionEvent e)
 			{
@@ -379,16 +390,20 @@ class SettingsDialog {
 		// main buttons
 		Composite buttonComposite = new Composite(shell_, DWT.NONE);
 		GridData buttonData = new GridData();
-		buttonData.horizontalAlignment = GridData.CENTER;
+		buttonData.horizontalAlignment = DWT.CENTER;
 		buttonComposite.setLayoutData(buttonData);
 
-		RowLayout buttonLayout = new RowLayout();
+		auto buttonLayout = new RowLayout;
+		buttonLayout.spacing = BUTTON_SPACING;
 		buttonComposite.setLayout(buttonLayout);
 
 		okButton_ = new Button (buttonComposite, DWT.PUSH);
 		okButton_.setText ("OK");
+		okButton_.setLayoutData(new RowData(BUTTON_SIZE));
+
 		cancelButton_ = new Button (buttonComposite, DWT.PUSH);
 		cancelButton_.setText ("Cancel");
+		cancelButton_.setLayoutData(new RowData(BUTTON_SIZE));
 
 		Listener listener = new class Listener {
 			public void handleEvent (Event event)
