@@ -46,6 +46,15 @@ else {
 	//const char[] VERSION = "0.3e";
 }
 
+template Tuple(E...) { alias E Tuple; }
+
+/// Default Windows button size.
+alias Tuple!(75, 23) BUTTON_SIZE;
+
+/// Default Windows button spacing.
+const BUTTON_SPACING = 6;
+
+
 private {
 	const char[] LOGFILE = "LOG.TXT";
 	const int MAX_LOG_SIZE = 100 * 1024;
