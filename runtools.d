@@ -79,8 +79,8 @@ int browserGetNewList()
 			// Just swallow gslist or qstat's output, but get the server count.
 			// The IPs are written to a file.
 			if (common.useGslist) {
-				for (;;) {
-					char[] s = lineIter.next();
+				while (lineIter.next()) {
+					char[] s = lineIter.get();
 					if (s.length > 0 && isdigit(s[0])) {
 						count = Integer.convert(s);
 						log("gslist retrieving " ~ Integer.toString(count) ~
