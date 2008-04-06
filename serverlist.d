@@ -589,6 +589,10 @@ bool setActiveServerList(char[] modName)
 	if (activeServerList !is null) {
 		savedFilters = activeServerList.filters_;
 	}
+	else {
+		savedFilters = cast(Filter)Integer.toInt(
+		                                       getSessionState("filterState"));
+	}
 
 	if (ServerList* slist = modName in serverLists) {
 		activeServerList = *slist;

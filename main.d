@@ -319,6 +319,14 @@ class FilterBar : Composite
 			}
 		});
 
+		// Restore saved filter state
+		Filter state = cast(Filter)Integer.toInt(
+		                                       getSessionState("filterState"));
+		if (state & Filter.NOT_EMPTY)
+			button1_.setSelection(true);
+		if (state & Filter.HAS_HUMANS)
+			button2_.setSelection(true);
+
 		// game type selection
 		/*Combo combo = new Combo(filterComposite_, DWT.READ_ONLY);
 		combo.setItems(gametypes);
