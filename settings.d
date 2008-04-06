@@ -5,12 +5,13 @@ module settings;
 private {
 	import tango.io.FilePath;
 	import tango.text.Util;
-	import tango.text.convert.Integer;
+	import Integer = tango.text.convert.Integer;
 	import tango.stdc.stdio;
 
 	import ini;
 	import common;
 	import main;
+	import serverlist;
 }
 
 
@@ -87,6 +88,9 @@ private {
 	                      {"windowMaximized", "false"},
 	                      {"windowSize", "800x568"},
 	                     ];
+
+	Setting[] defaultSessionState = [{"filterState", "0"},
+                                    ];
 }
 
 
@@ -153,6 +157,7 @@ void loadSettings()
 		}
 	}
 
+	loadSessionState();
 	loadModFile();
 }
 
@@ -160,14 +165,16 @@ void loadSettings()
 void saveSettings()
 {
 	if (!mainWindow.getMaximized() && !mainWindow.getMinimized()) {
-		char[] width  = toString(mainWindow.getSize().x);
-		char[] height = toString(mainWindow.getSize().y);
+		char[] width  = Integer.toString(mainWindow.getSize().x);
+		char[] height = Integer.toString(mainWindow.getSize().y);
 		setSetting("windowSize", width ~ "x" ~ height);
 	}
 	setSetting("windowMaximized", mainWindow.getMaximized() ?
 	                                                 "true" : "false");
 
 	setSetting("lastMod", activeMod.name);
+
+	updateSessionState();
 
 	if (settingsIni.modified) {
 		settingsIni.save();
@@ -209,4 +216,34 @@ void setPassword(char[] ip, char[] password)
 {
 	IniSection sec = settingsIni.addSection("Passwords");
 	sec.setValue(ip, password);
+}
+
+
+private void loadSessionState()
+{
+	IniSection sec = settingsIni.addSection("Session");
+
+	// merge the loaded settings with the defaults
+	foreach(Setting s; defaultSessionState) {
+		if (!sec.getValue(s.name)) {
+			sec.setValue(s.name, s.value);
+		}
+	}
+}
+
+
+private void updateSessionState()
+{
+	IniSection sec = settingsIni.section("Session");
+	assert(sec !is null);
+	sec.setValue("filterState",
+	                       Integer.toString(getActiveServerList.getFilters()));
+}
+
+
+char[] getSessionState(in char[] key)
+{
+	IniSection sec = settingsIni.section("Session");
+	assert(sec !is null);
+	return sec[key];
 }
