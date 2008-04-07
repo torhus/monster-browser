@@ -1,6 +1,8 @@
 module servertable;
 
 private {
+	import tango.math.Math : abs;
+
 	import dwt.DWT;
 	import dwt.events.SelectionAdapter;
 	import dwt.events.SelectionEvent;
@@ -160,10 +162,22 @@ class ServerTable
 			c.addListener(DWT.Selection, sortListener);
 		}
 
-		table_.setSortColumn(table_.getColumn(ServerColumn.NAME));
-		table_.setSortDirection(DWT.UP);
+		// restore sort order from previous session
+		int sortCol = Integer.parse(getSessionState("serverSortOrder"));
+		bool reversed = sortCol < 0;
+		sortCol = abs(sortCol);
+		if (sortCol >= serverHeaders.length)
+			sortCol = 0;
+		table_.setSortColumn(table_.getColumn(sortCol));
+		table_.setSortDirection(reversed ? DWT.DOWN : DWT.UP);
 	}
 
+
+	/// The index of the currently active sort column.
+	int sortColumn() { return table_.indexOf(table_.getSortColumn()); }
+
+	/// Is the sort order reversed?
+	bool sortReversed() { return (table_.getSortDirection() == DWT.DOWN); }
 
 	/// Returns the server list's Table widget object.
 	Table getTable() { return table_; };
