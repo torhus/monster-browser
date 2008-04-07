@@ -90,6 +90,7 @@ private {
 	                     ];
 
 	Setting[] defaultSessionState = [{"filterState", "0"},
+	                                 {"serverSortOrder", "0"},
                                     ];
 }
 
@@ -174,7 +175,7 @@ void saveSettings()
 
 	setSetting("lastMod", activeMod.name);
 
-	updateSessionState();
+	gatherSessionState();
 
 	if (settingsIni.modified) {
 		settingsIni.save();
@@ -232,12 +233,20 @@ private void loadSessionState()
 }
 
 
-private void updateSessionState()
+private void gatherSessionState()
 {
 	IniSection sec = settingsIni.section("Session");
 	assert(sec !is null);
+
+	// state of filters
 	sec.setValue("filterState",
 	                       Integer.toString(getActiveServerList.getFilters()));
+
+	// server sort order
+	int serverSortOrder = serverTable.sortColumn;
+	if (serverTable.sortReversed)
+		serverSortOrder = -serverSortOrder;
+	sec.setValue("serverSortOrder", Integer.toString(serverSortOrder));
 }
 
 
