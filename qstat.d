@@ -149,8 +149,13 @@ each_server:
 					char[][] cvar = split(s, "=");
 					switch (cvar[0]) {
 						case "gametype":
-							int gt = toInt(cvar[1]);
-							if (gt < gtypes.length) {
+							uint ate;
+							int gt = parse(cvar[1], 10, &ate);
+							if (ate < cvar[1].length) {
+								invalidInteger(sd.rawName, cvar[1]);
+								sd.server[ServerColumn.GAMETYPE] = "???";
+							}
+							else if (gt < gtypes.length) {
 								sd.server[ServerColumn.GAMETYPE] = gtypes[gt];
 							}
 							else {
@@ -212,10 +217,16 @@ each_server:
 				}
 
 				// 'Players' column contents
-				int bots = toInt(fields[5]) - humans;
-				if (bots < 0) {
+				uint ate;
+				int total = parse(fields[5], 10, &ate);
+
+				if (ate < fields[5].length)
+					invalidInteger(sd.rawName, fields[5]);
+
+				int bots = total - humans;
+				if (bots < 0)
 					bots = 0;
-				}
+
 				sd.server[ServerColumn.PLAYERS] = toString(humans) ~
 				                  "+" ~ toString(bots) ~
 				                  "/" ~ fields[4];
@@ -236,6 +247,16 @@ each_server:
 	}
 
 	return !abortParsing;
+}
+
+
+private void invalidInteger(in char[] serverName, in char[] badValue)
+{
+	char[] msg = "Invalid value reading server \"" ~ serverName ~ "\", " ~
+	             "\"" ~ badValue ~ "\" doesn't parse as an integer.";
+
+	debug db(msg);
+	else log(msg);
 }
 
 
