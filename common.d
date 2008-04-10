@@ -116,13 +116,22 @@ void _messageBox(char[] title, int style)(char[] fmt, ...)
 alias _messageBox!(APPNAME, DWT.ICON_INFORMATION) info;
 alias _messageBox!("Warning", DWT.ICON_WARNING) warning;  /// ditto
 alias _messageBox!("Error", DWT.ICON_ERROR) error;        /// ditto
-alias _messageBox!("Debug", DWT.NONE) db;                 /// ditto
 
 
-/// Opens a dialog box for displaying a multi-line debug message.
+/// Display a debug message in a dialog box.
+void db(in char[] fmt, ...)
+{
+	debug {
+		char[] msg = Format.convert(_arguments, _argptr, fmt);
+		_messageBox!("Debug", DWT.NONE)(msg);
+	}
+}
+
+
+/// Display a multi-line debug message in a dialog box.
 void db(char[][] array)
 {
-	db(join(array, "\n"));
+	debug db(join(array, "\n"));
 }
 
 
