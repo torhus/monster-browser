@@ -320,7 +320,7 @@ class FilterBar : Composite
 		});
 
 		// Restore saved filter state
-		Filter state = cast(Filter)Integer.toInt(
+		Filter state = cast(Filter)Integer.parse(
 		                                       getSessionState("filterState"));
 		if (state & Filter.NOT_EMPTY)
 			button1_.setSelection(true);

@@ -1,7 +1,8 @@
-Work in progress - 2008-03-01
+Work in progress - 2008-04-10
 -----------------------------
 - New: Colored names for servers and players
 - New: Use Windows theming.
+- New: Session state is now being saved and restored.  Sort order, filter state etc.
 - New: Allow whitespace before and after address in Specify Server dialog.
 
 v0.3d - 2007-10-13
