@@ -252,6 +252,19 @@ int findString(char[][][] array, char[] str, int column)
 }
 
 
+/**
+ * Sort a 2-dimensional string array.  Not a stable sort.
+ *
+ * Params:
+ *     sortColumn = Column to sort on (the second dimension of arr).
+ *     reverse    = Reversed order.
+ *     numeric    = Set to true to get a numerical sort instead of an
+ *                  alphabetical one.  The string in the column given by
+ *                  sortColumn will be converted to an integer before comparing.
+ *
+ * Throws: IllegalArgumentException if numeric is true, and the strings in
+ *         sortColumn contains anything that doesn't parse as integers.
+ */
 void sortStringArray(char[][][] arr, int sortColumn=0, bool reverse=false,
                      bool numeric=false)
 {
@@ -281,8 +294,21 @@ void sortStringArray(char[][][] arr, int sortColumn=0, bool reverse=false,
 }
 
 
+/**
+ * Sort a 2-dimensional string array.  This is a stable sort.
+ *
+ * Params:
+ *     sortColumn = Column to sort on (the second dimension of arr).
+ *     reverse    = Reversed order.
+ *     numeric    = Set to true to get a numerical sort instead of an
+ *                  alphabetical one.  The string in the column given by
+ *                  sortColumn will be converted to an integer before comparing.
+ *
+ * Throws: IllegalArgumentException if numeric is true, and the strings in
+ *         sortColumn contains anything that doesn't parse as integers.
+ */
 void sortStringArrayStable(char[][][] arr, int sortColumn=0,
-                           bool reverse=false,bool numeric=false)
+                           bool reverse=false, bool numeric=false)
 {
 
 	bool lessOrEqual(char[][] a, char[][] b)
@@ -322,6 +348,14 @@ debug void pause()
 }
 
 
+/**
+ * In-place merge sort for arrays.  This is a stable sort.
+ *
+ * If lessOrEqual is null, the <= operator is used instead.
+ *
+ * Note: Allocates (a.length + 1) / 2 of heap memory, in order to speed up
+         sorting.
+ */
 void mergeSort(T)(T[] a, bool delegate(T a, T b) lessOrEqual=null)
 {
 	T[] b;
