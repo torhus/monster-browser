@@ -91,6 +91,7 @@ private {
 
 	Setting[] defaultSessionState = [{"filterState", "0"},
 	                                 {"serverSortOrder", "0"},
+	                                 {"playerSortOrder", "0"},
                                     ];
 }
 
@@ -235,7 +236,9 @@ private void loadSessionState()
 
 private void gatherSessionState()
 {
+	char[] value;
 	IniSection sec = settingsIni.section("Session");
+
 	assert(sec !is null);
 
 	// state of filters
@@ -243,10 +246,16 @@ private void gatherSessionState()
 	                       Integer.toString(getActiveServerList.getFilters()));
 
 	// server sort order
-	int serverSortOrder = serverTable.sortColumn;
+	value = Integer.toString(serverTable.sortColumn);
 	if (serverTable.sortReversed)
-		serverSortOrder = -serverSortOrder;
-	sec.setValue("serverSortOrder", Integer.toString(serverSortOrder));
+		value ~= "r";
+	sec.setValue("serverSortOrder", value);
+
+	// player sort order
+	value = Integer.toString(playerTable.sortColumn);
+	if (playerTable.sortReversed)
+		value ~= "r";
+	sec.setValue("playerSortOrder", value);
 }
 
 
@@ -254,5 +263,7 @@ char[] getSessionState(in char[] key)
 {
 	IniSection sec = settingsIni.section("Session");
 	assert(sec !is null);
+	assert(sec[key], key ~ " not found.\n\n"
+	                  "All settings need to have a default.");
 	return sec[key];
 }

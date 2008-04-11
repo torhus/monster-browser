@@ -1,8 +1,6 @@
 module servertable;
 
 private {
-	import tango.math.Math : abs;
-
 	import dwt.DWT;
 	import dwt.events.SelectionAdapter;
 	import dwt.events.SelectionEvent;
@@ -163,9 +161,10 @@ class ServerTable
 		}
 
 		// restore sort order from previous session
-		int sortCol = Integer.parse(getSessionState("serverSortOrder"));
-		bool reversed = sortCol < 0;
-		sortCol = abs(sortCol);
+		char[] s = getSessionState("serverSortOrder");
+		uint ate;
+		int sortCol = Integer.convert(s, 10, &ate);
+		bool reversed = (s.length > ate && s[ate] == 'r');
 		if (sortCol >= serverHeaders.length)
 			sortCol = 0;
 		table_.setSortColumn(table_.getColumn(sortCol));
