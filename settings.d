@@ -94,6 +94,7 @@ private {
 	                                 {"serverSortOrder", "0"},
 	                                 {"middleWeights", "16,5"},
 	                                 {"rightWeights", "1,1"},
+	                                 {"serverColumnWidths", "250,25,32,50,40,90,130"},
                                     ];
 }
 
@@ -264,6 +265,10 @@ private void gatherSessionState()
 
 	// right SashForm weights
 	sec.setValue("rightWeights", toCsv(rightForm.getWeights()));
+
+	// serverColumnWidths
+	value = toCsv(getColumnWidths(serverTable.getTable()));
+	sec.setValue("serverColumnWidths", value);
 }
 
 

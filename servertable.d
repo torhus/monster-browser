@@ -39,21 +39,19 @@ class ServerTable
 		table_.setHeaderVisible(true);
 		table_.setLinesVisible(true);
 
-		foreach (header; serverHeaders) {
+		int[] widths = parseIntegerSequence(
+		                                getSessionState("serverColumnWidths"));
+		// FIXME use defaults if wrong length?
+		widths.length = serverHeaders.length;
+
+		// add columns
+		foreach (int i, header; serverHeaders) {
 			TableColumn column = new TableColumn(table_, DWT.NONE);
 			column.setText(header);
+			column.setWidth(widths[i]);
 		}
 
 		table_.getColumn(ServerColumn.PASSWORDED).setAlignment(DWT.CENTER);
-
-		int col = 0;
-		table_.getColumn(col++).setWidth(250);
-		table_.getColumn(col++).setWidth(28);
-		table_.getColumn(col++).setWidth(32);
-		table_.getColumn(col++).setWidth(50);
-		table_.getColumn(col++).setWidth(40);
-		table_.getColumn(col++).setWidth(90);
-		table_.getColumn(col++).setWidth(130);
 
 		table_.addListener(DWT.SetData, new class Listener {
 			void handleEvent(Event e)

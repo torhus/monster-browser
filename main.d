@@ -143,9 +143,9 @@ void main(char[][] args) {
 		FillLayout rightLayout = new FillLayout(DWT.VERTICAL);
 		rightForm.setLayout(rightLayout);
 
-		// FIXME: this will crash if the array is too short or long
-		middleForm.setWeights(parseIntegerSequence(
-		                              getSessionState("middleWeights"))[0..2]);
+		int[] weights = parseIntegerSequence(getSessionState("middleWeights"));
+		weights.length = 2;  // FIXME: use defaults instead?
+		middleForm.setWeights(weights);;
 
 		// player list
 		playerTable = new PlayerTable(rightForm);
@@ -157,9 +157,9 @@ void main(char[][] args) {
 		gridData = new GridData();
 		cvarTable.getTable().setLayoutData(gridData);
 
-		// FIXME: this will crash if the array is too short or long
-		rightForm.setWeights(parseIntegerSequence(
-		                               getSessionState("rightWeights"))[0..2]);
+		weights = parseIntegerSequence(getSessionState("rightWeights"));
+		weights.length = 2;  // FIXME: use defaults instead?
+		rightForm.setWeights(weights);
 
 
 		// **************** STATUS BAR ******************************

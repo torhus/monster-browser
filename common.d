@@ -20,6 +20,7 @@ private {
 	import dwt.dwthelper.Runnable;
 	import dwt.widgets.Display;
 	import dwt.widgets.MessageBox;
+	import dwt.widgets.Table;
 
 	import main;
 }
@@ -452,4 +453,18 @@ char[] toCsv(T)(T[] a)
 	char[] s = Format("{}", a);
 	assert(s[0..2] == "[ " && s[$-2..$] == " ]");
 	return s[2..$-2];
+}
+
+
+/**
+ * Get the widths of all columns in a table.
+ */
+int[] getColumnWidths(Table table)
+{
+	int[] r;
+
+	foreach (col; table.getColumns())
+		r ~= col.getWidth();
+
+	return r;
 }
