@@ -90,8 +90,10 @@ private {
 	                     ];
 
 	Setting[] defaultSessionState = [{"filterState", "0"},
-	                                 {"serverSortOrder", "0"},
 	                                 {"playerSortOrder", "0"},
+	                                 {"serverSortOrder", "0"},
+	                                 {"middleWeights", "16,5"},
+	                                 {"rightWeights", "1,1"},
                                     ];
 }
 
@@ -256,6 +258,12 @@ private void gatherSessionState()
 	if (playerTable.sortReversed)
 		value ~= "r";
 	sec.setValue("playerSortOrder", value);
+
+	// middle SashForm weights
+	sec.setValue("middleWeights", toCsv(middleForm.getWeights()));
+
+	// right SashForm weights
+	sec.setValue("rightWeights", toCsv(rightForm.getWeights()));
 }
 
 
