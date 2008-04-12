@@ -36,14 +36,17 @@ class PlayerTable
 		table_.setHeaderVisible(true);
 		table_.setLinesVisible(true);
 
-		foreach (header; playerHeaders) {
+		int[] widths = parseIntegerSequence(
+		                                getSessionState("playerColumnWidths"));
+		// FIXME use defaults if wrong length?
+		widths.length = playerHeaders.length;
+
+		// add columns
+		foreach (int i, header; playerHeaders) {
 			TableColumn column = new TableColumn(table_, DWT.NONE);
 			column.setText(header);
+			column.setWidth(widths[i]);
 		}
-
-		table_.getColumn(0).setWidth(100);
-		table_.getColumn(1).setWidth(40);
-		table_.getColumn(2).setWidth(40);
 
 		table_.addListener(DWT.SetData, new class Listener {
 			public void handleEvent(Event e)
