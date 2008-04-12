@@ -15,6 +15,7 @@ private {
 	import common;
 	import serverlist;
 	import main;
+	import settings;
 }
 
 class CvarTable
@@ -34,9 +35,14 @@ class CvarTable
 		column = new TableColumn(table_, DWT.NONE);
 		column.setText("Value");
 
+		int[] widths = parseIntegerSequence(
+		                                  getSessionState("cvarColumnWidths"));
+		// FIXME use defaults if wrong length?
+		widths.length = 2;
 
-		table_.getColumn(0).setWidth(90);
-		table_.getColumn(1).setWidth(90);
+		// add columns
+		table_.getColumn(0).setWidth(widths[0]);
+		table_.getColumn(1).setWidth(widths[1]);
 	}
 
 	Table getTable() { return table_; }
