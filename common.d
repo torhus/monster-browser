@@ -38,12 +38,16 @@ const char[] APPNAME = "Monster Browser";
 
 const char[] SVN = import("svnversion.txt");
 
+const char[] FINAL_VERSION = "0.4";
+
 debug {
 	const char[] VERSION = "- " ~ __DATE__ ~ " (svnversion " ~ SVN ~ ") *DEBUG BUILD*";
 }
 else {
-	const char[] VERSION = "- " ~ __DATE__ ~  " (svnversion " ~ SVN ~ ")";
-	//const char[] VERSION = "0.3e";
+	version (Final)
+		const char[] VERSION = FINAL_VERSION;
+	else
+		const char[] VERSION = "- " ~ __DATE__ ~  " (svnversion " ~ SVN ~ ")";
 }
 
 template Tuple(E...) { alias E Tuple; }
