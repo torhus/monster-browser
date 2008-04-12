@@ -49,6 +49,7 @@ PlayerTable playerTable;
 CvarTable cvarTable;
 StatusBar statusBar;
 FilterBar filterBar;
+SashForm middleForm, rightForm;
 Shell mainWindow;
 Thread serverThread;
 ThreadDispatcher threadDispatcher;
@@ -120,7 +121,7 @@ void main(char[][] args) {
 
 
 		// ************** SERVER LIST, PLAYER LIST, CVARS LIST ***************
-		SashForm middleForm = new SashForm(mainWindow, DWT.HORIZONTAL);
+		middleForm = new SashForm(mainWindow, DWT.HORIZONTAL);
 		gridData = new GridData(GridData.FILL_BOTH);
 		middleForm.setLayoutData(gridData);
 
@@ -135,15 +136,16 @@ void main(char[][] args) {
 		setActiveServerList(activeMod.name);
 
 		// parent for player and cvar tables
-		SashForm rightForm = new SashForm(middleForm, DWT.VERTICAL);
+		rightForm = new SashForm(middleForm, DWT.VERTICAL);
 		gridData = new GridData(GridData.FILL_BOTH);
 		rightForm.setLayoutData(gridData);
 
 		FillLayout rightLayout = new FillLayout(DWT.VERTICAL);
 		rightForm.setLayout(rightLayout);
 
-		// distribution of space between the tables
-		middleForm.setWeights([16, 5]);
+		// FIXME: this will crash if the array is too short or long
+		middleForm.setWeights(parseIntegerSequence(
+		                              getSessionState("middleWeights"))[0..2]);
 
 		// player list
 		playerTable = new PlayerTable(rightForm);
@@ -154,6 +156,11 @@ void main(char[][] args) {
 		cvarTable = new CvarTable(rightForm);
 		gridData = new GridData();
 		cvarTable.getTable().setLayoutData(gridData);
+
+		// FIXME: this will crash if the array is too short or long
+		rightForm.setWeights(parseIntegerSequence(
+		                               getSessionState("rightWeights"))[0..2]);
+
 
 		// **************** STATUS BAR ******************************
 		Composite statusComposite = new Composite(mainWindow, DWT.NONE);

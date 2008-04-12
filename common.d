@@ -410,3 +410,40 @@ void mergeSort(T)(T[] a, bool delegate(T a, T b) lessOrEqual=null)
 		delete b;
 	}
 }
+
+
+/**
+ * Parse a sequence of comma-separated integers, skipping all whitespace.
+ */
+int[] parseIntegerSequence(in char[] seq)
+{
+	uint ate;
+	int[] r = null;
+
+	while (seq.length) {
+		seq = triml(seq);
+		int val = Integer.convert(seq, 10, &ate);
+		if (ate)
+			r ~= val;
+		else
+			break;
+
+		seq = seq[ate..$];
+		seq = triml(seq);
+		if (seq.length && seq[0] == ',')
+			seq = seq[1..$];
+	}
+
+	return r;
+}
+
+
+/**
+ * Turn an array into a string of a series of comma-separated values (1,2,3).
+ */
+char[] toCsv(T)(T[] a)
+{
+	char[] s = Format("{}", a);
+	assert(s[0..2] == "[ " && s[$-2..$] == " ]");
+	return s[2..$-2];
+}
