@@ -43,6 +43,17 @@ There's also a DWT news group on news.digitalmars.com, and a #dwt channel on
 freenode (IRC).
 
 
+Version IDs
+-----------
+allservers - for benchmarking, often in combination with the 'fromfile' command
+             line argument.
+Final      - Use the real version number for release builds
+             (common.FINAL_VERSION).
+NO_STDOUT  - Currently broken, used to cause stdout to be redirected to the
+             file STDOUT.TXT.
+build      - Used by the bud and dsss/rebuild build tools.
+
+
 -----------
 Two external programs are used, the first one is optional and not included in
 the download:
