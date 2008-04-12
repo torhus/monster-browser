@@ -414,6 +414,8 @@ void mergeSort(T)(T[] a, bool delegate(T a, T b) lessOrEqual=null)
 
 /**
  * Parse a sequence of comma-separated integers, skipping all whitespace.
+ *
+ * Signs (+ or -) are not allowed.
  */
 int[] parseIntegerSequence(in char[] seq)
 {
