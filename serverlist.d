@@ -590,7 +590,7 @@ bool setActiveServerList(char[] modName)
 		savedFilters = activeServerList.filters_;
 	}
 	else {
-		savedFilters = cast(Filter)Integer.parse(
+		savedFilters = cast(Filter)Integer.convert(
 		                                       getSessionState("filterState"));
 	}
 
