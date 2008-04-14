@@ -5,7 +5,7 @@ module launch;
 private {
 	import tango.io.FilePath;
 	import tango.stdc.stringz;
-	import tango.text.convert.Integer;
+	import Integer = tango.text.convert.Integer;
 
 	version (Tango)
 		import dwt.DWT;
@@ -32,7 +32,7 @@ void joinServer(ServerData *sd)
 {
 	char[] argv;
 	char[] path = activeMod.exePath;
-	char[] dir = FilePath(path).path();
+	char[] dir = FilePath(path).path;
 	bool launch = true;
 	bool showDialog = false;
 	char[] msg;
@@ -46,7 +46,8 @@ void joinServer(ServerData *sd)
 		showDialog = true;
 		msg = "You need a password to join this server.";
 	}
-	else if (toInt(sd.cvars[findString(sd.cvars, "sv_privateClients", 0)][1]) > 0) {
+	else if (Integer.convert(
+	          sd.cvars[findString(sd.cvars, "sv_privateClients", 0)][1]) > 0) {
 		showDialog = true;
 		msg = "This server has got private slots, so type your\n"
 		      "password if you have one.  Otherwise just click OK.";
@@ -84,8 +85,8 @@ void joinServer(ServerData *sd)
 			                     toStringz(dir),&startup,info);
 			if (!r) {
 				int e = GetLastError();
-				db("CreatProcessA returned " ~ toString(r));
-				db("GetLastError returned " ~ toString(e));
+				db("CreatProcessA returned " ~ Integer.toString(r));
+				db("GetLastError returned " ~ Integer.toString(e));
 			}
 			else if (getSetting("minimizeOnGameLaunch") == "true") {
 				mainWindow.setMinimized(true);
