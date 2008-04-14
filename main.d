@@ -95,8 +95,8 @@ void main(char[][] args) {
 		char[] size = getSetting("windowSize");
 		int pos = locate(size, 'x');
 		// FIXME: handle the case of 'x' not being found
-		mainWindow.setSize(Integer.toInt(size[0..pos]),
-		                   Integer.toInt(size[pos+1..length]));
+		mainWindow.setSize(Integer.convert(size[0..pos]),
+		                   Integer.convert(size[pos+1..length]));
 		if (getSetting("windowMaximized") == "true") {
 			mainWindow.setMaximized(true);
 		}
