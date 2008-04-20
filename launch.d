@@ -2,31 +2,25 @@ module launch;
 
 /* Launch the game, etc. */
 
-private {
-	import tango.io.FilePath;
-	import tango.stdc.stringz;
-	import Integer = tango.text.convert.Integer;
+import tango.io.FilePath;
+import tango.stdc.stringz;
+version (Windows)
+	import tango.sys.win32.UserGdi;
+import Integer = tango.text.convert.Integer;
 
-	version (Tango)
-		import dwt.DWT;
-	else
-		import dwt.all;
+import dwt.DWT;
 
-	version (Windows)
-		import tango.sys.win32.UserGdi;
+import colorednames;
+import common;
+import dialogs;
+import main;
+import serverlist;
+import settings;
 
-	import main;
-	import colorednames;
-	import common;
-	import settings;
-	import dialogs;
-	import serverlist;
-}
 
-version (Posix) { }
-else {
+version (Windows)
 	private PROCESS_INFORMATION *info = null;
-}
+
 
 void joinServer(ServerData *sd)
 {

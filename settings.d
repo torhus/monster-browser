@@ -2,17 +2,15 @@ module settings;
 
 /* Load and store settings, and saved passwords. */
 
-private {
-	import tango.io.FilePath;
-	import tango.text.Util;
-	import Integer = tango.text.convert.Integer;
-	import tango.stdc.stdio;
+import tango.io.FilePath;
+import tango.text.Util;
+import Integer = tango.text.convert.Integer;
+import tango.stdc.stdio;
 
-	import ini;
-	import common;
-	import main;
-	import serverlist;
-}
+import common;
+import ini;
+import main;
+import serverlist;
 
 
 struct Mod

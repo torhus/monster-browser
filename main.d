@@ -1,47 +1,47 @@
 module main;
 
-private {
-	import tango.core.Thread;
-	debug import tango.io.Console;
-	import tango.io.FilePath;
-	import tango.text.Util;
-	import Integer = tango.text.convert.Integer;
+import tango.core.Thread;
+debug import tango.io.Console;
+import tango.io.FilePath;
+import tango.text.Util;
+import Integer = tango.text.convert.Integer;
 
-	import dwt.DWT;
-	import dwt.custom.SashForm;
-	import dwt.events.KeyAdapter;
-	import dwt.events.KeyEvent;
-	import dwt.events.ShellAdapter;
-	import dwt.events.ShellEvent;
-	import dwt.events.SelectionAdapter;
-	import dwt.events.SelectionEvent;
-	import dwt.graphics.Point;
-	import dwt.layout.FillLayout;
-	import dwt.layout.GridData;
-	import dwt.layout.GridLayout;
-	import dwt.layout.RowLayout;
-	import dwt.widgets.Button;
-	import dwt.widgets.Combo;
-	import dwt.widgets.Composite;
-	import dwt.widgets.Display;
-	import dwt.widgets.Label;
-	import dwt.widgets.MessageBox;
-	import dwt.widgets.Shell;
-	import dwt.widgets.ToolBar;
-	import dwt.widgets.ToolItem;
+import dwt.DWT;
+import dwt.custom.SashForm;
+import dwt.events.KeyAdapter;
+import dwt.events.KeyEvent;
+import dwt.events.ShellAdapter;
+import dwt.events.ShellEvent;
+import dwt.events.SelectionAdapter;
+import dwt.events.SelectionEvent;
+import dwt.graphics.Point;
+import dwt.layout.FillLayout;
+import dwt.layout.GridData;
+import dwt.layout.GridLayout;
+import dwt.layout.RowLayout;
+import dwt.widgets.Button;
+import dwt.widgets.Combo;
+import dwt.widgets.Composite;
+import dwt.widgets.Display;
+import dwt.widgets.Label;
+import dwt.widgets.MessageBox;
+import dwt.widgets.Shell;
+import dwt.widgets.ToolBar;
+import dwt.widgets.ToolItem;
 
-	import runtools;
-	import qstat;
-	import serveractions;
-	import serverlist;
-	version (Windows) import link;
-	import servertable;
-	import playertable;
-	import cvartable;
-	import common;
-	import settings;
-	import dialogs;
-}
+import common;
+import cvartable;
+import dialogs;
+import runtools;
+version (Windows)
+	import link;
+import playertable;
+import qstat;
+import serveractions;
+import serverlist;
+import servertable;
+import settings;
+
 
 Display display;
 ServerTable serverTable;

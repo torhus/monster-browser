@@ -1,22 +1,16 @@
 module cvartable;
 
-private {
-	version (Tango) {
-		import dwt.DWT;
-		import dwt.widgets.Composite;
-		import dwt.widgets.Table;
-		import dwt.widgets.TableColumn;
-		import dwt.widgets.TableItem;
-	}
-	else {
-    	import dwt.all;
-    }
+import dwt.DWT;
+import dwt.widgets.Composite;
+import dwt.widgets.Table;
+import dwt.widgets.TableColumn;
+import dwt.widgets.TableItem;
 
-	import common;
-	import serverlist;
-	import main;
-	import settings;
-}
+import common;
+import main;
+import serverlist;
+import settings;
+
 
 class CvarTable
 {

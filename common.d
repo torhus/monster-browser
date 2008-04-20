@@ -1,29 +1,27 @@
 module common;
 
-private {
-	debug import tango.io.Console;
-	import tango.io.FileConduit;
-	import tango.io.FilePath;
-	import tango.stdc.ctype : isdigit;  // temporary, for isValidIpAddress
-	debug import tango.stdc.stdio : fgets, stdin;
-	import tango.stdc.stdlib : qsort;
-	import tango.stdc.string;
-	import tango.stdc.time;
-	import tango.text.Ascii;
-	import tango.text.Util;
-	import tango.text.convert.Format;
-	import Integer = tango.text.convert.Integer;
-	import tango.time.Clock;
-	import tango.time.Time;
+debug import tango.io.Console;
+import tango.io.FileConduit;
+import tango.io.FilePath;
+import tango.stdc.ctype : isdigit;  // temporary, for isValidIpAddress
+debug import tango.stdc.stdio : fgets, stdin;
+import tango.stdc.stdlib : qsort;
+import tango.stdc.string;
+import tango.stdc.time;
+import tango.text.Ascii;
+import tango.text.Util;
+import tango.text.convert.Format;
+import Integer = tango.text.convert.Integer;
+import tango.time.Clock;
+import tango.time.Time;
 
-	import dwt.DWT;
-	import dwt.dwthelper.Runnable;
-	import dwt.widgets.Display;
-	import dwt.widgets.MessageBox;
-	import dwt.widgets.Table;
+import dwt.DWT;
+import dwt.dwthelper.Runnable;
+import dwt.widgets.Display;
+import dwt.widgets.MessageBox;
+import dwt.widgets.Table;
 
-	import main;
-}
+import main;
 
 
 /* SETTINGS */

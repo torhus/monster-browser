@@ -1,14 +1,7 @@
 module link;
 
-// used by the Build tool
+// used by the Bud and Rebuild tools
 version(build) {
-	/*debug {
-		pragma(link, "dwtd.lib");
-	}
-	else {
-		pragma(link, "dwt.lib");
-	}*/
-
 	pragma(link, "advapi32.lib");
 	pragma(link, "comctl32.lib");
 	pragma(link, "comdlg32.lib");
