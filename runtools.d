@@ -202,7 +202,7 @@ void browserRefreshList(void delegate(Object) callback,
 					auto serverFile = FilePath(activeMod.serverFile);
 					if (serverFile.exists())
 						serverFile.remove();
-					FilePath("servers.tmp").rename(serverFile);
+					FilePath(tmpfile).rename(serverFile);
 				}
 				catch (IOException e) {
 					warning("Unable to save the server list to disk.");
@@ -210,7 +210,7 @@ void browserRefreshList(void delegate(Object) callback,
 			}
 			else {
 				try {
-					FilePath("servers.tmp").remove();
+					FilePath(tmpfile).remove();
 				}
 				catch (IOException e) {
 					warning(e.toString());
