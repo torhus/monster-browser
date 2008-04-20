@@ -1,24 +1,23 @@
 module servertable;
 
-private {
-	import dwt.DWT;
-	import dwt.events.SelectionAdapter;
-	import dwt.events.SelectionEvent;
-	import dwt.graphics.TextLayout;
-	import dwt.widgets.Composite;
-	import dwt.widgets.Event;
-	import dwt.widgets.Listener;
-	import dwt.widgets.Table;
-	import dwt.widgets.TableColumn;
-	import dwt.widgets.TableItem;
+import dwt.DWT;
+import dwt.events.SelectionAdapter;
+import dwt.events.SelectionEvent;
+import dwt.graphics.TextLayout;
+import dwt.widgets.Composite;
+import dwt.widgets.Event;
+import dwt.widgets.Listener;
+import dwt.widgets.Table;
+import dwt.widgets.TableColumn;
+import dwt.widgets.TableItem;
 
-	import colorednames;
-	import serverlist;
-	import settings;
-	import launch;
-	import main;
-	import common;
-}
+import colorednames;
+import common;
+import launch;
+import main;
+import serverlist;
+import settings;
+
 
 // should correspond to serverlist.ServerColumn
 char[][] serverHeaders = ["Name", "PW", "Ping", "Players", "Game", "Map", "IP"];

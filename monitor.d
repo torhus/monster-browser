@@ -1,15 +1,14 @@
 module monitor;
 
-private {
-	//import std.date;
+//import std.date;
 
-	import tango.core.Thread;
+import tango.core.Thread;
 
-	import common;
-	import dialogs;
-	import main;
-	import serveractions;
-}
+import common;
+import dialogs;
+import main;
+import serveractions;
+
 
 private Shell shell;
 

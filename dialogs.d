@@ -2,37 +2,35 @@ module dialogs;
 
 /* Dialog boxes */
 
-private {
-	import tango.io.File;
-	import tango.text.Util;
-	import tango.sys.win32.Types : SW_SHOW;
-	import tango.sys.win32.UserGdi : ShellExecuteA;
+import tango.io.File;
+import tango.text.Util;
+import tango.sys.win32.Types : SW_SHOW;
+import tango.sys.win32.UserGdi : ShellExecuteA;
 
-	import dwt.DWT;
-	import dwt.events.SelectionAdapter;
-	import dwt.events.SelectionEvent;
-	import dwt.graphics.Point;
-	import dwt.graphics.Rectangle;
-	import dwt.layout.GridData;
-	import dwt.layout.GridLayout;
-	import dwt.layout.RowData;
-	import dwt.layout.RowLayout;
-	import dwt.widgets.Button;
-	import dwt.widgets.Composite;
-	import dwt.widgets.Control;
-	import dwt.widgets.Event;
-	import dwt.widgets.Group;
-	import dwt.widgets.Label;
-	import dwt.widgets.Listener;
-	import dwt.widgets.Shell;
-	import dwt.widgets.Text;
+import dwt.DWT;
+import dwt.events.SelectionAdapter;
+import dwt.events.SelectionEvent;
+import dwt.graphics.Point;
+import dwt.graphics.Rectangle;
+import dwt.layout.GridData;
+import dwt.layout.GridLayout;
+import dwt.layout.RowData;
+import dwt.layout.RowLayout;
+import dwt.widgets.Button;
+import dwt.widgets.Composite;
+import dwt.widgets.Control;
+import dwt.widgets.Event;
+import dwt.widgets.Group;
+import dwt.widgets.Label;
+import dwt.widgets.Listener;
+import dwt.widgets.Shell;
+import dwt.widgets.Text;
 
-	import common;
-	import main;
-	import serveractions;
-	import serverlist;
-	import settings;
-}
+import common;
+import main;
+import serveractions;
+import serverlist;
+import settings;
 
 
 class MonitorNotify {

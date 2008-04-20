@@ -1,24 +1,21 @@
 module playertable;
 
-private {
-	version (Tango) {
-		import dwt.DWT;
-		import dwt.graphics.TextLayout;
-		import dwt.widgets.Composite;
-		import dwt.widgets.Event;
-		import dwt.widgets.Listener;
-		import dwt.widgets.Table;
-		import dwt.widgets.TableColumn;
-		import dwt.widgets.TableItem;
-	}
-	else import dwt.all;
 
-	import colorednames;
-	import common;
-	import serverlist;
-	import main;
-	import settings;
-}
+import dwt.DWT;
+import dwt.graphics.TextLayout;
+import dwt.widgets.Composite;
+import dwt.widgets.Event;
+import dwt.widgets.Listener;
+import dwt.widgets.Table;
+import dwt.widgets.TableColumn;
+import dwt.widgets.TableItem;
+
+import colorednames;
+import common;
+import main;
+import serverlist;
+import settings;
+
 
 // should correspond to serverlist.PlayerColumn
 char[][] playerHeaders = ["Name", "Score", "Ping"];

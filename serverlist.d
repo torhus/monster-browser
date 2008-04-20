@@ -1,23 +1,21 @@
 module serverlist;
 
-private {
-	debug import tango.io.Stdout;
-	import tango.text.Ascii;
-	import tango.text.Util;
-	import Integer = tango.text.convert.Integer;
-	import tango.stdc.string : memmove;
+debug import tango.io.Stdout;
+import tango.text.Ascii;
+import tango.text.Util;
+import Integer = tango.text.convert.Integer;
+import tango.stdc.string : memmove;
 
-	import dwt.DWT;
-	import dwt.dwthelper.Runnable;
-	import dwt.graphics.TextLayout;
+import dwt.DWT;
+import dwt.dwthelper.Runnable;
+import dwt.graphics.TextLayout;
 
-	import common;
-	import main;
-	import servertable;
-	import settings;
-	import runtools;
-	import qstat;
-}
+import common;
+import main;
+import qstat;
+import runtools;
+import servertable;
+import settings;
 
 
 /// Bitflags.

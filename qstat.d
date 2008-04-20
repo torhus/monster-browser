@@ -2,29 +2,27 @@ module qstat;
 
 /* What's specific for qstat */
 
-private {
-	import tango.core.Exception;
-	import tango.io.FileConduit;
-	import tango.io.FilePath;
-	import tango.io.stream.BufferStream;
-	import tango.io.stream.TextFileStream;
-	import tango.text.Ascii;
-	import tango.text.Util;
-	import tango.text.stream.LineIterator;
-	import Float = tango.text.convert.Float;
-	import tango.text.convert.Integer;
+import tango.core.Exception;
+import tango.io.FileConduit;
+import tango.io.FilePath;
+import tango.io.stream.BufferStream;
+import tango.io.stream.TextFileStream;
+import tango.text.Ascii;
+import tango.text.Util;
+import Float = tango.text.convert.Float;
+import tango.text.convert.Integer;
+import tango.text.stream.LineIterator;
 
-	version (Tango)
-		import dwt.dwthelper.Runnable;
+import dwt.dwthelper.Runnable;
 
-	import colorednames;
-	import common;
-	import runtools;
-	import serverlist;
-	import servertable;
-	import main;
-	import settings;
-}
+import colorednames;
+import common;
+import runtools;
+import serverlist;
+import servertable;
+import main;
+import settings;
+
 
 const char[] FIELDSEP = "\x1e"; // \x1e = ascii record separator
 
