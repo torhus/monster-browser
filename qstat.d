@@ -3,10 +3,12 @@ module qstat;
 /* What's specific for qstat */
 
 import tango.core.Exception;
+import tango.io.File;
 import tango.io.FileConduit;
 import tango.io.FilePath;
 import tango.io.stream.BufferStream;
 import tango.io.stream.TextFileStream;
+import tango.stdc.ctype : isdigit;
 import tango.text.Ascii;
 import tango.text.Util;
 import Float = tango.text.convert.Float;
@@ -267,13 +269,26 @@ private void invalidInteger(in char[] serverName, in char[] badValue)
  *                qstat's raw output.
  *     writeTo  = File to write to. The format is one IP:PORT combo per line.
  *
+ * Returns: An associative array of strings containing the IP and port of
+ *          each server that was output to the file.  (All values are set to
+ *          true, treat it like a set.)
+ *
  * Throws: IOException.
  */
-void filterServerFile(char[] readFrom, char writeTo[])
+bool[char[]] filterServerFile(in char[] readFrom, in char writeTo[])
 {
 	scope infile = new TextFileInput(readFrom);
 	scope outfile = new BufferOutput(
 	                        new FileConduit(writeTo, FileConduit.WriteCreate));
+	bool[char[]] keptServers;
+
+	void outputServer(in char[] address)
+	{
+		outfile.write(address);
+		outfile.write(newline);
+		assert(address.length == 0 || isdigit(address[0]));
+		keptServers[address] = true;
+	}
 
 	while (infile.next()) {
 		char[] line = infile.get();
@@ -291,13 +306,11 @@ void filterServerFile(char[] readFrom, char writeTo[])
 				continue;  // server probably timed out
 
 			if (!MOD_ONLY) {
-				outfile.write(fields[1]);
-				outfile.write(newline);
+				outputServer(fields[1]);
 			}
 			else if (/*activeMod.name != "baseq3" &&*/
 			                        icompare(fields[8], activeMod.name) == 0) {
-				outfile.write(fields[1]);
-				outfile.write(newline);
+				outputServer(fields[1]);
 			}
 			else { // need to parse cvars to find out which mod this server runs
 				line = infile.next();
@@ -308,14 +321,12 @@ void filterServerFile(char[] readFrom, char writeTo[])
 					// end up including too many servers.
 					if (cvar[0] == "game" &&
 					                  icompare(cvar[1], activeMod.name) == 0) {
-						outfile.write(fields[1]);
-						outfile.write(newline);
+						outputServer(fields[1]);
 						break;
 					}
 					if (cvar[0] == "gamename" &&
 					                  icompare(cvar[1], activeMod.name) == 0) {
-						outfile.write(fields[1]);
-						outfile.write(newline);
+						outputServer(fields[1]);
 						break;
 					}
 				}
@@ -325,54 +336,6 @@ void filterServerFile(char[] readFrom, char writeTo[])
 
 	infile.close();
 	outfile.flush().close();
-}
 
-
-/**
- * Save the server list so that qstat can refresh servers
- *
- * Throws: IOException.
- */
-void saveRefreshList()
-{
-	if (FilePath(activeMod.serverFile).exists /* && exists(REFRESHFILE)*/) {
-		filterServerFile(activeMod.serverFile, REFRESHFILE);
-	}
-
-	/*foreach (address; getActiveServerList.extraServers) {
-		append(REFRESHFILE, address ~ newline);
-	}*/
-
-	/*scope BufferedFile f = new BufferedFile(runtools.REFRESHFILE, FileMode.OutNew);
-	scope(exit) f.close();
-
-	foreach (ServerData sd; getActiveServerList) {
-		f.writeLine(sd.server[ServerColumn.ADDRESS]);
-	}*/
-}
-
-
-/**
- * Count how many servers in the file qstat reads when it refreshes the
- * server list.
- *
- * Useful for getting the number of servers before qstat has started
- * to retrieve them.
- *
- * Throws: IOException.
- */
-int countServersInRefreshList()
-{
-	if (!FilePath(runtools.REFRESHFILE).exists)
-		return 0;
-
-	scope f = new TextFileInput(runtools.REFRESHFILE);
-	scope(exit) f.close();
-
-	int count = 0;
-	foreach (char[] line; f) {
-		count++;
-	}
-
-	return count;
+	return keptServers;
 }

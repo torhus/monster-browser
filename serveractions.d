@@ -245,13 +245,17 @@ void getNewList()
 /** Refreshes the list. */
 void refreshList()
 {
+	static uint total;
+	static char[] totalStr;
+
 	void f()
 	{
-		static char[] total;
+		static char[] statusMsg;
 
 		void status(Object int_count)
 		{
-			statusBar.setLeft("Refreshing " ~  total ~ " servers..." ~
+			assert(statusMsg !is null);
+			statusBar.setLeft(statusMsg ~
 			                  toString((cast(IntWrapper)int_count).value));
 		}
 
@@ -266,7 +270,7 @@ void refreshList()
 		}
 
 		try {
-			total = toString(countServersInRefreshList());
+			statusMsg = "Refreshing " ~  totalStr ~ " servers...";
 			browserRefreshList(&status);
 			version (Tango) {
 				volatile if (!runtools.abortParsing) {
@@ -288,11 +292,9 @@ void refreshList()
 
 	assert(serverThread is null || !serverThread.isRunning);
 
-	//if (!exists(REFRESHFILE)) {
-		qstat.saveRefreshList();
-	//}
-	statusBar.setLeft("Refreshing " ~
-	             toString(countServersInRefreshList()) ~ " servers...");
+	total = filterServerFile(activeMod.serverFile, REFRESHFILE).length;
+	totalStr = toString(total);
+	statusBar.setLeft("Refreshing " ~ totalStr ~ " servers...");
 	getActiveServerList.clear();
 	serverTable.refresh();
 
