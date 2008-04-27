@@ -24,6 +24,7 @@ import dwt.widgets.MessageBox;
 import dwt.widgets.Table;
 
 import main;
+import set;
 
 
 /* SETTINGS */
@@ -478,19 +479,18 @@ int[] getColumnWidths(Table table)
  * optional.  One address each line, invalid addresses and empty lines are
  * just skipped.
  *
- * Returns: An associative array of strings containing the IP and port of
- *          each server. (All values are set to true, treat it like a set.)
+ * Returns: A set of strings containing the IP and port of each server.
  *
  * Throws: IOException.
  */
-bool[char[]] readIpAddressFile(in char[] fileName)
+Set!(char[]) readIpAddressFile(in char[] fileName)
 {
-	bool[char[]] addresses;
+	Set!(char[]) addresses;
 	auto file = new TextFileInput(fileName);
 
 	foreach (char[] line; file) {
 		if (isValidIpAddress(line))
-			addresses[line] = true;
+			addresses.add(line);
 	}
 
 	file.close;
@@ -503,14 +503,14 @@ bool[char[]] readIpAddressFile(in char[] fileName)
  *
  * Returns: The number of servers that were written to the file.
  */
-uint appendServersToFile(in char[] fileName, in bool[char[]] extraServers,
-                         in bool[char[]] skipList)
+uint appendServersToFile(in char[] fileName, in Set!(char[]) extraServers,
+                         in Set!(char[]) skipList)
 {
 	scope output = new BufferOutput(
 	             new FileConduit(fileName, FileConduit.WriteAppending));
 	uint count = 0;
 
-	foreach (address, val; extraServers) {
+	foreach (address; extraServers) {
 		if (!(address in skipList)) {
 			output.write(address);
 			output.write(newline);
