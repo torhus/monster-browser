@@ -18,10 +18,11 @@ import dwt.dwthelper.Runnable;
 
 import colorednames;
 import common;
+import main;
 import runtools;
 import serverlist;
 import servertable;
-import main;
+import set;
 import settings;
 
 
@@ -268,25 +269,24 @@ private void invalidInteger(in char[] serverName, in char[] badValue)
  *                qstat's raw output.
  *     writeTo  = File to write to. The format is one IP:PORT combo per line.
  *
- * Returns: An associative array of strings containing the IP and port of
- *          each server that was output to the file.  (All values are set to
- *          true, treat it like a set.)
+ * Returns: A set of strings containing the IP and port of each server that was
+ *          output to the file.
  *
  * Throws: IOException.
  */
-bool[char[]] filterServerFile(in char[] readFrom, in char writeTo[])
+Set!(char[]) filterServerFile(in char[] readFrom, in char writeTo[])
 {
 	scope infile = new TextFileInput(readFrom);
 	scope outfile = new BufferOutput(
 	                        new FileConduit(writeTo, FileConduit.WriteCreate));
-	bool[char[]] keptServers;
+	Set!(char[]) keptServers;
 
 	void outputServer(in char[] address)
 	{
 		outfile.write(address);
 		outfile.write(newline);
 		assert(address.length == 0 || isdigit(address[0]));
-		keptServers[address] = true;
+		keptServers.add(address);
 	}
 
 	while (infile.next()) {

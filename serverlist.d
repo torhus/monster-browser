@@ -15,6 +15,7 @@ import common;
 import main;
 import runtools;
 import servertable;
+import set;
 import settings;
 
 
@@ -273,12 +274,12 @@ class ServerList
 	 */
 	void addExtraServer(in char[] address)
 	{
-		extraServers_[address] = true;
+		extraServers_.add(address);
 	}
 
 
 	/// Returns the list of extra servers.  Please don't change it.
-	bool[char[]] extraServers() { return extraServers_; }
+	Set!(char[]) extraServers() { return extraServers_; }
 
 
 	/**
@@ -334,7 +335,7 @@ class ServerList
 private:
 	ServerData[] list;
 	ServerData*[] filteredList;
-	bool[char[]] extraServers_;
+	Set!(char[]) extraServers_;
 
 	int sortColumn_ = ServerColumn.NAME;
 	int oldSortColumn_ = -1;
