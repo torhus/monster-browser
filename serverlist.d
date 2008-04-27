@@ -1,5 +1,6 @@
 module serverlist;
 
+debug import tango.io.FilePath;
 debug import tango.io.Stdout;
 import tango.text.Ascii;
 import tango.text.Util;
@@ -12,7 +13,6 @@ import dwt.graphics.TextLayout;
 
 import common;
 import main;
-import qstat;
 import runtools;
 import servertable;
 import settings;
@@ -273,14 +273,12 @@ class ServerList
 	 */
 	void addExtraServer(in char[] address)
 	{
-		// FIXME: avoid adding a server twice
-		extraServers_ ~= address;
+		extraServers_[address] = true;
 	}
 
 
 	/// Returns the list of extra servers.  Please don't change it.
-	// FIXME: This should probably return a const ref in D 2.0.
-	char[][] extraServers() { return extraServers_; }
+	bool[char[]] extraServers() { return extraServers_; }
 
 
 	/**
@@ -336,7 +334,7 @@ class ServerList
 private:
 	ServerData[] list;
 	ServerData*[] filteredList;
-	char[][] extraServers_;
+	bool[char[]] extraServers_;
 
 	int sortColumn_ = ServerColumn.NAME;
 	int oldSortColumn_ = -1;
@@ -569,7 +567,8 @@ private:
  * Sets the activeServerList global to refer to the ServerList object
  * for the mod given by modName.
  *
- * If there is no ServerList object for the given mod, one will be created.
+ * If there is no ServerList object for the given mod, one will be created,
+ * and the corresponding list of extra servers will be loaded from disk.
  *
  * Returns:  true if the mod already had a ServerList object, false if a new
  *           one had to be created.  Also returns false if the object exists,
@@ -600,6 +599,17 @@ bool setActiveServerList(char[] modName)
 		activeServerList = new ServerList;
 		serverLists[modName] = activeServerList;
 		thereAlready = false;
+
+		auto fp = FilePath(activeMod.extraServersFile);
+		try {
+			if (fp.exists) {
+				auto servers = readIpAddressFile(fp.toString());
+				activeServerList.extraServers_ = servers;
+			}
+		}
+		catch (IOException e) {
+			log("Error when reading \"" ~ fp.toString() ~ "\".");
+		}
 	}
 
 	activeServerList.filters_ = savedFilters;

@@ -3,6 +3,8 @@ module common;
 debug import tango.io.Console;
 import tango.io.FileConduit;
 import tango.io.FilePath;
+import tango.io.stream.BufferStream;
+import tango.io.stream.TextFileStream;
 import tango.stdc.ctype : isdigit;  // temporary, for isValidIpAddress
 debug import tango.stdc.stdio : fgets, stdin;
 import tango.stdc.stdlib : qsort;
@@ -465,4 +467,57 @@ int[] getColumnWidths(Table table)
 		r ~= col.getWidth();
 
 	return r;
+}
+
+
+
+/**
+ * Read a file containing a list of IP addresses.
+ *
+ * The format of the file is expected to be IP:PORT, where the port number is
+ * optional.  One address each line, invalid addresses and empty lines are
+ * just skipped.
+ *
+ * Returns: An associative array of strings containing the IP and port of
+ *          each server. (All values are set to true, treat it like a set.)
+ *
+ * Throws: IOException.
+ */
+bool[char[]] readIpAddressFile(in char[] fileName)
+{
+	bool[char[]] addresses;
+	auto file = new TextFileInput(fileName);
+
+	foreach (char[] line; file) {
+		if (isValidIpAddress(line))
+			addresses[line] = true;
+	}
+
+	file.close;
+	return addresses;
+}
+
+
+/**
+ * Append IP addresses to a file, skipping addresses in skipList.
+ *
+ * Returns: The number of servers that were written to the file.
+ */
+uint appendServersToFile(in char[] fileName, in bool[char[]] extraServers,
+                         in bool[char[]] skipList)
+{
+	scope output = new BufferOutput(
+	             new FileConduit(fileName, FileConduit.WriteAppending));
+	uint count = 0;
+
+	foreach (address, val; extraServers) {
+		if (!(address in skipList)) {
+			output.write(address);
+			output.write(newline);
+			count++;
+		}
+	}
+
+	output.flush.close;
+	return count;
 }

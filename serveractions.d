@@ -245,7 +245,6 @@ void getNewList()
 /** Refreshes the list. */
 void refreshList()
 {
-	static uint total;
 	static char[] totalStr;
 
 	void f()
@@ -292,8 +291,11 @@ void refreshList()
 
 	assert(serverThread is null || !serverThread.isRunning);
 
-	total = filterServerFile(activeMod.serverFile, REFRESHFILE).length;
-	totalStr = toString(total);
+	auto servers = filterServerFile(activeMod.serverFile, REFRESHFILE);
+	auto written = appendServersToFile(REFRESHFILE,
+	                                   getActiveServerList.extraServers,
+	                                   servers);
+	totalStr = toString(servers.length + written);
 	statusBar.setLeft("Refreshing " ~ totalStr ~ " servers...");
 	getActiveServerList.clear();
 	serverTable.refresh();
