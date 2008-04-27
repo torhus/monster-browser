@@ -1,6 +1,6 @@
 module serverlist;
 
-debug import tango.io.FilePath;
+import tango.io.FilePath;
 debug import tango.io.Stdout;
 import tango.text.Ascii;
 import tango.text.Util;
