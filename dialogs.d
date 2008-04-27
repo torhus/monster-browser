@@ -273,12 +273,15 @@ class SpecifyServerDialog {
 					}
 					else {
 						if (getActiveServerList.getIndex(address) == -1) {
+							auto list = getActiveServerList();
 							if (saveButton_.getSelection()) {
-								File(activeMod.extraServersFile)
+								if (!(address in list.extraServers)) {
+									// FIXME: error check here (FileException)
+									File(activeMod.extraServersFile)
 								                    .append(address ~ newline);
-								// FIXME: error check here (FileException)
+								}
 							}
-							getActiveServerList.addExtraServer(address);
+							list.addExtraServer(address);
 							queryAndAddServer(address);
 						}
 						else {

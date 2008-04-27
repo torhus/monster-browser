@@ -149,23 +149,6 @@ void browserLoadSavedList(void delegate(Object) callback)
 void browserRefreshList(void delegate(Object) callback,
                         bool extraServers=true, bool saveList=false)
 {
-	if (extraServers) {
-		scope output = new BufferOutput(
-		             new FileConduit(REFRESHFILE, FileConduit.WriteAppending));
-
-		foreach (address; getActiveServerList.extraServers) {
-			output.write(address);
-			output.write(newline);
-		}
-
-		auto extraFile = File(activeMod.extraServersFile);
-		if (extraFile.path.exists())
-			output.write(extraFile.read());
-
-		output.flush.close;
-	}
-
-	//log("browserRefreshList():");
 	proc = new Process();
 
 	version (Windows) { }

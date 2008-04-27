@@ -3,7 +3,6 @@ module qstat;
 /* What's specific for qstat */
 
 import tango.core.Exception;
-import tango.io.File;
 import tango.io.FileConduit;
 import tango.io.FilePath;
 import tango.io.stream.BufferStream;
