@@ -151,7 +151,7 @@ void log(char[] file, int line, char[] msg)
 /// ditto
 void log(char[] s)
 {
-	version(NO_STDOUT) {}
+	version(redirect) {}
 	else debug Cout("LOG: ")(s).newline;
 
 	logfile.write(s);

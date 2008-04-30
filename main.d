@@ -1,8 +1,9 @@
 module main;
 
 import tango.core.Thread;
-debug import tango.io.Console;
+import tango.io.Console;
 import tango.io.FilePath;
+import tango.io.stream.FileStream;
 import tango.text.Util;
 import Integer = tango.text.convert.Integer;
 
@@ -32,11 +33,11 @@ import dwt.widgets.ToolItem;
 import common;
 import cvartable;
 import dialogs;
-import runtools;
 version (Windows)
 	import link;
 import playertable;
 import qstat;
+import runtools;
 import serveractions;
 import serverlist;
 import servertable;
@@ -56,8 +57,11 @@ ThreadDispatcher threadDispatcher;
 
 
 void main(char[][] args) {
-	version (NO_STDOUT) {
-		freopen("STDOUT.TXT", "w", stdout);
+	version (redirect) {
+		Cerr.output = new FileOutput("DEBUG.OUT");
+		Cerr("Cerr is redirected to this file.").newline.flush;
+		Cout.output = Cerr.output;
+		Cout("Cout is redirected to this file.").newline.flush;
 	}
 
 	try	{
