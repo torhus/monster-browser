@@ -4,7 +4,7 @@ import tango.core.Exception : IOException, ProcessException;
 debug import tango.io.Console;
 import tango.io.File;
 import tango.io.FileConduit;
-import tango.io.FilePath;
+import Path = tango.io.Path;
 import tango.io.stream.BufferStream;
 import tango.io.stream.TextFileStream;
 import tango.stdc.ctype : isdigit;
@@ -126,7 +126,7 @@ void browserLoadSavedList(void delegate(Object) callback)
 	volatile abortParsing = false;
 
 	//log("browserLoadSavedList():");
-	if (!FilePath(activeMod.serverFile).exists) {
+	if (!Path.exists(activeMod.serverFile)) {
 		return;
 	}
 
@@ -177,10 +177,10 @@ void browserRefreshList(void delegate(Object) callback,
 		if (saveList) {
 			if (!abortParsing) {
 				try {
-					auto serverFile = FilePath(activeMod.serverFile);
-					if (serverFile.exists())
-						serverFile.remove();
-					FilePath(tmpfile).rename(serverFile);
+					auto serverFile = activeMod.serverFile;
+					if (Path.exists(serverFile))
+						Path.remove(serverFile);
+					Path.rename(tmpfile, serverFile);
 				}
 				catch (IOException e) {
 					warning("Unable to save the server list to disk.");
@@ -188,7 +188,7 @@ void browserRefreshList(void delegate(Object) callback,
 			}
 			else {
 				try {
-					FilePath(tmpfile).remove();
+					Path.remove(tmpfile);
 				}
 				catch (IOException e) {
 					warning(e.toString());

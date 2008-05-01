@@ -1,6 +1,6 @@
 module serverlist;
 
-import tango.io.FilePath;
+import Path = tango.io.Path;
 debug import tango.io.Stdout;
 import tango.text.Ascii;
 import tango.text.Util;
@@ -601,15 +601,15 @@ bool setActiveServerList(char[] modName)
 		serverLists[modName] = activeServerList;
 		thereAlready = false;
 
-		auto fp = FilePath(activeMod.extraServersFile);
+		auto file = activeMod.extraServersFile;
 		try {
-			if (fp.exists) {
-				auto servers = readIpAddressFile(fp.toString());
+			if (Path.exists(file)) {
+				auto servers = readIpAddressFile(file);
 				activeServerList.extraServers_ = servers;
 			}
 		}
 		catch (IOException e) {
-			log("Error when reading \"" ~ fp.toString() ~ "\".");
+			log("Error when reading \"" ~ file ~ "\".");
 		}
 	}
 
