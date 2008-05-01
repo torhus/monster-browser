@@ -3,7 +3,7 @@ module serveractions;
 import tango.core.Memory;
 import tango.core.Thread;
 import tango.io.File;
-import tango.io.FilePath;
+import Path = tango.io.Path;
 debug import tango.io.Stdout;
 import tango.text.convert.Integer;
 
@@ -37,7 +37,7 @@ void switchToMod(char[] name)
 		else {
 			if (common.useGslist)
 				getNewList();
-			else if (FilePath(activeMod.serverFile).exists)
+			else if (Path.exists(activeMod.serverFile))
 				refreshList();
 			else
 				getNewList();

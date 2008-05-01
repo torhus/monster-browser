@@ -4,7 +4,6 @@ module qstat;
 
 import tango.core.Exception;
 import tango.io.FileConduit;
-import tango.io.FilePath;
 import tango.io.stream.BufferStream;
 import tango.io.stream.TextFileStream;
 import tango.stdc.ctype : isdigit;

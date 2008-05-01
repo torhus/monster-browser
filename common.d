@@ -2,7 +2,7 @@ module common;
 
 debug import tango.io.Console;
 import tango.io.FileConduit;
-import tango.io.FilePath;
+import Path = tango.io.Path;
 import tango.io.stream.BufferStream;
 import tango.io.stream.TextFileStream;
 import tango.stdc.ctype : isdigit;  // temporary, for isValidIpAddress
@@ -73,12 +73,11 @@ static this()
 	const char[] sep = "-------------------------------------------------------------";
 	FileConduit.Style mode;
 
-	with (FilePath(LOGFILE)) {
-		if (exists && fileSize < MAX_LOG_SIZE)
-			mode = FileConduit.WriteExisting;
-		else
-			mode = FileConduit.WriteCreate;
-	}
+	if (Path.exists(LOGFILE) && Path.fileSize(LOGFILE) < MAX_LOG_SIZE)
+		mode = FileConduit.WriteExisting;
+	else
+		mode = FileConduit.WriteCreate;
+
 	logfile = new FileConduit(LOGFILE, mode);
 	logfile.seek(0, FileConduit.Anchor.End);
 	auto t = time(null);
