@@ -57,9 +57,7 @@ int browserGetNewList()
 	}
 
 	proc = new Process();
-
-	version (Windows) { }
-	else scope (exit) if (proc) proc.wait();
+	//scope (exit) if (proc) proc.wait();
 
 	try {
 		log("Executing '" ~ cmdLine ~ "'.");
@@ -150,9 +148,7 @@ void browserRefreshList(void delegate(Object) callback,
                         bool extraServers=true, bool saveList=false)
 {
 	proc = new Process();
-
-	version (Windows) { }
-	else scope (exit) if (proc) proc.wait();
+	scope (exit) if (proc) proc.wait();
 
 	try {
 		char[] cmdLine = "qstat -f " ~ REFRESHFILE ~ " -raw,game " ~ FIELDSEP ~
