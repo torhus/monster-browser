@@ -273,15 +273,25 @@ class StatusBar
 		}
 	}
 
-	void setDefaultStatus(size_t totalServers, size_t shownServers)
+	void setDefaultStatus(uint totalServers, uint shownServers,
+	                      uint noReply=0)
 	{
+		char[] msg;
+		char[] total = Integer.toString(totalServers);
+
 		if (shownServers != totalServers) {
-			setLeft("Showing " ~ Integer.toString(shownServers) ~ " of " ~
-			        Integer.toString(totalServers) ~ " servers");
+			msg = "Showing " ~ Integer.toString(shownServers) ~ " of " ~
+			                                                total ~ " servers";
 		}
 		else {
-			setLeft("Showing " ~ Integer.toString(totalServers) ~ " servers");
+			msg = "Showing " ~ total ~ " servers";
 		}
+		if (noReply > 0) {
+			char[] n = Integer.toString(noReply);
+			msg ~= " (" ~ n ~ " did not reply)";
+		}
+
+		setLeft(msg);
 	}
 
 private:

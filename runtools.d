@@ -22,9 +22,6 @@ import servertable;
 import settings;
 
 
-// workaround for process.d bug
-extern(C) extern char **_environ;
-
 Process proc;
 
 // True if parsing of the server list is to be aborted.  Set to true before
