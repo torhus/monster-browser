@@ -245,7 +245,7 @@ void getNewList()
 /** Refreshes the list. */
 void refreshList()
 {
-	static char[] totalStr;
+	static uint total;
 
 	void f()
 	{
@@ -261,7 +261,7 @@ void refreshList()
 		void done(Object o)
 		{
 			if (getActiveServerList.length() > 0) {
-				serverTable.reset();
+				serverTable.reset(null, total-getActiveServerList.length);
 			}
 			else {
 				statusBar.setLeft("Nothing to refresh");
@@ -269,7 +269,7 @@ void refreshList()
 		}
 
 		try {
-			statusMsg = "Refreshing " ~  totalStr ~ " servers...";
+			statusMsg = "Refreshing " ~  toString(total) ~ " servers...";
 			browserRefreshList(&status);
 			version (Tango) {
 				volatile if (!runtools.abortParsing) {
@@ -295,8 +295,8 @@ void refreshList()
 	auto written = appendServersToFile(REFRESHFILE,
 	                                   getActiveServerList.extraServers,
 	                                   servers);
-	totalStr = toString(servers.length + written);
-	statusBar.setLeft("Refreshing " ~ totalStr ~ " servers...");
+	total = servers.length + written;
+	statusBar.setLeft("Refreshing " ~ toString(total) ~ " servers...");
 	getActiveServerList.clear();
 	serverTable.refresh();
 

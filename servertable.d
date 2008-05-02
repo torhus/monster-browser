@@ -233,10 +233,12 @@ class ServerTable
 	 * 3. Optionally sets the selection to the server specified by index.
 	 *
 	 * Params:
-	 *     index = An IntWrapper object.  If not null, the server with the given
-	 *             index is selected.
+	 *     index   = An IntWrapper object.  If not null, the server with the
+	 *               given index is selected.
+	 *     noReply = If > 0, display in the status bar how many servers didn't
+	 *               reply.
 	 */
-	void reset(Object index = null)
+	void reset(Object index=null, uint noReply=0)
 	{
 		if(table_.isDisposed())
 			return;
@@ -244,7 +246,8 @@ class ServerTable
 		refresh();
 		volatile if (!runtools.abortParsing && getActiveServerList.complete) {
 			statusBar.setDefaultStatus(getActiveServerList.length,
-			                           getActiveServerList.filteredLength);
+			                           getActiveServerList.filteredLength,
+			                           noReply);
 		}
 
 		int i;
