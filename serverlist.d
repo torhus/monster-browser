@@ -2,6 +2,7 @@ module serverlist;
 
 import Path = tango.io.Path;
 debug import tango.io.Stdout;
+import tango.io.stream.TextFileStream;
 import tango.text.Ascii;
 import tango.text.Util;
 import Integer = tango.text.convert.Integer;
@@ -278,7 +279,7 @@ class ServerList
 	}
 
 
-	/// Returns the list of extra servers.  Please don't change it.
+	/// Returns the list of extra servers.
 	Set!(char[]) extraServers() { return extraServers_; }
 
 
@@ -604,7 +605,9 @@ bool setActiveServerList(char[] modName)
 		auto file = activeMod.extraServersFile;
 		try {
 			if (Path.exists(file)) {
-				auto servers = readIpAddressFile(file);
+				auto input = new TextFileInput(file);
+				auto servers = collectIpAddresses(input);
+				input.close;
 				activeServerList.extraServers_ = servers;
 			}
 		}
