@@ -139,7 +139,7 @@ void browserLoadSavedList(void delegate(Object) callback)
 	}
 }
 
-
+// FIXME: extraServers not used anymore, remove it
 void browserRefreshList(void delegate(Object) callback,
                         bool extraServers=true, bool saveList=false)
 {

@@ -18,10 +18,8 @@
 
 - Don't select (mark) a server twice (Specify server).
 
-- Don't add servers already there, browserRefreshList() when extraServers is
-  true.
-
-- Make master.tremulous.net work.
+- Make master.tremulous.net work.  Tremulous support seems to have been added
+  in qstat 2.11.
 
 - Allow for other q3 protocol versions than 68, maybe settable in mods.ini?
   Is it better to default to no protocol filtering?
