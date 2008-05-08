@@ -14,6 +14,7 @@ import tango.text.Ascii;
 import tango.text.Util;
 import tango.text.convert.Format;
 import Integer = tango.text.convert.Integer;
+import tango.text.stream.StreamIterator;
 import tango.time.Clock;
 import tango.time.Time;
 
@@ -472,27 +473,25 @@ int[] getColumnWidths(Table table)
 
 
 /**
- * Read a file containing a list of IP addresses.
+ * Collect IP addresses into a set.
  *
- * The format of the file is expected to be IP:PORT, where the port number is
- * optional.  One address each line, invalid addresses and empty lines are
- * just skipped.
+ * The format of each address is IP:PORT, where the port number is
+ * optional.  One address each token.  If a token contains anything but a
+ * valid IP address, the whole token is ignored.
  *
  * Returns: A set of strings containing the IP and port of each server.
  *
- * Throws: IOException.
+ * Throws: Whatever iter's opApply throws.
  */
-Set!(char[]) readIpAddressFile(in char[] fileName)
+Set!(char[]) collectIpAddresses(in StreamIterator!(char) iter)
 {
 	Set!(char[]) addresses;
-	auto file = new TextFileInput(fileName);
 
-	foreach (char[] line; file) {
+	foreach (char[] line; iter) {
 		if (isValidIpAddress(line))
 			addresses.add(line);
 	}
 
-	file.close;
 	return addresses;
 }
 
