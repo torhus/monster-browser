@@ -19,6 +19,7 @@ import main;
 import qstat;
 import serverlist;
 import servertable;
+import set;
 import settings;
 
 
@@ -28,29 +29,25 @@ Process proc;
 // calling a function to load/parse server lists.
 bool abortParsing = false;
 
-// Note: gslist only outputs to a file called quake3.gsl
-const char[] REFRESHFILE = "quake3.gsl";
+const char[] REFRESHFILE = "refreshlist.tmp";
 
 
-int browserGetNewList()
+Set!(char[]) browserGetNewList()
 {
 	char[] cmdLine;
-	int count = -1;
+	size_t count = -1;
+	Set!(char[]) addresses;
 
-	if (common.useGslist) {
-		cmdLine = "gslist -n quake3 -o 1";
-	}
-	else {
-		cmdLine = "qstat -q3m,68,outfile " ~ activeMod.masterServer ~ "," ~
-		          REFRESHFILE;
-	}
+	if (common.useGslist)
+		cmdLine = "gslist -n quake3 -o 5";
+	else
+		cmdLine = "qstat -q3m,68,outfile " ~ activeMod.masterServer ~ ",-";
 
 	version (linux)
 		cmdLine = "./" ~ cmdLine;
 
-	if (common.useGslist && MOD_ONLY && activeMod.name!= "baseq3") {
+	if (common.useGslist && MOD_ONLY && activeMod.name!= "baseq3")
 		cmdLine ~= " -f \"(gametype = \'" ~ activeMod.name ~ "\'\")";
-	}
 
 	proc = new Process();
 	//scope (exit) if (proc) proc.wait();
@@ -69,28 +66,9 @@ int browserGetNewList()
 	if (proc) {
 		try {
 			auto lineIter= new LineIterator!(char)(proc.stdout);
-			// Just swallow gslist or qstat's output, but get the server count.
-			// The IPs are written to a file.
-			if (common.useGslist) {
-				while (lineIter.next()) {
-					char[] s = lineIter.get();
-					if (s.length > 0 && isdigit(s[0])) {
-						count = Integer.convert(s);
-						log("gslist retrieving " ~ Integer.toString(count) ~
-						               " servers.");
-					}
-				}
-			}
-			else {
-				char[] s;
-				int r;
-
-				lineIter.next();
-				s = lineIter.next();
-				r = sscanf(toStringz(s), "%*s %*s %d", &count);
-				log("qstat retrieving " ~ Integer.toString(count) ~
-				                              " servers.");
-			}
+			size_t start = common.useGslist ? 0 : "q3s ".length;
+			addresses = collectIpAddresses(lineIter, start);
+			//proc.stdout.close();  FIXME: any point to this?
 		}
 		catch (IOException e) {
 			//logx(__FILE__, __LINE__, e);
@@ -98,22 +76,12 @@ int browserGetNewList()
 		catch(Exception e) {
 			logx(__FILE__, __LINE__,e);
 			error(__FILE__ ~ Integer.toString(__LINE__) ~
-			                 ": Unkown exception: " ~ e.classinfo.name ~ ": " ~
-			                 e.toString());
+			                 ": Unexpected exception: " ~ e.classinfo.name ~
+			                 ": " ~ e.toString());
 		}
 	}
 
-	debug if (count < 0) {
-		log(__FILE__, __LINE__, "browserGetNewList(): count < 0");
-		if (proc) {
-			log("    proc is not null.");
-		}
-		else {
-			log("    proc is null.");
-		}
-	}
-
-	return count;
+	return addresses;
 }
 
 
@@ -121,7 +89,6 @@ void browserLoadSavedList(void delegate(Object) callback)
 {
 	volatile abortParsing = false;
 
-	//log("browserLoadSavedList():");
 	if (!Path.exists(activeMod.serverFile)) {
 		return;
 	}
@@ -167,6 +134,7 @@ void browserRefreshList(void delegate(Object) callback,
 		char[] tmpfile = saveList ? "servers.tmp" : null;
 		scope iter = new LineIterator!(char)(proc.stdout);
 		qstat.parseOutput(callback, iter, tmpfile);
+		//proc.stdout.close();  FIXME: any point to this?
 
 		getActiveServerList.complete = !abortParsing;
 

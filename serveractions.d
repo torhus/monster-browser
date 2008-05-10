@@ -5,6 +5,7 @@ import tango.core.Thread;
 import tango.io.File;
 import Path = tango.io.Path;
 debug import tango.io.Stdout;
+import tango.text.convert.Format;
 import tango.text.convert.Integer;
 
 import dwt.dwthelper.Runnable;
@@ -179,7 +180,6 @@ void getNewList()
 {
 	void f()
 	{
-		int serverCount = -1;
 		static char[] total;
 
 		void status(Object int_count)
@@ -189,11 +189,30 @@ void getNewList()
 		}
 
 		try {
-			serverCount = browserGetNewList();
-			total = toString(serverCount);
-			debug Stdout("serverCount = ")(total).newline;
+			auto addresses = browserGetNewList();
+			log(Format("Got {} servers from {}.", addresses.length,
+			                                          activeMod.masterServer));
 
-			if (serverCount >= 0) {
+			auto extraServers = getActiveServerList().extraServers;
+			foreach (s; extraServers)
+					addresses.add(s);
+			log(Format("Added {} extra servers.", extraServers.length));
+
+			if (Path.exists(REFRESHFILE))
+				Path.remove(REFRESHFILE);
+			auto written = appendServersToFile(REFRESHFILE, addresses);
+			log(Format("Wrote {} addresses to {}.", written, REFRESHFILE));
+
+			total = toString(written);
+
+
+			if (addresses.length == 0) {
+				// FIXME: what to do when there are no servers?
+				display.asyncExec(new class Runnable {
+					void run() { serverTable.reset(); }
+				});
+			}
+			else {
 				version (Tango) {
 					display.asyncExec(new class Runnable {
 						void run() { statusBar.setLeft("Got "  ~
@@ -237,6 +256,7 @@ void getNewList()
 
 	GC.collect();
 	statusBar.setLeft("Getting new server list...");
+	log("Getting new server list for " ~ activeMod.name ~ "...");
 	serverThread = new Thread(&f);
 	serverThread.start();
 }
@@ -292,9 +312,15 @@ void refreshList()
 	assert(serverThread is null || !serverThread.isRunning);
 
 	auto servers = filterServerFile(activeMod.serverFile, REFRESHFILE);
-	auto written = appendServersToFile(REFRESHFILE,
-	                                   getActiveServerList.extraServers,
-	                                   servers);
+	log("Refreshing server list for " ~ activeMod.name ~ "...");
+	log(Format("Found {} servers in {} and wrote them to {}.", servers.length,
+	                                        activeMod.serverFile, REFRESHFILE));
+
+	auto extraServers = getActiveServerList.extraServers;
+	auto written = appendServersToFile(REFRESHFILE, extraServers, servers);
+	log(Format("Added {} extra servers, skipping {} duplicates.", written,
+	                                             extraServers.length-written));
+
 	total = servers.length + written;
 	statusBar.setLeft("Refreshing " ~ toString(total) ~ " servers...");
 	getActiveServerList.clear();

@@ -5,7 +5,7 @@ import tango.io.FileConduit;
 import Path = tango.io.Path;
 import tango.io.stream.BufferStream;
 import tango.io.stream.TextFileStream;
-import tango.stdc.ctype : isdigit;  // temporary, for isValidIpAddress
+import tango.stdc.ctype : isdigit;
 debug import tango.stdc.stdio : fgets, stdin;
 import tango.stdc.stdlib : qsort;
 import tango.stdc.string;
@@ -476,20 +476,24 @@ int[] getColumnWidths(Table table)
  * Collect IP addresses into a set.
  *
  * The format of each address is IP:PORT, where the port number is
- * optional.  One address each token.  If a token contains anything but a
- * valid IP address, the whole token is ignored.
+ * optional.  One address each token. If no valid address is found, the token
+ * is ignored.
  *
  * Returns: A set of strings containing the IP and port of each server.
  *
  * Throws: Whatever iter's opApply throws.
  */
-Set!(char[]) collectIpAddresses(in StreamIterator!(char) iter)
+Set!(char[]) collectIpAddresses(StreamIterator!(char) iter, uint start=0)
 {
 	Set!(char[]) addresses;
 
 	foreach (char[] line; iter) {
+		if (start >= line.length)
+			continue;
+
+		line = line[start..$];
 		if (isValidIpAddress(line))
-			addresses.add(line);
+			addresses.add(line.dup);
 	}
 
 	return addresses;
@@ -501,14 +505,14 @@ Set!(char[]) collectIpAddresses(in StreamIterator!(char) iter)
  *
  * Returns: The number of servers that were written to the file.
  */
-uint appendServersToFile(in char[] fileName, in Set!(char[]) extraServers,
-                         in Set!(char[]) skipList)
+uint appendServersToFile(in char[] fileName, in Set!(char[]) servers,
+                         in Set!(char[]) skipList=Set!(char[])())
 {
 	scope output = new BufferOutput(
 	             new FileConduit(fileName, FileConduit.WriteAppending));
 	uint count = 0;
 
-	foreach (address; extraServers) {
+	foreach (address; servers) {
 		if (!(address in skipList)) {
 			output.write(address);
 			output.write(newline);
