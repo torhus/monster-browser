@@ -56,7 +56,8 @@ Thread serverThread;
 ThreadDispatcher threadDispatcher;
 
 
-void main(char[][] args) {
+void main(char[][] args)
+{
 	version (redirect) {
 		Cerr.output = new FileOutput("DEBUG.OUT");
 		Cerr("Cerr is redirected to this file.").newline.flush;
@@ -66,10 +67,6 @@ void main(char[][] args) {
 
 	try	{
 		loadSettings();
-
-		display = Display.getDefault();
-		mainWindow = new Shell(display);
-		mainWindow.setText(APPNAME ~ " " ~ VERSION);
 
 		// check for presence of Gslist
 		char[] gslistExe;
@@ -95,88 +92,7 @@ void main(char[][] args) {
 			    "server list.");
 		}
 
-		// restore saved size and state
-		char[] size = getSetting("windowSize");
-		int pos = locate(size, 'x');
-		// FIXME: handle the case of 'x' not being found
-		mainWindow.setSize(Integer.convert(size[0..pos]),
-		                   Integer.convert(size[pos+1..length]));
-		if (getSetting("windowMaximized") == "true") {
-			mainWindow.setMaximized(true);
-		}
-
-		GridLayout gridLayout = new GridLayout();
-		gridLayout.numColumns = 2;
-		mainWindow.setLayout(gridLayout);
-
-
-		// *********** MAIN WINDOW TOP ***************
-		Composite topComposite = new Composite(mainWindow, DWT.NONE);
-		GridData gridData = new GridData(GridData.HORIZONTAL_ALIGN_FILL |
-		                                 GridData.GRAB_HORIZONTAL);
-		gridData.horizontalSpan = 2;
-		topComposite.setLayoutData(gridData);
-		topComposite.setLayout(new FillLayout(DWT.HORIZONTAL));
-
-		ToolBar toolBar = createToolbar(topComposite);
-
-		// filtering options
-		filterBar = new FilterBar(topComposite);
-
-
-		// ************** SERVER LIST, PLAYER LIST, CVARS LIST ***************
-		middleForm = new SashForm(mainWindow, DWT.HORIZONTAL);
-		gridData = new GridData(GridData.FILL_BOTH);
-		middleForm.setLayoutData(gridData);
-
-		// server table widget
-		serverTable = new ServerTable(middleForm);
-		gridData = new GridData(GridData.FILL_VERTICAL);
-		// FIXME: doesn't work
-		//gridData.widthHint = 610;  // FIXME: automate using table's info
-		serverTable.getTable().setLayoutData(gridData);
-
-		// has to be instantied after the table
-		setActiveServerList(activeMod.name);
-
-		// parent for player and cvar tables
-		rightForm = new SashForm(middleForm, DWT.VERTICAL);
-		gridData = new GridData(GridData.FILL_BOTH);
-		rightForm.setLayoutData(gridData);
-
-		FillLayout rightLayout = new FillLayout(DWT.VERTICAL);
-		rightForm.setLayout(rightLayout);
-
-		int[] weights = parseIntegerSequence(getSessionState("middleWeights"));
-		weights.length = 2;  // FIXME: use defaults instead?
-		middleForm.setWeights(weights);;
-
-		// player list
-		playerTable = new PlayerTable(rightForm);
-		gridData = new GridData();
-		playerTable.getTable().setLayoutData(gridData);
-
-		// Server info, cvars, etc
-		cvarTable = new CvarTable(rightForm);
-		gridData = new GridData();
-		cvarTable.getTable().setLayoutData(gridData);
-
-		weights = parseIntegerSequence(getSessionState("rightWeights"));
-		weights.length = 2;  // FIXME: use defaults instead?
-		rightForm.setWeights(weights);
-
-
-		// **************** STATUS BAR ******************************
-		Composite statusComposite = new Composite(mainWindow, DWT.NONE);
-		gridData = new GridData(GridData.HORIZONTAL_ALIGN_FILL |
-		                        GridData.GRAB_HORIZONTAL);
-		gridData.horizontalSpan = 2;
-		statusComposite.setLayoutData(gridData);
-		statusComposite.setLayout(new FillLayout(DWT.HORIZONTAL));
-		statusBar = new StatusBar(statusComposite);
-		statusBar.setLeft(APPNAME ~ " is ready.");
-
-		// **********************************************************
+		mainWindow = new MainWindow();
 
 		mainWindow.addKeyListener(new class KeyAdapter {
 			public void keyPressed (KeyEvent e)
@@ -220,6 +136,7 @@ void main(char[][] args) {
 			}
 		});
 
+		setActiveServerList(activeMod.name);
 		serverTable.getTable.setFocus();
 		mainWindow.open();
 
@@ -241,7 +158,9 @@ void main(char[][] args) {
 		}
 
 		threadDispatcher = new ThreadDispatcher();
-
+		
+		// main loop
+		display = Display.getDefault();
 		while (!mainWindow.isDisposed()) {
 			threadDispatcher.dispatch();
 			if (!display.readAndDispatch())
@@ -253,6 +172,93 @@ void main(char[][] args) {
 		debug throw new Exception("rethrow from main()", e);
 		logx(__FILE__, __LINE__, e);
 		error(e.classinfo.name ~ "\n" ~ e.toString());
+	}
+}
+
+
+class MainWindow : Shell
+{
+	this()
+	{
+		super(Display.getDefault());
+		setText(APPNAME ~ " " ~ VERSION);
+
+		// restore saved size and state
+		char[] size = getSetting("windowSize");
+		int pos = locate(size, 'x');
+		// FIXME: handle the case of 'x' not being found
+		setSize(Integer.convert(size[0..pos]),
+		        Integer.convert(size[pos+1..length]));
+		if (getSetting("windowMaximized") == "true")
+			setMaximized(true);
+
+		GridLayout gridLayout = new GridLayout();
+		gridLayout.numColumns = 2;
+		setLayout(gridLayout);
+
+
+		// *********** MAIN WINDOW TOP ***************
+		Composite topComposite = new Composite(this, DWT.NONE);
+		GridData gridData = new GridData(GridData.HORIZONTAL_ALIGN_FILL |
+		                                 GridData.GRAB_HORIZONTAL);
+		gridData.horizontalSpan = 2;
+		topComposite.setLayoutData(gridData);
+		topComposite.setLayout(new FillLayout(DWT.HORIZONTAL));
+
+		ToolBar toolBar = createToolbar(topComposite);
+
+		// filtering options
+		filterBar = new FilterBar(topComposite);
+
+
+		// ************** SERVER LIST, PLAYER LIST, CVARS LIST ***************
+		middleForm = new SashForm(this, DWT.HORIZONTAL);
+		gridData = new GridData(GridData.FILL_BOTH);
+		middleForm.setLayoutData(gridData);
+
+		// server table widget
+		serverTable = new ServerTable(middleForm);
+		gridData = new GridData(GridData.FILL_VERTICAL);
+		// FIXME: doesn't work
+		//gridData.widthHint = 610;  // FIXME: automate using table's info
+		serverTable.getTable().setLayoutData(gridData);
+
+		// parent for player and cvar tables
+		rightForm = new SashForm(middleForm, DWT.VERTICAL);
+		gridData = new GridData(GridData.FILL_BOTH);
+		rightForm.setLayoutData(gridData);
+
+		FillLayout rightLayout = new FillLayout(DWT.VERTICAL);
+		rightForm.setLayout(rightLayout);
+
+		int[] weights = parseIntegerSequence(getSessionState("middleWeights"));
+		weights.length = 2;  // FIXME: use defaults instead?
+		middleForm.setWeights(weights);;
+
+		// player list
+		playerTable = new PlayerTable(rightForm);
+		gridData = new GridData();
+		playerTable.getTable().setLayoutData(gridData);
+
+		// Server info, cvars, etc
+		cvarTable = new CvarTable(rightForm);
+		gridData = new GridData();
+		cvarTable.getTable().setLayoutData(gridData);
+
+		weights = parseIntegerSequence(getSessionState("rightWeights"));
+		weights.length = 2;  // FIXME: use defaults instead?
+		rightForm.setWeights(weights);
+
+
+		// **************** STATUS BAR ******************************
+		Composite statusComposite = new Composite(this, DWT.NONE);
+		gridData = new GridData(GridData.HORIZONTAL_ALIGN_FILL |
+		                        GridData.GRAB_HORIZONTAL);
+		gridData.horizontalSpan = 2;
+		statusComposite.setLayoutData(gridData);
+		statusComposite.setLayout(new FillLayout(DWT.HORIZONTAL));
+		statusBar = new StatusBar(statusComposite);
+		statusBar.setLeft(APPNAME ~ " is ready.");
 	}
 }
 
