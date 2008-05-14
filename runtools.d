@@ -185,7 +185,9 @@ bool killServerBrowser()
 		proc = null;
 	}
 	catch (ProcessException e) {
-		logx(__FILE__, __LINE__, e);
+		// Since isRunning doesn't actually check if the process is still
+		// running, this exception will happen all the time.
+		//logx(__FILE__, __LINE__, e);
 	}
 	return true;
 }

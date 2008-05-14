@@ -6,7 +6,6 @@ import Path = tango.io.Path;
 import tango.io.stream.BufferStream;
 import tango.io.stream.TextFileStream;
 import tango.stdc.ctype : isdigit;
-debug import tango.stdc.stdio : fgets, stdin;
 import tango.stdc.stdlib : qsort;
 import tango.stdc.string;
 import tango.stdc.time;
@@ -28,7 +27,6 @@ import main;
 import set;
 
 
-/* SETTINGS */
 version (allservers)  // useful for speed testing
 	const bool MOD_ONLY = false;
 else
@@ -129,7 +127,7 @@ void db(in char[] fmt, ...)
 {
 	debug {
 		char[] msg = Format.convert(_arguments, _argptr, fmt);
-		_messageBox!("Debug", DWT.NONE)(msg);
+		messageBox(msg, "Debug", DWT.NONE);
 	}
 }
 
@@ -352,14 +350,6 @@ class Timer
 	double secs() { return span.interval(); }
 	void restart() { time_ = Clock.now(); }
 	private Time time_;
-}
-
-
-/// Pause console output and wait for <enter>
-debug void pause()
-{
-	static char[80] s;
-	fgets(s.ptr, s.sizeof, stdin);
 }
 
 
