@@ -56,7 +56,7 @@ Thread serverThread;
 ThreadDispatcher threadDispatcher;
 
 
-void main(char[][] args)
+void main(char[][] args) ///
 {
 	version (redirect) {
 		Cerr.output = new FileOutput("DEBUG.OUT");
@@ -158,7 +158,7 @@ void main(char[][] args)
 		}
 
 		threadDispatcher = new ThreadDispatcher();
-		
+
 		// main loop
 		display = Display.getDefault();
 		while (!mainWindow.isDisposed()) {
@@ -176,8 +176,12 @@ void main(char[][] args)
 }
 
 
+///
 class MainWindow : Shell
 {
+	/**
+	 *  Initializes all of the gui.
+	 */
 	this()
 	{
 		super(Display.getDefault());
@@ -263,16 +267,17 @@ class MainWindow : Shell
 }
 
 
+///
 class StatusBar
 {
-
+	///
 	this(Composite parent)
 	{
 		leftLabel_ = new Label(parent, DWT.NONE);
 		leftLabel_.setText(APPNAME ~ " is ready.");
 	}
 
-	void setLeft(char[] text)
+	void setLeft(char[] text)  ///
 	{
 		if (!leftLabel_.isDisposed) {
 			leftLabel_.setText(text);
@@ -280,7 +285,7 @@ class StatusBar
 	}
 
 	void setDefaultStatus(uint totalServers, uint shownServers,
-	                      uint noReply=0)
+	                      uint noReply=0)  ///
 	{
 		char[] msg;
 		char[] total = Integer.toString(totalServers);
@@ -305,8 +310,10 @@ private:
 }
 
 
+///
 class FilterBar : Composite
 {
+	///
 	this(Composite parent)
 	{
 		filterComposite_ = new Composite(parent, DWT.NONE);
@@ -408,6 +415,7 @@ class FilterBar : Composite
 		filterComposite_.setLayout(new RowLayout(DWT.HORIZONTAL));
 	}
 
+	/// Set the contents of the mod name drop-down list.
 	void setMods(char[][] list)
 	{
 		int sel, n, height;
@@ -449,7 +457,7 @@ private:
 }
 
 
-ToolBar createToolbar(Composite parent)
+ToolBar createToolbar(Composite parent) ///
 {
 	auto toolBar = new ToolBar(parent, DWT.HORIZONTAL);
 
@@ -525,9 +533,9 @@ ToolBar createToolbar(Composite parent)
  */
 class ThreadDispatcher
 {
-	void run(void function() fp) { fp_ = fp; }
+	void run(void function() fp) { fp_ = fp; } ///
 
-	void dispatch()
+	void dispatch() ///
 	{
 		if (fp_ is null)
 			return;

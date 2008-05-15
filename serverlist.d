@@ -324,7 +324,7 @@ class ServerList
 		});
 	}
 
-	Filter getFilters() { return filters_; }
+	Filter getFilters() { return filters_; } ///
 
 
 
@@ -627,4 +627,9 @@ bool setActiveServerList(char[] modName)
 	return thereAlready;
 }
 
-ServerList getActiveServerList() { return activeServerList; }
+
+/** Returns the active server list. */
+ServerList getActiveServerList()
+{
+	return activeServerList;
+}

@@ -20,11 +20,11 @@ import settings;
 // should correspond to serverlist.PlayerColumn
 char[][] playerHeaders = ["Name", "Score", "Ping"];
 
+
+///
 class PlayerTable
 {
-	/*************************************************
-	               PUBLIC METHODS
-	*************************************************/
+	///
 	this(Composite parent)
 	{
 		parent_ = parent;
@@ -127,18 +127,7 @@ class PlayerTable
 	/// Returns the player list's Table widget object.
 	Table getTable() { return table_; };
 
-	void reset()
-	{
-		table_.clearAll();
-		sort();
-		table_.setItemCount(getActiveServerList.getFiltered(
-		                                 selectedServerIndex_).players.length);
-	}
-
-	/** Set which server to show the playerlist for
-	 *
-	 * Mainly for use by serverTable.
-	 */
+	/// Set which server to show the playerlist for.
 	void setSelectedServer(int i)
 	{
 		// FIXME: show players for all selected servers at once (like ASE)
@@ -149,13 +138,23 @@ class PlayerTable
 		reset();
 	}
 
+	///
+	void reset()
+	{
+		table_.clearAll();
+		sort();
+		table_.setItemCount(getActiveServerList.getFiltered(
+		                                 selectedServerIndex_).players.length);
+	}
+
+	///
 	void clear()
 	{
 		table_.removeAll();
 	}
 
 	/************************************************
-	            PRIVATE STUFF
+	            PRIVATE MEMBERS
 	 ************************************************/
 private:
 	Table table_;
