@@ -187,14 +187,14 @@ class ServerTable
 
 
 	/**
-	 * Clears the table and refills it with updated data.  Keeps the same server
-	 * selected, if there was one.
+	 * Clears the table and refills it with updated data.  Keeps the same
+	 * server selected, if there was one.
 	 *
 	 * Params:
-	 *     index = An IntWrapper object.  Set this to the index of the last added
-	 *             element.  If refilling the contents of the table would not
-	 *             make this element visible, the table is not refilled.  If the
-	 *             argument is null, the table is always refilled.
+	 *     index = An IntWrapper object.  Set this to the index of the last
+	 *             added element.  If refilling the contents of the table would
+	 *             not make this element visible, the table is not refilled.
+	 *             If the argument is null, the table is always refilled.
 	 *
 	 */
 	void refresh(Object index = null)
@@ -228,8 +228,8 @@ class ServerTable
 	 * without losing the selection (like refresh()), it also:
 	 *
 	 * 1. Sets the status bar to the default status.
-	 * 2. Updates the cvar and player tables to show information for the selected
-	 *    server, or clears them if there is no server selected.
+	 * 2. Updates the cvar and player tables to show information for the
+	 *    selected server, or clears them if there is no server selected.
 	 * 3. Optionally sets the selection to the server specified by index.
 	 *
 	 * Params:
@@ -274,7 +274,7 @@ class ServerTable
 
 
 	/************************************************
-	            PRIVATE STUFF
+	            PRIVATE MEMBERS
 	 ************************************************/
 private:
 	Table table_;

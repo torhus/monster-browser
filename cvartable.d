@@ -12,11 +12,10 @@ import serverlist;
 import settings;
 
 
+///
 class CvarTable
 {
-	/*************************************************
-	               PUBLIC METHODS
-	*************************************************/
+	///
 	this(Composite parent)
 	{
 		parent_ = parent;
@@ -39,9 +38,9 @@ class CvarTable
 		table_.getColumn(1).setWidth(widths[1]);
 	}
 
-	Table getTable() { return table_; }
+	Table getTable() { return table_; }  ///
 
-	void setItems(char[][][] items)
+	void setItems(char[][][] items)  ///
 	{
 		assert (items && items.length);
 		table_.setItemCount(0);
@@ -51,7 +50,7 @@ class CvarTable
       	}
   	}
 
-	void clear()
+	void clear()  ///
 	{
 		table_.removeAll();
 	}

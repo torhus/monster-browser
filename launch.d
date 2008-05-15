@@ -1,6 +1,6 @@
-module launch;
+/** Launch the game. */
 
-/* Launch the game, etc. */
+module launch;
 
 import tango.io.FilePath;
 import tango.stdc.stringz;
@@ -22,6 +22,11 @@ version (Windows)
 	private PROCESS_INFORMATION *info = null;
 
 
+/**
+ * Launch the game, connecting to a server.
+ *
+ * If needed, shows a dialog asking for a password to enter the server.
+ */
 void joinServer(ServerData *sd)
 {
 	char[] argv;

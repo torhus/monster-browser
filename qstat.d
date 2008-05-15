@@ -1,6 +1,6 @@
-module qstat;
+/** What's specific for qstat */
 
-/* What's specific for qstat */
+module qstat;
 
 import tango.core.Exception;
 import tango.io.FileConduit;

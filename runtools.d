@@ -1,3 +1,7 @@
+/**
+ * Functions for running qstat and gslist, while capturing their output
+ */
+
 module runtools;
 
 import tango.core.Exception : IOException, ProcessException;
@@ -29,9 +33,16 @@ Process proc;
 // calling a function to load/parse server lists.
 bool abortParsing = false;
 
+/// The name of the file that qstat reads addresses from when querying servers.
 const char[] REFRESHFILE = "refreshlist.tmp";
 
 
+/**
+ * Run qstat or gslist (determined by the useGslist variable) to retrieve a
+ * list of servers from the active mod's master server.
+ *
+ * Returns: A set containing the IP addresses of the servers.
+ */
 Set!(char[]) browserGetNewList()
 {
 	char[] cmdLine;
@@ -85,6 +96,12 @@ Set!(char[]) browserGetNewList()
 }
 
 
+/**
+ * Loads the server list from activeMod.serverFile.
+ *
+ * callback will be called each time a new server has been added to serverList,
+ * with the current number of servers as the argument.
+ */
 void browserLoadSavedList(void delegate(Object) callback)
 {
 	volatile abortParsing = false;
@@ -106,9 +123,19 @@ void browserLoadSavedList(void delegate(Object) callback)
 	}
 }
 
-// FIXME: extraServers not used anymore, remove it
-void browserRefreshList(void delegate(Object) callback,
-                        bool extraServers=true, bool saveList=false)
+
+/**
+ * Queries all servers whose addresses are found in REFRESHFILE.
+ *
+ * The servers are added to serverList as they are received.
+ *
+ * Params:
+ *     callback = Will be called each time a new server has been added to
+ *                serverList, with the current number of servers as the
+ *                argument.
+ *     saveList = If true, qstat's raw output will be saved to disk.
+ */
+void browserRefreshList(void delegate(Object) callback, bool saveList=false)
 {
 	proc = new Process();
 	//scope (exit) if (proc) proc.wait();

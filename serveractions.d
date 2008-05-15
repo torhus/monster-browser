@@ -1,3 +1,7 @@
+/**
+ * Implements the main functionality of the program.  Querying servers, etc.
+ */
+
 module serveractions;
 
 import tango.core.Memory;
@@ -20,10 +24,11 @@ import settings;
 
 
 /**
- * Takes care of the serverList and activeMod side of switching mods.
+ * Switches the active mod.
  *
- * Makes sure that serverList and activeMod contains the data for the given
- * mod.  Calls switchToActiveMod, switchToActiveMod, or getNewList as needed.
+ * Takes care of everything, updating the GUI as necessary, querying servers or
+ * a master server if there's no pre-existing data for the mod, etc.  Most of
+ * the work is done in a new thread.
  */
 void switchToMod(char[] name)
 {
@@ -47,18 +52,6 @@ void switchToMod(char[] name)
 
 	nameCopy = name;
 	threadDispatcher.run(&f);
-
-	/*if (setActiveServerList(activeMod.name)) {
-		threadDispatcher.run(&switchToActiveMod);
-	}
-	else {
-		if (common.useGslist)
-			threadDispatcher.run(&getNewList);
-		else if (exists(activeMod.serverFile))
-			threadDispatcher.run(&refreshList);
-		else
-			threadDispatcher.run(&getNewList);
-	}*/
 }
 
 
@@ -77,7 +70,7 @@ private void switchToActiveMod()
 }
 
 
-/** Loads the list from disk. */
+/** Loads the list from disk, using a new thread to do the work. */
 void loadSavedList()
 {
 	void f()
@@ -141,7 +134,7 @@ void queryAndAddServer(in char[] address)
 		}
 
 		try {
-			browserRefreshList(delegate void(Object) { }, false);
+			browserRefreshList(delegate void(Object) { });
 
 			version (Tango) {
 				volatile if (!runtools.abortParsing) {
@@ -175,7 +168,11 @@ void queryAndAddServer(in char[] address)
 }
 
 
-/** Retrieves a new list from the master server. */
+/**
+ * Retrieves a new list from the master server.
+ *
+ * Uses a new thread to do the work.
+ */
 void getNewList()
 {
 	void f()
@@ -227,7 +224,7 @@ void getNewList()
 				                        } );
 				}
 
-				browserRefreshList(&status, true, true);
+				browserRefreshList(&status, true);
 				volatile if (!runtools.abortParsing) {
 					version (Tango) {
 						display.asyncExec(new class Runnable {
@@ -262,7 +259,7 @@ void getNewList()
 }
 
 
-/** Refreshes the list. */
+/** Refreshes the list, in a new thread. */
 void refreshList()
 {
 	static uint total;

@@ -1,6 +1,6 @@
-module settings;
+/** Load and store settings, stored passwords, etc. */
 
-/* Load and store settings, and saved passwords. */
+module settings;
 
 import Path = tango.io.Path;
 import tango.text.Util;
@@ -13,23 +13,25 @@ import main;
 import serverlist;
 
 
+/// Access to mod-specific configuration.
 struct Mod
 {
 	private IniSection section;
 
-	char[] name;
+	char[] name; ///
 
-	char[] masterServer()
+	char[] masterServer()  ///
 	{
 		char[] r = section["masterServer"];
 		return r ? r : "master3.idsoftware.com";
 	}
 
+	///
 	char[] serverFile() { return replace(masterServer.dup, ':', '_') ~ ".lst"; }
 
-	char[] extraServersFile() { return name ~ ".extra"; }
+	char[] extraServersFile() { return name ~ ".extra"; }  ///
 
-	char[] exePath()
+	char[] exePath()  ///
 	{
 		char[] r = section["exePath"];
 		return r ? r : getSetting("gamePath");
@@ -37,9 +39,9 @@ struct Mod
 }
 
 
-char[][] modNames;
-Mod activeMod;
-const char[] modFileName = "mods.ini";
+char[][] modNames;  /// The mod names shown in the mod selection pull-down.
+Mod activeMod; /// Configuration for the active mod.
+const char[] modFileName = "mods.ini";  ///
 
 private {
 	const char[] settingsFileName = "settings.ini";
@@ -99,6 +101,9 @@ private {
 }
 
 
+/**
+ * Update the activeMod global to contain data for a new mod.
+ */
 void setActiveMod(char[] name)
 {
 	if (modsIni[name] is null)
@@ -109,7 +114,7 @@ void setActiveMod(char[] name)
 }
 
 
-void loadModFile()
+void loadModFile()  ///
 {
 	if (!Path.exists(modFileName))
 		writeDefaultModsFile();
@@ -140,7 +145,7 @@ void loadModFile()
 }
 
 
-void writeDefaultModsFile()
+private void writeDefaultModsFile()
 {
 	// Use C IO to get line ending translation.
 	FILE* f = fopen((modFileName ~ '\0').ptr, "w");
@@ -148,6 +153,10 @@ void writeDefaultModsFile()
 	fclose(f);
 }
 
+
+/**
+ * Load program settings, mod configuration, and saved session state.
+ */
 void loadSettings()
 {
 	settingsIni = new Ini(settingsFileName);
@@ -167,6 +176,9 @@ void loadSettings()
 }
 
 
+/**
+ * Save program settings and session state.
+ */
 void saveSettings()
 {
 	if (!mainWindow.getMaximized() && !mainWindow.getMinimized()) {
@@ -187,7 +199,7 @@ void saveSettings()
 }
 
 
-char[] getSetting(char[] key)
+char[] getSetting(char[] key) ///
 {
 	assert(settingsIni && settingsIni.sections.length > 0);
 	IniSection sec = settingsIni["Settings"];
@@ -198,7 +210,7 @@ char[] getSetting(char[] key)
 }
 
 
-void setSetting(char[] key, char[] value)
+void setSetting(char[] key, char[] value) ///
 {
 	assert(settingsIni && settingsIni.sections.length > 0);
 	IniSection sec = settingsIni["Settings"];
@@ -208,7 +220,7 @@ void setSetting(char[] key, char[] value)
 }
 
 
-char[] getPassword(char[] ip)
+char[] getPassword(char[] ip) ///
 {
 	IniSection sec = settingsIni.section("Passwords");
 	if (sec is null)
@@ -217,7 +229,7 @@ char[] getPassword(char[] ip)
 }
 
 
-void setPassword(char[] ip, char[] password)
+void setPassword(char[] ip, char[] password) ///
 {
 	IniSection sec = settingsIni.addSection("Passwords");
 	sec.setValue(ip, password);
@@ -280,7 +292,7 @@ private void gatherSessionState()
 }
 
 
-char[] getSessionState(in char[] key)
+char[] getSessionState(in char[] key) ///
 {
 	IniSection sec = settingsIni.section("Session");
 	assert(sec !is null);

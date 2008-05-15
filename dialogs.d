@@ -1,6 +1,6 @@
-module dialogs;
+/** Various dialog boxes. */
 
-/* Dialog boxes */
+module dialogs;
 
 import tango.io.File;
 import tango.text.Util;
@@ -33,10 +33,12 @@ import serverlist;
 import settings;
 
 
-class MonitorNotify {
 
-	char[] password;
+class MonitorNotify
+{
+	char[] password; ///
 
+	///
 	this(Shell parent, char[] message)
 	{
 		parent_ = parent;
@@ -121,10 +123,12 @@ private:
 }
 
 
-class JoinDialog {
+///
+class JoinDialog
+{
+	char[] password = ""; ///
 
-	char[] password = "";
-
+	///
 	this(Shell parent, char[] serverName, char[] message)
 	{
 		parent_ = parent;
@@ -184,7 +188,7 @@ class JoinDialog {
 		shell_.setLocation(center(parent_, shell_));
 	}
 
-	int open()
+	int open() ///
 	{
 		pwdText_.setText(password);
 		pwdText_.selectAll();
@@ -205,10 +209,10 @@ private:
 }
 
 
-class SpecifyServerDialog {
-
-	char[] address = "";
-
+///
+class SpecifyServerDialog
+{
+	///
 	this(Shell parent)
 	{
 		parent_ = parent;
@@ -322,12 +326,16 @@ class SpecifyServerDialog {
 private:
 	Shell parent_, shell_;
 	Button okButton_, cancelButton_, saveButton_;
+	char[] address = "";
 	Text addressText_;
 	int result_ = DWT.CANCEL;
 }
 
 
-class SettingsDialog {
+///
+class SettingsDialog
+{
+	///
 	this(Shell parent)
 	{
 		parent_ = parent;
@@ -432,7 +440,8 @@ class SettingsDialog {
 		shell_.setLocation(center(parent_, shell_));
 	}
 
-	int open() {
+	int open() ///
+	{
 		shell_.open();
 		while (!shell_.isDisposed()) {
 			if (!display.readAndDispatch()) {
