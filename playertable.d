@@ -4,6 +4,7 @@ module playertable;
 import dwt.DWT;
 import dwt.graphics.TextLayout;
 import dwt.widgets.Composite;
+import dwt.widgets.Display;
 import dwt.widgets.Event;
 import dwt.widgets.Listener;
 import dwt.widgets.Table;
@@ -71,7 +72,7 @@ class PlayerTable
 				auto sd = getActiveServerList.getFiltered(selectedServerIndex_);
 				auto player = sd.players[table_.indexOf(item)];
 				scope parsed = parseColors(player[PlayerColumn.RAWNAME]);
-				scope tl = new TextLayout(display);
+				scope tl = new TextLayout(Display.getDefault);
 
 				tl.setText(player[PlayerColumn.NAME]);
 				foreach (r; parsed.ranges)

@@ -44,7 +44,6 @@ import servertable;
 import settings;
 
 
-Display display;
 ServerTable serverTable;
 PlayerTable playerTable;
 CvarTable cvarTable;
@@ -65,7 +64,7 @@ void main(char[][] args) ///
 		Cout("Cout is redirected to this file.").newline.flush;
 	}
 
-	try	{
+	//try	{
 		loadSettings();
 
 		// check for presence of Gslist
@@ -160,19 +159,19 @@ void main(char[][] args) ///
 		threadDispatcher = new ThreadDispatcher();
 
 		// main loop
-		display = Display.getDefault();
+		Display display = Display.getDefault();
 		while (!mainWindow.isDisposed()) {
 			threadDispatcher.dispatch();
 			if (!display.readAndDispatch())
 				display.sleep();
 			}
 			display.dispose();
-	}
+	/*}
 	catch(Exception e) {
 		debug throw new Exception("rethrow from main()", e);
 		logx(__FILE__, __LINE__, e);
 		error(e.classinfo.name ~ "\n" ~ e.toString());
-	}
+	}*/
 }
 
 
