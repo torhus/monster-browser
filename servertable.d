@@ -120,7 +120,10 @@ class ServerTable
 						sd.customData = tl;  // cache it
 					}
 					auto textX = e.x + leftMargin + flagWidth + 4;
-					tl.draw(e.gc, textX, e.y);
+					if (e.detail & DWT.SELECTED)
+						e.gc.drawString(tl.getText, textX, e.y);
+					else
+						tl.draw(e.gc, textX, e.y);
 				}
 			});
 		}

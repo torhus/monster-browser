@@ -78,7 +78,10 @@ class PlayerTable
 				foreach (r; parsed.ranges)
 					tl.setStyle(r.style, r.start, r.end);
 
-				tl.draw(e.gc, e.x+2, e.y);
+				if (e.detail & DWT.SELECTED)
+					e.gc.drawString(tl.getText, e.x+2, e.y);
+				else
+					tl.draw(e.gc, e.x+2, e.y);
 				tl.dispose();
 			}
 		});
