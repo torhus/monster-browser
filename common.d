@@ -97,7 +97,12 @@ void messageBox(char[] msg, char[] title, int style)
 {
 	Display.getDefault().syncExec(new class Runnable {
 		void run() {
-			scope mb = new MessageBox(mainWindow, style);
+			scope MessageBox mb;
+			if (mainWindow !is null)
+				mb = new MessageBox(mainWindow, style);
+			else
+				mb = new MessageBox(style);
+
 			mb.setText(title);
 			mb.setMessage(msg);
 			log("messageBox (" ~ title ~ "): " ~ msg);
