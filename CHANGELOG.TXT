@@ -1,9 +1,12 @@
-Work in progress - 2008-04-10
+Work in progress - 2008-05-17
 -----------------------------
 - New: Colored names for servers and players
+- New: Flags showing the nationality of each server.
 - New: Use Windows theming.
 - New: Session state is now being saved and restored.  Sort order, filter state,
        layout and column widths.
+- New: When refreshing servers or retrieving a new list, the extra servers
+       are included in the total number of servers.
 - New: Allow whitespace before and after address in Specify Server dialog.
 
 v0.3d - 2007-10-13
