@@ -1,8 +1,12 @@
 module servertable;
 
+import tango.text.Util;
+
 import dwt.DWT;
 import dwt.events.SelectionAdapter;
 import dwt.events.SelectionEvent;
+import dwt.graphics.Image;
+import dwt.graphics.Rectangle;
 import dwt.graphics.TextLayout;
 import dwt.widgets.Composite;
 import dwt.widgets.Display;
@@ -14,6 +18,7 @@ import dwt.widgets.TableItem;
 
 import colorednames;
 import common;
+import geoip;
 import launch;
 import main;
 import serverlist;
@@ -68,6 +73,8 @@ class ServerTable
 			}
 		});
 
+		drawFlags_ = initGeoIp();
+
 		/* Allow users to disable colored server names, since drawing them is so
 		 * slow.
 		 */
@@ -87,8 +94,22 @@ class ServerTable
 					TableItem item = cast(TableItem) e.item;
 					auto i = table_.indexOf(item);
 					ServerData* sd = getActiveServerList.getFiltered(i);
-					TextLayout tl = sd.customData;
 
+					enum { leftMargin = 2, flagWidth = 18 }
+
+					// draw flag
+					if (drawFlags_) {
+						char[] ip = sd.server[ServerColumn.ADDRESS];
+						auto colon = locate(ip, ':');
+						char[] country = countryCodeByAddr(ip[0..colon]);
+						// FIXME: cache the flag?
+						Image flag = getFlagImage(country);
+						if (flag)
+							e.gc.drawImage(flag, e.x+leftMargin, e.y);
+					}
+
+					// draw text
+					TextLayout tl = sd.customData;
 					if (tl is null) {
 						auto parsed = parseColors(sd.rawName);
 						tl = new TextLayout(Display.getDefault);
@@ -98,7 +119,11 @@ class ServerTable
 
 						sd.customData = tl;  // cache it
 					}
-					tl.draw(e.gc, e.x+2, e.y);
+					auto textX = e.x + leftMargin + flagWidth + 4;
+					if (e.detail & DWT.SELECTED)
+						e.gc.drawString(tl.getText, textX, e.y);
+					else
+						tl.draw(e.gc, textX, e.y);
 				}
 			});
 		}
@@ -281,6 +306,7 @@ private:
 	Table table_;
 	Composite parent_;
 	char[] selectedIp_ = "";
+	bool drawFlags_ = false;
 
 	private int getBottomIndex()
 	{
