@@ -44,7 +44,6 @@ import servertable;
 import settings;
 
 
-Display display;
 ServerTable serverTable;
 PlayerTable playerTable;
 CvarTable cvarTable;
@@ -157,10 +156,10 @@ void main(char[][] args) ///
 			}
 		}
 
-		threadDispatcher = new ThreadDispatcher();
+		threadDispatcher = new ThreadDispatcher;
 
 		// main loop
-		display = Display.getDefault();
+		Display display = Display.getDefault;
 		while (!mainWindow.isDisposed()) {
 			threadDispatcher.dispatch();
 			if (!display.readAndDispatch())

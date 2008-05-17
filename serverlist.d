@@ -11,6 +11,7 @@ import tango.stdc.string : memmove;
 import dwt.DWT;
 import dwt.dwthelper.Runnable;
 import dwt.graphics.TextLayout;
+import dwt.widgets.Display;
 
 import common;
 import main;
@@ -169,7 +170,7 @@ class ServerList
 		}
 		if (refresh)
 			//display.syncExec(new IntWrapper(index), &serverTable.refresh);
-			display.syncExec(new class Runnable {
+			Display.getDefault.syncExec(new class Runnable {
 				void run() { serverTable.refresh(new IntWrapper(index)); }
 			});
 	}
@@ -319,7 +320,7 @@ class ServerList
 			updateFilteredList();
 		}
 		//display.asyncExec(null, &serverTable.reset);
-		display.asyncExec(new class Runnable {
+		Display.getDefault.asyncExec(new class Runnable {
 			void run() { serverTable.reset(); }
 		});
 	}
