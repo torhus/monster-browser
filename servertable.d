@@ -5,6 +5,7 @@ import dwt.events.SelectionAdapter;
 import dwt.events.SelectionEvent;
 import dwt.graphics.TextLayout;
 import dwt.widgets.Composite;
+import dwt.widgets.Display;
 import dwt.widgets.Event;
 import dwt.widgets.Listener;
 import dwt.widgets.Table;
@@ -90,7 +91,7 @@ class ServerTable
 
 					if (tl is null) {
 						auto parsed = parseColors(sd.rawName);
-						tl = new TextLayout(display);
+						tl = new TextLayout(Display.getDefault);
 						tl.setText(parsed.cleanName);
 						foreach (r; parsed.ranges)
 							tl.setStyle(r.style, r.start, r.end);

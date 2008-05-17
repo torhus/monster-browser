@@ -13,6 +13,7 @@ import tango.text.convert.Format;
 import tango.text.convert.Integer;
 
 import dwt.dwthelper.Runnable;
+import dwt.widgets.Display;
 
 import common;
 import main;
@@ -85,12 +86,13 @@ void loadSavedList()
 			browserLoadSavedList(&callback);
 			volatile if (!runtools.abortParsing) {
 				version (Tango) {
-					display.asyncExec(new class Runnable {
+					Display.getDefault.asyncExec(new class Runnable {
 						void run() { serverTable.reset(); }
 				    });
 				}
 				else {
-					display.asyncExec(null, delegate void (Object o) {
+					Display.getDefault.asyncExec(null,
+					                        delegate void (Object o) {
 					                            serverTable.reset();
 					                        });
 				}
@@ -138,14 +140,14 @@ void queryAndAddServer(in char[] address)
 
 			version (Tango) {
 				volatile if (!runtools.abortParsing) {
-					display.asyncExec(new class Runnable {
+					Display.getDefault.asyncExec(new class Runnable {
 						void run() { done(null); }
 					});
 				}
 			}
 			else {
 				volatile if (!runtools.abortParsing) {
-					display.asyncExec(null, &done);
+					Display.getDefault.asyncExec(null, &done);
 				}
 			}
 
@@ -205,11 +207,12 @@ void getNewList()
 
 			if (addresses.length == 0) {
 				// FIXME: what to do when there are no servers?
-				display.asyncExec(new class Runnable {
+				Display.getDefault.asyncExec(new class Runnable {
 					void run() { serverTable.reset(); }
 				});
 			}
 			else {
+				Display display = Display.getDefault;
 				version (Tango) {
 					display.asyncExec(new class Runnable {
 						void run() { statusBar.setLeft("Got "  ~
@@ -290,14 +293,14 @@ void refreshList()
 			browserRefreshList(&status);
 			version (Tango) {
 				volatile if (!runtools.abortParsing) {
-					display.asyncExec(new class Runnable {
+					Display.getDefault.asyncExec(new class Runnable {
 						void run() { done(null); }
 					});
 				}
 			}
 			else {
 				volatile if (!runtools.abortParsing) {
-					display.asyncExec(null, &done);
+					Display.getDefault.asyncExec(null, &done);
 				}
 			}
 		}

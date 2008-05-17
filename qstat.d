@@ -14,6 +14,7 @@ import tango.text.convert.Integer;
 import tango.text.stream.LineIterator;
 
 import dwt.dwthelper.Runnable;
+import dwt.widgets.Display;
 
 import colorednames;
 import common;
@@ -42,6 +43,7 @@ bool parseOutput(void delegate(Object) countDg, LineIterator!(char) iter,
 	debug scope timer = new Timer;
 	int count = 0;
 	scope countWrapper = new IntWrapper(-1);
+	Display display = Display.getDefault;
 
 	assert(countDg);
 
