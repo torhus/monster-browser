@@ -19,7 +19,6 @@ import dwt.layout.RowLayout;
 import dwt.widgets.Button;
 import dwt.widgets.Composite;
 import dwt.widgets.Control;
-import dwt.widgets.Display;
 import dwt.widgets.Event;
 import dwt.widgets.Group;
 import dwt.widgets.Label;
@@ -50,7 +49,6 @@ class MonitorNotify
 
 		shell_.open();
 		shell_.forceActive();
-		Display display = Display.getDefault;
 		while (!shell_.isDisposed()) {
 			if (!display.readAndDispatch()) {
 				display.sleep ();
@@ -195,7 +193,6 @@ class JoinDialog
 		pwdText_.setText(password);
 		pwdText_.selectAll();
 		shell_.open();
-		Display display = Display.getDefault;
 		while (!shell_.isDisposed()) {
 			if (!display.readAndDispatch()) {
 				display.sleep ();
@@ -318,7 +315,6 @@ class SpecifyServerDialog
 		addressText_.setText(address);
 		addressText_.selectAll();
 		shell_.open();
-		Display display = Display.getDefault;
 		while (!shell_.isDisposed()) {
 			if (!display.readAndDispatch()) {
 				display.sleep ();
@@ -447,7 +443,6 @@ class SettingsDialog
 	int open() ///
 	{
 		shell_.open();
-		Display display = Display.getDefault;
 		while (!shell_.isDisposed()) {
 			if (!display.readAndDispatch()) {
 				display.sleep();
