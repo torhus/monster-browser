@@ -10,6 +10,7 @@ import tango.stdc.stringz;
 import tango.sys.SharedLib;
 import tango.text.Ascii;
 
+import dwt.DWTException;
 import dwt.graphics.Image;
 import dwt.widgets.Display;
 
@@ -74,7 +75,14 @@ char[] countryCodeByAddr(in char[] addr)
 }
 
 
-///
+/**
+ * Get a flag image for the given two-letter lower case country code.
+ *
+ * Returns null when no flag was found for the given country code, or if there
+ * was a problem reading the image file, etc.  Only one attempt will be made at
+ * loading each flag, calling this function again will not cause more attempts
+ * to be made.
+ */
 Image getFlagImage(in char[] countryCode)
 {
 	Image* image;
@@ -82,14 +90,21 @@ Image getFlagImage(in char[] countryCode)
 	image = countryCode in flagCache;
 	if (image is null) {
 		char[] file = "flags/" ~ countryCode ~ ".gif";
+		Image tmp = null;
 		if (Path.exists(file)) {
-			auto tmp = new Image(display, file);
-			flagCache[countryCode] = tmp;
-			image = &tmp;
+			try {
+				tmp = new Image(display, file);
+			}
+			catch (DWTException e) {
+				log("Error when reading " ~ file ~ ", possibly corrupt file.");
+			}
 		}
 		else {
 			log("No flag found for country code '" ~ countryCode ~ "'.");
 		}
+
+		flagCache[countryCode] = tmp;
+		image = &tmp;
 	}
 
 	return image ? *image : null;
