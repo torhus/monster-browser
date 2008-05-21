@@ -57,6 +57,8 @@ ThreadDispatcher threadDispatcher;
 
 void main(char[][] args) ///
 {
+	globalTimer = new Timer;
+
 	version (redirect) {
 		Cerr.output = new FileOutput("DEBUG.OUT");
 		Cerr("Cerr is redirected to this file.").newline.flush;
