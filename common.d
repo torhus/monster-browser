@@ -59,6 +59,8 @@ alias Tuple!(75, 23) BUTTON_SIZE;
 /// Default Windows button spacing.
 const BUTTON_SPACING = 6;
 
+Timer globalTimer;
+
 
 private {
 	const char[] LOGFILE = "LOG.TXT";
@@ -347,14 +349,18 @@ void sortStringArrayStable(char[][][] arr, int sortColumn=0,
 }
 
 
+/// A timer.
 class Timer
 {
-	this() { time_ = Clock.now(); }
-	TimeSpan span() { return Clock.now() - time_; }
-	long millis() { return span.millis(); }
-	double secs() { return span.interval(); }
-	void restart() { time_ = Clock.now(); }
-	private Time time_;
+	this() { time_ = Clock.now(); } ///
+	long millis() { return span.millis(); } ///
+	double seconds() { return span.interval(); } ///
+	void restart() { time_ = Clock.now(); } ///
+
+	private {
+		TimeSpan span() { return Clock.now() - time_; } ///
+		private Time time_;
+	}
 }
 
 

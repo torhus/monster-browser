@@ -65,7 +65,7 @@ bool parseOutput(void delegate(Object) countDg, LineIterator!(char) iter,
 			delete outfile;
 		}
 		debug log("	qstat.parseOutput took " ~
-		                  Float.toString(timer.secs) ~ " seconds.");
+		                  Float.toString(timer.seconds) ~ " seconds.");
 	}
 
 	if (activeMod.name in gameTypes) {

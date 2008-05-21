@@ -84,6 +84,18 @@ void loadSavedList()
 
 		try {
 			browserLoadSavedList(&callback);
+
+			version (quit) { // for benchmarking
+				Display.getDefault.syncExec(new class Runnable {
+						void run()
+						{
+							info("Time since startup:  {} seconds.",
+							                              globalTimer.seconds);
+							mainWindow.close();
+						}
+				    });
+			}
+
 			volatile if (!runtools.abortParsing) {
 				version (Tango) {
 					Display.getDefault.asyncExec(new class Runnable {
