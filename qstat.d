@@ -114,9 +114,6 @@ each_server:
 			if (fields.length >= 9) {
 				bool keep_server = false;
 
-				if (!MOD_ONLY)
-					keep_server = true;
-
 				if (icompare(fields[8], activeMod.name) == 0)
 					keep_server = true;
 
@@ -145,55 +142,8 @@ each_server:
 					outfile.write(line);
 					outfile.write(newline);
 				}
-				char[][] temp = split(line.dup, FIELDSEP);
-				foreach (char[] s; temp) {
-					char[][] cvar = split(s, "=");
-					switch (cvar[0]) {
-						case "gametype":
-							uint ate;
-							int gt = parse(cvar[1], 10, &ate);
-							if (ate < cvar[1].length) {
-								invalidInteger(sd.rawName, cvar[1]);
-								sd.server[ServerColumn.GAMETYPE] = "???";
-							}
-							else if (gt < gtypes.length) {
-								sd.server[ServerColumn.GAMETYPE] = gtypes[gt];
-							}
-							else {
-								sd.server[ServerColumn.GAMETYPE] = toString(gt);
-							}
-							break;
-						case "game":  // not sure if this is right, risk getting too many servers
-							if (!keep_server &&
-							          icompare(cvar[1], activeMod.name) == 0) {
-								keep_server = true;
-							}
-							break;
-						case "gamename":  // has to come after case "game"
-							if (!keep_server &&
-							          icompare(cvar[1], activeMod.name) == 0) {
-								keep_server = true;
-							}
-
-							// Since qstat's 'game' pseudo cvar always is listed before
-							// 'gamename', it's safe to abort parsing here in the case
-							// that keep_server still is false.
-							if (!keep_server)
-								continue each_server;
-							break;
-						case "g_needpass":
-							if (cvar[1] == "1")
-								sd.server[ServerColumn.PASSWORDED] = "X";
-							break;
-						default:
-							break;
-					}
-					sd.cvars ~= cvar;
-				}
-
-				if (!keep_server)
+				if (!parseCvars(line, &sd, gtypes) && !keep_server)
 					continue each_server;
-
 				sortStringArray(sd.cvars);
 
 				// parse players
@@ -248,6 +198,89 @@ each_server:
 	}
 
 	return !abortParsing;
+}
+
+
+/**
+ * Parses a line of cvars, each cvar of the form "name=value".  If there's more
+ * than one cvar, FIELDSEP is expected to separate each name/value pair.  The
+ * cvars are appended to sd.cvars.  The gametype and password fields of
+ * sd.server are also set.
+ *
+ * If this function discovers that a server does not run the currently active
+ * mod, it aborts parsing and returns immediately.  It checks this by parsing
+ * the 'game' and 'gamename' cvars.
+ *
+ * The strings that are the output of this function will be slices into an
+ * heap-allocated copy of the line parameter.
+ *
+ * Params:
+ *     line   = String to parse.
+ *     sd     = Output, only sd.cvars and sd.server are changed.  sd.rawName
+ *              is used for error reporting, but not written to.
+ *     gtypes = Game type names, indexed with the value of the 'gametype' cvar
+ *              to find the value of sd.server's Game type column.  If
+ *              gametype >= gtypes.length, the number is used instead.
+ *
+ * Returns: false if this server is found to belong to a different mod than the
+ *          active one, otherwise true.
+ *
+ */
+private bool parseCvars(in char[] line, ServerData* sd, in char[][] gtypes)
+in {
+	assert(ServerColumn.GAMETYPE < sd.server.length &&
+	                               ServerColumn.PASSWORDED < sd.server.length);
+}
+body {
+	char[][] temp = split(line.dup, FIELDSEP);
+	bool keepServer = MOD_ONLY ? false : true;
+
+	foreach (char[] s; temp) {
+		char[][] cvar = split(s, "=");
+		switch (cvar[0]) {
+			case "gametype":
+				uint ate;
+				int gt = parse(cvar[1], 10, &ate);
+				if (ate < cvar[1].length) {
+					invalidInteger(sd.rawName, cvar[1]);
+					sd.server[ServerColumn.GAMETYPE] = "???";
+				}
+				else if (gt < gtypes.length) {
+					sd.server[ServerColumn.GAMETYPE] = gtypes[gt];
+				}
+				else {
+					sd.server[ServerColumn.GAMETYPE] = toString(gt);
+				}
+				break;
+			case "game":  // not sure if this is right, risk getting too many servers
+				if (!keepServer &&
+				          icompare(cvar[1], activeMod.name) == 0) {
+					keepServer = true;
+				}
+				break;
+			case "gamename":  // has to come after case "game"
+				if (!keepServer &&
+				          icompare(cvar[1], activeMod.name) == 0) {
+					keepServer = true;
+				}
+
+				// Since qstat's 'game' pseudo cvar always is listed before
+				// 'gamename', it's safe to abort parsing here in the case
+				// that keep_server still is false.
+				if (!keepServer)
+					return false;
+				break;
+			case "g_needpass":
+				if (cvar[1] == "1")
+					sd.server[ServerColumn.PASSWORDED] = "X";
+				break;
+			default:
+				break;
+		}
+		sd.cvars ~= cvar;
+	}
+
+	return keepServer;
 }
 
 
