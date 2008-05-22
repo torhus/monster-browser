@@ -142,7 +142,8 @@ each_server:
 					outfile.write(line);
 					outfile.write(newline);
 				}
-				if (!parseCvars(line, &sd, gtypes) && !keep_server)
+				char[] matchMod = keep_server ? null : activeMod.name;
+				if (!parseCvars(line, &sd, matchMod, gtypes))
 					continue each_server;
 				sortStringArray(sd.cvars);
 
@@ -207,33 +208,36 @@ each_server:
  * cvars are appended to sd.cvars.  The gametype and password fields of
  * sd.server are also set.
  *
- * If this function discovers that a server does not run the currently active
- * mod, it aborts parsing and returns immediately.  It checks this by parsing
- * the 'game' and 'gamename' cvars.
- *
  * The strings that are the output of this function will be slices into an
  * heap-allocated copy of the line parameter.
  *
  * Params:
- *     line   = String to parse.
- *     sd     = Output, only sd.cvars and sd.server are changed.  sd.rawName
- *              is used for error reporting, but not written to.
- *     gtypes = Game type names, indexed with the value of the 'gametype' cvar
- *              to find the value of sd.server's Game type column.  If
- *              gametype >= gtypes.length, the number is used instead.
+ *     line     = String to parse.
+ *     sd       = Output, only sd.cvars and sd.server are changed.  sd.rawName
+ *                is used for error reporting, but not written to.
+ *     matchMod = If not null, the 'game' and 'gamename' cvars are matched
+ *                against this.  If they are different, the function aborts
+ *                parsing and returns false immediately.
+ *     gtypes   = Game type names, indexed with the value of the 'gametype'
+ *                cvar to find the value of sd.server's Game type column.  If
+ *                gametype >= gtypes.length, the number is used instead.
  *
- * Returns: false if this server is found to belong to a different mod than the
- *          active one, otherwise true.
+ * Returns: false if the server doesn't match matchMod, otherwise true.  Always
+ *          returns true when matchMod is null.
  *
  */
-private bool parseCvars(in char[] line, ServerData* sd, in char[][] gtypes)
+private bool parseCvars(in char[] line, ServerData* sd,
+                        in char[] matchMod=null, in char[][] gtypes=null)
 in {
 	assert(ServerColumn.GAMETYPE < sd.server.length &&
 	                               ServerColumn.PASSWORDED < sd.server.length);
 }
 body {
 	char[][] temp = split(line.dup, FIELDSEP);
-	bool keepServer = MOD_ONLY ? false : true;
+	bool keepServer = matchMod.length ? false : true;
+
+	if (!MOD_ONLY)
+		keepServer = true;
 
 	foreach (char[] s; temp) {
 		char[][] cvar = split(s, "=");
@@ -254,13 +258,13 @@ body {
 				break;
 			case "game":  // not sure if this is right, risk getting too many servers
 				if (!keepServer &&
-				          icompare(cvar[1], activeMod.name) == 0) {
+				          icompare(cvar[1], matchMod) == 0) {
 					keepServer = true;
 				}
 				break;
 			case "gamename":  // has to come after case "game"
 				if (!keepServer &&
-				          icompare(cvar[1], activeMod.name) == 0) {
+				          icompare(cvar[1], matchMod) == 0) {
 					keepServer = true;
 				}
 
