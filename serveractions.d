@@ -8,7 +8,8 @@ import tango.core.Memory;
 import tango.core.Thread;
 import tango.io.File;
 import Path = tango.io.Path;
-debug import tango.io.Stdout;
+version (quit)
+	import tango.io.Stdout;
 import tango.text.convert.Format;
 import tango.text.convert.Integer;
 
@@ -89,9 +90,9 @@ void loadSavedList()
 				Display.getDefault.syncExec(new class Runnable {
 						void run()
 						{
-							info("Time since startup:  {} seconds.",
+							Stdout.formatln("Time since startup: {} seconds.",
 							                              globalTimer.seconds);
-							mainWindow.close();
+							mainWindow.close;
 						}
 				    });
 			}
