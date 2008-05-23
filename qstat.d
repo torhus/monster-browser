@@ -4,6 +4,7 @@ module qstat;
 
 import tango.core.Exception;
 import tango.io.FileConduit;
+import tango.io.model.IConduit : OutputStream;
 import tango.io.stream.BufferStream;
 import tango.io.stream.TextFileStream;
 import tango.stdc.ctype : isdigit;
@@ -148,25 +149,8 @@ each_server:
 				sortStringArray(sd.cvars);
 
 				// parse players
-				int humans = 0;
-				while ((line = iter.next()) !is null && line.length) {
-					if (outfile) {
-						outfile.write(line);
-						outfile.write(newline);
-					}
-					char[][] s = split(line.dup, FIELDSEP);
-					char player[][];
-					player.length = PlayerColumn.max + 1;
-					player[PlayerColumn.RAWNAME] = s[0];
-					player[PlayerColumn.SCORE]   = s[1];
-					player[PlayerColumn.PING]    = s[2];
-					player[PlayerColumn.NAME]    = null;
-					sd.players ~= player;
-
-					if (player[PlayerColumn.PING] != "0") {
-						humans++;
-					}
-				}
+				int humans;
+				sd.players = parsePlayers(iter, &humans, outfile);
 
 				// 'Players' column contents
 				uint ate;
@@ -285,6 +269,38 @@ body {
 	}
 
 	return keepServer;
+}
+
+
+private char[][][] parsePlayers(LineIterator!(char) lineIter,
+                                int* humanCount=null, OutputStream output=null)
+{
+	char[][][] players;
+	char[] line;
+	int humans = 0;
+
+	while ((line = lineIter.next()) !is null && line.length) {
+		if (output) {
+			output.write(line);
+			output.write(newline);
+		}
+		char[][] s = split(line.dup, FIELDSEP);
+		char player[][] = new char[][PlayerColumn.max + 1];
+		player[PlayerColumn.RAWNAME] = s[0];
+		player[PlayerColumn.SCORE]   = s[1];
+		player[PlayerColumn.PING]    = s[2];
+		player[PlayerColumn.NAME]    = null;
+		players ~= player;
+
+		if (player[PlayerColumn.PING] != "0") {
+			humans++;
+		}
+	}
+
+	if (humanCount)
+		*humanCount = humans;
+
+	return players;
 }
 
 
