@@ -43,6 +43,8 @@ static ~this() {
 
 
 /** A parsed colored name. */
+// FIXME: ColoredName.cleanName is not being used anywhere.  ColoredName could
+// also  be made a struct, to avoid some heap allocation.
 class ColoredName {
 	char[] cleanName;
 	ColorRange[] ranges;

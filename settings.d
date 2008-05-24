@@ -84,6 +84,7 @@ private {
 	                           r"C:\Program Files\Quake III Arena\quake3.exe"},
 	                      {"lastMod", "westernq3"},
 	                      {"minimizeOnGameLaunch", "true"},
+	                      {"showFlags", "true"},
 	                      {"startWithLastMod", "true"},
 	                      {"windowMaximized", "false"},
 	                      {"windowSize", "800x568"},

@@ -73,12 +73,10 @@ class ServerTable
 			}
 		});
 
-		drawFlags_ = initGeoIp();
+		coloredNames_ = getSetting("coloredNames") == "true";
+		showFlags_ = (getSetting("showFlags") == "true") && initGeoIp();
 
-		/* Allow users to disable colored server names, since drawing them is so
-		 * slow.
-		 */
-		if (getSetting("coloredNames") == "true") {
+		if (showFlags_ || coloredNames_) {
 			table_.addListener(DWT.EraseItem, new class Listener {
 				void handleEvent(Event e) {
 					if (e.index == ServerColumn.NAME)
@@ -98,7 +96,7 @@ class ServerTable
 					enum { leftMargin = 2, flagWidth = 18 }
 
 					// draw flag
-					if (drawFlags_) {
+					if (showFlags_) {
 						char[] ip = sd.server[ServerColumn.ADDRESS];
 						auto colon = locate(ip, ':');
 						char[] country = countryCodeByAddr(ip[0..colon]);
@@ -108,22 +106,29 @@ class ServerTable
 							e.gc.drawImage(flag, e.x+leftMargin, e.y);
 					}
 
-					// draw text
-					TextLayout tl = sd.customData;
-					if (tl is null) {
-						auto parsed = parseColors(sd.rawName);
-						tl = new TextLayout(Display.getDefault);
-						tl.setText(parsed.cleanName);
-						foreach (r; parsed.ranges)
-							tl.setStyle(r.style, r.start, r.end);
+					auto textX = e.x + leftMargin;
+					if (showFlags_)
+						textX += flagWidth + 4;
 
-						sd.customData = tl;  // cache it
-					}
-					auto textX = e.x + leftMargin + flagWidth + 4;
-					if (e.detail & DWT.SELECTED)
-						e.gc.drawString(tl.getText, textX, e.y);
-					else
+					// draw text
+					if (coloredNames_ && !(e.detail & DWT.SELECTED)) {
+						TextLayout tl = sd.customData;
+						if (tl is null) {
+							auto parsed = parseColors(sd.rawName);
+							tl = new TextLayout(Display.getDefault);
+							tl.setText(sd.server[ServerColumn.NAME]);
+							foreach (r; parsed.ranges)
+								tl.setStyle(r.style, r.start, r.end);
+
+							sd.customData = tl;  // cache it
+						}
+
 						tl.draw(e.gc, textX, e.y);
+					}
+					else {
+						e.gc.drawString(sd.server[ServerColumn.NAME],
+							                                       textX, e.y);
+					}
 				}
 			});
 		}
@@ -306,7 +311,7 @@ private:
 	Table table_;
 	Composite parent_;
 	char[] selectedIp_ = "";
-	bool drawFlags_ = false;
+	bool showFlags_, coloredNames_;
 
 	private int getBottomIndex()
 	{

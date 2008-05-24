@@ -56,35 +56,37 @@ class PlayerTable
 			}
 		});
 
-		table_.addListener(DWT.EraseItem, new class Listener {
-			void handleEvent(Event e) {
-				if (e.index == PlayerColumn.NAME)
-					e.detail &= ~DWT.FOREGROUND;
-			}
-		});
+		if (getSetting("coloredNames") == "true") {
+			table_.addListener(DWT.EraseItem, new class Listener {
+				void handleEvent(Event e) {
+					if (e.index == PlayerColumn.NAME)
+						e.detail &= ~DWT.FOREGROUND;
+				}
+			});
 
-		table_.addListener(DWT.PaintItem, new class Listener {
-			void handleEvent(Event e) {
-				if (e.index != PlayerColumn.NAME)
-					return;
+			table_.addListener(DWT.PaintItem, new class Listener {
+				void handleEvent(Event e) {
+					if (e.index != PlayerColumn.NAME)
+						return;
 
-				TableItem item = cast(TableItem) e.item;
-				auto sd = getActiveServerList.getFiltered(selectedServerIndex_);
-				auto player = sd.players[table_.indexOf(item)];
-				scope parsed = parseColors(player[PlayerColumn.RAWNAME]);
-				scope tl = new TextLayout(Display.getDefault);
+					TableItem item = cast(TableItem) e.item;
+					auto sd = getActiveServerList.getFiltered(selectedServerIndex_);
+					auto player = sd.players[table_.indexOf(item)];
+					scope parsed = parseColors(player[PlayerColumn.RAWNAME]);
+					scope tl = new TextLayout(Display.getDefault);
 
-				tl.setText(player[PlayerColumn.NAME]);
-				foreach (r; parsed.ranges)
-					tl.setStyle(r.style, r.start, r.end);
+					tl.setText(player[PlayerColumn.NAME]);
+					foreach (r; parsed.ranges)
+						tl.setStyle(r.style, r.start, r.end);
 
-				if (e.detail & DWT.SELECTED)
-					e.gc.drawString(tl.getText, e.x+2, e.y);
-				else
-					tl.draw(e.gc, e.x+2, e.y);
-				tl.dispose();
-			}
-		});
+					if (e.detail & DWT.SELECTED)
+						e.gc.drawString(tl.getText, e.x+2, e.y);
+					else
+						tl.draw(e.gc, e.x+2, e.y);
+					tl.dispose();
+				}
+			});
+		}
 
 		Listener sortListener = new class Listener {
 			public void handleEvent(Event e)
