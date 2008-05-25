@@ -4,23 +4,28 @@
 
 module geoip;
 
+import tango.io.archive.Zip;
 import Path = tango.io.Path;
 debug import tango.io.Stdout;
 import tango.stdc.stringz;
 import tango.sys.SharedLib;
 import tango.text.Ascii;
+import tango.text.convert.Format;
 
 import dwt.DWTException;
+import dwt.dwthelper.ByteArrayInputStream;
 import dwt.graphics.Image;
 import dwt.widgets.Display;
 
 import common;
 
 
-private GeoIP* gi = null;
-private Display display;
-private Image[char[]] flagCache;
-
+private {
+	GeoIP* gi;
+	Display display;
+	Image[char[]] flagCache;
+	ubyte[][char[]] flagFiles;
+}
 
 private void bindFunc(alias funcPtr)(SharedLib lib)
 {
@@ -34,6 +39,8 @@ bool initGeoIp()
 	SharedLib geoIpLib;
 
 	assert(gi is null, "Can't call initGeoIp() more than once.");
+
+	display = Display.getDefault;
 
 	try {
 		geoIpLib = SharedLib.load("GeoIP.dll");
@@ -52,7 +59,13 @@ bool initGeoIp()
 		geoIpLib.unload;
 	}
 	else {
-		display = Display.getDefault;
+		flagFiles = loadZipFile("flags.zip");
+		if (flagFiles is null) {
+			warning("Unable to load flag images.");
+			geoIpLib.unload;
+			GeoIP_delete(gi);
+			gi = null;
+		}
 	}
 
 	return gi !is null;
@@ -89,11 +102,14 @@ Image getFlagImage(in char[] countryCode)
 
 	image = countryCode in flagCache;
 	if (image is null) {
-		char[] file = "flags/" ~ countryCode ~ ".gif";
 		Image tmp = null;
-		if (Path.exists(file)) {
+		char[] file = countryCode ~ ".gif";
+		ubyte data[] = flagFiles[file];
+
+		if (data !is null) {
 			try {
-				tmp = new Image(display, file);
+				auto stream  = new ByteArrayInputStream(cast(byte[])data);
+				tmp = new Image(display, stream);
 			}
 			catch (DWTException e) {
 				log("Error when reading " ~ file ~ ", possibly corrupt file.");
@@ -108,6 +124,26 @@ Image getFlagImage(in char[] countryCode)
 	}
 
 	return image ? *image : null;
+}
+
+
+/// Throws: ZipException and subclasses.  FIXME: catch?
+private ubyte[][char[]] loadZipFile(in char[] file)
+{
+	ubyte[][char[]] contents;
+	scope zip = new ZipBlockReader(file);
+	scope (exit) zip.close;
+
+	foreach (entry; zip) {
+		InputStream input = entry.open;
+		ubyte[] data = new ubyte[entry.size];
+		auto count = input.read(data);
+		assert(count == entry.size);
+		contents[entry.info.name] = data;
+	}
+
+	log(Format("Loaded {} files from {}.", contents.length, file));
+	return contents;
 }
 
 
