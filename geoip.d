@@ -21,6 +21,8 @@ import common;
 
 
 private {
+	const FlagFileName = "flags.zip";
+
 	GeoIP* gi;
 	Display display;
 	Image[char[]] flagCache;
@@ -59,16 +61,25 @@ bool initGeoIp()
 		geoIpLib.unload;
 	}
 	else {
-		flagFiles = loadZipFile("flags.zip");
-		if (flagFiles is null) {
-			warning("Unable to load flag images.");
+		if (Path.exists(FlagFileName)) {
+			flagFiles = loadZipFile(FlagFileName);
+			if (flagFiles is null) {
+				warning("Unable to load flag images, " ~ FlagFileName ~
+				        " might be corrupted.");
+			}
+		}
+		else {
+			warning(FlagFileName ~ " was not found, unable to show flags.");
+		}
+
+		if (flagFiles is null) {  // clean up if something went wrong
 			geoIpLib.unload;
-			GeoIP_delete(gi);
+			//GeoIP_delete(gi);  // For some reason, this crashes.
 			gi = null;
 		}
 	}
 
-	return gi !is null;
+	return gi && flagFiles;
 }
 
 
@@ -127,22 +138,29 @@ Image getFlagImage(in char[] countryCode)
 }
 
 
-/// Throws: ZipException and subclasses.  FIXME: catch?
 private ubyte[][char[]] loadZipFile(in char[] file)
 {
 	ubyte[][char[]] contents;
-	scope zip = new ZipBlockReader(file);
-	scope (exit) zip.close;
 
-	foreach (entry; zip) {
-		InputStream input = entry.open;
-		ubyte[] data = new ubyte[entry.size];
-		auto count = input.read(data);
-		assert(count == entry.size);
-		contents[entry.info.name] = data;
+	try {
+		scope zip = new ZipBlockReader(file);
+		scope (exit) zip.close;
+
+		foreach (entry; zip) {
+			InputStream input = entry.open;
+			ubyte[] data = new ubyte[entry.size];
+			auto count = input.read(data);
+			assert(count == entry.size);
+			contents[entry.info.name] = data;
+		}
+
+		log(Format("Loaded {} files from {}.", contents.length, file));
+	}
+	catch (Exception e) {
+		log("loadZipFile: " ~ e.toString);
+		contents = null;
 	}
 
-	log(Format("Loaded {} files from {}.", contents.length, file));
 	return contents;
 }
 
