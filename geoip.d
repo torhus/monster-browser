@@ -4,13 +4,9 @@
 
 module geoip;
 
-import tango.io.archive.Zip;
-import Path = tango.io.Path;
-debug import tango.io.Stdout;
 import tango.stdc.stringz;
 import tango.sys.SharedLib;
 import tango.text.Ascii;
-import tango.text.convert.Format;
 
 import dwt.DWTException;
 import dwt.dwthelper.ByteArrayInputStream;
@@ -18,15 +14,13 @@ import dwt.graphics.Image;
 import dwt.widgets.Display;
 
 import common;
+import flagdata;
 
 
 private {
-	const FlagFileName = "flags.zip";
-
 	GeoIP* gi;
 	Display display;
 	Image[char[]] flagCache;
-	ubyte[][char[]] flagFiles;
 }
 
 private void bindFunc(alias funcPtr)(SharedLib lib)
@@ -61,18 +55,9 @@ bool initGeoIp()
 		geoIpLib.unload;
 	}
 	else {
-		if (Path.exists(FlagFileName)) {
-			flagFiles = loadZipFile(FlagFileName);
-			if (flagFiles is null) {
-				warning("Unable to load flag images, " ~ FlagFileName ~
-				        " might be corrupted.");
-			}
-		}
-		else {
-			warning(FlagFileName ~ " was not found, unable to show flags.");
-		}
-
-		if (flagFiles is null) {  // clean up if something went wrong
+		initFlagFiles;
+		if (flagFiles is null || flagFiles.length == 0) {
+			log("No flag data was found.");
 			geoIpLib.unload;
 			//GeoIP_delete(gi);  // For some reason, this crashes.
 			gi = null;
@@ -114,8 +99,7 @@ Image getFlagImage(in char[] countryCode)
 	image = countryCode in flagCache;
 	if (image is null) {
 		Image tmp = null;
-		char[] file = countryCode ~ ".gif";
-		ubyte data[] = flagFiles[file];
+		ubyte data[] = flagFiles[countryCode];
 
 		if (data !is null) {
 			try {
@@ -123,7 +107,8 @@ Image getFlagImage(in char[] countryCode)
 				tmp = new Image(display, stream);
 			}
 			catch (DWTException e) {
-				log("Error when reading " ~ file ~ ", possibly corrupt file.");
+				log("Error when decoding flag for '" ~ countryCode ~ "', "
+				                                     "possibly corrupt file.");
 			}
 		}
 		else {
@@ -135,33 +120,6 @@ Image getFlagImage(in char[] countryCode)
 	}
 
 	return image ? *image : null;
-}
-
-
-private ubyte[][char[]] loadZipFile(in char[] file)
-{
-	ubyte[][char[]] contents;
-
-	try {
-		scope zip = new ZipBlockReader(file);
-		scope (exit) zip.close;
-
-		foreach (entry; zip) {
-			InputStream input = entry.open;
-			ubyte[] data = new ubyte[entry.size];
-			auto count = input.read(data);
-			assert(count == entry.size);
-			contents[entry.info.name] = data;
-		}
-
-		log(Format("Loaded {} files from {}.", contents.length, file));
-	}
-	catch (Exception e) {
-		log("loadZipFile: " ~ e.toString);
-		contents = null;
-	}
-
-	return contents;
 }
 
 
