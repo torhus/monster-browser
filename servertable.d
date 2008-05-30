@@ -253,7 +253,6 @@ class ServerTable
 		}
 	}
 
-
 	/**
 	 * In addition to clearing the table and refilling it with updated data
 	 * without losing the selection (like refresh()), it also:
@@ -301,6 +300,18 @@ class ServerTable
 			playerTable.clear();
 			cvarTable.clear();
 		}
+	}
+
+	/// Empty the server, player, and cvar tables.
+	void clear()
+	{
+		if (table_.isDisposed)
+			return;
+
+		table_.setItemCount(0);
+		table_.clearAll;
+		cvarTable.clear;
+		playerTable.clear;
 	}
 
 
