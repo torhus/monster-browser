@@ -264,8 +264,8 @@ void getNewList()
 
 	assert(serverThread is null || !serverThread.isRunning);
 
+	serverTable.clear();
 	getActiveServerList.clear();
-	serverTable.refresh();
 
 	GC.collect();
 	statusBar.setLeft("Getting new server list...");
@@ -336,8 +336,8 @@ void refreshList()
 
 	total = servers.length + written;
 	statusBar.setLeft("Refreshing " ~ toString(total) ~ " servers...");
+	serverTable.clear();
 	getActiveServerList.clear();
-	serverTable.refresh();
 
 	GC.collect();
 	serverThread = new Thread(&f);
