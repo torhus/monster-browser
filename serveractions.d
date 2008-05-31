@@ -139,8 +139,13 @@ void queryAndAddServer(in char[] address)
 	{
 		void done(Object)
 		{
+			if (getActiveServerList.length() > 0) {
 				serverTable.reset(new IntWrapper(
 				                       getActiveServerList.getFilteredIndex(addressCopy)));
+			}
+			else {
+				statusBar.setLeft("The server did not reply");
+			}
 		}
 
 		try {
@@ -288,7 +293,12 @@ void refreshList()
 
 		void done(Object o)
 		{
-			serverTable.reset(null, total-getActiveServerList.length);
+			if (getActiveServerList.length() > 0) {
+				serverTable.reset(null, total-getActiveServerList.length);
+			}
+			else {
+				statusBar.setLeft("None of the servers replied");
+			}
 		}
 
 		try {
