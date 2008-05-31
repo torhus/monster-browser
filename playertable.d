@@ -50,8 +50,7 @@ class PlayerTable
 			public void handleEvent(Event e)
 			{
 				TableItem item = cast(TableItem) e.item;
-				auto sd = getActiveServerList.getFiltered(selectedServerIndex_);
-				auto player = sd.players[table_.indexOf(item)];
+				auto player = players_[table_.indexOf(item)];
 				item.setText(player[0 .. table_.getColumnCount()]);
 			}
 		});
@@ -70,8 +69,7 @@ class PlayerTable
 						return;
 
 					TableItem item = cast(TableItem) e.item;
-					auto sd = getActiveServerList.getFiltered(selectedServerIndex_);
-					auto player = sd.players[table_.indexOf(item)];
+					auto player = players_[table_.indexOf(item)];
 					scope parsed = parseColors(player[PlayerColumn.RAWNAME]);
 					scope tl = new TextLayout(Display.getDefault);
 
@@ -133,14 +131,13 @@ class PlayerTable
 	/// Returns the player list's Table widget object.
 	Table getTable() { return table_; };
 
-	/// Set which server to show the playerlist for.
-	void setSelectedServer(int i)
+	/// Set the contents of this table.
+	void setItems(char[][][] players)
 	{
 		// FIXME: show players for all selected servers at once (like ASE)
-		selectedServerIndex_ = i;
-		auto sd = getActiveServerList.getFiltered(selectedServerIndex_);
-		if (sd.players.length && sd.players[0][PlayerColumn.NAME] is null)
-			addCleanPlayerNames(sd.players);
+		players_ = players;
+		if (players_.length && players_[0][PlayerColumn.NAME] is null)
+			addCleanPlayerNames();
 		reset();
 	}
 
@@ -149,14 +146,14 @@ class PlayerTable
 	{
 		table_.clearAll();
 		sort();
-		table_.setItemCount(getActiveServerList.getFiltered(
-		                                 selectedServerIndex_).players.length);
+		table_.setItemCount(players_.length);
 	}
 
 	///
 	void clear()
 	{
 		table_.removeAll();
+		players_ = null;
 	}
 
 	/************************************************
@@ -165,25 +162,24 @@ class PlayerTable
 private:
 	Table table_;
 	Composite parent_;
-	int selectedServerIndex_;
+	char[][][] players_;
 
 	void sort()
 	{
-		auto sd = getActiveServerList.getFiltered(selectedServerIndex_);
 		int sortCol = table_.indexOf(table_.getSortColumn());
 		int dir = table_.getSortDirection();
 
 		switch (sortCol) {
 			case PlayerColumn.NAME:
-				sortStringArrayStable(sd.players, sortCol,
+				sortStringArrayStable(players_, sortCol,
 		                              ((dir == DWT.UP) ? false : true));
 				break;
 			case PlayerColumn.SCORE:
-				sortStringArrayStable(sd.players, sortCol,
+				sortStringArrayStable(players_, sortCol,
 		                          ((dir == DWT.DOWN) ? false : true), true);
 				break;
 			case PlayerColumn.PING:
-				sortStringArrayStable(sd.players, sortCol,
+				sortStringArrayStable(players_, sortCol,
 		                          ((dir == DWT.UP) ? false : true), true);
 				break;
 			default:
@@ -192,9 +188,9 @@ private:
 	}
 
 
-	void addCleanPlayerNames(char[][][] players)
+	void addCleanPlayerNames()
 	{
-		foreach (p; players)
+		foreach (p; players_)
 			p[PlayerColumn.NAME] = stripColorCodes(p[PlayerColumn.RAWNAME]);
 	}
 
