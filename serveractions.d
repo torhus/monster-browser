@@ -139,13 +139,8 @@ void queryAndAddServer(in char[] address)
 	{
 		void done(Object)
 		{
-			if (getActiveServerList.length() > 0) {
 				serverTable.reset(new IntWrapper(
 				                       getActiveServerList.getFilteredIndex(addressCopy)));
-			}
-			else {
-				statusBar.setLeft("Nothing to refresh");
-			}
 		}
 
 		try {
@@ -293,12 +288,7 @@ void refreshList()
 
 		void done(Object o)
 		{
-			if (getActiveServerList.length() > 0) {
-				serverTable.reset(null, total-getActiveServerList.length);
-			}
-			else {
-				statusBar.setLeft("Nothing to refresh");
-			}
+			serverTable.reset(null, total-getActiveServerList.length);
 		}
 
 		try {
