@@ -137,9 +137,10 @@ class ServerTable
 			void widgetSelected(SelectionEvent e)
 			{
 				int i = table_.getSelectionIndex();
-				selectedIp_ = getActiveServerList.getFiltered(i).server[ServerColumn.ADDRESS];
-				playerTable.setSelectedServer(i);
-				cvarTable.setItems(getActiveServerList.getFiltered(i).cvars);
+				auto sd = getActiveServerList.getFiltered(i);
+				selectedIp_ = sd.server[ServerColumn.ADDRESS];
+				cvarTable.setItems(sd.cvars);
+				playerTable.setItems(sd.players);
 			}
 
 			void widgetDefaultSelected(SelectionEvent e)
@@ -292,8 +293,9 @@ class ServerTable
 
 		if (i != -1) {
 			table_.setSelection(i);
-			playerTable.setSelectedServer(i);
-			cvarTable.setItems(getActiveServerList.getFiltered(i).cvars);
+			auto sd = getActiveServerList.getFiltered(i);
+			playerTable.setItems(sd.players);
+			cvarTable.setItems(sd.cvars);
 		}
 		else {
 			table_.deselectAll();
