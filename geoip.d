@@ -97,13 +97,13 @@ Image getFlagImage(in char[] countryCode)
 	Image* image;
 
 	image = countryCode in flagCache;
-	if (image is null) {
+	if (!image) {
 		Image tmp = null;
-		ubyte data[] = flagFiles[countryCode];
+		ubyte[]* data = countryCode in flagFiles;
 
-		if (data !is null) {
+		if (data) {
 			try {
-				auto stream  = new ByteArrayInputStream(cast(byte[])data);
+				auto stream  = new ByteArrayInputStream(cast(byte[])*data);
 				tmp = new Image(display, stream);
 			}
 			catch (DWTException e) {
