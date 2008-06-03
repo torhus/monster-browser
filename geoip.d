@@ -126,7 +126,8 @@ Image getFlagImage(in char[] countryCode)
 static ~this()
 {
 	foreach (key, val; flagCache)
-		val.dispose;
+		if (val)
+			val.dispose;
 
 	if (gi)
 		GeoIP_delete(gi);
