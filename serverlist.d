@@ -41,7 +41,9 @@ static this() {
 // should correspond to playertable.playerHeaders
 enum PlayerColumn { NAME, SCORE, PING, RAWNAME };
 // should correspond to servertable.serverHeaders
-enum ServerColumn { NAME, PASSWORDED, PING, PLAYERS, GAMETYPE, MAP, ADDRESS };
+enum ServerColumn {
+	COUNTRY, NAME, PASSWORDED, PING, PLAYERS, GAMETYPE, MAP, ADDRESS
+};
 
 private {
 	ServerList activeServerList;
@@ -55,7 +57,7 @@ struct ServerData {
 	char[] rawName;
 	/// name (without color codes), ping, playercount, map, etc.
 	char[][] server;
-	/// list of players, with name, score, ping, and raw name (with color
+	/// list of players, with country, name, score, ping, and raw name (with color
 	/// codes) for each.
 	char[][][] players;
 	/// list of cvars, with key and value for each

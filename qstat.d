@@ -130,6 +130,7 @@ each_server:
 				sd.server.length = ServerColumn.max + 1;
 
 				sd.rawName = fields[2];
+				sd.server[ServerColumn.COUNTRY] = null;
 				sd.server[ServerColumn.PASSWORDED] = "";
 				sd.server[ServerColumn.PING] = fields[6];
 				sd.server[ServerColumn.PLAYERS] = "";

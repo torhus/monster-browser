@@ -26,7 +26,8 @@ import settings;
 
 
 // should correspond to serverlist.ServerColumn
-char[][] serverHeaders = ["Name", "PW", "Ping", "Players", "Game", "Map", "IP"];
+char[][] serverHeaders =
+                    ["", "Name", "PW", "Ping", "Players", "Game", "Map", "IP"];
 
 
 /**
@@ -62,14 +63,27 @@ class ServerTable
 			void handleEvent(Event e)
 			{
 				TableItem item = cast(TableItem) e.item;
-				int i = table_.indexOf(item);
+				int index = table_.indexOf(item);
+				auto sd = getActiveServerList.getFiltered(index);
 
-				debug if (i >= getActiveServerList.filteredLength) {
+				debug if (index >= getActiveServerList.filteredLength) {
 					error("{}({}):\n"
-					      "i >= getActiveServerList.filteredLength",
+					      "index >= getActiveServerList.filteredLength",
 					      __FILE__, __LINE__);
 				}
-				item.setText(getActiveServerList.getFiltered(i).server);
+
+				// Find and store country code.
+				if (sd.server[ServerColumn.COUNTRY] is null) {					
+					char[] ip = sd.server[ServerColumn.ADDRESS];
+					auto colon = locate(ip, ':');
+					char[] country = countryCodeByAddr(ip[0..colon]);
+					sd.server[ServerColumn.COUNTRY] = country;
+				}
+
+				// add text
+				for (int i = ServerColumn.COUNTRY + 1; i <= ServerColumn.max;
+				                                                           i++)
+					item.setText(i, sd.server[i]);
 			}
 		});
 
@@ -79,56 +93,60 @@ class ServerTable
 		if (showFlags_ || coloredNames_) {
 			table_.addListener(DWT.EraseItem, new class Listener {
 				void handleEvent(Event e) {
-					if (e.index == ServerColumn.NAME)
+					if (e.index == ServerColumn.NAME && coloredNames_ ||
+					             e.index == ServerColumn.COUNTRY && showFlags_)
 						e.detail &= ~DWT.FOREGROUND;
 				}
 			});
 
 			table_.addListener(DWT.PaintItem, new class Listener {
 				void handleEvent(Event e) {
-					if (e.index != ServerColumn.NAME)
+					if ((e.index != ServerColumn.NAME || !coloredNames_) &&
+					          (e.index != ServerColumn.COUNTRY || !showFlags_))
 						return;
 
 					TableItem item = cast(TableItem) e.item;
 					auto i = table_.indexOf(item);
 					ServerData* sd = getActiveServerList.getFiltered(i);
 
-					enum { leftMargin = 2, flagWidth = 18 }
+					enum { leftMargin = 2 }
 
-					// draw flag
-					if (showFlags_) {
-						char[] ip = sd.server[ServerColumn.ADDRESS];
-						auto colon = locate(ip, ':');
-						char[] country = countryCodeByAddr(ip[0..colon]);
-						// FIXME: cache the flag?
-						Image flag = getFlagImage(country);
-						if (flag)
-							e.gc.drawImage(flag, e.x+leftMargin, e.y);
-					}
+					switch (e.index) {
+						case ServerColumn.COUNTRY:
+							auto country = sd.server[ServerColumn.COUNTRY];
+							if (showFlags_ && country.length) {
+								if (Image flag = getFlagImage(country))
+									// could cache the flag Image here
+									e.gc.drawImage(flag, e.x, e.y);
+								else
+									e.gc.drawString(country, e.x + leftMargin,
+									                                      e.y);
+							}
+							break;
+						case ServerColumn.NAME:
+							auto textX = e.x + leftMargin;
+							if (!(e.detail & DWT.SELECTED)) {
+								TextLayout tl = sd.customData;
+								if (tl is null) {
+									auto parsed = parseColors(sd.rawName);
+									tl = new TextLayout(Display.getDefault);
+									tl.setText(sd.server[ServerColumn.NAME]);
+									foreach (r; parsed.ranges)
+										tl.setStyle(r.style, r.start, r.end);
 
-					auto textX = e.x + leftMargin;
-					if (showFlags_)
-						textX += flagWidth + 4;
+									sd.customData = tl;  // cache it
+								}
 
-					// draw text
-					if (coloredNames_ && !(e.detail & DWT.SELECTED)) {
-						TextLayout tl = sd.customData;
-						if (tl is null) {
-							auto parsed = parseColors(sd.rawName);
-							tl = new TextLayout(Display.getDefault);
-							tl.setText(sd.server[ServerColumn.NAME]);
-							foreach (r; parsed.ranges)
-								tl.setStyle(r.style, r.start, r.end);
-
-							sd.customData = tl;  // cache it
-						}
-
-						tl.draw(e.gc, textX, e.y);
-					}
-					else {
-						e.gc.drawString(sd.server[ServerColumn.NAME],
-							                                       textX, e.y);
-					}
+								tl.draw(e.gc, textX, e.y);
+							}
+							else {
+								e.gc.drawString(sd.server[ServerColumn.NAME],
+								                                   textX, e.y);
+							}
+							break;
+						default:
+							assert(0);
+					}					
 				}
 			});
 		}
