@@ -92,12 +92,13 @@ private {
 
 	Setting[] defaultSessionState = [{"filterState", "0"},
 	                                 {"playerSortOrder", "0"},
-	                                 {"serverSortOrder", "0"},
+	                                 {"serverSortOrder", "1"},
 	                                 {"middleWeights", "16,5"},
 	                                 {"rightWeights", "1,1"},
 	                                 {"cvarColumnWidths", "90,90"},
 	                                 {"playerColumnWidths", "100,40,40"},
-	                                 {"serverColumnWidths", "250,25,32,50,40,90,130"},
+	                                 {"serverColumnWidths",
+									              "26,250,25,32,50,40,90,130"},
 	                                ];
 }
 
