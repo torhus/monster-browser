@@ -43,6 +43,7 @@ bool initGeoIp()
 		bindFunc!(GeoIP_open)(geoIpLib);
 		bindFunc!(GeoIP_delete)(geoIpLib);
 		bindFunc!(GeoIP_country_code_by_addr)(geoIpLib);
+		bindFunc!(GeoIP_country_name_by_addr)(geoIpLib);
 	}
 	catch (SharedLibException e) {
 		log("Unable to load GeoIP.dll, flags will not be shown.");
@@ -80,6 +81,22 @@ char[] countryCodeByAddr(in char[] addr)
 	}
 	else {
 		return toLower(fromStringz(code).dup);
+	}
+}
+
+
+///
+char[] countryNameByAddr(in char[] addr)
+{
+	assert(gi);
+
+	char* code = GeoIP_country_name_by_addr(gi, toStringz(addr));
+	if (code is null) {
+		log("GeoIP: no country name for " ~ addr ~ ".");
+		return null;
+	}
+	else {
+		return fromStringz(code);
 	}
 }
 
@@ -145,7 +162,8 @@ enum /*GeoIPOptions*/ {
 }
 
 extern (C) {
-	GeoIP* function(in char *filename, int flags) GeoIP_open;
+	GeoIP* function(in char* filename, int flags) GeoIP_open;
 	void function(GeoIP* gi) GeoIP_delete;
-	char* function(GeoIP* gi, in char *addr) GeoIP_country_code_by_addr;
+	char* function(GeoIP* gi, in char* addr) GeoIP_country_code_by_addr;
+	char* function(GeoIP* gi, in char* addr) GeoIP_country_name_by_addr;
 }
