@@ -15,6 +15,7 @@ import dwt.widgets.Listener;
 import dwt.widgets.Table;
 import dwt.widgets.TableColumn;
 import dwt.widgets.TableItem;
+import dwt.widgets.ToolTip;
 
 import colorednames;
 import common;
@@ -73,7 +74,7 @@ class ServerTable
 				}
 
 				// Find and store country code.
-				if (sd.server[ServerColumn.COUNTRY] is null) {					
+				if (sd.server[ServerColumn.COUNTRY] is null) {
 					char[] ip = sd.server[ServerColumn.ADDRESS];
 					auto colon = locate(ip, ':');
 					char[] country = countryCodeByAddr(ip[0..colon]);
@@ -146,7 +147,33 @@ class ServerTable
 							break;
 						default:
 							assert(0);
-					}					
+					}
+				}
+			});
+
+			table_.addListener(DWT.MouseMove, new class Listener {
+				void handleEvent(Event event) {
+					// Adapted code from SWT snippet110.
+					char[] text = null;
+					Rectangle clientArea = table_.getClientArea();
+					Point point = new Point(event.x, event.y);
+					int max = getBottomIndex();
+					int i = table_.getTopIndex();
+					while (i < table_.getItemCount() && i <= max) {
+						TableItem item = table_.getItem(i);
+						Rectangle rect = item.getBounds(ServerColumn.COUNTRY);
+						if (rect.contains(point)) {
+							ServerData* sd =
+							                getActiveServerList.getFiltered(i);
+							char[] ip = sd.server[ServerColumn.ADDRESS];
+							auto colon = locate(ip, ':');
+							text = countryNameByAddr(ip[0..colon]);
+							break;
+						}
+						i++;
+					}
+					if (table_.getToolTipText() != text)
+						table_.setToolTipText(text);
 				}
 			});
 		}
