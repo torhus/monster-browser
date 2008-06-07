@@ -65,13 +65,8 @@ class ServerTable
 			{
 				TableItem item = cast(TableItem) e.item;
 				int index = table_.indexOf(item);
+				assert(index < getActiveServerList.filteredLength);
 				auto sd = getActiveServerList.getFiltered(index);
-
-				debug if (index >= getActiveServerList.filteredLength) {
-					error("{}({}):\n"
-					      "index >= getActiveServerList.filteredLength",
-					      __FILE__, __LINE__);
-				}
 
 				// Find and store country code.
 				if (sd.server[ServerColumn.COUNTRY] is null) {
