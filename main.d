@@ -66,7 +66,23 @@ void main(char[][] args) ///
 		Cout("Cout is redirected to this file.").newline.flush;
 	}
 
-	try	{
+	version (redirect) {
+		try	{
+			_main(args);
+		}
+		catch(Exception e) {
+			logx(__FILE__, __LINE__, e);
+			error(e.classinfo.name ~ "\n" ~ e.toString());
+		}
+	}
+	else {
+		_main(args);
+	}
+}
+
+
+private void _main(char[][] args)
+{
 		loadSettings();
 
 		// check for presence of Gslist
@@ -168,12 +184,6 @@ void main(char[][] args) ///
 				display.sleep();
 			}
 			display.dispose();
-	}
-	catch(Exception e) {
-		debug throw new Exception("rethrow from main()", e);
-		logx(__FILE__, __LINE__, e);
-		error(e.classinfo.name ~ "\n" ~ e.toString());
-	}
 }
 
 
