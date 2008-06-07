@@ -57,15 +57,6 @@ ThreadDispatcher threadDispatcher;
 
 void main(char[][] args) ///
 {
-	globalTimer = new Timer;
-
-	version (redirect) {
-		Cerr.output = new FileOutput("DEBUG.OUT");
-		Cerr("Cerr is redirected to this file.").newline.flush;
-		Cout.output = Cerr.output;
-		Cout("Cout is redirected to this file.").newline.flush;
-	}
-
 	version (redirect) {
 		try	{
 			_main(args);
@@ -83,107 +74,116 @@ void main(char[][] args) ///
 
 private void _main(char[][] args)
 {
-		loadSettings();
+	globalTimer = new Timer;
 
-		// check for presence of Gslist
-		char[] gslistExe;
-		version (Windows) {
-			gslistExe = "gslist.exe";
-		}
-		else version(linux) {
-			gslistExe = "gslist";
-		}
-		else {
-			static assert(0);
-		}
+	version (redirect) {
+		Cerr.output = new FileOutput("DEBUG.OUT");
+		Cerr("Cerr is redirected to this file.").newline.flush;
+		Cout.output = Cerr.output;
+		Cout("Cout is redirected to this file.").newline.flush;
+	}
 
-		common.useGslist = exists(gslistExe);
+	loadSettings();
 
-		if (common.useGslist) {
-			log(gslistExe ~
-			    " found, using it for faster server list retrieval.");
+	// check for presence of Gslist
+	char[] gslistExe;
+	version (Windows) {
+		gslistExe = "gslist.exe";
+	}
+	else version(linux) {
+		gslistExe = "gslist";
+	}
+	else {
+		static assert(0);
+	}
+
+	common.useGslist = exists(gslistExe);
+
+	if (common.useGslist) {
+		log(gslistExe ~
+			" found, using it for faster server list retrieval.");
+	}
+	else {
+		log(gslistExe ~
+			" not found, falling back to qstat for retrieving the "
+			"server list.");
+	}
+
+	mainWindow = new MainWindow();
+
+	mainWindow.addKeyListener(new class KeyAdapter {
+		public void keyPressed (KeyEvent e)
+		{
+			//FIXME: this function never gets called
+			debug Cout("Keypressed").newline;
+			switch (e.keyCode) {
+				case DWT.F4:
+					threadDispatcher.run(&getNewList);
+					break;
+				case DWT.F5:
+					threadDispatcher.run(&refreshList);
+					break;
+				default:
+					break;
+			}
 		}
-		else {
-			log(gslistExe ~
-			    " not found, falling back to qstat for retrieving the "
-			    "server list.");
-		}
+	});
 
-		mainWindow = new MainWindow();
-
-		mainWindow.addKeyListener(new class KeyAdapter {
-			public void keyPressed (KeyEvent e)
-			{
-				//FIXME: this function never gets called
-				debug Cout("Keypressed").newline;
-				switch (e.keyCode) {
-					case DWT.F4:
-						threadDispatcher.run(&getNewList);
-						break;
-					case DWT.F5:
-						threadDispatcher.run(&refreshList);
-						break;
-					default:
-						break;
+	mainWindow.addShellListener(new class ShellAdapter {
+		public void shellClosed(ShellEvent e)
+		{
+			volatile runtools.abortParsing = true;
+			statusBar.setLeft("Saving settings...");
+			log("Saving settings...");
+			saveSettings();
+			statusBar.setLeft("Exiting...");
+			log("Exiting...");
+			log("Killing server browser...");
+			runtools.killServerBrowser();
+			//qstat.SaveRefreshList();
+			/*log("Waiting for threads to terminate...");
+			foreach (i, t; Thread.getAll()) {
+				if (t != Thread.getThis()) {
+					log("Waiting for thread " ~
+											  Integer.toString(i) ~ "...");
+					t.join();
+					log("    ...thread " ~ Integer.toString(i) ~ " done.");
 				}
-			}
-		});
+			}*/
+		}
+	});
 
-		mainWindow.addShellListener(new class ShellAdapter {
-			public void shellClosed(ShellEvent e)
-			{
-				volatile runtools.abortParsing = true;
-				statusBar.setLeft("Saving settings...");
-				log("Saving settings...");
-				saveSettings();
-				statusBar.setLeft("Exiting...");
-				log("Exiting...");
-				log("Killing server browser...");
-				runtools.killServerBrowser();
-				//qstat.SaveRefreshList();
-				/*log("Waiting for threads to terminate...");
-				foreach (i, t; Thread.getAll()) {
-					if (t != Thread.getThis()) {
-						log("Waiting for thread " ~
-						                          Integer.toString(i) ~ "...");
-						t.join();
-						log("    ...thread " ~ Integer.toString(i) ~ " done.");
-					}
-				}*/
-			}
-		});
+	setActiveServerList(activeMod.name);
+	serverTable.getTable.setFocus();
+	mainWindow.open();
 
-		setActiveServerList(activeMod.name);
-		serverTable.getTable.setFocus();
-		mainWindow.open();
-
-		if (args.length > 1 && args[1] == "fromfile") {
-			loadSavedList();
+	if (args.length > 1 && args[1] == "fromfile") {
+		loadSavedList();
+	}
+	else {
+		if (common.useGslist) {
+			getNewList();
 		}
 		else {
-			if (common.useGslist) {
+			// Qstat is too slow to do a getNewList(), so just refresh
+			// the old list instead, if possible.
+			if (exists(activeMod.serverFile))
+				refreshList();
+			else
 				getNewList();
-			}
-			else {
-				// Qstat is too slow to do a getNewList(), so just refresh
-				// the old list instead, if possible.
-				if (exists(activeMod.serverFile))
-					refreshList();
-				else
-					getNewList();
-			}
 		}
+	}
 
-		threadDispatcher = new ThreadDispatcher;
+	threadDispatcher = new ThreadDispatcher;
 
-		// main loop
-		Display display = Display.getDefault;
-		while (!mainWindow.isDisposed()) {
-			threadDispatcher.dispatch();
-			if (!display.readAndDispatch())
-				display.sleep();
-			}
-			display.dispose();
+	// main loop
+	Display display = Display.getDefault;
+	while (!mainWindow.isDisposed()) {
+		threadDispatcher.dispatch();
+		if (!display.readAndDispatch())
+			display.sleep();
+		}
+		display.dispose();
 }
 
 
