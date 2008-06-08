@@ -123,7 +123,7 @@ each_server:
 
 				/*if (activeMod.name != "baseq3" &&
 				             MOD_ONLY &&
-				             icmp(fields[8], activeMod.name) != 0) {
+				             icmp(fields[Field.GAME], activeMod.name) != 0) {
 					debug printf("skipped %.*s\n", line);
 					debug line = readLine();
 					debug printf("        %.*s\n", line);
@@ -160,7 +160,7 @@ each_server:
 				uint ate;
 				int total = parse(fields[Field.PLAYER_COUNT], 10, &ate);
 
-				if (ate < fields[5].length)
+				if (ate < fields[Field.PLAYER_COUNT].length)
 					invalidInteger(sd.rawName, fields[Field.PLAYER_COUNT]);
 
 				int bots = total - humans;
@@ -378,12 +378,12 @@ Set!(char[]) filterServerFile(in char[] readFrom, in char writeTo[])
 					// end up including too many servers.
 					if (cvar[0] == "game" &&
 					                  icompare(cvar[1], activeMod.name) == 0) {
-						outputServer(fields[1]);
+						outputServer(fields[Field.NAME]);
 						break;
 					}
 					if (cvar[0] == "gamename" &&
 					                  icompare(cvar[1], activeMod.name) == 0) {
-						outputServer(fields[1]);
+						outputServer(fields[Field.NAME]);
 						break;
 					}
 				}
