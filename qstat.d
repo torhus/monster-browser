@@ -29,6 +29,9 @@ import settings;
 
 const char[] FIELDSEP = "\x1e"; // \x1e = ascii record separator
 
+private enum Field {
+	TYPE, ADDRESS, NAME, MAP, MAX_PLAYERS, PLAYER_COUNT, PING, RETRIES, GAME
+}
 
 
 /**
@@ -115,7 +118,7 @@ each_server:
 			if (fields.length >= 9) {
 				bool keep_server = false;
 
-				if (icompare(fields[8], activeMod.name) == 0)
+				if (icompare(fields[Field.GAME], activeMod.name) == 0)
 					keep_server = true;
 
 				/*if (activeMod.name != "baseq3" &&
@@ -129,14 +132,14 @@ each_server:
 
 				sd.server.length = ServerColumn.max + 1;
 
-				sd.rawName = fields[2];
+				sd.rawName = fields[Field.NAME];
 				sd.server[ServerColumn.COUNTRY] = null;
 				sd.server[ServerColumn.PASSWORDED] = "";
-				sd.server[ServerColumn.PING] = fields[6];
+				sd.server[ServerColumn.PING] = fields[Field.PING];
 				sd.server[ServerColumn.PLAYERS] = "";
 				sd.server[ServerColumn.GAMETYPE] = "";
-				sd.server[ServerColumn.MAP] = fields[3];
-				sd.server[ServerColumn.ADDRESS] = fields[1];
+				sd.server[ServerColumn.MAP] = fields[Field.MAP];
+				sd.server[ServerColumn.ADDRESS] = fields[Field.ADDRESS];
 
 				// parse cvars
 				line = iter.next();
@@ -155,10 +158,10 @@ each_server:
 
 				// 'Players' column contents
 				uint ate;
-				int total = parse(fields[5], 10, &ate);
+				int total = parse(fields[Field.PLAYER_COUNT], 10, &ate);
 
 				if (ate < fields[5].length)
-					invalidInteger(sd.rawName, fields[5]);
+					invalidInteger(sd.rawName, fields[Field.PLAYER_COUNT]);
 
 				int bots = total - humans;
 				if (bots < 0)
@@ -166,7 +169,7 @@ each_server:
 
 				sd.server[ServerColumn.PLAYERS] = toString(humans) ~
 				                  "+" ~ toString(bots) ~
-				                  "/" ~ fields[4];
+				                  "/" ~ fields[Field.MAX_PLAYERS];
 
 				sd.server[ServerColumn.NAME] = stripColorCodes(sd.rawName);
 
@@ -174,7 +177,7 @@ each_server:
 			}
 			else /*if (!MOD_ONLY)*/ { // server didn't respond
 				/*sd.server.length = servertable.serverHeaders.length;
-				sd.server[ServerColumn.ADDRESS] = fields[1]; // ip
+				sd.server[ServerColumn.ADDRESS] = fields[Field.ADDRESS]; // ip
 				getActiveServerList.add(sd);*/
 			}
 			if (outfile) {
@@ -360,11 +363,11 @@ Set!(char[]) filterServerFile(in char[] readFrom, in char writeTo[])
 				continue;  // server probably timed out
 
 			if (!MOD_ONLY) {
-				outputServer(fields[1]);
+				outputServer(fields[Field.ADDRESS]);
 			}
 			else if (/*activeMod.name != "baseq3" &&*/
-			                        icompare(fields[8], activeMod.name) == 0) {
-				outputServer(fields[1]);
+			               icompare(fields[Field.GAME], activeMod.name) == 0) {
+				outputServer(fields[Field.ADDRESS]);
 			}
 			else { // need to parse cvars to find out which mod this server runs
 				line = infile.next();
