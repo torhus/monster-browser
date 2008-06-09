@@ -83,6 +83,8 @@ private void _main(char[][] args)
 		Cout("Cout is redirected to this file.").newline.flush;
 	}
 
+	parseCmdLine(args);
+
 	loadSettings();
 
 	// check for presence of Gslist
@@ -157,7 +159,7 @@ private void _main(char[][] args)
 	serverTable.getTable.setFocus();
 	mainWindow.open();
 
-	if (args.length > 1 && args[1] == "fromfile") {
+	if (arguments.fromfile) {
 		loadSavedList();
 	}
 	else {

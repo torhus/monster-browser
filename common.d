@@ -26,11 +26,16 @@ import dwt.widgets.Table;
 import main;
 import set;
 
-
 version (allservers)  // useful for speed testing
 	const bool MOD_ONLY = false;
 else
 	const bool MOD_ONLY = true;
+
+struct arguments {  ///
+static:
+	bool fromfile = false;  ///
+	bool norefresh = false;  ///
+}
 
 bool useGslist;  /// Will be true if gslist was found during startup.
 
@@ -523,4 +528,22 @@ uint appendServersToFile(in char[] fileName, in Set!(char[]) servers,
 
 	output.flush.close;
 	return count;
+}
+
+
+/// Sets the values of the common.arguments struct.
+void parseCmdLine(char[][] args)
+{
+	foreach (arg; args[1..$]) {
+		switch (arg) {
+			case "fromfile":
+				arguments.fromfile = true;
+				break;
+			case "norefresh":
+				arguments.norefresh = true;
+				break;
+			default:
+				break;
+		}
+	}
 }
