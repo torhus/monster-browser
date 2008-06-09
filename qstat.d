@@ -378,12 +378,12 @@ Set!(char[]) filterServerFile(in char[] readFrom, in char writeTo[])
 					// end up including too many servers.
 					if (cvar[0] == "game" &&
 					                  icompare(cvar[1], activeMod.name) == 0) {
-						outputServer(fields[Field.NAME]);
+						outputServer(fields[Field.ADDRESS]);
 						break;
 					}
 					if (cvar[0] == "gamename" &&
 					                  icompare(cvar[1], activeMod.name) == 0) {
-						outputServer(fields[Field.NAME]);
+						outputServer(fields[Field.ADDRESS]);
 						break;
 					}
 				}
