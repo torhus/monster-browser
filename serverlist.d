@@ -170,7 +170,7 @@ class ServerList
 				refresh = true;
 			}
 		}
-		if (refresh)
+		if (refresh && !arguments.norefresh)
 			//display.syncExec(new IntWrapper(index), &serverTable.refresh);
 			Display.getDefault.syncExec(new class Runnable {
 				void run() { serverTable.refresh(new IntWrapper(index)); }
