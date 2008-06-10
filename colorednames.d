@@ -17,17 +17,17 @@ static this() {
 	// black
 	q3Colors[0] = new TextStyle(null, new Color(display,   0,   0,   0), null);
 	// red
-	q3Colors[1] = new TextStyle(null, new Color(display, 255,   0,   0), null);
+	q3Colors[1] = new TextStyle(null, new Color(display, 240,   0,   0), null);
 	// green
-	q3Colors[2] = new TextStyle(null, new Color(display,   0, 255,   0), null);
+	q3Colors[2] = new TextStyle(null, new Color(display,   0, 190,   0), null);
 	// yellow
-	q3Colors[3] = new TextStyle(null, new Color(display, 215, 215,   0), null);
+	q3Colors[3] = new TextStyle(null, new Color(display, 220, 220,   0), null);
 	// blue
-	q3Colors[4] = new TextStyle(null, new Color(display,   0,   0, 255), null);
+	q3Colors[4] = new TextStyle(null, new Color(display,   0,   0, 240), null);
 	// cyan
-	q3Colors[5] = new TextStyle(null, new Color(display,   0, 240, 240), null);
+	q3Colors[5] = new TextStyle(null, new Color(display,   0, 225, 225), null);
 	// magenta
-	q3Colors[6] = new TextStyle(null, new Color(display, 255,   0, 255), null);
+	q3Colors[6] = new TextStyle(null, new Color(display, 230,   0, 230), null);
 	// white
 	//q3Colors[7] = new TextStyle(null, new Color(display, 255, 255, 255), null);
 	q3Colors[7] = q3Colors[0];
