@@ -8,6 +8,9 @@
   doesn't do that, so you need to turn off the filters to see if everything is
   ok, or if there was a connection problem etc.
 
+- If loading servers without refreshing the GUI, there is no point in calling
+  _insertSorted, or to get country codes.
+
 - Use Integer.parse instead of toInt to avoid exceptions?  parse will just
   return 0 if there's garbage in the string, which is usually better than
   stopping the app with an exception.  Might also speed up sorting.

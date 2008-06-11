@@ -14,6 +14,7 @@ import dwt.graphics.TextLayout;
 import dwt.widgets.Display;
 
 import common;
+import geoip;
 import main;
 import runtools;
 import servertable;
@@ -164,6 +165,7 @@ class ServerList
 
 		synchronized {
 			isSorted_ = false;
+			sd.server[ServerColumn.COUNTRY] = getCountryCode(sd);
 			list ~= *sd;
 			if (!isFilteredOut(sd)) {
 				index = _insertSorted(&list[$ - 1]);
@@ -491,6 +493,12 @@ private:
 	void appendToFiltered(ServerData* psd)
 	{
 		filteredList ~= psd;
+	}
+
+	char[] getCountryCode(ServerData* sd)
+	{
+		char[] address = sd.server[ServerColumn.ADDRESS];
+		return countryCodeByAddr(address[0..locate(address, ':')]);
 	}
 
 	void copyListToFilteredList()
