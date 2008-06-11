@@ -69,12 +69,12 @@ class ServerTable
 				auto sd = getActiveServerList.getFiltered(index);
 
 				// Find and store country code.
-				if (sd.server[ServerColumn.COUNTRY] is null) {
+				/*if (sd.server[ServerColumn.COUNTRY].length == 0) {
 					char[] ip = sd.server[ServerColumn.ADDRESS];
 					auto colon = locate(ip, ':');
 					char[] country = countryCodeByAddr(ip[0..colon]);
 					sd.server[ServerColumn.COUNTRY] = country;
-				}
+				}*/
 
 				// add text
 				for (int i = ServerColumn.COUNTRY + 1; i <= ServerColumn.max;

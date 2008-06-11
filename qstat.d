@@ -133,7 +133,7 @@ each_server:
 				sd.server.length = ServerColumn.max + 1;
 
 				sd.rawName = fields[Field.NAME];
-				sd.server[ServerColumn.COUNTRY] = null;
+				sd.server[ServerColumn.COUNTRY] = "";
 				sd.server[ServerColumn.PASSWORDED] = "";
 				sd.server[ServerColumn.PING] = fields[Field.PING];
 				sd.server[ServerColumn.PLAYERS] = "";
