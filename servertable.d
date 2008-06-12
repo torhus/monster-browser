@@ -28,7 +28,7 @@ import settings;
 
 // should correspond to serverlist.ServerColumn
 char[][] serverHeaders =
-                    ["", "Name", "PW", "Ping", "Players", "Game", "Map", "IP"];
+                    [" ", "Name", "PW", "Ping", "Players", "Game", "Map", "IP"];
 
 
 /**
