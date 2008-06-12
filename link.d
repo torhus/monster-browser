@@ -6,6 +6,8 @@ version(build) {
 	pragma(link, "comctl32.lib");
 	pragma(link, "comdlg32.lib");
 	pragma(link, "gdi32.lib");
+	// Only needed for win 95/98 compatibility for SHGetSpecialFolderPath()
+	pragma(link, "shfolder.lib");
 	pragma(link, "shell32.lib");
 	pragma(link, "ole32.lib");
 	pragma(link, "oleaut32.lib");
