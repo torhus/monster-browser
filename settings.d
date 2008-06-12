@@ -13,21 +13,28 @@ import main;
 import serverlist;
 
 
+version (Windows) {
+	import tango.stdc.stringz;
+	import tango.sys.win32.Types;
+	enum { CSIDL_PROGRAM_FILES = 38 }
+	extern (Windows) BOOL SHGetSpecialFolderPathA(HWND, LPTSTR, int, BOOL);
+}
+
+
 /// Access to mod-specific configuration.
 struct Mod
 {
-	private IniSection section;
-
 	char[] name; ///
 
 	char[] masterServer()  ///
 	{
-		char[] r = section["masterServer"];
-		return r ? r : "master3.idsoftware.com";
+		return section.getValue("masterServer", "master3.idsoftware.com");
 	}
 
-	///
-	char[] serverFile() { return replace(masterServer.dup, ':', '_') ~ ".lst"; }
+	char[] serverFile() ///
+	{
+		return replace(masterServer.dup, ':', '_') ~ ".lst";
+	}
 
 	char[] extraServersFile() { return name ~ ".extra"; }  ///
 
@@ -36,6 +43,8 @@ struct Mod
 		char[] r = section["exePath"];
 		return r ? r : getSetting("gamePath");
 	}
+
+	private IniSection section;
 }
 
 
@@ -54,7 +63,7 @@ private {
 	    ";\n"
 	    "; [mymod]\n"
 	    "; masterServer=master.mymod.com\n"
-	    "; exePath=C:\\Program Files\\My Mod Directory\\mymod.exe\n"
+	    "; exePath=PROGRAM_FILES\\My Mod Directory\\mymod.exe\n"
 	    ";\n"
 	    "; Lines beginning with a \";\" are comments.\n"
 	    "\n"
@@ -62,7 +71,7 @@ private {
 	    "\n"
 	    "[wop]\n"
 	    "masterServer=wopmaster.kickchat.com:27955\n"
-	    "exePath=C:\\Program Files\\World of Padman\\wop.exe\n"
+	    "exePath=PROGRAM_FILES\\World of Padman\\wop.exe\n"
 	    "\n"
 	    "[q3ut4]\n"
 	    "masterServer=master.urbanterror.net\n"
@@ -81,7 +90,7 @@ private {
 	}
 	Setting[] defaults = [{"coloredNames", "true"},
 	                      {"gamePath",
-	                           r"C:\Program Files\Quake III Arena\quake3.exe"},
+	                              r"PROGRAM_FILES\Quake III Arena\quake3.exe"},
 	                      {"lastMod", "westernq3"},
 	                      {"minimizeOnGameLaunch", "true"},
 	                      {"showFlags", "true"},
@@ -149,9 +158,14 @@ void loadModFile()  ///
 
 private void writeDefaultModsFile()
 {
+	char[] text = defaultModsFile;
+
+	version (Windows)
+		text = substitute(text, "PROGRAM_FILES", getProgramFilesDirectory());
+
 	// Use C IO to get line ending translation.
 	FILE* f = fopen((modFileName ~ '\0').ptr, "w");
-	fwrite(defaultModsFile.ptr, 1, defaultModsFile.length, f);
+	fwrite(text.ptr, 1, text.length, f);
 	fclose(f);
 }
 
@@ -170,6 +184,17 @@ void loadSettings()
 	foreach(Setting s; defaults) {
 		if (!sec.getValue(s.name)) {
 			sec.setValue(s.name, s.value);
+		}
+	}
+
+	// ugly way of guessing q3 install directory
+	version (Windows) {
+		IniSection sec2 = settingsIni["Settings"];
+		char[] value = sec2.getValue("gamePath");
+		if (value.length >= 13 && value[0..13] == "PROGRAM_FILES") {
+			char[] dir = getProgramFilesDirectory();
+			value = substitute(value, "PROGRAM_FILES", dir);
+			sec2.setValue("gamePath", value);
 		}
 	}
 
@@ -301,4 +326,20 @@ char[] getSessionState(in char[] key) ///
 	assert(sec[key], key ~ " not found.\n\n"
 	                  "All settings need to have a default.");
 	return sec[key];
+}
+
+
+/**
+ * Get the default program install directory, or an educated guess if not
+ * found.
+ * 
+ * Sample return: "C:\Program Files".
+ */
+private char[] getProgramFilesDirectory()
+{
+	char buf[MAX_PATH] = void;
+	auto r = SHGetSpecialFolderPathA(null, buf.ptr, CSIDL_PROGRAM_FILES,
+																	false);
+	assert(r);
+	return r ? fromStringz(buf.ptr).dup : "C:\\Program Files".dup;
 }
