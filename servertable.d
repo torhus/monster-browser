@@ -12,6 +12,8 @@ import dwt.widgets.Composite;
 import dwt.widgets.Display;
 import dwt.widgets.Event;
 import dwt.widgets.Listener;
+import dwt.widgets.Menu;
+import dwt.widgets.MenuItem;
 import dwt.widgets.Table;
 import dwt.widgets.TableColumn;
 import dwt.widgets.TableItem;
@@ -21,6 +23,7 @@ import common;
 import geoip;
 import launch;
 import main;
+import serveractions;
 import serverlist;
 import settings;
 
@@ -229,8 +232,48 @@ class ServerTable
 			sortCol = 0;
 		table_.setSortColumn(table_.getColumn(sortCol));
 		table_.setSortDirection(reversed ? DWT.DOWN : DWT.UP);
+
+		table_.setMenu(createContextMenu);
 	}
 
+	Menu createContextMenu()
+	{
+		Menu menu = new Menu(table_);
+
+		MenuItem item = new MenuItem(menu, DWT.PUSH);
+		item.setText("Join\tEnter");
+		menu.setDefaultItem(item);
+		item.addSelectionListener(new class SelectionAdapter {
+			void widgetSelected(SelectionEvent e) {
+				joinServer(getActiveServerList.getFiltered(
+				                                  table_.getSelectionIndex()));
+			}
+		});
+
+		item = new MenuItem(menu, DWT.PUSH);
+		item.setText("Refresh this only\tCtrl+R");
+		item.setEnabled(false);
+		item.addSelectionListener(new class SelectionAdapter {
+			void widgetSelected(SelectionEvent e) {
+				ServerData* sd = getActiveServerList.getFiltered(
+				                                  table_.getSelectionIndex());
+				queryAndAddServer(sd.server[ServerColumn.ADDRESS]);
+			}
+		});
+
+		item = new MenuItem(menu, DWT.PUSH);
+		item.setText("Copy address\tCtrl+C");
+		item.setEnabled(false);
+		item.addSelectionListener(new class SelectionAdapter {
+			void widgetSelected(SelectionEvent e) {
+				ServerData* sd = getActiveServerList.getFiltered(
+				                                   table_.getSelectionIndex());
+				db(sd.server[ServerColumn.ADDRESS]);
+			}
+		});
+		
+		return menu;
+	}
 
 	/// The index of the currently active sort column.
 	int sortColumn() { return table_.indexOf(table_.getSortColumn()); }
