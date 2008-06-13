@@ -148,7 +148,7 @@ class ServerTable
 			table_.addListener(DWT.MouseMove, new class Listener {
 				void handleEvent(Event event) {
 					char[] text = null;
-					Point point = new Point(event.x, event.y);
+					scope point = new Point(event.x, event.y);
 					TableItem item = table_.getItem(point);
 					if (item && item.getBounds(ServerColumn.COUNTRY).
 					                                         contains(point)) {
