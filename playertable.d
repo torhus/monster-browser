@@ -29,7 +29,7 @@ class PlayerTable
 	this(Composite parent)
 	{
 		parent_ = parent;
-		table_ = new Table(parent, DWT.VIRTUAL |  DWT.BORDER |
+		table_ = new Table(parent, DWT.VIRTUAL | DWT.BORDER |
 		                           DWT.HIDE_SELECTION);
 		table_.setHeaderVisible(true);
 		table_.setLinesVisible(true);
