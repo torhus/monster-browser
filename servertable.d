@@ -6,6 +6,7 @@ import dwt.DWT;
 import dwt.events.SelectionAdapter;
 import dwt.events.SelectionEvent;
 import dwt.graphics.Image;
+import dwt.graphics.ImageData;
 import dwt.graphics.Rectangle;
 import dwt.graphics.TextLayout;
 import dwt.widgets.Composite;
@@ -17,6 +18,7 @@ import dwt.widgets.MenuItem;
 import dwt.widgets.Table;
 import dwt.widgets.TableColumn;
 import dwt.widgets.TableItem;
+import dwt.dwthelper.ByteArrayInputStream;
 
 import colorednames;
 import common;
@@ -92,7 +94,8 @@ class ServerTable
 			table_.addListener(DWT.EraseItem, new class Listener {
 				void handleEvent(Event e) {
 					if (e.index == ServerColumn.NAME && coloredNames_ ||
-					             e.index == ServerColumn.COUNTRY && showFlags_)
+					           e.index == ServerColumn.COUNTRY && showFlags_ ||
+					           e.index == ServerColumn.PASSWORDED)
 						e.detail &= ~DWT.FOREGROUND;
 				}
 			});
@@ -100,7 +103,8 @@ class ServerTable
 			table_.addListener(DWT.PaintItem, new class Listener {
 				void handleEvent(Event e) {
 					if ((e.index != ServerColumn.NAME || !coloredNames_) &&
-					          (e.index != ServerColumn.COUNTRY || !showFlags_))
+					        (e.index != ServerColumn.COUNTRY || !showFlags_) &&
+					         e.index != ServerColumn.PASSWORDED)
 						return;
 
 					TableItem item = cast(TableItem) e.item;
@@ -115,7 +119,7 @@ class ServerTable
 							if (showFlags_ && country.length) {
 								if (Image flag = getFlagImage(country))
 									// could cache the flag Image here
-									e.gc.drawImage(flag, e.x, e.y);
+									e.gc.drawImage(flag, e.x, e.y+1);
 								else
 									e.gc.drawString(country, e.x + leftMargin,
 									                                      e.y);
@@ -141,6 +145,10 @@ class ServerTable
 								e.gc.drawString(sd.server[ServerColumn.NAME],
 								                                   textX, e.y);
 							}
+							break;
+						case ServerColumn.PASSWORDED:
+							if (sd.server[ServerColumn.PASSWORDED].length)
+								e.gc.drawImage(padlockImage_, e.x+4, e.y+1);
 							break;
 						default:
 							assert(0);
@@ -233,9 +241,22 @@ class ServerTable
 		table_.setSortColumn(table_.getColumn(sortCol));
 		table_.setSortDirection(reversed ? DWT.DOWN : DWT.UP);
 
+		// right-click menu for servers
 		table_.setMenu(createContextMenu);
+
+		// padlock image for passworded servers
+		auto stream  = new ByteArrayInputStream(
+		                                    cast(byte[])import("padlock.png"));
+		auto data = new ImageData(stream);
+		padlockImage_ = new Image(Display.getDefault, data.scaledTo(12, 12));
 	}
 
+
+	///
+	~this() { padlockImage_.dispose; }
+
+
+	///
 	Menu createContextMenu()
 	{
 		Menu menu = new Menu(table_);
@@ -274,6 +295,7 @@ class ServerTable
 		
 		return menu;
 	}
+
 
 	/// The index of the currently active sort column.
 	int sortColumn() { return table_.indexOf(table_.getSortColumn()); }
@@ -399,6 +421,7 @@ private:
 	Composite parent_;
 	char[] selectedIp_ = "";
 	bool showFlags_, coloredNames_;
+	Image padlockImage_;
 
 	private int getBottomIndex()
 	{
