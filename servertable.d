@@ -82,8 +82,10 @@ class ServerTable
 
 				// add text
 				for (int i = ServerColumn.COUNTRY + 1; i <= ServerColumn.max;
-				                                                           i++)
-					item.setText(i, sd.server[i]);
+				                                                           i++) {
+					// http://dsource.org/projects/dwt-win/ticket/6
+					item.setText(i, sd.server[i] ? sd.server[i] : "");
+				}
 			}
 		});
 
@@ -115,7 +117,8 @@ class ServerTable
 
 					switch (e.index) {
 						case ServerColumn.COUNTRY:
-							auto country = sd.server[ServerColumn.COUNTRY];
+							char[] country = sd.server[ServerColumn.COUNTRY];
+							assert(country.length == 2);
 							if (showFlags_ && country.length) {
 								if (Image flag = getFlagImage(country))
 									// could cache the flag Image here
