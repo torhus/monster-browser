@@ -18,13 +18,17 @@ import tango.time.Clock;
 import tango.time.Time;
 
 import dwt.DWT;
+import dwt.dnd.ClipBoard;
+import dwt.dnd.TextTransfer;
 import dwt.dwthelper.Runnable;
+import dwt.dwthelper.utils;
 import dwt.widgets.Display;
 import dwt.widgets.MessageBox;
 import dwt.widgets.Table;
 
 import main;
 import set;
+
 
 version (allservers)  // useful for speed testing
 	const bool MOD_ONLY = false;
@@ -71,6 +75,8 @@ private {
 	const char[] LOGFILE = "LOG.TXT";
 	const int MAX_LOG_SIZE = 100 * 1024;
 	FileConduit logfile;
+	
+	Clipboard clipboard;
 }
 
 
@@ -90,12 +96,15 @@ static this()
 	char[] timestamp = ctime(&t)[0..24];
 	logfile.write(newline ~ sep ~ newline ~ APPNAME ~ " started at " ~
 	              timestamp ~ newline ~ sep ~ newline);
+
+	clipboard = new Clipboard(Display.getDefault);
 }
 
 
 static ~this()
 {
-	logfile.close();
+	clipboard.dispose;
+	logfile.close();	
 }
 
 
@@ -188,6 +197,17 @@ version (Windows)
 	const char[] newline = "\r\n";
 else
 	const char[] newline = "\n";
+
+
+/**
+ * Transfer a string to the system clipboard.
+ */
+void copyToClipboard(char[] s)
+{	
+	Object obj = new ArrayWrapperString(s);
+	TextTransfer textTransfer = TextTransfer.getInstance();
+	clipboard.setContents([obj], [textTransfer]);
+}
 
 
 /**
