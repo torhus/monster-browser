@@ -1,6 +1,7 @@
 module servertable;
 
 import tango.text.Util;
+import Integer = tango.text.convert.Integer;
 
 import dwt.DWT;
 import dwt.events.SelectionAdapter;
@@ -286,12 +287,12 @@ class ServerTable
 
 		item = new MenuItem(menu, DWT.PUSH);
 		item.setText("Copy address\tCtrl+C");
-		item.setEnabled(false);
+		//item.setAccelerator(DWT.MOD1 | 'C');
 		item.addSelectionListener(new class SelectionAdapter {
 			void widgetSelected(SelectionEvent e) {
 				ServerData* sd = getActiveServerList.getFiltered(
 				                                   table_.getSelectionIndex());
-				db(sd.server[ServerColumn.ADDRESS]);
+				copyToClipboard(sd.server[ServerColumn.ADDRESS]);
 			}
 		});
 		
