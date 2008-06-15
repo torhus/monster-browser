@@ -118,7 +118,6 @@ class ServerTable
 					switch (e.index) {
 						case ServerColumn.COUNTRY:
 							char[] country = sd.server[ServerColumn.COUNTRY];
-							assert(country.length == 2);
 							if (showFlags_ && country.length) {
 								if (Image flag = getFlagImage(country))
 									// could cache the flag Image here

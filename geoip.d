@@ -80,7 +80,9 @@ char[] countryCodeByAddr(in char[] addr)
 		return null;
 	}
 	else {
-		return toLower(fromStringz(code).dup);
+		char[] s = fromStringz(code);
+		assert(s.length == 2);
+		return toLower(s.dup);
 	}
 }
 
@@ -90,13 +92,13 @@ char[] countryNameByAddr(in char[] addr)
 {
 	assert(gi);
 
-	char* code = GeoIP_country_name_by_addr(gi, toStringz(addr));
-	if (code is null) {
+	char* name = GeoIP_country_name_by_addr(gi, toStringz(addr));
+	if (name is null) {
 		log("GeoIP: no country name for " ~ addr ~ ".");
 		return null;
 	}
 	else {
-		return fromStringz(code);
+		return fromStringz(name);
 	}
 }
 
