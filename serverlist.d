@@ -498,7 +498,10 @@ private:
 	char[] getCountryCode(ServerData* sd)
 	{
 		char[] address = sd.server[ServerColumn.ADDRESS];
-		return countryCodeByAddr(address[0..locate(address, ':')]);
+		char[] code = countryCodeByAddr(address[0..locate(address, ':')]);
+
+		// http://dsource.org/projects/dwt-win/ticket/6
+		return code ? code : "";
 	}
 
 	void copyListToFilteredList()
