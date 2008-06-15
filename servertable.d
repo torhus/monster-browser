@@ -122,7 +122,7 @@ class ServerTable
 								if (Image flag = getFlagImage(country))
 									// could cache the flag Image here
 									e.gc.drawImage(flag, e.x, e.y+1);
-								else if (country !is null)
+								else									
 									e.gc.drawString(country, e.x + leftMargin,
 									                                      e.y);
 							}
