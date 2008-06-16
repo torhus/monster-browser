@@ -9,6 +9,7 @@ import Integer = tango.text.convert.Integer;
 
 import dwt.DWT;
 import dwt.custom.SashForm;
+import dwt.dnd.ClipBoard;
 import dwt.events.KeyAdapter;
 import dwt.events.KeyEvent;
 import dwt.events.ShellAdapter;
@@ -46,6 +47,7 @@ import settings;
 
 ServerTable serverTable;
 PlayerTable playerTable;
+Clipboard clipboard;
 CvarTable cvarTable;
 StatusBar statusBar;
 FilterBar filterBar;
@@ -157,6 +159,9 @@ private void _main(char[][] args)
 
 	setActiveServerList(activeMod.name);
 	serverTable.getTable.setFocus();
+	
+	clipboard = new Clipboard(Display.getDefault);
+	
 	mainWindow.open();
 
 	if (arguments.fromfile) {
@@ -184,8 +189,10 @@ private void _main(char[][] args)
 		threadDispatcher.dispatch();
 		if (!display.readAndDispatch())
 			display.sleep();
-		}
-		display.dispose();
+	}
+
+	clipboard.dispose;
+	display.dispose;
 }
 
 
