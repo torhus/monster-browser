@@ -13,6 +13,8 @@ import dwt.graphics.TextLayout;
 import dwt.widgets.Composite;
 import dwt.widgets.Display;
 import dwt.widgets.Event;
+import dwt.events.KeyAdapter;
+import dwt.events.KeyEvent;
 import dwt.widgets.Listener;
 import dwt.widgets.Menu;
 import dwt.widgets.MenuItem;
@@ -194,6 +196,28 @@ class ServerTable
 				joinServer(getActiveServerList.getFiltered(table_.getSelectionIndex()));
 			}
 		});
+		
+		table_.addKeyListener(new class KeyAdapter {
+			public void keyPressed (KeyEvent e)
+			{
+				switch (e.keyCode) {
+					case 'c':
+						if (e.stateMask == DWT.MOD1) {
+							onCopyAddresses();
+							e.doit = false;
+						}
+						break;
+					case 'r':
+						if (e.stateMask == DWT.MOD1) {
+							onRefreshSelected();
+							e.doit = false;
+						}
+						break;
+					default:
+						break;
+				}
+			}
+		});
 
 		Listener sortListener = new class Listener {
 			void handleEvent(Event e)
@@ -278,22 +302,13 @@ class ServerTable
 		item.setText("Refresh this only\tCtrl+R");
 		item.setEnabled(false);
 		item.addSelectionListener(new class SelectionAdapter {
-			void widgetSelected(SelectionEvent e) {
-				ServerData* sd = getActiveServerList.getFiltered(
-				                                  table_.getSelectionIndex());
-				queryAndAddServer(sd.server[ServerColumn.ADDRESS]);
-			}
+			void widgetSelected(SelectionEvent e) { onRefreshSelected(); }
 		});
 
 		item = new MenuItem(menu, DWT.PUSH);
 		item.setText("Copy address\tCtrl+C");
-		//item.setAccelerator(DWT.MOD1 | 'C');
 		item.addSelectionListener(new class SelectionAdapter {
-			void widgetSelected(SelectionEvent e) {
-				ServerData* sd = getActiveServerList.getFiltered(
-				                                   table_.getSelectionIndex());
-				copyToClipboard(sd.server[ServerColumn.ADDRESS]);
-			}
+			void widgetSelected(SelectionEvent e) { onCopyAddresses(); }
 		});
 		
 		return menu;
@@ -426,7 +441,22 @@ private:
 	bool showFlags_, coloredNames_;
 	Image padlockImage_;
 
-	private int getBottomIndex()
+	void onCopyAddresses()
+	{
+		ServerData* sd = getActiveServerList.getFiltered(
+		                                           table_.getSelectionIndex());
+		copyToClipboard(sd.server[ServerColumn.ADDRESS]);
+	}
+
+	void onRefreshSelected()
+	{
+		// FIXME: implement
+		/*ServerData* sd = getActiveServerList.getFiltered(
+		                                           table_.getSelectionIndex());
+		queryAndAddServer(sd.server[ServerColumn.ADDRESS]);*/
+	}
+
+	int getBottomIndex()
 	{
 		return table_.getClientArea().height / table_.getItemHeight() +
 		                                                  table_.getTopIndex();
