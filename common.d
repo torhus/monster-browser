@@ -75,8 +75,6 @@ private {
 	const char[] LOGFILE = "LOG.TXT";
 	const int MAX_LOG_SIZE = 100 * 1024;
 	FileConduit logfile;
-	
-	Clipboard clipboard;
 }
 
 
@@ -96,14 +94,11 @@ static this()
 	char[] timestamp = ctime(&t)[0..24];
 	logfile.write(newline ~ sep ~ newline ~ APPNAME ~ " started at " ~
 	              timestamp ~ newline ~ sep ~ newline);
-
-	clipboard = new Clipboard(Display.getDefault);
 }
 
 
 static ~this()
 {
-	clipboard.dispose;
 	logfile.close();	
 }
 
