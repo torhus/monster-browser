@@ -1,4 +1,4 @@
-Work in progress - 2008-06-12
+Work in progress - 2008-06-16
 -----------------------------
 - New: Colored names for servers and players
 - New: Flags showing the nationality of each server.
@@ -6,6 +6,7 @@ Work in progress - 2008-06-12
 - New: Session state is now being saved and restored.  Sort order, filter state,
        layout and column widths.
 - New: Better at guessing game install locations, but still pretty bad.
+- New: Context menu for servers.
 - New: When refreshing servers or retrieving a new list, the extra servers
        are included in the total number of servers.
 - New: Allow whitespace before and after address in Specify Server dialog.
