@@ -479,7 +479,7 @@ char[] toCsv(T)(T[] a)
 
 
 /**
- * Get the widths of all columns in a table.
+ * Get the widths of all columns in a DWT Table object.
  */
 int[] getColumnWidths(Table table)
 {
