@@ -22,8 +22,12 @@ import set;
 import settings;
 
 
-/// Bitflags.
-enum Filter { NONE = 0, HAS_HUMANS = 1, NOT_EMPTY = 2 }
+/// Server filter bitflags.
+enum Filter {
+	NONE = 0,  /// Value is zero.
+	HAS_HUMANS = 1,  ///
+	NOT_EMPTY = 2  ///
+}
 
 const char[][] defaultGameTypes = ["FFA", "1v1", "SP", "TDM", "CTF",
                                    /* "OFCTF", "Overload", "Harvester", */
