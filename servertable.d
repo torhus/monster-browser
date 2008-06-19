@@ -282,39 +282,6 @@ class ServerTable
 	///
 	~this() { padlockImage_.dispose; }
 
-
-	///
-	Menu createContextMenu()
-	{
-		Menu menu = new Menu(table_);
-
-		MenuItem item = new MenuItem(menu, DWT.PUSH);
-		item.setText("Join\tEnter");
-		menu.setDefaultItem(item);
-		item.addSelectionListener(new class SelectionAdapter {
-			void widgetSelected(SelectionEvent e) {
-				joinServer(getActiveServerList.getFiltered(
-				                                  table_.getSelectionIndex()));
-			}
-		});
-
-		item = new MenuItem(menu, DWT.PUSH);
-		item.setText("Refresh this only\tCtrl+R");
-		item.setEnabled(false);
-		item.addSelectionListener(new class SelectionAdapter {
-			void widgetSelected(SelectionEvent e) { onRefreshSelected(); }
-		});
-
-		item = new MenuItem(menu, DWT.PUSH);
-		item.setText("Copy address\tCtrl+C");
-		item.addSelectionListener(new class SelectionAdapter {
-			void widgetSelected(SelectionEvent e) { onCopyAddresses(); }
-		});
-		
-		return menu;
-	}
-
-
 	/// The index of the currently active sort column.
 	int sortColumn() { return table_.indexOf(table_.getSortColumn()); }
 
@@ -440,6 +407,36 @@ private:
 	char[] selectedIp_ = "";
 	bool showFlags_, coloredNames_;
 	Image padlockImage_;
+
+	Menu createContextMenu()
+	{
+		Menu menu = new Menu(table_);
+
+		MenuItem item = new MenuItem(menu, DWT.PUSH);
+		item.setText("Join\tEnter");
+		menu.setDefaultItem(item);
+		item.addSelectionListener(new class SelectionAdapter {
+			void widgetSelected(SelectionEvent e) {
+				joinServer(getActiveServerList.getFiltered(
+				                                  table_.getSelectionIndex()));
+			}
+		});
+
+		item = new MenuItem(menu, DWT.PUSH);
+		item.setText("Refresh this only\tCtrl+R");
+		item.setEnabled(false);
+		item.addSelectionListener(new class SelectionAdapter {
+			void widgetSelected(SelectionEvent e) { onRefreshSelected(); }
+		});
+
+		item = new MenuItem(menu, DWT.PUSH);
+		item.setText("Copy address\tCtrl+C");
+		item.addSelectionListener(new class SelectionAdapter {
+			void widgetSelected(SelectionEvent e) { onCopyAddresses(); }
+		});
+		
+		return menu;
+	}
 
 	void onCopyAddresses()
 	{
