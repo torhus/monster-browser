@@ -80,7 +80,6 @@ class ServerTable
 					char[] ip = sd.server[ServerColumn.ADDRESS];
 					auto colon = locate(ip, ':');
 					char[] country = countryCodeByAddr(ip[0..colon]);
-					// FIXME: need to sync when changing sd?
 					sd.server[ServerColumn.COUNTRY] = country;
 				}*/
 
@@ -279,6 +278,7 @@ class ServerTable
 		padlockImage_ = new Image(Display.getDefault, data.scaledTo(12, 12));
 	}
 
+
 	///
 	~this() { padlockImage_.dispose; }
 
@@ -424,6 +424,7 @@ private:
 
 		item = new MenuItem(menu, DWT.PUSH);
 		item.setText("Refresh this only\tCtrl+R");
+		item.setEnabled(false);
 		item.addSelectionListener(new class SelectionAdapter {
 			void widgetSelected(SelectionEvent e) { onRefreshSelected(); }
 		});
@@ -446,9 +447,10 @@ private:
 
 	void onRefreshSelected()
 	{
-		ServerData* sd = getActiveServerList.getFiltered(
+		// FIXME: implement
+		/*ServerData* sd = getActiveServerList.getFiltered(
 		                                           table_.getSelectionIndex());
-		//queryAndReplaceServer(sd.server[ServerColumn.ADDRESS], sd);
+		queryAndAddServer(sd.server[ServerColumn.ADDRESS]);*/
 	}
 
 	int getBottomIndex()
