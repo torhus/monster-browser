@@ -77,15 +77,13 @@ void loadSavedList()
 {
 	void f()
 	{
+		scope status = new StatusBarUpdater;
+
 		void counter(int count)
 		{
-			Display.getDefault.syncExec(new class Runnable {
-				void run()
-				{
-					statusBar.setLeft("Loading saved server list... " ~
-			                                          Integer.toString(count));
-				}
-			});
+			status.text = "Loading saved server list... " ~
+			                                          Integer.toString(count);
+			Display.getDefault.syncExec(status);
 		}
 
 		try {
@@ -146,7 +144,7 @@ void queryAndAddServer(in char[] address)
 		{
 			if (getActiveServerList.length() > 0) {
 				serverTable.reset(new IntWrapper(
-				                       getActiveServerList.getFilteredIndex(addressCopy)));
+				           getActiveServerList.getFilteredIndex(addressCopy)));
 			}
 			else {
 				statusBar.setLeft("The server did not reply");
@@ -198,16 +196,13 @@ void getNewList()
 	void f()
 	{
 		static char[] total;
+		scope status = new StatusBarUpdater;
 
 		void counter(int count)
 		{
-			Display.getDefault.syncExec(new class Runnable {
-				void run()
-				{
-					statusBar.setLeft("Got " ~  total ~
-					        " servers, querying..." ~ Integer.toString(count));
-				}
-			});
+			status.text = "Got " ~  total ~
+			                 " servers, querying..." ~ Integer.toString(count);
+			Display.getDefault.syncExec(status);
 		}
 
 		try {
@@ -236,30 +231,19 @@ void getNewList()
 			}
 			else {
 				Display display = Display.getDefault;
-				version (Tango) {
-					display.asyncExec(new class Runnable {
-						void run() { statusBar.setLeft("Got "  ~
-					                          total ~ " servers, querying...");
-				        }
-				    });
-				}
-				else {
-				    display.asyncExec(null, delegate void (Object o) {
-					                        statusBar.setLeft("Got "  ~
-					                              total ~ " servers, querying...");
-				                        } );
-				}
+				display.asyncExec(new StatusBarUpdater("Got "  ~
+				                             total ~ " servers, querying..."));
 
 				browserRefreshList(&counter, true);
 				volatile if (!runtools.abortParsing) {
 					version (Tango) {
 						display.asyncExec(new class Runnable {
 							void run() { serverTable.reset(); }
-					    });
+						});
 					}
 					else {
 
-					    display.asyncExec(null, delegate void (Object o) {
+						display.asyncExec(null, delegate void (Object o) {
 					                                serverTable.reset();
 					                            });
 					}
@@ -292,17 +276,14 @@ void refreshList()
 
 	void f()
 	{
-		static char[] statusMsg;
+		char[] statusMsg;
+		scope status = new StatusBarUpdater;
 
 		void counter(int count)
 		{
-			Display.getDefault.syncExec(new class Runnable {
-				void run()
-				{
-					assert(statusMsg !is null);
-					statusBar.setLeft(statusMsg ~ Integer.toString(count));
-				}
-			});
+			assert(statusMsg !is null);
+			status.text = statusMsg ~ Integer.toString(count);
+			Display.getDefault.syncExec(status);
 		}
 
 		void done(Object o)
@@ -342,7 +323,7 @@ void refreshList()
 	auto servers = filterServerFile(activeMod.serverFile, REFRESHFILE);
 	log("Refreshing server list for " ~ activeMod.name ~ "...");
 	log(Format("Found {} servers in {} and wrote them to {}.", servers.length,
-	                                        activeMod.serverFile, REFRESHFILE));
+	                                       activeMod.serverFile, REFRESHFILE));
 
 	auto extraServers = getActiveServerList.extraServers;
 	auto written = appendServersToFile(REFRESHFILE, extraServers, servers);
@@ -357,4 +338,13 @@ void refreshList()
 	GC.collect();
 	serverThread = new Thread(&f);
 	serverThread.start();
+}
+
+
+private class StatusBarUpdater : Runnable {
+	char[] text;
+
+	this(char[] text=null) { this.text = text; }
+
+	void run() { statusBar.setLeft(text); }
 }
