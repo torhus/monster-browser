@@ -39,17 +39,16 @@ private enum Field {
  *
  * Throws: when outputFileName is given: IOException.
  */
-bool parseOutput(void delegate(Object) countDg, LineIterator!(char) iter,
-                 char[] outputFileName=null)
+bool parseOutput(LineIterator!(char) iter, void delegate(ServerData*) deliver,
+                   void delegate(int) counter=null, char[] outputFileName=null)
 {
 	char[][] gtypes;
 	BufferOutput outfile;
 	debug scope timer = new Timer;
 	int count = 0;
-	scope countWrapper = new IntWrapper(-1);
 	Display display = Display.getDefault;
 
-	assert(countDg);
+	assert(deliver);
 
 	if (outputFileName) {
 		try {
@@ -105,15 +104,8 @@ each_server:
 
 			assert(fields.length == 9 || fields.length == 3);
 			count++;
-			countWrapper.value = count;
-			version (Tango) {
-				display.syncExec(new class Runnable {
-					void run() { countDg(countWrapper); }
-				});
-			}
-			else {
-				display.syncExec(countWrapper, countDg);
-			}
+			if (counter)
+				counter(count);
 
 			if (fields.length >= 9) {
 				bool keep_server = false;
@@ -173,12 +165,12 @@ each_server:
 
 				sd.server[ServerColumn.NAME] = stripColorCodes(sd.rawName);
 
-				getActiveServerList.add(&sd);
+				deliver(&sd);
 			}
 			else /*if (!MOD_ONLY)*/ { // server didn't respond
 				/*sd.server.length = servertable.serverHeaders.length;
 				sd.server[ServerColumn.ADDRESS] = fields[Field.ADDRESS]; // ip
-				getActiveServerList.add(sd);*/
+				deliver(sd);*/
 			}
 			if (outfile) {
 				outfile.write(newline);

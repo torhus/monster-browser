@@ -99,21 +99,20 @@ Set!(char[]) browserGetNewList()
 /**
  * Loads the server list from activeMod.serverFile.
  *
- * callback will be called each time a new server has been added to serverList,
+ * counter will be called each time a new server has been added to serverList,
  * with the current number of servers as the argument.
  */
-void browserLoadSavedList(void delegate(Object) callback)
+void browserLoadSavedList(void delegate(int) counter=null)
 {
 	volatile abortParsing = false;
 
-	if (!Path.exists(activeMod.serverFile)) {
+	if (!Path.exists(activeMod.serverFile))
 		return;
-	}
 
 	try {
 		scope input = new TextFileInput(activeMod.serverFile);
 		getActiveServerList.clear();
-		qstat.parseOutput(callback, input, null);
+		qstat.parseOutput(input, &getActiveServerList.add, counter);
 		getActiveServerList.complete = !abortParsing;
 		input.close();
 	}
@@ -130,12 +129,12 @@ void browserLoadSavedList(void delegate(Object) callback)
  * The servers are added to serverList as they are received.
  *
  * Params:
- *     callback = Will be called each time a new server has been added to
+ *     counter  = Will be called each time a new server has been added to
  *                serverList, with the current number of servers as the
  *                argument.
  *     saveList = If true, qstat's raw output will be saved to disk.
  */
-void browserRefreshList(void delegate(Object) callback, bool saveList=false)
+void browserRefreshList(void delegate(int) counter=null, bool saveList=false)
 {
 	proc = new Process();
 	//scope (exit) if (proc) proc.wait();
@@ -160,7 +159,7 @@ void browserRefreshList(void delegate(Object) callback, bool saveList=false)
 	try {
 		char[] tmpfile = saveList ? "servers.tmp" : null;
 		scope iter = new LineIterator!(char)(proc.stdout);
-		qstat.parseOutput(callback, iter, tmpfile);
+		qstat.parseOutput(iter, &getActiveServerList.add, counter, tmpfile);
 		//proc.stdout.close();  FIXME: any point to this?
 
 		getActiveServerList.complete = !abortParsing;

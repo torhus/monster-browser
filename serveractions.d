@@ -11,7 +11,7 @@ import Path = tango.io.Path;
 version (quit)
 	import tango.io.Stdout;
 import tango.text.convert.Format;
-import tango.text.convert.Integer;
+import Integer = tango.text.convert.Integer;
 
 import dwt.dwthelper.Runnable;
 import dwt.widgets.Display;
@@ -77,24 +77,29 @@ void loadSavedList()
 {
 	void f()
 	{
-		void callback(Object int_count)
+		void counter(int count)
 		{
-			statusBar.setLeft("Loading saved server list... " ~
-			                  toString((cast(IntWrapper) int_count).value));
+			Display.getDefault.syncExec(new class Runnable {
+				void run()
+				{
+					statusBar.setLeft("Loading saved server list... " ~
+			                                          Integer.toString(count));
+				}
+			});
 		}
 
 		try {
-			browserLoadSavedList(&callback);
+			browserLoadSavedList(&counter);
 
 			version (quit) { // for benchmarking
 				Display.getDefault.syncExec(new class Runnable {
-						void run()
-						{
-							Stdout.formatln("Time since startup: {} seconds.",
-							                              globalTimer.seconds);
-							mainWindow.close;
-						}
-				    });
+					void run()
+					{
+						Stdout.formatln("Time since startup: {} seconds.",
+						                                  globalTimer.seconds);
+						mainWindow.close;
+					}
+				});
 			}
 
 			volatile if (!runtools.abortParsing) {
@@ -149,7 +154,7 @@ void queryAndAddServer(in char[] address)
 		}
 
 		try {
-			browserRefreshList(delegate void(Object) { });
+			browserRefreshList();
 
 			version (Tango) {
 				volatile if (!runtools.abortParsing) {
@@ -194,10 +199,15 @@ void getNewList()
 	{
 		static char[] total;
 
-		void status(Object int_count)
+		void counter(int count)
 		{
-			statusBar.setLeft("Got " ~  total ~ " servers, querying..." ~
-			                  toString((cast(IntWrapper)int_count).value));
+			Display.getDefault.syncExec(new class Runnable {
+				void run()
+				{
+					statusBar.setLeft("Got " ~  total ~
+					        " servers, querying..." ~ Integer.toString(count));
+				}
+			});
 		}
 
 		try {
@@ -215,7 +225,7 @@ void getNewList()
 			auto written = appendServersToFile(REFRESHFILE, addresses);
 			log(Format("Wrote {} addresses to {}.", written, REFRESHFILE));
 
-			total = toString(written);
+			total = Integer.toString(written);
 
 
 			if (addresses.length == 0) {
@@ -240,7 +250,7 @@ void getNewList()
 				                        } );
 				}
 
-				browserRefreshList(&status, true);
+				browserRefreshList(&counter, true);
 				volatile if (!runtools.abortParsing) {
 					version (Tango) {
 						display.asyncExec(new class Runnable {
@@ -284,11 +294,15 @@ void refreshList()
 	{
 		static char[] statusMsg;
 
-		void status(Object int_count)
+		void counter(int count)
 		{
-			assert(statusMsg !is null);
-			statusBar.setLeft(statusMsg ~
-			                  toString((cast(IntWrapper)int_count).value));
+			Display.getDefault.syncExec(new class Runnable {
+				void run()
+				{
+					assert(statusMsg !is null);
+					statusBar.setLeft(statusMsg ~ Integer.toString(count));
+				}
+			});
 		}
 
 		void done(Object o)
@@ -302,8 +316,9 @@ void refreshList()
 		}
 
 		try {
-			statusMsg = "Refreshing " ~  toString(total) ~ " servers...";
-			browserRefreshList(&status);
+			statusMsg = "Refreshing " ~  Integer.toString(total) ~
+			                                                     " servers...";
+			browserRefreshList(&counter);
 			version (Tango) {
 				volatile if (!runtools.abortParsing) {
 					Display.getDefault.asyncExec(new class Runnable {
@@ -335,7 +350,7 @@ void refreshList()
 	                                             extraServers.length-written));
 
 	total = servers.length + written;
-	statusBar.setLeft("Refreshing " ~ toString(total) ~ " servers...");
+	statusBar.setLeft("Refreshing " ~ Integer.toString(total) ~ " servers...");
 	serverTable.clear();
 	getActiveServerList.clear();
 
