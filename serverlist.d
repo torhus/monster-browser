@@ -184,6 +184,29 @@ class ServerList
 	}
 
 
+	///
+	void replace(ServerData* sd, ServerData* position)
+	{
+		bool refresh = false;
+		int index;
+
+		synchronized {
+			isSorted_ = false;
+			sd.server[ServerColumn.COUNTRY] = getCountryCode(sd);
+			*sd = *position;
+			if (1 || !isFilteredOut(sd)) {
+				//index = _insertSorted(&list[$ - 1]);
+				refresh = true;
+			}
+		}
+		if (refresh && !arguments.norefresh)
+			//display.syncExec(new IntWrapper(index), &serverTable.refresh);
+			Display.getDefault.syncExec(new class Runnable {
+				void run() { serverTable.refresh(null); }
+			});
+	}
+
+
 	/// Iterate over the full list.
 	synchronized
 	int opApply(int delegate(ref ServerData) dg)
