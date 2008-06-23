@@ -152,7 +152,7 @@ void queryAndAddServer(in char[] address)
 		}
 
 		try {
-			browserRefreshList();
+			browserRefreshList(&getActiveServerList.add);
 
 			version (Tango) {
 				volatile if (!runtools.abortParsing) {
@@ -234,7 +234,7 @@ void getNewList()
 				display.asyncExec(new StatusBarUpdater("Got "  ~
 				                             total ~ " servers, querying..."));
 
-				browserRefreshList(&counter, true);
+				browserRefreshList(&getActiveServerList.add, &counter, true);
 				volatile if (!runtools.abortParsing) {
 					version (Tango) {
 						display.asyncExec(new class Runnable {
@@ -299,7 +299,7 @@ void refreshList()
 		try {
 			statusMsg = "Refreshing " ~  Integer.toString(total) ~
 			                                                     " servers...";
-			browserRefreshList(&counter);
+			browserRefreshList(&getActiveServerList.add, &counter);
 			version (Tango) {
 				volatile if (!runtools.abortParsing) {
 					Display.getDefault.asyncExec(new class Runnable {

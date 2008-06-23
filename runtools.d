@@ -126,15 +126,18 @@ void browserLoadSavedList(void delegate(int) counter=null)
 /**
  * Queries all servers whose addresses are found in REFRESHFILE.
  *
- * The servers are added to serverList as they are received.
- *
  * Params:
- *     counter  = Will be called each time a new server has been added to
- *                serverList, with the current number of servers as the
- *                argument.
+ *     deliver  = Will be called when data for a server is ready, with a
+ *                pointer to the data given as the argument.  The data has to
+ *                be copied, as it it will be overwritten between each call.
+ *                Servers that timed out will be skipped.
+ *     counter  = Will be called each time a new server has been parsed, with
+ *                the current count of parsed servers as the argument.  It will
+ *                also count servers that timed out.
  *     saveList = If true, qstat's raw output will be saved to disk.
  */
-void browserRefreshList(void delegate(int) counter=null, bool saveList=false)
+void browserRefreshList(void delegate(ServerData*) deliver,
+                          void delegate(int) counter=null, bool saveList=false)
 {
 	proc = new Process();
 	//scope (exit) if (proc) proc.wait();
@@ -159,7 +162,7 @@ void browserRefreshList(void delegate(int) counter=null, bool saveList=false)
 	try {
 		char[] tmpfile = saveList ? "servers.tmp" : null;
 		scope iter = new LineIterator!(char)(proc.stdout);
-		qstat.parseOutput(iter, &getActiveServerList.add, counter, tmpfile);
+		qstat.parseOutput(iter, deliver, counter, tmpfile);
 		//proc.stdout.close();  FIXME: any point to this?
 
 		getActiveServerList.complete = !abortParsing;
