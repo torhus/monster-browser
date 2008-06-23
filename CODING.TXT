@@ -50,12 +50,20 @@ freenode (IRC).
 
 Version IDs
 -----------
-allservers - for benchmarking, often in combination with the 'fromfile' command
-             line argument.
+allservers - For benchmarking: don't filter servers on mod.
+build      - Used by the bud and dsss/rebuild build tools.
 Final      - Use the real version number for release builds
              (common.FINAL_VERSION).
+quit       - Print time since startup and then quit, after loading the server
+             list from disk.  Requires the 'fromfile' command line argument to
+             be given.
 redirect   - Redirect stdout and stderr (Cout and Cerr) to the file DEBUG.OUT.
-build      - Used by the bud and dsss/rebuild build tools.
+
+
+Command line arguments (for testing/benchmarking)
+-------------------------------------------------
+fromfile  - get servers from disk instead of through the network.
+norefresh - don't refresh the server table GUI while receiving servers.
 
 
 -----------
