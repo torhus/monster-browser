@@ -25,6 +25,12 @@ import servertable;
 import settings;
 
 
+private {
+	char[] querySingleServerAddress;
+	bool querySingleServerReplace;
+}
+
+
 /**
  * Switches the active mod.
  *
@@ -103,15 +109,22 @@ void loadSavedList()
 			volatile if (!runtools.abortParsing) {
 				version (Tango) {
 					Display.getDefault.asyncExec(new class Runnable {
-						void run() { serverTable.reset(); }
+						void run()
+						{
+							serverTable.reset;
+							serverTable.notifyRefreshEnded;
+						}
 				    });
 				}
 				else {
-					Display.getDefault.asyncExec(null,
+					/*Display.getDefault.asyncExec(null,
 					                        delegate void (Object o) {
 					                            serverTable.reset();
-					                        });
+					                        });*/
 				}
+			}
+			else {
+				serverTable.notifyRefreshEnded;
 			}
 		}
 		catch(Exception e) {
@@ -123,6 +136,7 @@ void loadSavedList()
 
 	statusBar.setLeft("Loading saved server list...");
 	serverThread = new Thread(&f);
+	serverTable.notifyRefreshStarted;
 	serverThread.start();
 }
 
@@ -131,12 +145,25 @@ void loadSavedList()
  * Queries a single server, adds it to the active server list, and refreshes
  * the serverTable to make it show up.
  *
+ * If replace is true, it will instead replace the first server found that has
+ * the same address.
+ *
  * The querying is done in a new thread.  The function does not verify that the
  * address is valid.
  */
-void queryAndAddServer(in char[] address)
+void querySingleServer(in char[] address, bool replace=false)
+{
+	querySingleServerAddress = address;
+	querySingleServerReplace = replace;
+	threadDispatcher.run(&_querySingleServer);
+}
+
+
+void _querySingleServer()
 {
 	static char[] addressCopy;
+	char[] address = querySingleServerAddress;
+	bool replace = querySingleServerReplace;
 
 	void f()
 	{
@@ -149,10 +176,13 @@ void queryAndAddServer(in char[] address)
 			else {
 				statusBar.setLeft("The server did not reply");
 			}
+			serverTable.notifyRefreshEnded;
 		}
 
 		try {
-			browserRefreshList(&getActiveServerList.add);
+			auto deliverDg = replace ? &getActiveServerList.replace :
+			                           &getActiveServerList.add;
+			browserRefreshList(deliverDg);
 
 			version (Tango) {
 				volatile if (!runtools.abortParsing) {
@@ -160,11 +190,17 @@ void queryAndAddServer(in char[] address)
 						void run() { done(null); }
 					});
 				}
+				else {
+					serverTable.notifyRefreshEnded;
+				}
 			}
 			else {
 				volatile if (!runtools.abortParsing) {
 					Display.getDefault.asyncExec(null, &done);
 				}
+				else {
+					serverTable.notifyRefreshEnded;
+				}				
 			}
 
 		}
@@ -182,6 +218,7 @@ void queryAndAddServer(in char[] address)
 	statusBar.setLeft("Querying server...");
 
 	serverThread = new Thread(&f);
+	serverTable.notifyRefreshStarted;
 	serverThread.start();
 }
 
@@ -226,7 +263,11 @@ void getNewList()
 			if (addresses.length == 0) {
 				// FIXME: what to do when there are no servers?
 				Display.getDefault.asyncExec(new class Runnable {
-					void run() { serverTable.reset(); }
+					void run()
+					{
+						serverTable.reset();
+						serverTable.notifyRefreshEnded;
+					}
 				});
 			}
 			else {
@@ -238,15 +279,21 @@ void getNewList()
 				volatile if (!runtools.abortParsing) {
 					version (Tango) {
 						display.asyncExec(new class Runnable {
-							void run() { serverTable.reset(); }
+							void run()
+							{
+								serverTable.reset();
+								serverTable.notifyRefreshEnded;
+							}
 						});
 					}
 					else {
-
-						display.asyncExec(null, delegate void (Object o) {
+						/*display.asyncExec(null, delegate void (Object o) {
 					                                serverTable.reset();
-					                            });
+					                            });*/
 					}
+				}
+				else {
+					serverTable.notifyRefreshEnded;
 				}
 			}
 		}
@@ -265,6 +312,7 @@ void getNewList()
 	statusBar.setLeft("Getting new server list...");
 	log("Getting new server list for " ~ activeMod.name ~ "...");
 	serverThread = new Thread(&f);
+	serverTable.notifyRefreshStarted;
 	serverThread.start();
 }
 
@@ -294,6 +342,7 @@ void refreshList()
 			else {
 				statusBar.setLeft("None of the servers replied");
 			}
+			serverTable.notifyRefreshEnded;
 		}
 
 		try {
@@ -306,10 +355,16 @@ void refreshList()
 						void run() { done(null); }
 					});
 				}
+				else {
+					serverTable.notifyRefreshEnded;
+				}
 			}
 			else {
 				volatile if (!runtools.abortParsing) {
 					Display.getDefault.asyncExec(null, &done);
+				}
+				else {
+					serverTable.notifyRefreshEnded;
 				}
 			}
 		}
@@ -337,6 +392,7 @@ void refreshList()
 
 	GC.collect();
 	serverThread = new Thread(&f);
+	serverTable.notifyRefreshStarted;
 	serverThread.start();
 }
 
