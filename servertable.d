@@ -291,6 +291,17 @@ class ServerTable
 	/// Returns the server list's Table widget object.
 	Table getTable() { return table_; };
 
+	///
+	void notifyRefreshStarted()
+	{
+		refreshSelected_.setEnabled(false);
+	}
+	
+	///
+	void notifyRefreshEnded()
+	{
+		refreshSelected_.setEnabled(true);
+	}
 
 	/*void update(Object dummy = null)
 	{
@@ -301,7 +312,7 @@ class ServerTable
 
 	/**
 	 * Clears the table and refills it with updated data.  Keeps the same
-	 * server selected, if there was one.
+	 * selection if there was one, and if index is not null.
 	 *
 	 * Params:
 	 *     index = An IntWrapper object.  Set this to the index of the last
@@ -407,6 +418,7 @@ private:
 	char[] selectedIp_ = "";
 	bool showFlags_, coloredNames_;
 	Image padlockImage_;
+	MenuItem refreshSelected_;
 
 	Menu createContextMenu()
 	{
@@ -424,33 +436,36 @@ private:
 
 		item = new MenuItem(menu, DWT.PUSH);
 		item.setText("Refresh this only\tCtrl+R");
-		item.setEnabled(false);
 		item.addSelectionListener(new class SelectionAdapter {
 			void widgetSelected(SelectionEvent e) { onRefreshSelected(); }
 		});
+		refreshSelected_ = item;
 
 		item = new MenuItem(menu, DWT.PUSH);
 		item.setText("Copy address\tCtrl+C");
 		item.addSelectionListener(new class SelectionAdapter {
 			void widgetSelected(SelectionEvent e) { onCopyAddresses(); }
 		});
-		
+
 		return menu;
 	}
 
 	void onCopyAddresses()
 	{
-		ServerData* sd = getActiveServerList.getFiltered(
-		                                           table_.getSelectionIndex());
-		copyToClipboard(sd.server[ServerColumn.ADDRESS]);
+		synchronized (getActiveServerList) {
+			ServerData* sd = getActiveServerList.getFiltered(
+			                                       table_.getSelectionIndex());
+			copyToClipboard(sd.server[ServerColumn.ADDRESS]);
+		}
 	}
 
 	void onRefreshSelected()
 	{
-		// FIXME: implement
-		/*ServerData* sd = getActiveServerList.getFiltered(
-		                                           table_.getSelectionIndex());
-		queryAndAddServer(sd.server[ServerColumn.ADDRESS]);*/
+		synchronized (getActiveServerList) {
+			ServerData* sd = getActiveServerList.getFiltered(
+			                                       table_.getSelectionIndex());
+			querySingleServer(sd.server[ServerColumn.ADDRESS]);
+		}
 	}
 
 	int getBottomIndex()

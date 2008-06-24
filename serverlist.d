@@ -184,6 +184,33 @@ class ServerList
 	}
 
 
+	///
+	void replace(ServerData* sd)
+	{
+		int index = -1;
+
+		synchronized {
+			isSorted_ = false;
+			int i = getIndex(sd.server[ServerColumn.ADDRESS]);
+			assert(i != -1);
+			list[i] = *sd;
+			removeFromFiltered(sd);
+			if (!isFilteredOut(sd))
+				index = _insertSorted(&list[i]);
+		}
+
+		if (!arguments.norefresh)
+			//display.syncExec(new IntWrapper(index), &serverTable.refresh);
+			Display.getDefault.syncExec(new class Runnable {
+				void run()
+				{
+					auto selection = (index != -1) ? new IntWrapper(index) :
+					                                                      null;
+					serverTable.refresh(selection);
+				}
+			});
+	}
+
 	/// Iterate over the full list.
 	synchronized
 	int opApply(int delegate(ref ServerData) dg)
@@ -497,6 +524,15 @@ private:
 	void appendToFiltered(ServerData* psd)
 	{
 		filteredList ~= psd;
+	}
+
+	void removeFromFiltered(ServerData* psd)
+	{
+		int i = getFilteredIndex(psd.server[ServerColumn.ADDRESS]);
+		assert(i != -1);
+		memmove(filteredList.ptr + i, filteredList.ptr + i + 1,
+		               (filteredList.length - 1 - i) * filteredList[0].sizeof);
+		filteredList.length = filteredList.length - 1;
 	}
 
 	char[] getCountryCode(ServerData* sd)
