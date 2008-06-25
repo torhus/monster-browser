@@ -9,7 +9,7 @@ import Integer = tango.text.convert.Integer;
 
 import dwt.DWT;
 import dwt.custom.SashForm;
-import dwt.dnd.ClipBoard;
+import dwt.dnd.Clipboard;
 import dwt.events.KeyAdapter;
 import dwt.events.KeyEvent;
 import dwt.events.ShellAdapter;

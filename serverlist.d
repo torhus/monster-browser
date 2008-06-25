@@ -193,6 +193,9 @@ class ServerList
 			isSorted_ = false;
 			int i = getIndex(sd.server[ServerColumn.ADDRESS]);
 			assert(i != -1);
+			char[] country = list[i].server[ServerColumn.COUNTRY];
+			assert(country.length);
+			sd.server[ServerColumn.COUNTRY] = country;
 			list[i] = *sd;
 			removeFromFiltered(sd);
 			if (!isFilteredOut(sd))
@@ -204,9 +207,7 @@ class ServerList
 			Display.getDefault.syncExec(new class Runnable {
 				void run()
 				{
-					auto selection = (index != -1) ? new IntWrapper(index) :
-					                                                      null;
-					serverTable.refresh(selection);
+					serverTable.refresh();
 				}
 			});
 	}
