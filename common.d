@@ -18,7 +18,7 @@ import tango.time.Clock;
 import tango.time.Time;
 
 import dwt.DWT;
-import dwt.dnd.ClipBoard;
+import dwt.dnd.Clipboard;
 import dwt.dnd.TextTransfer;
 import dwt.dwthelper.Runnable;
 import dwt.dwthelper.utils;
