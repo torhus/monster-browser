@@ -167,7 +167,7 @@ class ServerList
 		bool refresh = false;
 		int index;
 
-		synchronized {
+		synchronized (this) {
 			isSorted_ = false;
 			sd.server[ServerColumn.COUNTRY] = getCountryCode(sd);
 			list ~= *sd;
@@ -189,7 +189,7 @@ class ServerList
 	{
 		int index = -1;
 
-		synchronized {
+		synchronized (this) {
 			isSorted_ = false;
 			int i = getIndex(sd.server[ServerColumn.ADDRESS]);
 			assert(i != -1);
@@ -351,7 +351,7 @@ class ServerList
 		if (newFilters == filters_)
 			return;
 
-		synchronized {
+		synchronized (this) {
 			filters_ = newFilters;
 			updateFilteredList();
 		}
