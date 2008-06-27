@@ -216,7 +216,7 @@ class ServerList
 	/**
 	 * Iterate over the full list.
 	 *
-	 * Need to syncronize on the instance when using this.
+	 * Need to synchronize on the instance when using this.
 	 */
 	/*int opApply(int delegate(ref ServerData) dg)
 	{
@@ -233,7 +233,7 @@ class ServerList
 
 
 	/// Return a server from the filtered list
-	ServerData* getFiltered(int i)	
+	ServerData* getFiltered(int i)
 	{
 		synchronized (this) return filteredList[i];
 	}
