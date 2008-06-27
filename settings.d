@@ -107,7 +107,7 @@ private {
 	                                 {"cvarColumnWidths", "90,90"},
 	                                 {"playerColumnWidths", "100,40,40"},
 	                                 {"serverColumnWidths",
-									              "26,250,21,32,50,40,90,130"},
+									              "27,250,21,32,50,40,90,130"},
 	                                ];
 }
 

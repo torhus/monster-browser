@@ -107,9 +107,9 @@ class ServerTable
 
 			table_.addListener(DWT.PaintItem, new class Listener {
 				void handleEvent(Event e) {
-					if ((e.index != ServerColumn.NAME || !coloredNames_) &&
-					        (e.index != ServerColumn.COUNTRY || !showFlags_) &&
-					         e.index != ServerColumn.PASSWORDED)
+					if (!((e.index == ServerColumn.NAME && coloredNames_) ||
+					        (e.index == ServerColumn.COUNTRY && showFlags_) ||
+					         e.index == ServerColumn.PASSWORDED))
 						return;
 
 					TableItem item = cast(TableItem) e.item;
@@ -124,8 +124,8 @@ class ServerTable
 							if (showFlags_ && country.length) {
 								if (Image flag = getFlagImage(country))
 									// could cache the flag Image here
-									e.gc.drawImage(flag, e.x, e.y+1);
-								else									
+									e.gc.drawImage(flag, e.x+1, e.y+1);
+								else
 									e.gc.drawString(country, e.x + leftMargin,
 									                                      e.y);
 							}
