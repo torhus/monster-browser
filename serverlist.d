@@ -212,9 +212,13 @@ class ServerList
 			});
 	}
 
-	/// Iterate over the full list.
-	synchronized
-	int opApply(int delegate(ref ServerData) dg)
+
+	/**
+	 * Iterate over the full list.
+	 *
+	 * Need to syncronize on the instance when using this.
+	 */
+	/*int opApply(int delegate(ref ServerData) dg)
 	{
 		int result = 0;
 
@@ -225,14 +229,13 @@ class ServerList
 			}
 		}
 		return result;
-	}
+	}*/
 
 
 	/// Return a server from the filtered list
-	synchronized
-	ServerData* getFiltered(int i)
+	ServerData* getFiltered(int i)	
 	{
-		return filteredList[i];
+		synchronized (this) return filteredList[i];
 	}
 
 
@@ -243,13 +246,12 @@ class ServerList
 	 *
 	 * Returns: the server's index, or -1 if not found.
 	 */
-	synchronized
 	int getIndex(char[] ipAndPort)
 	{
 		if (!ipAndPort)
 			return -1;
 
-		foreach (int i, ref ServerData sd; list) {
+		synchronized (this) foreach (int i, ref ServerData sd; list) {
 			if (sd.server[ServerColumn.ADDRESS] == ipAndPort)
 				return i;
 		}
@@ -264,13 +266,12 @@ class ServerList
 	 *
 	 * Returns: the server's index, or -1 if not found.
 	 */
-	synchronized
 	int getFilteredIndex(char[] ipAndPort)
 	{
 		if (!ipAndPort)
 			return -1;
 
-		foreach (int i, ServerData* sd; filteredList) {
+		synchronized (this) foreach (int i, ServerData* sd; filteredList) {
 			if (sd.server[ServerColumn.ADDRESS] == ipAndPort)
 				return i;
 		}
@@ -278,27 +279,29 @@ class ServerList
 	}
 
 
-	synchronized size_t filteredLength() { return filteredList.length; } ///
-	synchronized size_t length() { return list.length; } /// ditto
+	///
+	size_t filteredLength() { synchronized (this) return filteredList.length; }
+	size_t length() { synchronized (this) return list.length; } /// ditto
 
 
 	/**
 	 * Clears the list and the filtered list.  Sets complete to false.
 	 */
-	synchronized
 	ServerList clear()
 	{
-		if (getSetting("coloredNames") == "true") {
-			foreach (ref sd; list) {
-				if (sd.customData)
-					sd.customData.dispose();
+		synchronized (this) {
+			if (getSetting("coloredNames") == "true") {
+				foreach (ref sd; list) {
+					if (sd.customData)
+						sd.customData.dispose();
+				}
 			}
+			//filteredList.length = 0;
+			//list.length = 0;
+			delete filteredList;
+			delete list;
+			complete = false;
 		}
-		//filteredList.length = 0;
-		//list.length = 0;
-		delete filteredList;
-		delete list;
-		complete = false;
 
 		return this;
 	}
@@ -312,12 +315,12 @@ class ServerList
 	 */
 	void addExtraServer(in char[] address)
 	{
-		extraServers_.add(address);
+		synchronized (this) extraServers_.add(address);
 	}
 
 
 	/// Returns the list of extra servers.
-	Set!(char[]) extraServers() { return extraServers_; }
+	Set!(char[]) extraServers() { synchronized (this) return extraServers_; }
 
 
 	/**
@@ -326,8 +329,13 @@ class ServerList
 	 * Uses the previously selected _sort order, or the default
 	 * if there is none.
 	 */
-	synchronized
-	void sort() { _sort(); updateFilteredList(); }
+	void sort()
+	{
+		synchronized (this) {
+			_sort();
+			updateFilteredList();
+		}
+	}
 
 
 	/**
@@ -336,12 +344,13 @@ class ServerList
 	 * The given _sort _column and order will be used for all subsequent
 	 * sorting, until new values are given.
 	 */
-	synchronized
 	void sort(int column, bool reversed=false)
 	{
-		setSort(column, reversed);
-		_sort();
-		updateFilteredList();
+		synchronized (this) {
+			setSort(column, reversed);
+			_sort();
+			updateFilteredList();
+		}
 	}
 
 
