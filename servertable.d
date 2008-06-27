@@ -294,13 +294,15 @@ class ServerTable
 	///
 	void notifyRefreshStarted()
 	{
-		refreshSelected_.setEnabled(false);
+		if (!refreshSelected_.isDisposed)
+			refreshSelected_.setEnabled(false);
 	}
 	
 	///
 	void notifyRefreshEnded()
 	{
-		refreshSelected_.setEnabled(true);
+		if (!refreshSelected_.isDisposed)
+			refreshSelected_.setEnabled(true);
 	}
 
 	/*void update(Object dummy = null)
