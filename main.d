@@ -78,16 +78,25 @@ private void _main(char[][] args)
 {
 	globalTimer = new Timer;
 
-	version (redirect) {
-		Cerr.output = new FileOutput("DEBUG.OUT");
-		Cerr("Cerr is redirected to this file.").newline.flush;
-		Cout.output = Cerr.output;
-		Cout("Cout is redirected to this file.").newline.flush;
+	version (redirect)
+		redirectOutput("CONSOLE.OUT");
+
+	if (!consoleOutputOk) {
+		// Avoid getting IOExceptions all over the place.
+		Cout.output = new FileOutput("NUL");
+		Cerr.output = new FileOutput("NUL");
+	}
+
+	if (char[] error = initLogging) {
+		debug warning(error);
+		// Don't allow for release until refreshlist.tmp conflict is resolved.
+		version (Final)			 
+			assert(0);
 	}
 
 	parseCmdLine(args);
 
-	loadSettings();
+	loadSettings;
 
 	// check for presence of Gslist
 	char[] gslistExe;
@@ -113,7 +122,7 @@ private void _main(char[][] args)
 			"server list.");
 	}
 
-	mainWindow = new MainWindow();
+	mainWindow = new MainWindow;
 
 	mainWindow.addKeyListener(new class KeyAdapter {
 		public void keyPressed (KeyEvent e)
@@ -574,4 +583,38 @@ class ThreadDispatcher
 	}
 
 	private void function() fp_ = null;
+}
+
+
+/*
+ * Redirect stdout and stderr (Cout and Cerr) to a file.
+ *
+ * Note: Cout and Cerr are flushed by a module destructor in Tango, so no
+ *       explicit flushing upon shutdown is required.
+ */
+private bool redirectOutput(char[] file)
+{
+	try {
+		Cerr.output = new FileOutput(file);
+		Cerr("Cerr is redirected to this file.").newline;
+		Cout.output = Cerr.output;
+		Cout("Cout is redirected to this file.").newline;
+		return true;
+	}
+	catch (IOException e) {
+		debug warning(e.toString);
+		return false;
+	}
+}
+
+
+private bool consoleOutputOk()
+{
+	try {
+		Cout.flush;
+	}
+	catch {
+		return false;
+	}
+	return true;
 }
