@@ -1,6 +1,6 @@
 module common;
 
-debug import tango.io.Console;
+import tango.io.Console;
 import tango.io.FileConduit;
 import Path = tango.io.Path;
 import tango.io.stream.BufferStream;
@@ -51,7 +51,8 @@ const char[] SVN = import("svnversion.txt");
 const char[] FINAL_VERSION = "0.4";
 
 debug {
-	const char[] VERSION = "- " ~ __DATE__ ~ " (svnversion " ~ SVN ~ ") *DEBUG BUILD*";
+	const char[] VERSION = "- " ~ __DATE__ ~
+	                                 " (svnversion " ~ SVN ~ ") *DEBUG BUILD*";
 }
 else {
 	version (Final)
@@ -80,7 +81,8 @@ private {
 
 static this()
 {
-	const char[] sep = "-------------------------------------------------------------";
+	const char[] sep =
+	           "-------------------------------------------------------------";
 	FileConduit.Style mode;
 
 	if (Path.exists(LOGFILE) && Path.fileSize(LOGFILE) < MAX_LOG_SIZE)
@@ -88,18 +90,25 @@ static this()
 	else
 		mode = FileConduit.WriteCreate;
 
-	logfile = new FileConduit(LOGFILE, mode);
-	logfile.seek(0, FileConduit.Anchor.End);
-	auto t = time(null);
-	char[] timestamp = ctime(&t)[0..24];
-	logfile.write(newline ~ sep ~ newline ~ APPNAME ~ " started at " ~
-	              timestamp ~ newline ~ sep ~ newline);
+	try
+		logfile = new FileConduit(LOGFILE, mode);
+	catch (IOException e)
+		Cout(e).newline.flush;
+
+	if (logfile) {
+		logfile.seek(0, FileConduit.Anchor.End);
+		auto t = time(null);
+		char[] timestamp = ctime(&t)[0..24];
+		logfile.write(newline ~ sep ~ newline ~ APPNAME ~ " started at " ~
+		                                  timestamp ~ newline ~ sep ~ newline);
+	}
 }
 
 
 static ~this()
 {
-	logfile.close();	
+	if (logfile)
+		logfile.close;
 }
 
 
@@ -168,8 +177,10 @@ void log(char[] s)
 	version(redirect) {}
 	else debug Cout("LOG: ")(s).newline;
 
-	logfile.write(s);
-	logfile.write(newline);
+	if (logfile) {
+		logfile.write(s);
+		logfile.write(newline);
+	}
 }
 
 
@@ -300,7 +311,8 @@ int findString(char[][][] array, char[] str, int column)
  *     reverse    = Reversed order.
  *     numeric    = Set to true to get a numerical sort instead of an
  *                  alphabetical one.  The string in the column given by
- *                  sortColumn will be converted to an integer before comparing.
+ *                  sortColumn will be converted to an integer before
+ *                  comparing.
  *
  * Throws: IllegalArgumentException if numeric is true, and the strings in
  *         sortColumn contains anything that doesn't parse as integers.
@@ -342,7 +354,8 @@ void sortStringArray(char[][][] arr, int sortColumn=0, bool reverse=false,
  *     reverse    = Reversed order.
  *     numeric    = Set to true to get a numerical sort instead of an
  *                  alphabetical one.  The string in the column given by
- *                  sortColumn will be converted to an integer before comparing.
+ *                  sortColumn will be converted to an integer before
+ *                  comparing.
  *
  * Throws: IllegalArgumentException if numeric is true, and the strings in
  *         sortColumn contains anything that doesn't parse as integers.
