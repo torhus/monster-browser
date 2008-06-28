@@ -8,8 +8,7 @@ import tango.core.Memory;
 import tango.core.Thread;
 import tango.io.File;
 import Path = tango.io.Path;
-version (quit)
-	import tango.io.Stdout;
+import tango.io.Stdout;
 import tango.text.convert.Format;
 import Integer = tango.text.convert.Integer;
 
@@ -95,7 +94,7 @@ void loadSavedList()
 		try {
 			browserLoadSavedList(&counter);
 
-			version (quit) { // for benchmarking
+			if (arguments.quit) { // for benchmarking
 				Display.getDefault.syncExec(new class Runnable {
 					void run()
 					{

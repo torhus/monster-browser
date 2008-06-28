@@ -37,8 +37,9 @@ else
 
 struct arguments {  ///
 static:
-	bool fromfile = false;  ///
+	bool fromfile  = false;  ///
 	bool norefresh = false;  ///
+	bool quit      = false;  ///
 }
 
 bool useGslist;  /// Will be true if gslist was found during startup.
@@ -569,6 +570,9 @@ void parseCmdLine(char[][] args)
 				break;
 			case "norefresh":
 				arguments.norefresh = true;
+				break;
+			case "quit":
+				arguments.quit = true;
 				break;
 			default:
 				break;
