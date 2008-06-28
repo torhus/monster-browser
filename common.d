@@ -74,27 +74,40 @@ Timer globalTimer;
 
 
 private {
-	const char[] LOGFILE = "LOG.TXT";
 	const int MAX_LOG_SIZE = 100 * 1024;
 	FileConduit logfile;
 }
 
 
-static this()
+/**
+ * Open a log file.
+ *
+ * Will write a startup message including the current date and time to it if it
+ * was successfully opened.
+ *
+ * Returns: null on success, an error message if there was a problem.
+ *
+ * Throws: IOException if there was a problem writing to the file after
+ *         successfully opening it.
+ */
+char[] initLogging(char[] name="LOG.TXT")
 {
 	const char[] sep =
 	           "-------------------------------------------------------------";
 	FileConduit.Style mode;
+	char[] error = null;
 
-	if (Path.exists(LOGFILE) && Path.fileSize(LOGFILE) < MAX_LOG_SIZE)
+	if (Path.exists(name) && Path.fileSize(name) < MAX_LOG_SIZE)
 		mode = FileConduit.WriteExisting;
 	else
 		mode = FileConduit.WriteCreate;
 
-	try
-		logfile = new FileConduit(LOGFILE, mode);
-	catch (IOException e)
-		Cout(e).newline.flush;
+	try {
+		logfile = new FileConduit(name, mode);
+	}
+	catch (IOException e) {
+		error = e.toString;
+	}
 
 	if (logfile) {
 		logfile.seek(0, FileConduit.Anchor.End);
@@ -103,13 +116,15 @@ static this()
 		logfile.write(newline ~ sep ~ newline ~ APPNAME ~ " started at " ~
 		                                  timestamp ~ newline ~ sep ~ newline);
 	}
+	
+	return error;
 }
 
 
 static ~this()
 {
 	if (logfile)
-		logfile.close;
+		logfile.flush.close;
 }
 
 
