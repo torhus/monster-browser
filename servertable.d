@@ -184,10 +184,17 @@ class ServerTable
 			void widgetSelected(SelectionEvent e)
 			{
 				int i = table_.getSelectionIndex();
-				auto sd = getActiveServerList.getFiltered(i);
-				selectedIp_ = sd.server[ServerColumn.ADDRESS];
-				cvarTable.setItems(sd.cvars);
-				playerTable.setItems(sd.players);
+				if (i != -1) {
+					auto sd = getActiveServerList.getFiltered(i);
+					selectedIp_ = sd.server[ServerColumn.ADDRESS];
+					cvarTable.setItems(sd.cvars);
+					playerTable.setItems(sd.players);
+				}
+				else {
+					selectedIp_ = null;
+					cvarTable.clear;
+					playerTable.clear;
+				}
 			}
 
 			void widgetDefaultSelected(SelectionEvent e)
@@ -381,7 +388,6 @@ class ServerTable
 		}
 		else {
 			// Keep the same server selected.
-			assert(selectedIp_);
 			i = getActiveServerList.getFilteredIndex(selectedIp_);
 		}
 
@@ -417,7 +423,7 @@ class ServerTable
 private:
 	Table table_;
 	Composite parent_;
-	char[] selectedIp_ = "";
+	char[] selectedIp_;
 	bool showFlags_, coloredNames_;
 	Image padlockImage_;
 	MenuItem refreshSelected_;

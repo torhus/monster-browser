@@ -245,7 +245,7 @@ class ServerList
 	 */
 	int getIndex(char[] ipAndPort)
 	{
-		if (!ipAndPort)
+		if (!ipAndPort.length)
 			return -1;
 
 		synchronized (this) foreach (int i, ref ServerData sd; list) {
@@ -265,7 +265,7 @@ class ServerList
 	 */
 	int getFilteredIndex(char[] ipAndPort)
 	{
-		if (!ipAndPort)
+		if (!ipAndPort.length)
 			return -1;
 
 		synchronized (this) foreach (int i, ServerData* sd; filteredList) {
