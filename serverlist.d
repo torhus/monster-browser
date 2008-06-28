@@ -213,21 +213,18 @@ class ServerList
 	}
 
 
-	/**
-	 * Iterate over the full list.
-	 *
-	 * Need to synchronize on the instance when using this.
-	 */
+	 /// Iterate over the full list.
 	/*int opApply(int delegate(ref ServerData) dg)
 	{
 		int result = 0;
 
-		foreach(ServerData sd; list) {
-			result = dg(sd);
-			if (result) {
-				break;
+		synchronized (this)
+			foreach(ServerData sd; list) {
+				result = dg(sd);
+				if (result) {
+					break;
+				}
 			}
-		}
 		return result;
 	}*/
 
