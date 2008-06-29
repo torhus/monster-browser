@@ -158,7 +158,7 @@ void querySingleServer(in char[] address, bool replace=false)
 }
 
 
-void _querySingleServer()
+private void _querySingleServer()
 {
 	static char[] addressCopy;
 	char[] address = querySingleServerAddress;

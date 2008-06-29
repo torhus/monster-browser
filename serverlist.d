@@ -73,35 +73,21 @@ struct ServerData {
 	/// Compares according to activeServerList's settings.
 	int opCmp(ServerData other)
 	{
-		int result = 0;
+		int result;
 
 		switch (activeServerList.sortColumn_) {
 			case ServerColumn.PLAYERS:
-				int a, b;
-
-				a = humanCount;
-				b = other.humanCount;
-				assert (a >= 0 && b >= 0);
-				if (a || b) {
-					result = b - a;
+				result = other.humanCount - humanCount;
+				if (result)
 					break;
-				}
 
-				a = botCount;
-				b = other.botCount;
-				assert (a >= 0 && b >= 0);
-				if (a || b) {
-					result = b - a;
+				result = other.botCount - botCount;
+				if (result)
 					break;
-				}
 
-				a = maxClients;
-				b = other.maxClients;
-				assert (a >= 0 && b >= 0);
-				if (a || b) {
-					result = b - a;
+				result = other.maxClients - maxClients;
+				if (result)
 					break;
-				}
 
 				break;
 
@@ -119,27 +105,33 @@ struct ServerData {
 	}
 
 
-	/// Extract some info about the server.
+	/// Extract some info about the server. Always returns >= 0.
 	int humanCount()
 	{
-		return Integer.convert(server[ServerColumn.PLAYERS]);
+		auto r = Integer.convert(server[ServerColumn.PLAYERS]);
+		assert(r >= 0 && r <= int.max);
+		return r;
 	}
 
 	/// ditto
 	int botCount()
 	{
 		char[] s = server[ServerColumn.PLAYERS];
-		return Integer.convert(s[locate(s, '+')+1 .. $]);
+		auto r = Integer.convert(s[locate(s, '+')+1 .. $]);
+		assert(r >= 0 && r <= int.max);
+		return r;
 	}
 
 	/// ditto
 	int maxClients()
 	{
 		char[] s = server[ServerColumn.PLAYERS];
-		return Integer.convert(s[locate(s, '/')+1 .. $]);
+		auto r = Integer.convert(s[locate(s, '/')+1 .. $]);
+		assert(r >= 0 && r <= int.max);
+		return r;
 	}
 
-	/// ditto
+	/// Extract some info about the server.
 	bool hasHumans() { return server[ServerColumn.PLAYERS][0] != '0'; }
 
 	/// ditto
