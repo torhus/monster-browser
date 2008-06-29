@@ -215,9 +215,9 @@ class ServerTable
 						}
 						break;
 					case 'r':
-						if (e.stateMask == DWT.MOD1 &&
-						                         refreshSelected_.getEnabled) {
-							onRefreshSelected();
+						if (e.stateMask == DWT.MOD1) {
+							if (refreshSelected_.getEnabled)
+								onRefreshSelected();
 							e.doit = false;
 						}
 						break;
