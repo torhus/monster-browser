@@ -596,9 +596,9 @@ private bool redirectOutput(char[] file)
 {
 	try {
 		Cerr.output = new FileOutput(file);
-		Cerr("Cerr is redirected to this file.").newline;
+		Cerr("Cerr is redirected to this file.").newline.flush;
 		Cout.output = Cerr.output;
-		Cout("Cout is redirected to this file.").newline;
+		Cout("Cout is redirected to this file.").newline.flush;
 		return true;
 	}
 	catch (IOException e) {
