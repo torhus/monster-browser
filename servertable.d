@@ -35,7 +35,7 @@ import settings;
 
 // should correspond to serverlist.ServerColumn
 char[][] serverHeaders =
-                    [" ", "Name", "PW", "Ping", "Players", "Game", "Map", "IP"];
+                   [" ", "Name", "PW", "Ping", "Players", "Game", "Map", "IP"];
 
 
 /**
@@ -85,7 +85,7 @@ class ServerTable
 
 				// add text
 				for (int i = ServerColumn.COUNTRY + 1; i <= ServerColumn.max;
-				                                                           i++) {
+				                                                         i++) {
 					// http://dsource.org/projects/dwt-win/ticket/6
 					item.setText(i, sd.server[i] ? sd.server[i] : "");
 				}
@@ -200,7 +200,8 @@ class ServerTable
 			void widgetDefaultSelected(SelectionEvent e)
 			{
 				widgetSelected(e);
-				joinServer(getActiveServerList.getFiltered(table_.getSelectionIndex()));
+				joinServer(getActiveServerList.getFiltered(
+				                                   table_.getSelectionIndex));
 			}
 		});
 		
@@ -242,7 +243,8 @@ class ServerTable
 					table_.setSortColumn(newColumn);
 				}
 
-				getActiveServerList.sort(table_.indexOf(newColumn), (dir == DWT.DOWN));
+				getActiveServerList.sort(table_.indexOf(newColumn),
+				                                            (dir == DWT.DOWN));
 
 				table_.setSortDirection(dir);
 				synchronized (getActiveServerList) {
