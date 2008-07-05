@@ -27,6 +27,7 @@ import settings;
 private {
 	char[] querySingleServerAddress;
 	bool querySingleServerReplace;
+	bool querySingleServerSelect;
 }
 
 
@@ -149,11 +150,18 @@ void loadSavedList()
  *
  * The querying is done in a new thread.  The function does not verify that the
  * address is valid.
+ *
+ * Params:
+ *     address = IP address and port of server to query.
+ *     replace = Replace the server instead of adding a new one.
+ *     select  = Select the newly added or refreshed server.
  */
-void querySingleServer(in char[] address, bool replace=false)
+void querySingleServer(in char[] address, bool replace=false,
+                                                             bool select=false)
 {
 	querySingleServerAddress = address;
 	querySingleServerReplace = replace;
+	querySingleServerSelect = select;
 	threadDispatcher.run(&_querySingleServer);
 }
 
@@ -162,15 +170,17 @@ private void _querySingleServer()
 {
 	static char[] addressCopy;
 	char[] address = querySingleServerAddress;
-	bool replace = querySingleServerReplace;
+	static bool replace, select;
 
 	void f()
 	{
 		void done(Object)
 		{
 			if (getActiveServerList.length() > 0) {
-				serverTable.reset(new IntWrapper(
-				           getActiveServerList.getFilteredIndex(addressCopy)));
+				IntWrapper index = select ? new IntWrapper(
+				           getActiveServerList.getFilteredIndex(addressCopy)) :
+				                                                          null;
+				serverTable.reset(index);
 			}
 			else {
 				statusBar.setLeft("The server did not reply");
@@ -180,7 +190,7 @@ private void _querySingleServer()
 
 		try {
 			auto deliverDg = replace ? &getActiveServerList.replace :
-			                           &getActiveServerList.add;
+			                                          &getActiveServerList.add;
 			browserRefreshList(deliverDg);
 
 			version (Tango) {
@@ -213,6 +223,8 @@ private void _querySingleServer()
 	File(REFRESHFILE).write(address ~ newline);
 
 	addressCopy = address.dup;
+	replace = querySingleServerReplace;
+	select = querySingleServerSelect;
 
 	statusBar.setLeft("Querying server...");
 
