@@ -49,7 +49,7 @@ class ServerTable
 	{
 		parent_ = parent;
 		table_ = new Table(parent, DWT.VIRTUAL | DWT.FULL_SELECTION |
-		                           DWT.BORDER);
+		                           DWT.MULTI | DWT.BORDER);
 		table_.setHeaderVisible(true);
 		table_.setLinesVisible(true);
 
@@ -183,17 +183,25 @@ class ServerTable
 		table_.addSelectionListener(new class SelectionAdapter {
 			void widgetSelected(SelectionEvent e)
 			{
-				int i = table_.getSelectionIndex();
-				if (i != -1) {
-					auto sd = getActiveServerList.getFiltered(i);
-					selectedIp_ = sd.server[ServerColumn.ADDRESS];
-					cvarTable.setItems(sd.cvars);
-					playerTable.setItems(sd.players);
-				}
-				else {
-					selectedIp_ = null;
-					cvarTable.clear;
-					playerTable.clear;
+				delete selectedIps_;
+				auto list = getActiveServerList;
+
+				synchronized (list) {
+					int[] indices = table_.getSelectionIndices;
+					if (indices.length) {
+						foreach (i; indices) {
+							auto sd = list.getFiltered(i);
+							selectedIps_ ~= sd.server[ServerColumn.ADDRESS];
+						}
+
+						auto sd = list.getFiltered(table_.getSelectionIndex);
+						cvarTable.setItems(sd.cvars);
+						playerTable.setItems(sd.players);
+					}
+					else {
+						cvarTable.clear;
+						playerTable.clear;
+					}
 				}
 			}
 
@@ -250,13 +258,9 @@ class ServerTable
 				synchronized (getActiveServerList) {
 					table_.clearAll();
 					table_.setItemCount(getActiveServerList.filteredLength());
+					// keep the same servers selected
+					table_.setSelection(getIndicesFromAddresses(selectedIps_));
 				}
-
-				// keep the same server selected
-				int i = getActiveServerList.getFilteredIndex(selectedIp_);
-				if (i != -1)
-					table_.setSelection(i);
-
 			}
 		};
 
@@ -382,18 +386,17 @@ class ServerTable
 			                           noReply);
 		}
 
-		int i;
+		int[] indices;
 		if (index !is null) {
-			i = (cast(IntWrapper)index).value;
+			indices ~= (cast(IntWrapper)index).value;
 		}
 		else {
-			// Keep the same server selected.
-			i = getActiveServerList.getFilteredIndex(selectedIp_);
+			indices = getIndicesFromAddresses(selectedIps_);
 		}
 
-		if (i != -1) {
-			table_.setSelection(i);
-			auto sd = getActiveServerList.getFiltered(i);
+		if (indices.length) {
+			table_.setSelection(indices);
+			auto sd = getActiveServerList.getFiltered(indices[0]);
 			playerTable.setItems(sd.players);
 			cvarTable.setItems(sd.cvars);
 		}
@@ -423,7 +426,7 @@ class ServerTable
 private:
 	Table table_;
 	Composite parent_;
-	char[] selectedIp_;
+	char[][] selectedIps_;
 	bool showFlags_, coloredNames_;
 	Image padlockImage_;
 	MenuItem refreshSelected_;
@@ -474,6 +477,19 @@ private:
 			                                       table_.getSelectionIndex());
 			querySingleServer(sd.server[ServerColumn.ADDRESS], true);
 		}
+	}
+
+	int[] getIndicesFromAddresses(char[][] addresses)
+	{
+		int[] indices;
+		auto list = getActiveServerList;
+		
+		foreach (char[] a; addresses) {
+			int i = list.getFilteredIndex(a);
+			if (i != -1)
+				indices ~= i;
+		}
+		return indices;
 	}
 
 	int getBottomIndex()
