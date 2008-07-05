@@ -472,7 +472,7 @@ private:
 		synchronized (getActiveServerList) {
 			ServerData* sd = getActiveServerList.getFiltered(
 			                                       table_.getSelectionIndex());
-			querySingleServer(sd.server[ServerColumn.ADDRESS]);
+			querySingleServer(sd.server[ServerColumn.ADDRESS], true);
 		}
 	}
 

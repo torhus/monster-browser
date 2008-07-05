@@ -289,7 +289,7 @@ class SpecifyServerDialog
 								}
 							}
 							list.addExtraServer(address);
-							querySingleServer(address);
+							querySingleServer(address, false, true);
 						}
 						else {
 							info("That server is already on the list.  If you can't see it, "
