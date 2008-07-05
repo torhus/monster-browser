@@ -231,12 +231,9 @@ class ServerTable
 			void handleEvent(Event e)
 			{
 				// determine new sort column and direction
-				TableColumn sortColumn, newColumn;
-				int dir;
-
-				sortColumn = table_.getSortColumn();
-				newColumn = cast(TableColumn) e.widget;
-				dir = table_.getSortDirection();
+				auto sortColumn = table_.getSortColumn;
+				auto newColumn = cast(TableColumn)e.widget;
+				int dir = table_.getSortDirection;
 
 				if (sortColumn is newColumn) {
 					dir = (dir == DWT.UP) ? DWT.DOWN : DWT.UP;
