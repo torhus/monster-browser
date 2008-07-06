@@ -49,7 +49,7 @@ void switchToMod(char[] name)
 			switchToActiveMod();
 		}
 		else {
-			if (common.useGslist)
+			if (common.haveGslist && activeMod.useGslist)
 				getNewList();
 			else if (Path.exists(activeMod.serverFile))
 				refreshList();

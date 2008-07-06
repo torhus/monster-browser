@@ -42,7 +42,7 @@ static:
 	bool quit      = false;  ///
 }
 
-bool useGslist;  /// Will be true if gslist was found during startup.
+bool haveGslist;  /// Will be true if gslist was found during startup.
 
 
 const char[] APPNAME = "Monster Browser";

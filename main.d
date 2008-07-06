@@ -110,9 +110,9 @@ private void _main(char[][] args)
 		static assert(0);
 	}
 
-	common.useGslist = exists(gslistExe);
+	common.haveGslist = exists(gslistExe);
 
-	if (common.useGslist) {
+	if (common.haveGslist) {
 		log(gslistExe ~
 			" found, using it for faster server list retrieval.");
 	}
@@ -177,7 +177,7 @@ private void _main(char[][] args)
 		loadSavedList();
 	}
 	else {
-		if (common.useGslist) {
+		if (common.haveGslist && activeMod.useGslist) {
 			getNewList();
 		}
 		else {
