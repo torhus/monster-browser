@@ -343,7 +343,7 @@ class ServerTable
 			return;
 
 		if (index) {
-			int selected = table_.getSelectionIndex();
+			int[] selected = table_.getSelectionIndices;
 			int i = (cast(IntWrapper)index).value;
 
 			if (i <= getBottomIndex() /*&& i >= table_.getTopIndex()*/) {
@@ -351,9 +351,27 @@ class ServerTable
 				table_.setItemCount(getActiveServerList.filteredLength);
 			}
 
-			if (selected != -1 && i <= selected) {
-					table_.deselectAll();
-					table_.select(selected + 1);
+			// not sure which way is the fastest...
+			version (all) {
+				if (selected.length) {
+					// Restore selection, compensating for the newly inserted item.
+					foreach (ref sel; selected) {
+						if (i <= sel) {
+							sel++;
+							assert(sel < getActiveServerList.filteredLength);
+						}
+					}
+					table_.setSelection(selected);
+				}
+			}
+			else {
+				// Move all selection markers below the new item down by one.
+				foreach (sel; selected) {
+					if (i <= sel) {
+						table_.deselect(sel);
+						table_.select(sel + 1);
+					}
+				}
 			}
 		}
 		else {
