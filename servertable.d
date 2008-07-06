@@ -467,14 +467,14 @@ private:
 		});
 
 		item = new MenuItem(menu, DWT.PUSH);
-		item.setText("Refresh this only\tCtrl+R");
+		item.setText("Refresh selected\tCtrl+R");
 		item.addSelectionListener(new class SelectionAdapter {
 			void widgetSelected(SelectionEvent e) { onRefreshSelected(); }
 		});
 		refreshSelected_ = item;
 
 		item = new MenuItem(menu, DWT.PUSH);
-		item.setText("Copy address\tCtrl+C");
+		item.setText("Copy addresses\tCtrl+C");
 		item.addSelectionListener(new class SelectionAdapter {
 			void widgetSelected(SelectionEvent e) { onCopyAddresses(); }
 		});
@@ -483,21 +483,18 @@ private:
 	}
 
 	void onCopyAddresses()
-	{
-		synchronized (getActiveServerList) {
-			ServerData* sd = getActiveServerList.getFiltered(
-			                                       table_.getSelectionIndex());
-			copyToClipboard(sd.server[ServerColumn.ADDRESS]);
+	{		
+		char[] s = join(selectedIps_, newline);
+		if (s.length) {
+			s ~= newline;
+			copyToClipboard(s);
 		}
 	}
 
 	void onRefreshSelected()
 	{
-		synchronized (getActiveServerList) {
-			ServerData* sd = getActiveServerList.getFiltered(
-			                                       table_.getSelectionIndex());
-			querySingleServer(sd.server[ServerColumn.ADDRESS], true);
-		}
+		if (selectedIps_.length)
+			queryServers(selectedIps_, true);
 	}
 
 	int[] getIndicesFromAddresses(char[][] addresses)

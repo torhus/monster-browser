@@ -21,13 +21,14 @@ import qstat;
 import runtools;
 import serverlist;
 import servertable;
+import set;
 import settings;
 
 
 private {
-	char[] querySingleServerAddress;
-	bool querySingleServerReplace;
-	bool querySingleServerSelect;
+	char[][] queryServersAddresses;
+	bool queryServersReplace;
+	bool queryServersSelect;
 }
 
 
@@ -142,34 +143,36 @@ void loadSavedList()
 
 
 /**
- * Queries a single server, adds it to the active server list, and refreshes
- * the serverTable to make it show up.
+ * Queries one or more servers, adds them to the active server list, and
+ * refreshes the serverTable to make them show up.
  *
- * If replace is true, it will instead replace the first server found that has
- * the same address.
+ * If replace is true, it will instead update servers with new data.
  *
  * The querying is done in a new thread.  The function does not verify that the
  * address is valid.
  *
  * Params:
- *     address = IP address and port of server to query.
- *     replace = Replace the server instead of adding a new one.
- *     select  = Select the newly added or refreshed server.
+ *     address = IP address and port of servers to query.
+ *     replace = Update the servers instead of adding new ones.
+ *     select  = Select the newly added or refreshed servers.
  */
-void querySingleServer(in char[] address, bool replace=false,
+void queryServers(in char[][] addresses, bool replace=false,
                                                              bool select=false)
 {
-	querySingleServerAddress = address;
-	querySingleServerReplace = replace;
-	querySingleServerSelect = select;
-	threadDispatcher.run(&_querySingleServer);
+	if (!addresses.length)
+		return;
+
+	queryServersAddresses = addresses;
+	queryServersReplace = replace;
+	queryServersSelect = select;
+	threadDispatcher.run(&_queryServers);
 }
 
 
-private void _querySingleServer()
+private void _queryServers()
 {
-	static char[] addressCopy;
-	char[] address = querySingleServerAddress;
+	static char[][] addressCopies;
+	char[][] addresses = queryServersAddresses;
 	static bool replace, select;
 
 	void f()
@@ -178,7 +181,8 @@ private void _querySingleServer()
 		{
 			if (getActiveServerList.length() > 0) {
 				IntWrapper index = select ? new IntWrapper(
-				           getActiveServerList.getFilteredIndex(addressCopy)) :
+				      // FIXME: select them all, not just the first one
+				      getActiveServerList.getFilteredIndex(addressCopies[0])) :
 				                                                          null;
 				serverTable.reset(index);
 			}
@@ -220,13 +224,16 @@ private void _querySingleServer()
 
 	assert(serverThread is null || !serverThread.isRunning);
 
-	File(REFRESHFILE).write(address ~ newline);
+	if (Path.exists(REFRESHFILE))
+		Path.remove(REFRESHFILE);
+	auto written = appendServersToFile(REFRESHFILE, Set!(char[])(addresses));
+	log(Format("Wrote {} addresses to {}.", addresses.length, REFRESHFILE));
 
-	addressCopy = address.dup;
-	replace = querySingleServerReplace;
-	select = querySingleServerSelect;
+	addressCopies = addresses.dup;
+	replace = queryServersReplace;
+	select = queryServersSelect;
 
-	statusBar.setLeft("Querying server...");
+	statusBar.setLeft("Querying server(s)...");
 
 	serverThread = new Thread(&f);
 	serverTable.notifyRefreshStarted;
