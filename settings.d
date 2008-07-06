@@ -44,6 +44,12 @@ struct Mod
 		return r ? r : getSetting("gamePath");
 	}
 
+	bool useGslist()
+	{
+		char[] r = section["useGslist"];
+		return r ? (r == "true") : true;
+	}
+
 	private IniSection section;
 }
 
@@ -62,16 +68,17 @@ private {
 	    "; like this example:\n"
 	    ";\n"
 	    "; [mymod]\n"
-	    "; masterServer=master.mymod.com\n"
 	    "; exePath=PROGRAM_FILES\\My Mod Directory\\mymod.exe\n"
+	    "; masterServer=master.mymod.com\n"
 	    ";\n"
 	    "; Lines beginning with a \";\" are comments.\n"
 	    "\n"
 	    "[westernq3]\n"
 	    "\n"
 	    "[wop]\n"
-	    "masterServer=wopmaster.kickchat.com:27955\n"
 	    "exePath=PROGRAM_FILES\\World of Padman\\wop.exe\n"
+		"useGslist=false\n"
+	    "masterServer=wopmaster.kickchat.com:27955\n"
 	    "\n"
 	    "[q3ut4]\n"
 	    "masterServer=master.urbanterror.net\n"

@@ -38,7 +38,7 @@ const char[] REFRESHFILE = "refreshlist.tmp";
 
 
 /**
- * Run qstat or gslist (determined by the useGslist variable) to retrieve a
+ * Run qstat or gslist (determined by the haveGslist variable) to retrieve a
  * list of servers from the active mod's master server.
  *
  * Returns: A set containing the IP addresses of the servers.
@@ -48,8 +48,9 @@ Set!(char[]) browserGetNewList()
 	char[] cmdLine;
 	size_t count = -1;
 	Set!(char[]) addresses;
+	bool gslist = common.haveGslist && activeMod.useGslist;
 
-	if (common.useGslist)
+	if (gslist)
 		cmdLine = "gslist -n quake3 -o 5";
 	else
 		cmdLine = "qstat -q3m,68,outfile " ~ activeMod.masterServer ~ ",-";
@@ -57,7 +58,7 @@ Set!(char[]) browserGetNewList()
 	version (linux)
 		cmdLine = "./" ~ cmdLine;
 
-	if (common.useGslist && MOD_ONLY && activeMod.name!= "baseq3")
+	if (gslist && MOD_ONLY && activeMod.name!= "baseq3")
 		cmdLine ~= " -f \"(gametype = \'" ~ activeMod.name ~ "\'\")";
 
 	proc = new Process();
@@ -68,7 +69,7 @@ Set!(char[]) browserGetNewList()
 		proc.execute(cmdLine, null);
 	}
 	catch (ProcessException e) {
-		char[] s = common.useGslist ? "gslist" : "qstat";
+		char[] s = gslist ? "gslist" : "qstat";
 		error(s ~ " not found!\nPlease reinstall " ~ APPNAME ~ ".");
 		logx(__FILE__, __LINE__, e);
 		proc = null;
@@ -77,7 +78,7 @@ Set!(char[]) browserGetNewList()
 	if (proc) {
 		try {
 			auto lineIter= new LineIterator!(char)(proc.stdout);
-			size_t start = common.useGslist ? 0 : "q3s ".length;
+			size_t start = gslist ? 0 : "q3s ".length;
 			addresses = collectIpAddresses(lineIter, start);
 			//proc.stdout.close();  FIXME: any point to this?
 		}
