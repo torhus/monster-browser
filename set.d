@@ -22,6 +22,15 @@ struct Set(T) {
 	T[] toArray() { return data_.keys; } ///
 
 	///
+	static Set!(T) opCall(T[] values=null)
+	{
+		Set!(T) set;
+		foreach (T val; values)
+			set.add(val);
+		return set;
+	}
+
+	///
 	int opApply(int delegate(ref T) dg)
     {
 	    int result = 0;
