@@ -68,7 +68,7 @@ private {
 	    "; like this example:\n"
 	    ";\n"
 	    "; [mymod]\n"
-	    "; exePath=PROGRAM_FILES\\My Mod Directory\\mymod.exe\n"
+	    "; exePath=%ProgramFiles%\\My Mod Directory\\mymod.exe\n"
 	    "; masterServer=master.mymod.com\n"
 	    ";\n"
 	    "; Lines beginning with a \";\" are comments.\n"
@@ -76,7 +76,7 @@ private {
 	    "[westernq3]\n"
 	    "\n"
 	    "[wop]\n"
-	    "exePath=PROGRAM_FILES\\World of Padman\\wop.exe\n"
+	    "exePath=%ProgramFiles%\\World of Padman\\wop.exe\n"
 		"useGslist=false\n"
 	    "masterServer=wopmaster.kickchat.com:27955\n"
 	    "\n"
@@ -97,7 +97,7 @@ private {
 	}
 	Setting[] defaults = [{"coloredNames", "true"},
 	                      {"gamePath",
-	                              r"PROGRAM_FILES\Quake III Arena\quake3.exe"},
+	                              r"%ProgramFiles%\Quake III Arena\quake3.exe"},
 	                      {"lastMod", "westernq3"},
 	                      {"minimizeOnGameLaunch", "true"},
 	                      {"showFlags", "true"},
@@ -168,7 +168,7 @@ private void writeDefaultModsFile()
 	char[] text = defaultModsFile;
 
 	version (Windows)
-		text = substitute(text, "PROGRAM_FILES", getProgramFilesDirectory());
+		text = substitute(text, "%ProgramFiles%", getProgramFilesDirectory());
 
 	// Use C IO to get line ending translation.
 	FILE* f = fopen((modFileName ~ '\0').ptr, "w");
@@ -198,9 +198,9 @@ void loadSettings()
 	version (Windows) {
 		IniSection sec2 = settingsIni["Settings"];
 		char[] value = sec2.getValue("gamePath");
-		if (value.length >= 13 && value[0..13] == "PROGRAM_FILES") {
+		if (value.length >= 13 && value[0..13] == "%ProgramFiles%") {
 			char[] dir = getProgramFilesDirectory();
-			value = substitute(value, "PROGRAM_FILES", dir);
+			value = substitute(value, "%ProgramFiles%", dir);
 			sec2.setValue("gamePath", value);
 		}
 	}
