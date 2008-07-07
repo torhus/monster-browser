@@ -188,15 +188,17 @@ class ServerTable
 
 				synchronized (list) {
 					int[] indices = table_.getSelectionIndices;
+					char[][][] allPlayers;
 					if (indices.length) {
 						foreach (i; indices) {
 							auto sd = list.getFiltered(i);
 							selectedIps_ ~= sd.server[ServerColumn.ADDRESS];
+							allPlayers ~= sd.players;
 						}
 
 						auto sd = list.getFiltered(table_.getSelectionIndex);
 						cvarTable.setItems(sd.cvars);
-						playerTable.setItems(sd.players);
+						playerTable.setItems(allPlayers);
 					}
 					else {
 						cvarTable.clear;
@@ -417,8 +419,14 @@ class ServerTable
 
 		if (indices.length) {
 			table_.setSelection(indices);
-			auto sd = getActiveServerList.getFiltered(indices[0]);
-			playerTable.setItems(sd.players);
+
+			auto list = getActiveServerList;
+			char[][][] allPlayers;
+			foreach (i; indices)
+				allPlayers ~= list.getFiltered(i).players;
+			playerTable.setItems(allPlayers);
+
+			auto sd = list.getFiltered(table_.getSelectionIndex);
 			cvarTable.setItems(sd.cvars);
 		}
 		else {
