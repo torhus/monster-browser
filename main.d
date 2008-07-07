@@ -557,16 +557,17 @@ ToolBar createToolbar(Composite parent) ///
 
 
 /**
- * Stores a pointer to a function and calls it only when serverThread has
- * terminated.
+ * Stores a pointer to a function or delegate and calls it only when
+ * serverThread has terminated.
  */
 class ThreadDispatcher
 {
-	void run(void function() fp) { fp_ = fp; } ///
+	void run(void function() fp) { dg_ = null; fp_ = fp; } ///
+	void run(void delegate() dg) { fp_ = null; dg_ = dg; } ///
 
 	void dispatch() ///
 	{
-		if (fp_ is null)
+		if (fp_ is null && dg_ is null)
 			return;
 
 		if (serverThread && serverThread.isRunning) {
@@ -577,12 +578,19 @@ class ThreadDispatcher
 			                                                          .newline;
 			killServerBrowser();
 
-			fp_();
-			fp_ = null;
+			if (fp_ !is null) {
+				fp_();
+				fp_ = null;
+			}
+			else {
+				dg_();
+				dg_ = null;
+			}
 		}
 	}
 
 	private void function() fp_ = null;
+	private void delegate() dg_ = null;
 }
 
 

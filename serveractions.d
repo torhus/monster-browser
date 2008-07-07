@@ -25,13 +25,6 @@ import set;
 import settings;
 
 
-private {
-	char[][] queryServersAddresses;
-	bool queryServersReplace;
-	bool queryServersSelect;
-}
-
-
 /**
  * Switches the active mod.
  *
@@ -162,28 +155,53 @@ void queryServers(in char[][] addresses, bool replace=false,
 	if (!addresses.length)
 		return;
 
-	queryServersAddresses = addresses;
-	queryServersReplace = replace;
-	queryServersSelect = select;
-	threadDispatcher.run(&_queryServers);
+	auto q = new ServerQuery(addresses, replace, select);
+	threadDispatcher.run(&q.startQuery);
 }
 
 
-private void _queryServers()
+///
+class ServerQuery
 {
-	static char[][] addressCopies;
-	char[][] addresses = queryServersAddresses;
-	static bool replace, select;
+	///
+	this (in char[][] addresses, bool replace=false, bool select=false)
+	{
+		addresses_ = addresses;
+		replace_ = replace;
+		select_ = select;
+	}
 
-	void f()
+	///
+	void startQuery()
+	{	
+		assert(serverThread is null || !serverThread.isRunning);
+
+		if (Path.exists(REFRESHFILE))
+			Path.remove(REFRESHFILE);
+		auto written =
+		            appendServersToFile(REFRESHFILE, Set!(char[])(addresses_));
+		log(Format("Wrote {} addresses to {}.", addresses_.length,
+		                                                         REFRESHFILE));
+
+		statusBar.setLeft("Querying server(s)...");
+		
+		GC.collect;
+		serverThread = new Thread(&run);
+		serverTable.notifyRefreshStarted;
+		serverThread.start();
+	}
+
+	private void run()
 	{
 		void done(Object)
 		{
 			if (getActiveServerList.length() > 0) {
-				IntWrapper index = select ? new IntWrapper(
-				      // FIXME: select them all, not just the first one
-				      getActiveServerList.getFilteredIndex(addressCopies[0])) :
-				                                                          null;
+				IntWrapper index = null;
+				if (select_)
+					// FIXME: select them all, not just the first one
+					index = new IntWrapper(
+					               getActiveServerList.getFilteredIndex(
+					                                           addresses_[0]));
 				serverTable.reset(index);
 			}
 			else {
@@ -193,8 +211,8 @@ private void _queryServers()
 		}
 
 		try {
-			auto deliverDg = replace ? &getActiveServerList.replace :
-			                                          &getActiveServerList.add;
+			auto deliverDg = replace_ ? &getActiveServerList.replace :
+			                            &getActiveServerList.add;
 			browserRefreshList(deliverDg);
 
 			version (Tango) {
@@ -213,7 +231,7 @@ private void _queryServers()
 				}
 				else {
 					serverTable.notifyRefreshEnded;
-				}				
+				}
 			}
 
 		}
@@ -222,22 +240,11 @@ private void _queryServers()
 		}
 	}
 
-	assert(serverThread is null || !serverThread.isRunning);
-
-	if (Path.exists(REFRESHFILE))
-		Path.remove(REFRESHFILE);
-	auto written = appendServersToFile(REFRESHFILE, Set!(char[])(addresses));
-	log(Format("Wrote {} addresses to {}.", addresses.length, REFRESHFILE));
-
-	addressCopies = addresses.dup;
-	replace = queryServersReplace;
-	select = queryServersSelect;
-
-	statusBar.setLeft("Querying server(s)...");
-
-	serverThread = new Thread(&f);
-	serverTable.notifyRefreshStarted;
-	serverThread.start();
+	private {
+		char[][] addresses_;
+		bool replace_;
+		bool select_;
+	}
 }
 
 
