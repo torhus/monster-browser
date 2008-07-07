@@ -134,9 +134,8 @@ class PlayerTable
 	/// Set the contents of this table.
 	void setItems(char[][][] players)
 	{
-		// FIXME: show players for all selected servers at once (like ASE)
 		players_ = players;
-		if (players_.length && players_[0][PlayerColumn.NAME] is null)
+		if (players_.length)
 			addCleanPlayerNames();
 		reset();
 	}
@@ -191,7 +190,8 @@ private:
 	void addCleanPlayerNames()
 	{
 		foreach (p; players_)
-			p[PlayerColumn.NAME] = stripColorCodes(p[PlayerColumn.RAWNAME]);
+			if (p[PlayerColumn.NAME] is null)
+				p[PlayerColumn.NAME] = stripColorCodes(p[PlayerColumn.RAWNAME]);
 	}
 
 }
