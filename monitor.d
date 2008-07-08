@@ -21,7 +21,7 @@ void startMonitor(Shell shell)
 	void monitorDone(Object o)
 	{
 		//db("monitorDone");
-		scope dialog = new MonitorNotify(mainWindow, "testing");
+		scope dialog = new MonitorNotify(mainWindow.handle, "testing");
 		//dialog.open();
 	}
 
