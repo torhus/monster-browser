@@ -52,7 +52,7 @@ CvarTable cvarTable;
 StatusBar statusBar;
 FilterBar filterBar;
 SashForm middleForm, rightForm;
-Shell mainWindow;
+MainWindow mainWindow;
 Thread serverThread;
 ThreadDispatcher threadDispatcher;
 
@@ -124,7 +124,7 @@ private void _main(char[][] args)
 
 	mainWindow = new MainWindow;
 
-	mainWindow.addKeyListener(new class KeyAdapter {
+	mainWindow.handle.addKeyListener(new class KeyAdapter {
 		public void keyPressed (KeyEvent e)
 		{
 			//FIXME: this function never gets called
@@ -142,7 +142,7 @@ private void _main(char[][] args)
 		}
 	});
 
-	mainWindow.addShellListener(new class ShellAdapter {
+	mainWindow.handle.addShellListener(new class ShellAdapter {
 		public void shellClosed(ShellEvent e)
 		{
 			volatile runtools.abortParsing = true;
@@ -194,7 +194,7 @@ private void _main(char[][] args)
 
 	// main loop
 	Display display = Display.getDefault;
-	while (!mainWindow.isDisposed()) {
+	while (!mainWindow.handle.isDisposed) {
 		threadDispatcher.dispatch();
 		if (!display.readAndDispatch())
 			display.sleep();
@@ -206,32 +206,32 @@ private void _main(char[][] args)
 
 
 ///
-class MainWindow : Shell
+class MainWindow
 {
 	/**
 	 *  Initializes all of the gui.
 	 */
 	this()
 	{
-		super(Display.getDefault());
-		setText(APPNAME ~ " " ~ VERSION);
+		shell_ = new Shell(Display.getDefault);
+		shell_.setText(APPNAME ~ " " ~ VERSION);
 
 		// restore saved size and state
 		char[] size = getSetting("windowSize");
 		int pos = locate(size, 'x');
 		// FIXME: handle the case of 'x' not being found
-		setSize(Integer.convert(size[0..pos]),
+		shell_.setSize(Integer.convert(size[0..pos]),
 		        Integer.convert(size[pos+1..length]));
 		if (getSetting("windowMaximized") == "true")
-			setMaximized(true);
+			shell_.setMaximized(true);
 
 		GridLayout gridLayout = new GridLayout();
 		gridLayout.numColumns = 2;
-		setLayout(gridLayout);
+		shell_.setLayout(gridLayout);
 
 
 		// *********** MAIN WINDOW TOP ***************
-		Composite topComposite = new Composite(this, DWT.NONE);
+		Composite topComposite = new Composite(shell_, DWT.NONE);
 		GridData gridData = new GridData(GridData.HORIZONTAL_ALIGN_FILL |
 		                                 GridData.GRAB_HORIZONTAL);
 		gridData.horizontalSpan = 2;
@@ -245,7 +245,7 @@ class MainWindow : Shell
 
 
 		// ************** SERVER LIST, PLAYER LIST, CVARS LIST ***************
-		middleForm = new SashForm(this, DWT.HORIZONTAL);
+		middleForm = new SashForm(shell_, DWT.HORIZONTAL);
 		gridData = new GridData(GridData.FILL_BOTH);
 		middleForm.setLayoutData(gridData);
 
@@ -284,7 +284,7 @@ class MainWindow : Shell
 
 
 		// **************** STATUS BAR ******************************
-		Composite statusComposite = new Composite(this, DWT.NONE);
+		Composite statusComposite = new Composite(shell_, DWT.NONE);
 		gridData = new GridData(GridData.HORIZONTAL_ALIGN_FILL |
 		                        GridData.GRAB_HORIZONTAL);
 		gridData.horizontalSpan = 2;
@@ -292,6 +292,24 @@ class MainWindow : Shell
 		statusComposite.setLayout(new FillLayout(DWT.HORIZONTAL));
 		statusBar = new StatusBar(statusComposite);
 		statusBar.setLeft(APPNAME ~ " is ready.");
+	}
+
+	Shell handle() { return shell_; }  ///
+
+	void open() { shell_.open; }  ///
+
+	void close() { shell_.close; }  ///
+
+	bool maximized()       { return shell_.getMaximized; }  ///
+	void maximized(bool v) { shell_.setMaximized(v); }  ///
+
+	bool minimized()       { return shell_.getMinimized; }  ///
+	void minimized(bool v) { shell_.setMinimized(v); }  ///
+
+	Point size() { return shell_.getSize; }  ///
+
+	private {
+		Shell shell_;
 	}
 }
 
@@ -517,7 +535,7 @@ ToolBar createToolbar(Composite parent) ///
 	button3.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{
-			auto dialog = new SpecifyServerDialog(mainWindow);
+			auto dialog = new SpecifyServerDialog(mainWindow.handle);
 			if (dialog.open() == DWT.OK) {
 				//saveSettings();
 			}
@@ -532,8 +550,8 @@ ToolBar createToolbar(Composite parent) ///
 	button4.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{
-			startMonitor(mainWindow);
-			//SettingsDialog dialog = new SettingsDialog(mainWindow);
+			startMonitor(mainWindow.handle);
+			//SettingsDialog dialog = new SettingsDialog(mainWindow.handle);
 			/*if (dialog.open() == DWT.OK)
 				saveSettings();*/
 		}
@@ -546,7 +564,7 @@ ToolBar createToolbar(Composite parent) ///
 	button5.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{
-			SettingsDialog dialog = new SettingsDialog(mainWindow);
+			SettingsDialog dialog = new SettingsDialog(mainWindow.handle);
 			if (dialog.open() == DWT.OK)
 				saveSettings();
 		}

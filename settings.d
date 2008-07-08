@@ -215,12 +215,12 @@ void loadSettings()
  */
 void saveSettings()
 {
-	if (!mainWindow.getMaximized() && !mainWindow.getMinimized()) {
-		char[] width  = Integer.toString(mainWindow.getSize().x);
-		char[] height = Integer.toString(mainWindow.getSize().y);
+	if (!mainWindow.maximized && !mainWindow.minimized) {
+		char[] width  = Integer.toString(mainWindow.size.x);
+		char[] height = Integer.toString(mainWindow.size.y);
 		setSetting("windowSize", width ~ "x" ~ height);
 	}
-	setSetting("windowMaximized", mainWindow.getMaximized() ?
+	setSetting("windowMaximized", mainWindow.maximized ?
 	                                                 "true" : "false");
 
 	setSetting("lastMod", activeMod.name);

@@ -53,7 +53,7 @@ void joinServer(ServerData *sd)
 	}
 
 	if (showDialog) {
-		scope JoinDialog dialog = new JoinDialog(mainWindow,
+		scope JoinDialog dialog = new JoinDialog(mainWindow.handle,
 		                                         sd.server[ServerColumn.NAME], msg);
 
 		dialog.password = getPassword(sd.server[ServerColumn.ADDRESS]);
@@ -88,7 +88,7 @@ void joinServer(ServerData *sd)
 				db("GetLastError returned " ~ Integer.toString(e));
 			}
 			else if (getSetting("minimizeOnGameLaunch") == "true") {
-				mainWindow.setMinimized(true);
+				mainWindow.minimized = true;
 			}
 		}
 	}

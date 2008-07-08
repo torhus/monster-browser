@@ -135,7 +135,7 @@ void messageBox(char[] msg, char[] title, int style)
 		void run() {
 			scope MessageBox mb;
 			if (mainWindow !is null)
-				mb = new MessageBox(mainWindow, style);
+				mb = new MessageBox(mainWindow.handle, style);
 			else
 				mb = new MessageBox(style);
 
