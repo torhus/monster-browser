@@ -4,8 +4,6 @@ module dialogs;
 
 import tango.io.File;
 import tango.text.Util;
-import tango.sys.win32.Types : SW_SHOW;
-import tango.sys.win32.UserGdi : ShellExecuteA;
 
 import dwt.DWT;
 import dwt.events.SelectionAdapter;
@@ -16,6 +14,7 @@ import dwt.layout.GridData;
 import dwt.layout.GridLayout;
 import dwt.layout.RowData;
 import dwt.layout.RowLayout;
+import dwt.program.Program;
 import dwt.widgets.Button;
 import dwt.widgets.Composite;
 import dwt.widgets.Control;
@@ -32,7 +31,6 @@ import main;
 import serveractions;
 import serverlist;
 import settings;
-
 
 
 class MonitorNotify
@@ -384,19 +382,7 @@ class SettingsDialog
 		modsButton.addSelectionListener(new class SelectionAdapter {
 			public void widgetSelected(SelectionEvent e)
 			{
-				version (Tango) {
-					version (Windows) {
-						char* file = (settings.modFileName ~ '\0').ptr;
-						ShellExecuteA(null, null, file, null, null, SW_SHOW);
-					}
-					else {  //FIXME
-						info("This is not yet implemented on linux\n"
-						      "Please locate " ~ settings.modFileName ~ " manually for now.");
-					}
-				}
-				else {
-					Program.launch(settings.modFileName);
-				}
+				Program.launch(settings.modFileName);
 			}
 		});
 

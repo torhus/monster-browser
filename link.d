@@ -9,6 +9,7 @@ version(build) {
 	// Only needed for win 95/98 compatibility for SHGetSpecialFolderPath()
 	pragma(link, "shfolder.lib");
 	pragma(link, "shell32.lib");
+	pragma(link, "shlwapi.lib");
 	pragma(link, "ole32.lib");
 	pragma(link, "oleaut32.lib");
 	pragma(link, "oleacc.lib");
