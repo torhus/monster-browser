@@ -101,21 +101,13 @@ void loadSavedList()
 			}
 
 			volatile if (!runtools.abortParsing) {
-				version (Tango) {
-					Display.getDefault.asyncExec(new class Runnable {
-						void run()
-						{
-							serverTable.reset;
-							serverTable.notifyRefreshEnded;
-						}
-				    });
-				}
-				else {
-					/*Display.getDefault.asyncExec(null,
-					                        delegate void (Object o) {
-					                            serverTable.reset();
-					                        });*/
-				}
+				Display.getDefault.asyncExec(new class Runnable {
+					void run()
+					{
+						serverTable.reset;
+						serverTable.notifyRefreshEnded;
+					}
+				});
 			}
 			else {
 				serverTable.notifyRefreshEnded;
@@ -198,32 +190,21 @@ class ServerQuery
 			                            &getActiveServerList.add;
 			browserRefreshList(deliverDg);
 
-			version (Tango) {
-				volatile if (!runtools.abortParsing) {
-					Display.getDefault.asyncExec(new class Runnable {
-						void run() { done(null); }
-					});
-				}
-				else {
-					serverTable.notifyRefreshEnded;
-				}
+			volatile if (!runtools.abortParsing) {
+				Display.getDefault.asyncExec(new class Runnable {
+					void run() { done; }
+				});
 			}
 			else {
-				volatile if (!runtools.abortParsing) {
-					Display.getDefault.asyncExec(null, &done);
-				}
-				else {
-					serverTable.notifyRefreshEnded;
-				}
+				serverTable.notifyRefreshEnded;
 			}
-
 		}
 		catch(Exception e) {
 			logx(__FILE__, __LINE__, e);
 		}
 	}
 
-	private void done(Object)
+	private void done()
 	{
 		if (getActiveServerList.length() > 0) {
 			IntWrapper index = null;
@@ -301,20 +282,13 @@ void getNewList()
 
 				browserRefreshList(&getActiveServerList.add, &counter, true);
 				volatile if (!runtools.abortParsing) {
-					version (Tango) {
-						display.asyncExec(new class Runnable {
-							void run()
-							{
-								serverTable.reset();
-								serverTable.notifyRefreshEnded;
-							}
-						});
-					}
-					else {
-						/*display.asyncExec(null, delegate void (Object o) {
-					                                serverTable.reset();
-					                            });*/
-					}
+					display.asyncExec(new class Runnable {
+						void run()
+						{
+							serverTable.reset;
+							serverTable.notifyRefreshEnded;
+						}
+					});
 				}
 				else {
 					serverTable.notifyRefreshEnded;
@@ -373,23 +347,13 @@ void refreshList()
 			statusMsg = "Refreshing " ~  Integer.toString(total) ~
 			                                                     " servers...";
 			browserRefreshList(&getActiveServerList.add, &counter);
-			version (Tango) {
-				volatile if (!runtools.abortParsing) {
-					Display.getDefault.asyncExec(new class Runnable {
-						void run() { done(null); }
-					});
-				}
-				else {
-					serverTable.notifyRefreshEnded;
-				}
+			volatile if (!runtools.abortParsing) {
+				Display.getDefault.asyncExec(new class Runnable {
+					void run() { done(null); }
+				});
 			}
 			else {
-				volatile if (!runtools.abortParsing) {
-					Display.getDefault.asyncExec(null, &done);
-				}
-				else {
-					serverTable.notifyRefreshEnded;
-				}
+				serverTable.notifyRefreshEnded;
 			}
 		}
 		catch(Exception e) {
