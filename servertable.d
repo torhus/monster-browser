@@ -147,8 +147,9 @@ class ServerTable
 								tl.draw(e.gc, textX, e.y);
 							}
 							else {
-								e.gc.drawString(sd.server[ServerColumn.NAME],
-								                                   textX, e.y);
+								auto name = sd.server[ServerColumn.NAME];
+								// http://dsource.org/projects/dwt-win/ticket/6
+								e.gc.drawString(name ? name : "", textX, e.y);
 							}
 							break;
 						case ServerColumn.PASSWORDED:
