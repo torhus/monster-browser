@@ -193,23 +193,6 @@ class ServerQuery
 
 	private void run()
 	{
-		void done(Object)
-		{
-			if (getActiveServerList.length() > 0) {
-				IntWrapper index = null;
-				if (select_)
-					// FIXME: select them all, not just the first one
-					index = new IntWrapper(
-					               getActiveServerList.getFilteredIndex(
-					                                           addresses_[0]));
-				serverTable.reset(index);
-			}
-			else {
-				statusBar.setLeft("The server did not reply");
-			}
-			serverTable.notifyRefreshEnded;
-		}
-
 		try {
 			auto deliverDg = replace_ ? &getActiveServerList.replace :
 			                            &getActiveServerList.add;
@@ -238,6 +221,22 @@ class ServerQuery
 		catch(Exception e) {
 			logx(__FILE__, __LINE__, e);
 		}
+	}
+
+	private void done(Object)
+	{
+		if (getActiveServerList.length() > 0) {
+			IntWrapper index = null;
+			if (select_)
+				// FIXME: select them all, not just the first one
+				index = new IntWrapper(
+				          getActiveServerList.getFilteredIndex(addresses_[0]));
+			serverTable.reset(index);
+		}
+		else {
+			statusBar.setLeft("The server did not reply");
+		}
+		serverTable.notifyRefreshEnded;
 	}
 
 	private {
