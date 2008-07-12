@@ -13,7 +13,7 @@ import dwt.DWT;
 import colorednames;
 import common;
 import dialogs;
-import main;
+import mainwindow;
 import serverlist;
 import settings;
 

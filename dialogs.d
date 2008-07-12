@@ -4,8 +4,10 @@ module dialogs;
 
 import tango.io.File;
 import tango.text.Util;
+import tango.text.convert.Format;
 
 import dwt.DWT;
+import dwt.dwthelper.Runnable;
 import dwt.events.SelectionAdapter;
 import dwt.events.SelectionEvent;
 import dwt.graphics.Point;
@@ -23,14 +25,62 @@ import dwt.widgets.Event;
 import dwt.widgets.Group;
 import dwt.widgets.Label;
 import dwt.widgets.Listener;
+import dwt.widgets.MessageBox;
 import dwt.widgets.Shell;
 import dwt.widgets.Text;
 
 import common;
-import main;
+import mainwindow;
 import serveractions;
 import serverlist;
 import settings;
+
+
+template Tuple(E...) { alias E Tuple; }
+
+/// Default Windows button size.
+alias Tuple!(75, 23) BUTTON_SIZE;
+
+/// Default Windows button spacing.
+const BUTTON_SPACING = 6;
+
+
+/// Displays a message box.
+void messageBox(char[] msg, char[] title, int style)
+{
+	Display.getDefault().syncExec(new class Runnable {
+		void run() {
+			scope MessageBox mb;
+			if (mainWindow !is null)
+				mb = new MessageBox(mainWindow.handle, style);
+			else
+				mb = new MessageBox(style);
+
+			mb.setText(title);
+			mb.setMessage(msg);
+			log("messageBox (" ~ title ~ "): " ~ msg);
+			mb.open();
+		}
+	});
+}
+
+
+void _messageBox(char[] title, int style)(char[] fmt, ...)
+{
+	char[] msg = Format.convert(_arguments, _argptr, fmt);
+	messageBox(msg, title, style);
+}
+
+/**
+ * Displays message boxes with preset titles and icons.
+ * Does formatting, the argument list is: (char[] fmt, ...)
+ */
+// FIXME: dialogs.d(80): template instance _messageBox!(APPNAME,2) does not
+// match any template declaration
+//alias _messageBox!(APPNAME, DWT.ICON_INFORMATION) info;
+alias _messageBox!("Monster Browser", DWT.ICON_INFORMATION) info;
+alias _messageBox!("Warning", DWT.ICON_WARNING) warning;  /// ditto
+alias _messageBox!("Error", DWT.ICON_ERROR) error;        /// ditto
 
 
 class MonitorNotify

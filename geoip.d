@@ -14,6 +14,7 @@ import dwt.graphics.Image;
 import dwt.widgets.Display;
 
 import common;
+import dialogs;
 import flagdata;
 
 
