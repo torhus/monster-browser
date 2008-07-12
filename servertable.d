@@ -27,7 +27,7 @@ import colorednames;
 import common;
 import geoip;
 import launch;
-import main;
+import mainwindow;
 import serveractions;
 import serverlist;
 import settings;

@@ -9,7 +9,7 @@ import tango.stdc.stdio;
 
 import common;
 import ini;
-import main;
+import mainwindow;
 import serverlist;
 
 

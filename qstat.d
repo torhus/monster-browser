@@ -19,6 +19,7 @@ import dwt.widgets.Display;
 
 import colorednames;
 import common;
+import dialogs;
 import main;
 import runtools;
 import serverlist;

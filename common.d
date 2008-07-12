@@ -20,13 +20,10 @@ import tango.time.Time;
 import dwt.DWT;
 import dwt.dnd.Clipboard;
 import dwt.dnd.TextTransfer;
-import dwt.dwthelper.Runnable;
 import dwt.dwthelper.utils;
-import dwt.widgets.Display;
-import dwt.widgets.MessageBox;
 import dwt.widgets.Table;
 
-import main;
+import dialogs;
 import set;
 
 
@@ -62,14 +59,7 @@ else {
 		const char[] VERSION = "- " ~ __DATE__ ~  " (svnversion " ~ SVN ~ ")";
 }
 
-template Tuple(E...) { alias E Tuple; }
-
-/// Default Windows button size.
-alias Tuple!(75, 23) BUTTON_SIZE;
-
-/// Default Windows button spacing.
-const BUTTON_SPACING = 6;
-
+Clipboard clipboard;
 Timer globalTimer;
 
 
@@ -121,46 +111,14 @@ char[] initLogging(char[] name="LOG.TXT")
 }
 
 
-static ~this()
+/// Flush and close log file.
+void shutDownLogging()
 {
-	if (logfile)
+	if (logfile) {
 		logfile.flush.close;
+		logfile = null;
+	}
 }
-
-
-/// Displays a message box.
-void messageBox(char[] msg, char[] title, int style)
-{
-	Display.getDefault().syncExec(new class Runnable {
-		void run() {
-			scope MessageBox mb;
-			if (mainWindow !is null)
-				mb = new MessageBox(mainWindow.handle, style);
-			else
-				mb = new MessageBox(style);
-
-			mb.setText(title);
-			mb.setMessage(msg);
-			log("messageBox (" ~ title ~ "): " ~ msg);
-			mb.open();
-		}
-	});
-}
-
-
-void _messageBox(char[] title, int style)(char[] fmt, ...)
-{
-	char[] msg = Format.convert(_arguments, _argptr, fmt);
-	messageBox(msg, title, style);
-}
-
-/**
- * Displays message boxes with preset titles and icons.
- * Does formatting, the argument list is: (char[] fmt, ...)
- */
-alias _messageBox!(APPNAME, DWT.ICON_INFORMATION) info;
-alias _messageBox!("Warning", DWT.ICON_WARNING) warning;  /// ditto
-alias _messageBox!("Error", DWT.ICON_ERROR) error;        /// ditto
 
 
 /// Display a debug message in a dialog box.
