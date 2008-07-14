@@ -7,10 +7,12 @@ import tango.io.stream.FileStream;
 
 import dwt.DWT;
 import dwt.dnd.Clipboard;
+import dwt.dwthelper.ByteArrayInputStream;
 import dwt.events.KeyAdapter;
 import dwt.events.KeyEvent;
 import dwt.events.ShellAdapter;
 import dwt.events.ShellEvent;
+import dwt.graphics.Image;
 import dwt.widgets.Display;
 
 import common;
@@ -96,6 +98,11 @@ private void _main(char[][] args)
 
 	mainWindow = new MainWindow;
 
+	// Set the application's window icon.
+	scope stream  = new ByteArrayInputStream(cast(byte[])import("mb.png"));
+	scope appIcon = new Image(Display.getDefault, stream);
+	mainWindow.handle.setImage(appIcon);
+
 	mainWindow.handle.addKeyListener(new class KeyAdapter {
 		public void keyPressed (KeyEvent e)
 		{
@@ -172,6 +179,7 @@ private void _main(char[][] args)
 			display.sleep();
 	}
 
+	appIcon.dispose;
 	clipboard.dispose;
 	display.dispose;
 	
