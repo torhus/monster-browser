@@ -288,12 +288,12 @@ class ServerTable
 		table_.setSortDirection(reversed ? DWT.DOWN : DWT.UP);
 
 		// right-click menu for servers
-		table_.setMenu(createContextMenu);		
+		table_.setMenu(createContextMenu);
 		table_.addMenuDetectListener(new class MenuDetectListener {
 			void menuDetected(MenuDetectEvent e)
 			{
-				if (!selectedIps_.length)
-					e.doit = false;
+				/*if (table_.getSelectionCount == 0)
+					e.doit = false;*/
 			}
 		});
 
