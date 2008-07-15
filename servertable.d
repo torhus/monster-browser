@@ -292,8 +292,8 @@ class ServerTable
 		table_.addMenuDetectListener(new class MenuDetectListener {
 			void menuDetected(MenuDetectEvent e)
 			{
-				/*if (table_.getSelectionCount == 0)
-					e.doit = false;*/
+				if (table_.getSelectionCount == 0)
+					e.doit = false;
 			}
 		});
 
