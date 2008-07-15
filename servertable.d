@@ -264,10 +264,10 @@ class ServerTable
 					table_.clearAll();
 					table_.setItemCount(getActiveServerList.filteredLength());
 					// keep the same servers selected
+					int[] indices = getIndicesFromAddresses(selectedIps_);
 					// http://dsource.org/projects/dwt-win/ticket/6
-					if (selectedIps_)
-						table_.setSelection(
-						                getIndicesFromAddresses(selectedIps_));
+					if (indices.length)
+						table_.setSelection(indices);
 				}
 			}
 		};
