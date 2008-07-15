@@ -222,6 +222,17 @@ class ServerTable
 			public void keyPressed (KeyEvent e)
 			{
 				switch (e.keyCode) {
+					case 'a':
+						if (e.stateMask == DWT.MOD1) {
+							// DWT bug? CTRL+A works by default in SWT.
+							// In SWT, it marks all items, and fires the
+							// widgetSelected event, neither of which happens
+							// here.
+							table_.selectAll();
+							onSelectAll();
+							e.doit = false;
+						}
+						break;
 					case 'c':
 						if (e.stateMask == DWT.MOD1) {
 							onCopyAddresses();
@@ -519,6 +530,26 @@ private:
 	{
 		if (selectedIps_.length)
 			queryServers(selectedIps_, true);
+	}
+	
+	void onSelectAll()
+	{
+		selectedIps_.length = 0;
+		auto list = getActiveServerList;
+
+		synchronized (list) {
+			char[][][] allPlayers;
+
+			for (size_t i=0; i < list.filteredLength; i++) {
+				auto sd = list.getFiltered(i);
+				selectedIps_ ~= sd.server[ServerColumn.ADDRESS];
+				allPlayers ~= sd.players;
+			}
+
+			auto sd = list.getFiltered(table_.getSelectionIndex);
+			cvarTable.setItems(sd.cvars);
+			playerTable.setItems(allPlayers);
+		}
 	}
 
 	int[] getIndicesFromAddresses(char[][] addresses)
