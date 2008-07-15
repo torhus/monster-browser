@@ -458,6 +458,12 @@ class ServerTable
 		playerTable.clear;
 	}
 
+	///
+	void forgetSelection()
+	{
+		delete selectedIps_;
+	}
+	
 
 	/************************************************
 	            PRIVATE MEMBERS

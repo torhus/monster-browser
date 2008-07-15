@@ -67,9 +67,10 @@ private void switchToActiveMod()
 {
 	getActiveServerList.sort();
 
+	serverTable.forgetSelection();
 	serverTable.reset();
 	statusBar.setDefaultStatus(getActiveServerList.length,
-			                   getActiveServerList.filteredLength);
+	                           getActiveServerList.filteredLength);
 }
 
 
