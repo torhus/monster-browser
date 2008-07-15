@@ -4,6 +4,11 @@ import tango.text.Util;
 import Integer = tango.text.convert.Integer;
 
 import dwt.DWT;
+import dwt.dwthelper.ByteArrayInputStream;
+import dwt.events.KeyAdapter;
+import dwt.events.KeyEvent;
+import dwt.events.MenuDetectEvent;
+import dwt.events.MenuDetectListener;
 import dwt.events.SelectionAdapter;
 import dwt.events.SelectionEvent;
 import dwt.graphics.Image;
@@ -13,15 +18,12 @@ import dwt.graphics.TextLayout;
 import dwt.widgets.Composite;
 import dwt.widgets.Display;
 import dwt.widgets.Event;
-import dwt.events.KeyAdapter;
-import dwt.events.KeyEvent;
 import dwt.widgets.Listener;
 import dwt.widgets.Menu;
 import dwt.widgets.MenuItem;
 import dwt.widgets.Table;
 import dwt.widgets.TableColumn;
 import dwt.widgets.TableItem;
-import dwt.dwthelper.ByteArrayInputStream;
 
 import colorednames;
 import common;
@@ -286,7 +288,14 @@ class ServerTable
 		table_.setSortDirection(reversed ? DWT.DOWN : DWT.UP);
 
 		// right-click menu for servers
-		table_.setMenu(createContextMenu);
+		table_.setMenu(createContextMenu);		
+		table_.addMenuDetectListener(new class MenuDetectListener {
+			void menuDetected(MenuDetectEvent e)
+			{
+				if (!selectedIps_.length)
+					e.doit = false;
+			}
+		});
 
 		// padlock image for passworded servers
 		auto stream  = new ByteArrayInputStream(
