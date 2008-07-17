@@ -1,2 +1,2 @@
 @svnversion -n . trunk > svnversion.txt
-bud -TMonsterBrowser main.d -oddebug -debug -g -J. -Xdwt -Xtango -L/subsystem:console:4.0 -L/rc:dwt.res -L/rc:mb.res -version=Tango -version=TANGOSVN tango-user-dmd.lib debug-DD-dwt.lib %*
+bud -TMonsterBrowser main.d -oddebug -debug -g -J. -Xdwt -Xtango -L/subsystem:console:4.0 -L/rc:dwt.res -L/rc:mb.res -version=Tango tango-user-dmd.lib debug-DD-dwt.lib %*
