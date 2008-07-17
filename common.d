@@ -460,9 +460,8 @@ int[] parseIntegerSequence(in char[] seq)
 char[] toCsv(T)(T[] a)
 {
 	char[] s = Format("{}", a);
-	assert(s[0..1] == "[" && s[$-1..$] == "]");
-	assert(isdigit(s[1]) && isdigit(s[$-2]));
-	return s[1..$-1];
+	assert(s[0..2] == "[ " && s[$-2..$] == " ]");
+	return s[2..$-2];
 }
 
 

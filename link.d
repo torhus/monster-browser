@@ -15,5 +15,4 @@ version(build) {
 	pragma(link, "oleacc.lib");
 	pragma(link, "msimg32.lib");
 	pragma(link, "usp10.lib");
-	pragma(link, "zlib.lib");
 }

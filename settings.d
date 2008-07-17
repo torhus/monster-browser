@@ -17,7 +17,7 @@ version (Windows) {
 	import tango.stdc.stringz;
 	import tango.sys.win32.Types;
 	enum { CSIDL_PROGRAM_FILES = 38 }
-	extern (Windows) BOOL SHGetSpecialFolderPathA(HWND, LPSTR, int, BOOL);
+	extern (Windows) BOOL SHGetSpecialFolderPathA(HWND, LPTSTR, int, BOOL);
 }
 
 
