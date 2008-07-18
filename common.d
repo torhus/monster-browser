@@ -49,14 +49,14 @@ const char[] SVN = import("svnversion.txt");
 const char[] FINAL_VERSION = "0.4";
 
 debug {
-	const char[] VERSION = "- " ~ __DATE__ ~
+	const char[] VERSION = __DATE__ ~
 	                                 " (svnversion " ~ SVN ~ ") *DEBUG BUILD*";
 }
 else {
 	version (Final)
 		const char[] VERSION = FINAL_VERSION;
 	else
-		const char[] VERSION = "- " ~ __DATE__ ~  " (svnversion " ~ SVN ~ ")";
+		const char[] VERSION = __DATE__ ~  " (svnversion " ~ SVN ~ ")";
 }
 
 Clipboard clipboard;
@@ -103,10 +103,10 @@ char[] initLogging(char[] name="LOG.TXT")
 		logfile.seek(0, FileConduit.Anchor.End);
 		auto t = time(null);
 		char[] timestamp = ctime(&t)[0..24];
-		logfile.write(newline ~ sep ~ newline ~ APPNAME ~ " started at " ~
-		                                  timestamp ~ newline ~ sep ~ newline);
+		logfile.write(newline ~ sep ~ newline ~ APPNAME ~ " " ~ VERSION ~
+		                 " started at " ~ timestamp ~ newline ~ sep ~ newline);
 	}
-	
+
 	return error;
 }
 
