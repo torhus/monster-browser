@@ -10,6 +10,7 @@ v 0.4 - 2008-07-19
 - New: Better at guessing game install locations, but still pretty bad.
 - New: Display an error message if the game's executable was not found when
        attempting to join a server.
+- New: Added an ugly application icon.
 - New: When refreshing servers or retrieving a new list, the extra servers
        are included in the total number of servers.
 - New: Allow whitespace before and after address in Specify Server dialog.

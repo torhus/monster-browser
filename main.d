@@ -99,9 +99,14 @@ private void _main(char[][] args)
 	mainWindow = new MainWindow;
 
 	// Set the application's window icon.
-	scope stream  = new ByteArrayInputStream(cast(byte[])import("mb.png"));
-	scope appIcon = new Image(Display.getDefault, stream);
-	mainWindow.handle.setImage(appIcon);
+	ByteArrayInputStream streams[];
+	streams ~= new ByteArrayInputStream(cast(byte[])import("mb16.png"));
+	streams ~= new ByteArrayInputStream(cast(byte[])import("mb32.png"));
+	streams ~= new ByteArrayInputStream(cast(byte[])import("mb48.png"));
+	Image[] appIcons;
+	foreach (stream; streams)
+		appIcons ~= new Image(Display.getDefault, stream);
+	mainWindow.handle.setImages(appIcons);
 
 	mainWindow.handle.addKeyListener(new class KeyAdapter {
 		public void keyPressed (KeyEvent e)
@@ -179,7 +184,8 @@ private void _main(char[][] args)
 			display.sleep();
 	}
 
-	appIcon.dispose;
+	foreach (icon; appIcons)
+		icon.dispose;
 	clipboard.dispose;
 	display.dispose;
 	
