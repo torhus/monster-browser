@@ -53,7 +53,8 @@ bool initGeoIp()
 
 	gi = GeoIP_open("GeoIP.dat", GEOIP_MEMORY_CACHE);
 	if (gi is null) {
-		warning("GeoIP.dat was not found, flags will not be shown.");
+		warning("GeoIP.dat was not found, flags will not be shown.\n"
+		        "Reinstalling " ~ APPNAME ~ " will probably fix this.");
 		geoIpLib.unload;
 	}
 	else {
@@ -73,7 +74,8 @@ bool initGeoIp()
 ///
 char[] countryCodeByAddr(in char[] addr)
 {
-	assert(gi);
+	if (gi is null)
+		return null;
 
 	char* code = GeoIP_country_code_by_addr(gi, toStringz(addr));
 	if (code is null) {
@@ -91,7 +93,8 @@ char[] countryCodeByAddr(in char[] addr)
 ///
 char[] countryNameByAddr(in char[] addr)
 {
-	assert(gi);
+	if (gi is null)
+		return null;
 
 	char* name = GeoIP_country_name_by_addr(gi, toStringz(addr));
 	if (name is null) {
