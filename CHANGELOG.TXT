@@ -1,4 +1,4 @@
-v 0.4 - 2008-07-09
+v 0.4 - 2008-07-19
 ------------------
 - New: Colored names for servers and players
 - New: Flags showing the nationality of each server.
@@ -8,6 +8,8 @@ v 0.4 - 2008-07-09
 - New: Right-click menu for servers.
 - New: Select multiple servers to see the players for all of them.
 - New: Better at guessing game install locations, but still pretty bad.
+- New: Display an error message if the game's executable was not found when
+       attempting to join a server.
 - New: When refreshing servers or retrieving a new list, the extra servers
        are included in the total number of servers.
 - New: Allow whitespace before and after address in Specify Server dialog.
