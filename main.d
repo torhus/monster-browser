@@ -102,7 +102,7 @@ private void _main(char[][] args)
 	ByteArrayInputStream streams[];
 	streams ~= new ByteArrayInputStream(cast(byte[])import("mb16.png"));
 	streams ~= new ByteArrayInputStream(cast(byte[])import("mb32.png"));
-	streams ~= new ByteArrayInputStream(cast(byte[])import("mb48.png"));
+
 	Image[] appIcons;
 	foreach (stream; streams)
 		appIcons ~= new Image(Display.getDefault, stream);
