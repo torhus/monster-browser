@@ -26,15 +26,23 @@ version (Windows)
  * Launch the game, connecting to a server.
  *
  * If needed, shows a dialog asking for a password to enter the server.
+ *
+ * Displays an error message if the game executable was not found.
  */
 void joinServer(ServerData *sd)
 {
 	char[] argv;
-	char[] path = activeMod.exePath;
-	char[] dir = FilePath(path).path;
+	FilePath path = FilePath(activeMod.exePath);	
 	bool launch = true;
 	bool showDialog = false;
 	char[] msg;
+
+	if (!path.exists) {
+		error(path.toString ~ " was not found,\n"
+		      " please check your settings, and verify that\n"
+		      " the game is installed.");
+		return;
+	}
 
 	if (MOD_ONLY) {
 		argv = "+set fs_game " ~ activeMod.name;
@@ -79,9 +87,9 @@ void joinServer(ServerData *sd)
 			startup.dwFlags = STARTF_USESTDHANDLES;
 			info = new PROCESS_INFORMATION();
 
-			int r = CreateProcessA(null, toStringz(path ~ " " ~ argv),
+			int r = CreateProcessA(null, toStringz(path.toString ~ " " ~ argv),
 			                     null, null, true, 0/*DETACHED_PROCESS*/, null,
-			                     toStringz(dir),&startup,info);
+			                     toStringz(path.path),&startup,info);
 			if (!r) {
 				int e = GetLastError();
 				db("CreatProcessA returned " ~ Integer.toString(r));
