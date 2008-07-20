@@ -1,4 +1,4 @@
-v 0.4 - 2008-07-19
+v 0.4 - 2008-07-20
 ------------------
 - New: Colored names for servers and players
 - New: Flags showing the nationality of each server.
