@@ -3,11 +3,6 @@ Monster Browser
 This program is copyright (c) 2008 Tor Husabø.
 
 
-Installation
-------------
-Just unzip in your "C:\Program Files" directory, and make a desktop shortcut to MonsterBrowser.exe.  If you have problems, send me an email and I'll try to help.
-
-
 Basic Usage
 -----------
 Select the mod name from the drop down box on the right, where it says 'westernq3' the first time you run the program.  If the mod you want is not listed, just type its gamename there and press <enter>.  The gamename is the same as the name of the directory the mod is installed in.
@@ -36,11 +31,11 @@ If you have more than a couple of servers to add, it's easier to add them direct
 Info and contact
 ----------------
 Web site: http://monsterbrowser.googlepages.com/
-Source code: http://monsterbrowser.googlecode.com/
+Source code, etc.: http://monsterbrowser.googlecode.com/
 
 I'm open for requests to change the licence, I just haven't bothered deciding which licence to use yet.
 
-Check out westernquake3.net, I'm registered as torhu.  Send me a PM there if I don't reply to your emails.
+Check out smokin-guns.net, I'm registered as torhu.  Send me a PM there if I don't reply to your emails.
 
 Email:
 torhu at yahoo dot com.
