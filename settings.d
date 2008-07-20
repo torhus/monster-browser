@@ -198,7 +198,7 @@ void loadSettings()
 	version (Windows) {
 		IniSection sec2 = settingsIni["Settings"];
 		char[] value = sec2.getValue("gamePath");
-		if (value.length >= 13 && value[0..13] == "%ProgramFiles%") {
+		if (value.length >= 14 && value[0..14] == "%ProgramFiles%") {
 			char[] dir = getProgramFilesDirectory();
 			value = substitute(value, "%ProgramFiles%", dir);
 			sec2.setValue("gamePath", value);
