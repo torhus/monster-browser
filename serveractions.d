@@ -102,18 +102,14 @@ void loadSavedList()
 				});
 			}
 
-			volatile if (!runtools.abortParsing) {
-				Display.getDefault.asyncExec(new class Runnable {
-					void run()
-					{
+			Display.getDefault.asyncExec(new class Runnable {
+				void run()
+				{
+					volatile if (!runtools.abortParsing)
 						serverTable.reset;
-						serverTable.notifyRefreshEnded;
-					}
-				});
-			}
-			else {
-				serverTable.notifyRefreshEnded;
-			}
+					serverTable.notifyRefreshEnded;
+				}
+			});
 		}
 		catch(Exception e) {
 			logx(__FILE__, __LINE__, e);
@@ -191,15 +187,16 @@ class ServerQuery
 			auto deliverDg = replace_ ? &getActiveServerList.replace :
 			                            &getActiveServerList.add;
 			browserRefreshList(deliverDg);
-
-			volatile if (!runtools.abortParsing) {
-				Display.getDefault.asyncExec(new class Runnable {
-					void run() { done; }
-				});
-			}
-			else {
-				serverTable.notifyRefreshEnded;
-			}
+			
+			Display.getDefault.asyncExec(new class Runnable {
+				void run()
+				{
+					volatile if (!runtools.abortParsing)
+						done;
+					else
+						serverTable.notifyRefreshEnded;
+				}
+			});
 		}
 		catch(Exception e) {
 			logx(__FILE__, __LINE__, e);
@@ -283,18 +280,14 @@ void getNewList()
 				                             total ~ " servers, querying..."));
 
 				browserRefreshList(&getActiveServerList.add, &counter, true);
-				volatile if (!runtools.abortParsing) {
-					display.asyncExec(new class Runnable {
-						void run()
-						{
+				display.asyncExec(new class Runnable {
+					void run()
+					{
+						volatile if (!runtools.abortParsing)
 							serverTable.reset;
-							serverTable.notifyRefreshEnded;
-						}
-					});
-				}
-				else {
-					serverTable.notifyRefreshEnded;
-				}
+						serverTable.notifyRefreshEnded;
+					}
+				});
 			}
 		}
 		catch(Exception e) {
@@ -334,7 +327,7 @@ void refreshList()
 			Display.getDefault.syncExec(status);
 		}
 
-		void done(Object o)
+		static void done()
 		{
 			if (getActiveServerList.length() > 0) {
 				serverTable.reset(null, total-getActiveServerList.length);
@@ -349,14 +342,15 @@ void refreshList()
 			statusMsg = "Refreshing " ~  Integer.toString(total) ~
 			                                                     " servers...";
 			browserRefreshList(&getActiveServerList.add, &counter);
-			volatile if (!runtools.abortParsing) {
-				Display.getDefault.asyncExec(new class Runnable {
-					void run() { done(null); }
-				});
-			}
-			else {
-				serverTable.notifyRefreshEnded;
-			}
+			Display.getDefault.asyncExec(new class Runnable {
+				void run()
+				{
+					volatile if (!runtools.abortParsing)
+						done;
+					else
+						serverTable.notifyRefreshEnded;
+				}
+			});
 		}
 		catch(Exception e) {
 			logx(__FILE__, __LINE__, e);
