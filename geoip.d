@@ -51,7 +51,7 @@ bool initGeoIp()
 		return false;
 	}
 
-	gi = GeoIP_open("GeoIP.dat", GEOIP_MEMORY_CACHE);
+	gi = GeoIP_open(toStringz(appDir ~ "GeoIP.dat"), GEOIP_MEMORY_CACHE);
 	if (gi is null) {
 		warning("GeoIP.dat was not found, flags will not be shown.\n"
 		        "Reinstalling " ~ APPNAME ~ " will probably fix this.");

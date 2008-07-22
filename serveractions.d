@@ -9,6 +9,7 @@ import tango.core.Thread;
 import tango.io.File;
 import Path = tango.io.Path;
 import tango.io.Stdout;
+import tango.text.Util;
 import tango.text.convert.Format;
 import Integer = tango.text.convert.Integer;
 
@@ -360,12 +361,17 @@ void refreshList()
 	assert(serverThread is null || !serverThread.isRunning);
 
 	auto servers = filterServerFile(activeMod.serverFile, REFRESHFILE);
+
 	log("Refreshing server list for " ~ activeMod.name ~ "...");
+	char[] tmp;
+	char[] sfile = tail(activeMod.serverFile, "/", tmp);
+	char[] rfile = tail(REFRESHFILE, "/", tmp);
 	log(Format("Found {} servers in {} and wrote them to {}.", servers.length,
-	                                       activeMod.serverFile, REFRESHFILE));
+	                                                            sfile, rfile));
 
 	auto extraServers = getActiveServerList.extraServers;
 	auto written = appendServersToFile(REFRESHFILE, extraServers, servers);
+
 	log(Format("Added {} extra servers, skipping {} duplicates.", written,
 	                                             extraServers.length-written));
 

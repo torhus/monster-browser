@@ -34,8 +34,17 @@ Process proc;
 // calling a function to load/parse server lists.
 bool abortParsing = false;
 
+
 /// The name of the file that qstat reads addresses from when querying servers.
-const char[] REFRESHFILE = "refreshlist.tmp";
+char[] REFRESHFILE()
+{
+	static char[] name;
+	if (!name) {
+		assert(appDir.length);
+		name = appDir ~ "refreshlist.tmp";
+	}
+	return name;
+}
 
 
 /**
@@ -63,6 +72,7 @@ Set!(char[]) browserGetNewList()
 		cmdLine ~= " -f \"(gametype = \'" ~ activeMod.name ~ "\'\")";
 
 	proc = new Process();
+	proc.workDir = appDir;
 	//scope (exit) if (proc) proc.wait();
 
 	try {
@@ -142,6 +152,7 @@ void browserRefreshList(void delegate(ServerData*) deliver,
                           void delegate(int) counter=null, bool saveList=false)
 {
 	proc = new Process();
+	proc.workDir = appDir;
 	//scope (exit) if (proc) proc.wait();
 
 	try {

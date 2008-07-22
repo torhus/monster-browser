@@ -39,6 +39,9 @@ static:
 	bool quit      = false;  ///
 }
 
+
+char[] appDir;  /// Absolute path to where the application is installed.
+
 bool haveGslist;  /// Will be true if gslist was found during startup.
 
 
@@ -86,14 +89,16 @@ char[] initLogging(char[] name="LOG.TXT")
 	           "-------------------------------------------------------------";
 	FileConduit.Style mode;
 	char[] error = null;
+	assert(appDir);
+	char[] path = appDir ~ name;
 
-	if (Path.exists(name) && Path.fileSize(name) < MAX_LOG_SIZE)
+	if (Path.exists(path) && Path.fileSize(path) < MAX_LOG_SIZE)
 		mode = FileConduit.WriteExisting;
 	else
 		mode = FileConduit.WriteCreate;
 
 	try {
-		logfile = new FileConduit(name, mode);
+		logfile = new FileConduit(path, mode);
 	}
 	catch (IOException e) {
 		error = e.toString;

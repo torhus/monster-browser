@@ -33,10 +33,10 @@ struct Mod
 
 	char[] serverFile() ///
 	{
-		return replace(masterServer.dup, ':', '_') ~ ".lst";
+		return appDir ~ replace(masterServer.dup, ':', '_') ~ ".lst";
 	}
 
-	char[] extraServersFile() { return name ~ ".extra"; }  ///
+	char[] extraServersFile() { return appDir ~ name ~ ".extra"; }  ///
 
 	char[] exePath()  ///
 	{
@@ -56,10 +56,10 @@ struct Mod
 
 char[][] modNames;  /// The mod names shown in the mod selection pull-down.
 Mod activeMod; /// Configuration for the active mod.
-const char[] modFileName = "mods.ini";  ///
+char[] modFileName;  ///
 
 private {
-	const char[] settingsFileName = "settings.ini";
+	char[] settingsFileName;
 
 	const char[] defaultModsFile =
 	    "; Monster Browser mods configuration\n"
@@ -134,6 +134,8 @@ void setActiveMod(char[] name)
 
 void loadModFile()  ///
 {
+	assert(modFileName.length);
+
 	if (!Path.exists(modFileName))
 		writeDefaultModsFile();
 
@@ -182,6 +184,9 @@ private void writeDefaultModsFile()
  */
 void loadSettings()
 {
+	assert(appDir !is null);
+	settingsFileName = appDir ~ "settings.ini";
+
 	settingsIni = new Ini(settingsFileName);
 	IniSection sec = settingsIni.addSection("Settings");
 
@@ -206,6 +211,8 @@ void loadSettings()
 	}
 
 	loadSessionState();
+
+	modFileName = appDir ~ "mods.ini";
 	loadModFile();
 }
 
