@@ -186,9 +186,8 @@ class ServerList
 			isSorted_ = false;
 			int i = getIndex(sd.server[ServerColumn.ADDRESS]);
 			assert(i != -1);
-			char[] country = list[i].server[ServerColumn.COUNTRY];
-			assert(country.length);
-			sd.server[ServerColumn.COUNTRY] = country;
+			sd.server[ServerColumn.COUNTRY] =
+			                              list[i].server[ServerColumn.COUNTRY];
 			list[i] = *sd;
 			removeFromFiltered(sd);
 			if (!isFilteredOut(sd))

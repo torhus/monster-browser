@@ -4,6 +4,8 @@ import tango.core.Thread;
 import tango.io.Console;
 import tango.io.Path;
 import tango.io.stream.FileStream;
+import tango.sys.Environment;
+import tango.util.PathUtil;
 
 import dwt.DWT;
 import dwt.dnd.Clipboard;
@@ -38,7 +40,7 @@ void main(char[][] args) ///
 			_main(args);
 		}
 		catch(Exception e) {
-			logx(__FILE__, __LINE__, e);
+			logx(__FILE__, __LINE__, e);  // FIXME: initLogging not called...
 			error(e.classinfo.name ~ "\n" ~ e.toString());
 		}
 	}
@@ -50,10 +52,12 @@ void main(char[][] args) ///
 
 private void _main(char[][] args)
 {
+	appDir = normalize(Environment.exePath(args[0]).path);
+
 	globalTimer = new Timer;
 
 	version (redirect)
-		redirectOutput("CONSOLE.OUT");
+		redirectOutput(appDir ~ "CONSOLE.OUT");
 
 	if (!consoleOutputOk) {
 		// Avoid getting IOExceptions all over the place.
@@ -66,7 +70,9 @@ private void _main(char[][] args)
 		// Don't allow for release until refreshlist.tmp conflict is resolved.
 		version (Final)			 
 			assert(0);
-	}
+	}	
+	
+	log("Using path '" ~ appDir ~ "'.");
 
 	parseCmdLine(args);
 
@@ -75,10 +81,10 @@ private void _main(char[][] args)
 	// check for presence of Gslist
 	char[] gslistExe;
 	version (Windows) {
-		gslistExe = "gslist.exe";
+		gslistExe = appDir ~ "gslist.exe";
 	}
 	else version(linux) {
-		gslistExe = "gslist";
+		gslistExe = appDir ~ "gslist";
 	}
 	else {
 		static assert(0);
