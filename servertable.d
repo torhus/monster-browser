@@ -431,7 +431,7 @@ class ServerTable
 		}
 
 		int[] indices;
-		if (index !is null) {
+		if (index && (cast(IntWrapper)index).value != -1) {
 			indices ~= (cast(IntWrapper)index).value;
 		}
 		else {

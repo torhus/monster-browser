@@ -224,7 +224,10 @@ class ServerList
 	/// Return a server from the filtered list
 	ServerData* getFiltered(int i)
 	{
-		synchronized (this) return filteredList[i];
+		synchronized (this) {
+			assert(i >= 0 && i < filteredList.length);
+			return filteredList[i];
+		}
 	}
 
 
@@ -240,7 +243,8 @@ class ServerList
 		if (!ipAndPort.length)
 			return -1;
 
-		synchronized (this) foreach (int i, ref ServerData sd; list) {
+		synchronized (this)
+		foreach (int i, ref ServerData sd; list) {
 			if (sd.server[ServerColumn.ADDRESS] == ipAndPort)
 				return i;
 		}
@@ -260,7 +264,8 @@ class ServerList
 		if (!ipAndPort.length)
 			return -1;
 
-		synchronized (this) foreach (int i, ServerData* sd; filteredList) {
+		synchronized (this)
+		foreach (int i, ServerData* sd; filteredList) {
 			if (sd.server[ServerColumn.ADDRESS] == ipAndPort)
 				return i;
 		}
