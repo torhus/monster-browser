@@ -40,7 +40,7 @@ void main(char[][] args) ///
 			_main(args);
 		}
 		catch(Exception e) {
-			logx(__FILE__, __LINE__, e);  // FIXME: initLogging not called...
+			logx(__FILE__, __LINE__, e);
 			error(e.classinfo.name ~ "\n" ~ e.toString());
 		}
 	}
@@ -71,7 +71,7 @@ private void _main(char[][] args)
 		version (Final)			 
 			assert(0);
 	}	
-	
+
 	log("Using path '" ~ appDir ~ "'.");
 
 	parseCmdLine(args);
@@ -240,8 +240,8 @@ class ThreadDispatcher
 /*
  * Redirect stdout and stderr (Cout and Cerr) to a file.
  *
- * Note: Cout and Cerr are flushed by a module destructor in Tango, so no
- *       explicit flushing upon shutdown is required.
+ * Note: Cout and Cerr are flushed by a module destructor in Tango, so explicit
+ *       flushing upon shutdown is not required.
  */
 private bool redirectOutput(char[] file)
 {
@@ -253,7 +253,7 @@ private bool redirectOutput(char[] file)
 		return true;
 	}
 	catch (IOException e) {
-		debug warning(e.toString);
+		warning(e.toString);
 		return false;
 	}
 }
