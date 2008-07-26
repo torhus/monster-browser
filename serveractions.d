@@ -172,6 +172,7 @@ class ServerQuery
 			delete statusBarUpdater_;
 	
 	}
+
 	///
 	void startQuery()
 	{	
@@ -181,8 +182,8 @@ class ServerQuery
 			Path.remove(REFRESHFILE);
 		auto written =
 		            appendServersToFile(REFRESHFILE, Set!(char[])(addresses_));
-		log(Format("Wrote {} addresses to {}.", addresses_.length,
-		                                                         REFRESHFILE));
+		log(Format("Wrote {} addresses to {}.", written, REFRESHFILE));
+		serverCount_ = written;
 
 		statusBar.setLeft(startMessage);
 		
@@ -228,7 +229,7 @@ class ServerQuery
 				// FIXME: select them all, not just the first one
 				index = new IntWrapper(
 				          getActiveServerList.getFilteredIndex(addresses_[0]));
-			serverTable.reset(index);
+			serverTable.reset(index, serverCount_-getActiveServerList.length);
 		}
 		else {
 			statusBar.setLeft(noReplyMessage);
@@ -238,6 +239,7 @@ class ServerQuery
 
 	private {
 		char[][] addresses_;
+		uint serverCount_;
 		StatusBarUpdater statusBarUpdater_;
 		bool replace_;
 		bool select_;
@@ -294,11 +296,14 @@ void refreshList()
 
 	assert(serverThread is null || !serverThread.isRunning);
 
+	if (Path.exists(REFRESHFILE))
+		Path.remove(REFRESHFILE);
+
 	Set!(char[]) servers = filterServerFile(activeMod.serverFile);
 
 	log("Refreshing server list for " ~ activeMod.name ~ "...");
 	char[] tmp;
-	char[] sfile = tail(activeMod.serverFile, "/", tmp);	
+	char[] sfile = tail(activeMod.serverFile, "/", tmp);
 	log(Format("Found {} servers in {}.", servers.length, sfile));
 
 	// merge in the extra servers
