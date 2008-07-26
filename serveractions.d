@@ -228,6 +228,82 @@ class ServerQuery
 }
 
 
+/** Refreshes the list, in a new thread. */
+void refreshList()
+{
+	static uint total;
+
+	void f()
+	{
+		char[] statusMsg;
+		scope status = new StatusBarUpdater;
+
+		void counter(int count)
+		{
+			assert(statusMsg !is null);
+			status.text = statusMsg ~ Integer.toString(count);
+			Display.getDefault.syncExec(status);
+		}
+
+		static void done()
+		{
+			if (getActiveServerList.length() > 0) {
+				serverTable.reset(null, total-getActiveServerList.length);
+			}
+			else {
+				statusBar.setLeft("None of the servers replied");
+			}
+			serverTable.notifyRefreshEnded;
+		}
+
+		try {
+			statusMsg = "Refreshing " ~  Integer.toString(total) ~
+			                                                     " servers...";
+			browserRefreshList(&getActiveServerList.add, &counter);
+			Display.getDefault.asyncExec(new class Runnable {
+				void run()
+				{
+					volatile if (!runtools.abortParsing)
+						done;
+					else
+						serverTable.notifyRefreshEnded;
+				}
+			});
+		}
+		catch(Exception e) {
+			logx(__FILE__, __LINE__, e);
+		}
+	}
+
+	assert(serverThread is null || !serverThread.isRunning);
+
+	auto servers = filterServerFile(activeMod.serverFile, REFRESHFILE);
+
+	log("Refreshing server list for " ~ activeMod.name ~ "...");
+	char[] tmp;
+	char[] sfile = tail(activeMod.serverFile, "/", tmp);
+	char[] rfile = tail(REFRESHFILE, "/", tmp);
+	log(Format("Found {} servers in {} and wrote them to {}.", servers.length,
+	                                                            sfile, rfile));
+
+	auto extraServers = getActiveServerList.extraServers;
+	auto written = appendServersToFile(REFRESHFILE, extraServers, servers);
+
+	log(Format("Added {} extra servers, skipping {} duplicates.", written,
+	                                             extraServers.length-written));
+
+	total = servers.length + written;
+	statusBar.setLeft("Refreshing " ~ Integer.toString(total) ~ " servers...");
+	serverTable.clear();
+	getActiveServerList.clear();
+
+	GC.collect();
+	serverThread = new Thread(&f);
+	serverTable.notifyRefreshStarted;
+	serverThread.start();
+}
+
+
 /**
  * Retrieves a new list from the master server.
  *
@@ -305,82 +381,6 @@ void getNewList()
 	GC.collect();
 	statusBar.setLeft("Getting new server list...");
 	log("Getting new server list for " ~ activeMod.name ~ "...");
-	serverThread = new Thread(&f);
-	serverTable.notifyRefreshStarted;
-	serverThread.start();
-}
-
-
-/** Refreshes the list, in a new thread. */
-void refreshList()
-{
-	static uint total;
-
-	void f()
-	{
-		char[] statusMsg;
-		scope status = new StatusBarUpdater;
-
-		void counter(int count)
-		{
-			assert(statusMsg !is null);
-			status.text = statusMsg ~ Integer.toString(count);
-			Display.getDefault.syncExec(status);
-		}
-
-		static void done()
-		{
-			if (getActiveServerList.length() > 0) {
-				serverTable.reset(null, total-getActiveServerList.length);
-			}
-			else {
-				statusBar.setLeft("None of the servers replied");
-			}
-			serverTable.notifyRefreshEnded;
-		}
-
-		try {
-			statusMsg = "Refreshing " ~  Integer.toString(total) ~
-			                                                     " servers...";
-			browserRefreshList(&getActiveServerList.add, &counter);
-			Display.getDefault.asyncExec(new class Runnable {
-				void run()
-				{
-					volatile if (!runtools.abortParsing)
-						done;
-					else
-						serverTable.notifyRefreshEnded;
-				}
-			});
-		}
-		catch(Exception e) {
-			logx(__FILE__, __LINE__, e);
-		}
-	}
-
-	assert(serverThread is null || !serverThread.isRunning);
-
-	auto servers = filterServerFile(activeMod.serverFile, REFRESHFILE);
-
-	log("Refreshing server list for " ~ activeMod.name ~ "...");
-	char[] tmp;
-	char[] sfile = tail(activeMod.serverFile, "/", tmp);
-	char[] rfile = tail(REFRESHFILE, "/", tmp);
-	log(Format("Found {} servers in {} and wrote them to {}.", servers.length,
-	                                                            sfile, rfile));
-
-	auto extraServers = getActiveServerList.extraServers;
-	auto written = appendServersToFile(REFRESHFILE, extraServers, servers);
-
-	log(Format("Added {} extra servers, skipping {} duplicates.", written,
-	                                             extraServers.length-written));
-
-	total = servers.length + written;
-	statusBar.setLeft("Refreshing " ~ Integer.toString(total) ~ " servers...");
-	serverTable.clear();
-	getActiveServerList.clear();
-
-	GC.collect();
 	serverThread = new Thread(&f);
 	serverTable.notifyRefreshStarted;
 	serverThread.start();
