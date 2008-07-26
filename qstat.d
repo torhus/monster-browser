@@ -312,33 +312,39 @@ private void invalidInteger(in char[] serverName, in char[] badValue)
 
 
 /**
- * Parses a server list file and outputs the IP and port number for all servers
- * for the currently active mod to another file.
+ * Parses a server list file to find the addresses of all servers for the
+ * currently active mod.  Optionally outputs the IP and port numbers to a file.
  *
  * Params:
  *     readFrom = File to read from.  The format is taken to be
  *                qstat's raw output.
- *     writeTo  = File to write to. The format is one IP:PORT combo per line.
+ *     writeTo  = Optional. File to write to. The format is one IP:PORT combo
+ *                per line.
  *
- * Returns: A set of strings containing the IP and port of each server that was
- *          output to the file.
+ * Returns: A set of strings containing the IP and port of each server that
+ *          was found.
  *
  * Throws: IOException.
  */
-Set!(char[]) filterServerFile(in char[] readFrom, in char writeTo[])
+Set!(char[]) filterServerFile(in char[] readFrom, in char writeTo[]=null)
 {
 	scope infile = new TextFileInput(readFrom);
-	scope outfile = new BufferOutput(
-	                        new FileConduit(writeTo, FileConduit.WriteCreate));
+	scope OutputStream outfile;
 	Set!(char[]) keptServers;
 
 	void outputServer(in char[] address)
 	{
-		outfile.write(address);
-		outfile.write(newline);
+		if (outfile) {
+			outfile.write(address);
+			outfile.write(newline);
+		}
 		assert(address.length == 0 || isdigit(address[0]));
 		keptServers.add(address);
 	}
+
+	if (writeTo)
+		outfile = new BufferOutput(
+	                        new FileConduit(writeTo, FileConduit.WriteCreate));
 
 	while (infile.next()) {
 		char[] line = infile.get();
@@ -385,7 +391,8 @@ Set!(char[]) filterServerFile(in char[] readFrom, in char writeTo[])
 	}
 
 	infile.close();
-	outfile.flush().close();
+	if (outfile)
+		outfile.flush().close();
 
 	return keptServers;
 }

@@ -522,7 +522,7 @@ uint appendServersToFile(in char[] fileName, in Set!(char[]) servers,
                          in Set!(char[]) skipList=Set!(char[])())
 {
 	scope output = new BufferOutput(
-	             new FileConduit(fileName, FileConduit.WriteAppending));
+	                    new FileConduit(fileName, FileConduit.WriteAppending));
 	uint count = 0;
 
 	foreach (address; servers) {
