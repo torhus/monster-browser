@@ -154,14 +154,24 @@ void queryServers(in char[][] addresses, bool replace=false,
 ///
 class ServerQuery
 {
+	char[] startMessage = "Querying server(s)...";
+	char[] noReplyMessage = "There was no reply.";
+
 	///
-	this (in char[][] addresses, bool replace=false, bool select=false)
+	this(in char[][] addresses, bool replace=false, bool select=false)
 	{
 		addresses_ = addresses;
 		replace_ = replace;
 		select_ = select;
+		statusBarUpdater_ = new StatusBarUpdater;
 	}
 
+	~this()
+	{
+		if (statusBarUpdater_)
+			delete statusBarUpdater_;
+	
+	}
 	///
 	void startQuery()
 	{	
@@ -174,7 +184,7 @@ class ServerQuery
 		log(Format("Wrote {} addresses to {}.", addresses_.length,
 		                                                         REFRESHFILE));
 
-		statusBar.setLeft("Querying server(s)...");
+		statusBar.setLeft(startMessage);
 		
 		GC.collect;
 		serverThread = new Thread(&run);
@@ -187,7 +197,7 @@ class ServerQuery
 		try {
 			auto deliverDg = replace_ ? &getActiveServerList.replace :
 			                            &getActiveServerList.add;
-			browserRefreshList(deliverDg);
+			browserRefreshList(deliverDg, &counter);
 			
 			Display.getDefault.asyncExec(new class Runnable {
 				void run()
@@ -204,6 +214,12 @@ class ServerQuery
 		}
 	}
 
+	private void counter(int count)
+	{
+		statusBarUpdater_.text = startMessage ~ Integer.toString(count);
+		Display.getDefault.syncExec(statusBarUpdater_);
+	}
+
 	private void done()
 	{
 		if (getActiveServerList.length() > 0) {
@@ -215,13 +231,14 @@ class ServerQuery
 			serverTable.reset(index);
 		}
 		else {
-			statusBar.setLeft("The server did not reply");
+			statusBar.setLeft(noReplyMessage);
 		}
 		serverTable.notifyRefreshEnded;
 	}
 
 	private {
 		char[][] addresses_;
+		StatusBarUpdater statusBarUpdater_;
 		bool replace_;
 		bool select_;
 	}
@@ -294,11 +311,11 @@ void refreshList()
 	log(Format("Added {} extra servers, skipping {} duplicates.",
 	                                        delta, extraServers.length-delta));
 
-	uint written = appendServersToFile(REFRESHFILE, servers);
+	total = appendServersToFile(REFRESHFILE, servers);
 	char[] rfile = tail(REFRESHFILE, "/", tmp);
-	log(Format("Wrote {} servers to {}.", written, rfile));
+	log(Format("Wrote {} servers to {}.", total, rfile));
 
-	statusBar.setLeft(Format("Refreshing {} servers...", written));
+	statusBar.setLeft(Format("Refreshing {} servers...", total));
 	serverTable.clear();
 	getActiveServerList.clear();
 
