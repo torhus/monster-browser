@@ -32,8 +32,8 @@ struct Set(T) {
 
 	///
 	int opApply(int delegate(ref T) dg)
-    {
-	    int result = 0;
+	{
+		int result = 0;
 		foreach (key, val; data_) {
 			result = dg(key);
 			if (result)
