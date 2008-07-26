@@ -277,23 +277,28 @@ void refreshList()
 
 	assert(serverThread is null || !serverThread.isRunning);
 
-	auto servers = filterServerFile(activeMod.serverFile, REFRESHFILE);
+	Set!(char[]) servers = filterServerFile(activeMod.serverFile);
 
 	log("Refreshing server list for " ~ activeMod.name ~ "...");
 	char[] tmp;
-	char[] sfile = tail(activeMod.serverFile, "/", tmp);
+	char[] sfile = tail(activeMod.serverFile, "/", tmp);	
+	log(Format("Found {} servers in {}.", servers.length, sfile));
+
+	// merge in the extra servers
+	Set!(char[]) extraServers = getActiveServerList.extraServers;
+	auto oldLength = servers.length;
+	foreach (server; extraServers)
+		servers.add(server);
+
+	auto delta = servers.length - oldLength;
+	log(Format("Added {} extra servers, skipping {} duplicates.",
+	                                        delta, extraServers.length-delta));
+
+	uint written = appendServersToFile(REFRESHFILE, servers);
 	char[] rfile = tail(REFRESHFILE, "/", tmp);
-	log(Format("Found {} servers in {} and wrote them to {}.", servers.length,
-	                                                            sfile, rfile));
+	log(Format("Wrote {} servers to {}.", written, rfile));
 
-	auto extraServers = getActiveServerList.extraServers;
-	auto written = appendServersToFile(REFRESHFILE, extraServers, servers);
-
-	log(Format("Added {} extra servers, skipping {} duplicates.", written,
-	                                             extraServers.length-written));
-
-	total = servers.length + written;
-	statusBar.setLeft("Refreshing " ~ Integer.toString(total) ~ " servers...");
+	statusBar.setLeft(Format("Refreshing {} servers...", written));
 	serverTable.clear();
 	getActiveServerList.clear();
 
