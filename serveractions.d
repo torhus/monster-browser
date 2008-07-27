@@ -140,8 +140,7 @@ void loadSavedList()
  *     replace = Update the servers instead of adding new ones.
  *     select  = Select the newly added or refreshed servers.
  */
-void queryServers(in char[][] addresses, bool replace=false,
-                                                             bool select=false)
+void queryServers(in char[][] addresses, bool replace=false, bool select=false)
 {
 	if (!addresses.length)
 		return;
@@ -170,12 +169,12 @@ class ServerQuery
 	{
 		if (statusBarUpdater_)
 			delete statusBarUpdater_;
-	
+
 	}
 
 	///
 	void startQuery()
-	{	
+	{
 		assert(serverThread is null || !serverThread.isRunning);
 
 		if (Path.exists(REFRESHFILE))
@@ -186,7 +185,7 @@ class ServerQuery
 		serverCount_ = written;
 
 		statusBar.setLeft(startMessage);
-		
+
 		GC.collect;
 		serverThread = new Thread(&run);
 		serverTable.notifyRefreshStarted;
@@ -199,7 +198,7 @@ class ServerQuery
 			auto deliverDg = replace_ ? &getActiveServerList.replace :
 			                            &getActiveServerList.add;
 			browserRefreshList(deliverDg, &counter);
-			
+
 			Display.getDefault.asyncExec(new class Runnable {
 				void run()
 				{
