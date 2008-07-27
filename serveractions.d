@@ -150,6 +150,38 @@ void queryServers(in char[][] addresses, bool replace=false, bool select=false)
 }
 
 
+/** Refreshes the list, in a new thread. */
+void refreshList()
+{
+	Set!(char[]) servers = filterServerFile(activeMod.serverFile);
+
+	log("Refreshing server list for " ~ activeMod.name ~ "...");
+	char[] tmp;
+	char[] sfile = tail(activeMod.serverFile, "/", tmp);
+	log(Format("Found {} servers in {}.", servers.length, sfile));
+
+	// merge in the extra servers
+	Set!(char[]) extraServers = getActiveServerList.extraServers;
+	auto oldLength = servers.length;
+	foreach (server; extraServers)
+		servers.add(server);
+
+	auto delta = servers.length - oldLength;
+	log(Format("Added {} extra servers, skipping {} duplicates.",
+	                                        delta, extraServers.length-delta));
+
+	serverTable.clear();
+	getActiveServerList.clear();
+
+	if (servers.length) {
+		auto q = new ServerQuery(servers.toArray, false, false);
+		q.startMessage = Format("Refreshing {} servers...", servers.length);
+		q.noReplyMessage = "None of the servers replied.";
+		threadDispatcher.run(&q.startQuery);
+	}
+}
+
+
 ///
 class ServerQuery
 {
@@ -228,7 +260,8 @@ class ServerQuery
 				// FIXME: select them all, not just the first one
 				index = new IntWrapper(
 				          getActiveServerList.getFilteredIndex(addresses_[0]));
-			serverTable.reset(index, serverCount_-getActiveServerList.length);
+			long noReply = cast(long)serverCount_ - getActiveServerList.length;
+			serverTable.reset(index, noReply > 0 ? cast(uint)noReply : 0);
 		}
 		else {
 			statusBar.setLeft(noReplyMessage);
@@ -243,90 +276,6 @@ class ServerQuery
 		bool replace_;
 		bool select_;
 	}
-}
-
-
-/** Refreshes the list, in a new thread. */
-void refreshList()
-{
-	static uint total;
-
-	void f()
-	{
-		char[] statusMsg;
-		scope status = new StatusBarUpdater;
-
-		void counter(int count)
-		{
-			assert(statusMsg !is null);
-			status.text = statusMsg ~ Integer.toString(count);
-			Display.getDefault.syncExec(status);
-		}
-
-		static void done()
-		{
-			if (getActiveServerList.length() > 0) {
-				serverTable.reset(null, total-getActiveServerList.length);
-			}
-			else {
-				statusBar.setLeft("None of the servers replied");
-			}
-			serverTable.notifyRefreshEnded;
-		}
-
-		try {
-			statusMsg = "Refreshing " ~  Integer.toString(total) ~
-			                                                     " servers...";
-			browserRefreshList(&getActiveServerList.add, &counter);
-			Display.getDefault.asyncExec(new class Runnable {
-				void run()
-				{
-					volatile if (!runtools.abortParsing)
-						done;
-					else
-						serverTable.notifyRefreshEnded;
-				}
-			});
-		}
-		catch(Exception e) {
-			logx(__FILE__, __LINE__, e);
-		}
-	}
-
-	assert(serverThread is null || !serverThread.isRunning);
-
-	if (Path.exists(REFRESHFILE))
-		Path.remove(REFRESHFILE);
-
-	Set!(char[]) servers = filterServerFile(activeMod.serverFile);
-
-	log("Refreshing server list for " ~ activeMod.name ~ "...");
-	char[] tmp;
-	char[] sfile = tail(activeMod.serverFile, "/", tmp);
-	log(Format("Found {} servers in {}.", servers.length, sfile));
-
-	// merge in the extra servers
-	Set!(char[]) extraServers = getActiveServerList.extraServers;
-	auto oldLength = servers.length;
-	foreach (server; extraServers)
-		servers.add(server);
-
-	auto delta = servers.length - oldLength;
-	log(Format("Added {} extra servers, skipping {} duplicates.",
-	                                        delta, extraServers.length-delta));
-
-	total = appendServersToFile(REFRESHFILE, servers);
-	char[] rfile = tail(REFRESHFILE, "/", tmp);
-	log(Format("Wrote {} servers to {}.", total, rfile));
-
-	statusBar.setLeft(Format("Refreshing {} servers...", total));
-	serverTable.clear();
-	getActiveServerList.clear();
-
-	GC.collect();
-	serverThread = new Thread(&f);
-	serverTable.notifyRefreshStarted;
-	serverThread.start();
 }
 
 

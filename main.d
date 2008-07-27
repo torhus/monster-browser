@@ -160,7 +160,9 @@ private void _main(char[][] args)
 	serverTable.getTable.setFocus();
 	
 	clipboard = new Clipboard(Display.getDefault);
-	
+
+	threadDispatcher = new ThreadDispatcher;
+
 	mainWindow.open();
 
 	if (arguments.fromfile) {
@@ -178,9 +180,7 @@ private void _main(char[][] args)
 			else
 				getNewList();
 		}
-	}
-
-	threadDispatcher = new ThreadDispatcher;
+	}	
 
 	// main loop
 	Display display = Display.getDefault;
