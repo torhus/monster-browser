@@ -176,8 +176,11 @@ void refreshList()
 	if (servers.length) {
 		auto q = new ServerQuery(servers.toArray, false, false);
 		q.startMessage = Format("Refreshing {} servers...", servers.length);
-		q.noReplyMessage = "None of the servers replied.";
+		q.noReplyMessage = "None of the servers replied";
 		threadDispatcher.run(&q.startQuery);
+	}
+	else {
+		statusBar.setLeft("No servers were found for this mod");
 	}
 }
 
@@ -186,7 +189,7 @@ void refreshList()
 class ServerQuery
 {
 	char[] startMessage = "Querying server(s)...";
-	char[] noReplyMessage = "There was no reply.";
+	char[] noReplyMessage = "There was no reply";
 
 	///
 	this(in char[][] addresses, bool replace=false, bool select=false)
