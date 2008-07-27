@@ -1,3 +1,8 @@
+Work in progress - 2008-07-27
+-----------------------------
+- Fixed: Crash when specifying a server, and it doesn't reply.
+- Fixed: Made independent of working directory.
+
 v 0.4 - 2008-07-20
 ------------------
 - New: Colored names for servers and players
