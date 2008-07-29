@@ -15,9 +15,12 @@ import serverlist;
 
 version (Windows) {
 	import tango.stdc.stringz;
-	import tango.sys.win32.Types;
+	import tango.sys.win32.CodePage;
+	import tango.sys.win32.UserGdi;
+
 	enum { CSIDL_PROGRAM_FILES = 38 }
 	extern (Windows) BOOL SHGetSpecialFolderPathA(HWND, LPSTR, int, BOOL);
+	const HKEY HKEY_LOCAL_MACHINE = cast(HKEY)0x80000002;
 }
 
 
@@ -68,7 +71,7 @@ private {
 	    "; like this example:\n"
 	    ";\n"
 	    "; [mymod]\n"
-	    "; exePath=%ProgramFiles%\\My Mod Directory\\mymod.exe\n"
+	    "; exePath=C:\\Program Files\\My Mod Directory\\mymod.exe\n"
 	    "; masterServer=master.mymod.com\n"
 	    ";\n"
 	    "; Lines beginning with a \";\" are comments.\n"
@@ -96,8 +99,6 @@ private {
 		char[] value;
 	}
 	Setting[] defaults = [{"coloredNames", "true"},
-	                      {"gamePath",
-	                              r"%ProgramFiles%\Quake III Arena\quake3.exe"},
 	                      {"lastMod", "westernq3"},
 	                      {"minimizeOnGameLaunch", "true"},
 	                      {"showFlags", "true"},
@@ -199,15 +200,14 @@ void loadSettings()
 		}
 	}
 
-	// ugly way of guessing q3 install directory
 	version (Windows) {
-		IniSection sec2 = settingsIni["Settings"];
-		char[] value = sec2.getValue("gamePath");
-		if (value.length >= 14 && value[0..14] == "%ProgramFiles%") {
-			char[] dir = getProgramFilesDirectory();
-			value = substitute(value, "%ProgramFiles%", dir);
-			sec2.setValue("gamePath", value);
-		}
+		// make sure we have a path for quake3.exe
+		sec = settingsIni["Settings"];
+		if (!sec.getValue("gamePath")) {
+			char[] path = autodetectQuake3Path();
+			sec.setValue("gamePath", path);
+			log("Set gamePath to '" ~ path ~ "'.");
+		}			
 	}
 
 	loadSessionState();
@@ -343,6 +343,27 @@ char[] getSessionState(in char[] key) ///
 }
 
 
+private char[] autodetectQuake3Path()
+{
+	version (Windows) {
+		char[] q3path = getRegistryStringValue(HKEY_LOCAL_MACHINE,
+		                                       "SOFTWARE\\Id\\Quake III Arena",
+		                                       "INSTALLEXEPATH");
+		if (!q3path) {
+		log("Quake 3's installation path was not found in the registry, "
+		                                   "falling back to a default value.");
+			// use a sensible default value
+			q3path = getProgramFilesDirectory;
+			q3path ~= "\\Quake III Arena\\quake3.exe";
+		}
+		return q3path;
+
+	}
+	else {
+		assert(0, "autodetectQuake3Path");
+	}
+}
+
 /**
  * Get the default program install directory, or an educated guess if not
  * found.
@@ -351,9 +372,48 @@ char[] getSessionState(in char[] key) ///
  */
 private char[] getProgramFilesDirectory()
 {
-	char buf[MAX_PATH] = void;
+	char buf[MAX_PATH];
 	auto r = SHGetSpecialFolderPathA(null, buf.ptr, CSIDL_PROGRAM_FILES,
-																	false);
+	                                                                    false);
 	assert(r);
 	return r ? fromStringz(buf.ptr).dup : "C:\\Program Files".dup;
+}
+
+
+// BUGS: Doesn't convert arguments to ANSI.
+private char[] getRegistryStringValue(HKEY key, in char[] subKey,
+                                                                in char[] name)
+{
+	HKEY hKey;
+	DWORD dwType = REG_SZ;
+	BYTE buf[255] = void;
+	LPBYTE lpData = buf.ptr;
+	DWORD dwSize = buf.length;
+	LONG status;
+	char[] retval = null;
+
+	status = RegOpenKeyExA(key, toStringz(subKey), 0L, KEY_ALL_ACCESS, &hKey);
+
+	if (status == ERROR_SUCCESS) {
+		status = RegQueryValueExA(hKey, toStringz(name), NULL, &dwType, lpData,
+		                                                              &dwSize);
+
+		if (status == ERROR_MORE_DATA) {
+			lpData = (new BYTE[dwSize]).ptr;
+			status = RegQueryValueExA(hKey, toStringz(name), NULL, &dwType,
+			                                                  lpData, &dwSize);
+		}
+		
+		if (status == ERROR_SUCCESS) {
+			retval.length = dwSize * 2;
+			retval = CodePage.from(fromStringz(cast(char*)lpData), retval);
+		}
+		
+		if (dwSize > buf.length)
+			delete lpData;
+		
+		RegCloseKey(hKey);
+	}
+
+	return retval;
 }
