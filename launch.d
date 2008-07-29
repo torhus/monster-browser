@@ -4,8 +4,10 @@ module launch;
 
 import tango.io.FilePath;
 import tango.stdc.stringz;
-version (Windows)
+version (Windows) {
+	import tango.sys.win32.CodePage;
 	import tango.sys.win32.UserGdi;
+}
 import Integer = tango.text.convert.Integer;
 
 import dwt.DWT;
@@ -38,9 +40,7 @@ void joinServer(ServerData *sd)
 	char[] msg;
 
 	if (!path.exists) {
-		error(path.toString ~ " was not found,\n"
-		      " please check your settings, and verify that\n"
-		      " the game is installed.");
+		error(path.toString ~ " was not found,\nplease check your settings.");
 		return;
 	}
 
@@ -87,9 +87,13 @@ void joinServer(ServerData *sd)
 			startup.dwFlags = STARTF_USESTDHANDLES;
 			info = new PROCESS_INFORMATION();
 
-			int r = CreateProcessA(null, toStringz(path.toString ~ " " ~ argv),
+			char buf[MAX_PATH * 2];
+			char[] ansiDir = CodePage.into(path.path, buf);
+			char[] ansiPath = ansiDir ~ path.file;
+
+			int r = CreateProcessA(null, toStringz(ansiPath ~ " " ~ argv),
 			                     null, null, true, 0/*DETACHED_PROCESS*/, null,
-			                     toStringz(path.path),&startup,info);
+			                               toStringz(ansiDir), &startup, info);
 			if (!r) {
 				int e = GetLastError();
 				db("CreatProcessA returned " ~ Integer.toString(r));
