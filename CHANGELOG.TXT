@@ -1,10 +1,11 @@
-Work in progress - 2008-07-27
------------------------------
+v0.4a - 2008-07-29
+------------------
+- New: Try to autodetect Quake 3's installation path by using the registry.
 - Fixed: Crash when specifying a server, and it doesn't reply.
 - Fixed: Made independent of working directory.
 
-v 0.4 - 2008-07-20
-------------------
+v0.4 - 2008-07-20
+-----------------
 - New: Colored names for servers and players
 - New: Flags showing the nationality of each server.
 - New: Using Windows theming makes it look better.
