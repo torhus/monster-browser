@@ -212,10 +212,10 @@ class ServerQuery
 	{
 		assert(serverThread is null || !serverThread.isRunning);
 
-		if (Path.exists(REFRESHFILE))
-			Path.remove(REFRESHFILE);
-		auto written =
-		            appendServersToFile(REFRESHFILE, Set!(char[])(addresses_));
+		if (Path.exists(appDir ~ REFRESHFILE))
+			Path.remove(appDir ~ REFRESHFILE);
+		auto written = appendServersToFile(appDir ~ REFRESHFILE,
+		                                             Set!(char[])(addresses_));
 		log(Format("Wrote {} addresses to {}.", written, REFRESHFILE));
 		serverCount_ = written;
 
@@ -311,9 +311,9 @@ void getNewList()
 					addresses.add(s);
 			log(Format("Added {} extra servers.", extraServers.length));
 
-			if (Path.exists(REFRESHFILE))
-				Path.remove(REFRESHFILE);
-			auto written = appendServersToFile(REFRESHFILE, addresses);
+			if (Path.exists(appDir ~ REFRESHFILE))
+				Path.remove(appDir ~ REFRESHFILE);
+			auto written = appendServersToFile(appDir ~ REFRESHFILE, addresses);
 			log(Format("Wrote {} addresses to {}.", written, REFRESHFILE));
 
 			total = Integer.toString(written);

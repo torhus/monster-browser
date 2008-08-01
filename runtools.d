@@ -36,15 +36,7 @@ bool abortParsing = false;
 
 
 /// The name of the file that qstat reads addresses from when querying servers.
-char[] REFRESHFILE()
-{
-	static char[] name;
-	if (!name) {
-		assert(appDir.length);
-		name = appDir ~ "refreshlist.tmp";
-	}
-	return name;
-}
+char[] REFRESHFILE = "refreshlist.tmp";
 
 
 /**
