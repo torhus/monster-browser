@@ -1,7 +1,5 @@
-Monster Browser
----------------
-This program is copyright (c) 2008 Tor Husabø.
-
+Monster Browser Instructions
+============================
 
 Basic Usage
 -----------
@@ -10,8 +8,6 @@ Select the mod name from the drop down box on the right, where it says 'westernq
 Then click on 'Get new list'.  That might take a while, but you can use 'Refresh'  instead most of the time.  The next time you start the program, it will load the server list from disk, and do an automatic refresh.  It's probably a good idea to use 'Get new list' once a day or so.
 
 The filters and column sorting should be pretty straight forward to use.  You can leave the filters on while doing a refresh or getting a new list, all the servers will be queried anyway.
-
-On first use, go into the settings and check that the path to your Quake 3 exe is set correctly.  Monster Browser will try to guess where Quake 3 is installed, but it's not very clever about it.
 
 To join a server, just select it and double click or press <enter>.  If the server requires a password, or has an optional password for reserved slots, a password dialog will pop up.  The password will be stored.
 
