@@ -1,4 +1,4 @@
-v0.4a - 2008-07-29
+v0.4a - 2008-08-01
 ------------------
 - New: Try to autodetect Quake 3's installation path by using the registry.
 - Fixed: Crash when specifying a server, and it doesn't reply.
