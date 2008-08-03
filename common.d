@@ -1,5 +1,6 @@
 module common;
 
+import tango.core.Version;
 import tango.io.Console;
 import tango.io.FileConduit;
 import Path = tango.io.Path;
@@ -465,8 +466,16 @@ int[] parseIntegerSequence(in char[] seq)
 char[] toCsv(T)(T[] a)
 {
 	char[] s = Format("{}", a);
-	assert(s[0..2] == "[ " && s[$-2..$] == " ]");
-	return s[2..$-2];
+
+	static if (Tango.Major == 0 && Tango.Minor < 997) {
+		assert(s[0..2] == "[ " && s[$-2..$] == " ]");
+		return s[2..$-2];
+	}
+	else {
+		assert(s[0..1] == "[" && s[$-1..$] == "]");
+		assert(isdigit(s[1]) && isdigit(s[$-2]));
+		return s[1..$-1];
+	}
 }
 
 
