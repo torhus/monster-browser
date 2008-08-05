@@ -17,6 +17,7 @@ AllowNoIcons=yes
 SourceDir=..
 OutputDir=installer
 OutputBaseFilename=Monster Browser 0.4a Setup
+SetupIconFile=mb.ico
 Compression=lzma
 SolidCompression=yes
 
