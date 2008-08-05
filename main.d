@@ -52,7 +52,8 @@ void main(char[][] args) ///
 
 private void _main(char[][] args)
 {
-	appDir = normalize(Environment.exePath(args[0]).path);
+	char[] s = replace(args[0].dup, '\\', '/');
+	appDir = normalize(Environment.exePath(s).path);
 
 	globalTimer = new Timer;
 
