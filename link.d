@@ -12,6 +12,7 @@ version(build) {
 	pragma(link, "shlwapi.lib");
 	pragma(link, "ole32.lib");
 	pragma(link, "oleaut32.lib");
+	pragma(link, "olepro32.lib");
 	pragma(link, "oleacc.lib");
 	pragma(link, "msimg32.lib");
 	pragma(link, "usp10.lib");
