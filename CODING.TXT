@@ -9,7 +9,8 @@ http://digitalmars.com/d/1.0/dcompiler.html
 
 Compiler versions that are know to work or not work with this project:
 DMD 1.025-1.027 WORKS
-Currently I'm using 1.027.
+DMD 1.033 WORKS
+Currently I'm using 1.033.
 
 D docs:
 Language: http://www.digitalmars.com/d/1.0/lex.html
@@ -34,14 +35,14 @@ Version 0.75 is known to work.
 
 Libraries used
 --------------
-Tango, currently version 0.99.6:
+Tango, currently version 0.99.7:
 http://dsource.org/projects/tango/
 
 ini.d (included in the source download):
 http://www.dprogramming.com/ini.php
 
-DWT GUI library. DWT is a D port of IBM's SWT 3.3 for Java.
-Revision used with this project is currently 211.
+DWT GUI library. DWT is a D port of IBM's SWT 3.4 for Java.
+Revision used with this project is currently 279.
 http://www.dsource.org/projects/dwt
 http://help.eclipse.org/help32/nftopic/org.eclipse.platform.doc.isv/reference/api/org/eclipse/swt/widgets/package-tree.html
 There's also a DWT news group on news.digitalmars.com, and a #dwt channel on
