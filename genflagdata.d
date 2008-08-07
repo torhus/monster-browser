@@ -3,13 +3,14 @@
  * Generate flagdata.d.
  */
 
-import tango.io.FileScan;
 import tango.io.Stdout;
-import tango.io.Stream.TextFileStream;
+import tango.io.stream.TextFileStream;
+import tango.io.vfs.FileFolder;
+import tango.text.Util : locatePrior;
 
 
 const char[] DIR = "flags";
-const char[] SUFFIX = ".png";
+const char[] PATTERN = "*.png";
 const char[] OUTPUT = "flagdata.d";
 
 const char[] HEADER =
@@ -27,11 +28,11 @@ void initFlagFiles()
 
 int main()
 {
-	auto scan = new FileScan;
+	auto folder = new FileFolder(DIR);
+	VfsFiles files = folder.self.catalog(PATTERN);
 
-	scan(DIR, SUFFIX);
-	Stdout.formatln("Found {} files in '{}'.", scan.files.length, DIR);
-	if (scan.files.length < 100) {
+	Stdout.formatln("Found {} files in '{}'.", files.files, DIR);
+	if (files.files < 100) {
 		Stdout("ERROR: Suspiciously low number of files, aborting.");
 		return 1;
 	}
@@ -40,16 +41,24 @@ int main()
 	scope (exit) f.flush.close;
 
 	f.write(HEADER);
-	foreach (i, path; scan.files) {
+	size_t counter  = 0;
+	foreach (path; files) {
 		f.format("\t             \"{}\": cast(ubyte[])import(\"{}\")",
-		                                                      path.name, path);
-		if (i < scan.files.length - 1)
+		                                         stripSuffix(path.name), path);
+		if (counter < files.files - 1)
 			f.write(",");
 		f.newline;
+		counter++;
 	}
-	f.formatln("\t            ];  // {} files\n}", scan.files.length);
+	f.formatln("\t            ];  // {} files\n}", files.files);
 
 	Stdout.formatln("Successfully created {}.", OUTPUT);
 
 	return 0;
+}
+
+
+char[] stripSuffix(char[] file)
+{
+	return file[0..locatePrior(file, '.')];
 }
