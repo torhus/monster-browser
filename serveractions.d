@@ -12,6 +12,7 @@ import tango.io.Stdout;
 import tango.text.Util;
 import tango.text.convert.Format;
 import Integer = tango.text.convert.Integer;
+import tango.text.stream.LineIterator;
 
 import dwt.dwthelper.Runnable;
 import dwt.widgets.Display;
@@ -145,8 +146,11 @@ void queryServers(in char[][] addresses, bool replace=false, bool select=false)
 	if (!addresses.length)
 		return;
 
-	auto q = new ServerQuery(addresses, replace, select);
-	threadDispatcher.run(&q.startQuery);
+	auto retriever = new QstatServerRetriever(addresses);
+	auto contr = new ServerRetrievalController(retriever, replace);
+	if (select)
+		contr.autoSelect = addresses;
+	threadDispatcher.run(&contr.start);
 }
 
 
@@ -174,10 +178,12 @@ void refreshList()
 	getActiveServerList.clear();
 
 	if (servers.length) {
-		auto q = new ServerQuery(servers.toArray, false, false);
-		q.startMessage = Format("Refreshing {} servers...", servers.length);
-		q.noReplyMessage = "None of the servers replied";
-		threadDispatcher.run(&q.startQuery);
+		auto retriever = new QstatServerRetriever(servers.toArray);
+		auto contr = new ServerRetrievalController(retriever, false);
+		contr.startMessage =
+		                    Format("Refreshing {} servers...", servers.length);
+		contr.noReplyMessage = "None of the servers replied";
+		threadDispatcher.run(&contr.start);
 	}
 	else {
 		statusBar.setLeft("No servers were found for this mod");
@@ -186,17 +192,22 @@ void refreshList()
 
 
 ///
-class ServerQuery
+class ServerRetrievalController
 {
+	/// Status messages.
 	char[] startMessage = "Querying server(s)...";
-	char[] noReplyMessage = "There was no reply";
+	char[] noReplyMessage = "There was no reply";  /// ditto
+
+	/// Set selection to these servers when retrieval is finished.  If it's
+	/// null or empty, the previous selection will be retained.
+	char[][] autoSelect = null;
+
 
 	///
-	this(in char[][] addresses, bool replace=false, bool select=false)
+	this(QstatServerRetriever retriever, bool replace=false)
 	{
-		addresses_ = addresses;
+		serverRetriever_= retriever;
 		replace_ = replace;
-		select_ = select;
 		statusBarUpdater_ = new StatusBarUpdater;
 	}
 
@@ -208,17 +219,12 @@ class ServerQuery
 	}
 
 	///
-	void startQuery()
+	void start()
 	{
 		assert(serverThread is null || !serverThread.isRunning);
 
-		if (Path.exists(appDir ~ REFRESHFILE))
-			Path.remove(appDir ~ REFRESHFILE);
-		auto written = appendServersToFile(appDir ~ REFRESHFILE,
-		                                             Set!(char[])(addresses_));
-		log(Format("Wrote {} addresses to {}.", written, REFRESHFILE));
-		serverCount_ = written;
-
+		serverRetriever_.init();
+		
 		statusBar.setLeft(startMessage);
 
 		GC.collect;
@@ -232,7 +238,16 @@ class ServerQuery
 		try {
 			auto deliverDg = replace_ ? &getActiveServerList.replace :
 			                            &getActiveServerList.add;
-			browserRefreshList(deliverDg, &counter);
+
+			// FIXME: handle open returning 0 to signal abort
+			int serverCount_ = serverRetriever_.open();
+			assert (serverCount_ != 0);
+
+			scope iter = new LineIterator!(char)(serverRetriever_.inputStream);
+			qstat.parseOutput(iter, deliverDg, &counter,
+			                                      serverRetriever_.outputFile);
+			getActiveServerList.complete = !abortParsing;
+			serverRetriever_.close();
 
 			Display.getDefault.asyncExec(new class Runnable {
 				void run()
@@ -259,10 +274,11 @@ class ServerQuery
 	{
 		if (getActiveServerList.length() > 0) {
 			IntWrapper index = null;
-			if (select_)
+			if (autoSelect.length) {
 				// FIXME: select them all, not just the first one
 				index = new IntWrapper(
-				          getActiveServerList.getFilteredIndex(addresses_[0]));
+				          getActiveServerList.getFilteredIndex(autoSelect[0]));
+			}
 			long noReply = cast(long)serverCount_ - getActiveServerList.length;
 			serverTable.reset(index, noReply > 0 ? cast(uint)noReply : 0);
 		}
@@ -273,11 +289,10 @@ class ServerQuery
 	}
 
 	private {
-		char[][] addresses_;
+		QstatServerRetriever serverRetriever_;
 		uint serverCount_;
 		StatusBarUpdater statusBarUpdater_;
 		bool replace_;
-		bool select_;
 	}
 }
 
