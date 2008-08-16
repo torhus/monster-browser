@@ -317,7 +317,7 @@ class ServerTable
 
 
 	///
-	~this() { padlockImage_.dispose; }
+	void disposeAll() { padlockImage_.dispose; }
 
 	/// The index of the currently active sort column.
 	int sortColumn() { return table_.indexOf(table_.getSortColumn()); }

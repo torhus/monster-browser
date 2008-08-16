@@ -188,6 +188,9 @@ class ServerList
 			assert(i != -1);
 			sd.server[ServerColumn.COUNTRY] =
 			                              list[i].server[ServerColumn.COUNTRY];
+			
+			if (list[i].customData)
+				list[i].customData.dispose();
 			list[i] = *sd;
 			removeFromFiltered(sd);
 			if (!isFilteredOut(sd))
@@ -284,12 +287,8 @@ class ServerList
 	ServerList clear()
 	{
 		synchronized (this) {
-			if (getSetting("coloredNames") == "true") {
-				foreach (ref sd; list) {
-					if (sd.customData)
-						sd.customData.dispose();
-				}
-			}
+			disposeCustomData();
+
 			//filteredList.length = 0;
 			//list.length = 0;
 			delete filteredList;
@@ -298,6 +297,27 @@ class ServerList
 		}
 
 		return this;
+	}
+
+
+	///
+	void disposeCustomData()
+	{
+		if (getSetting("coloredNames") == "true") {
+			foreach (ref sd; list) {
+				if (sd.customData)
+					sd.customData.dispose();
+			}
+		}
+	}
+
+
+	///
+	static void disposeAllCustomData()
+	{
+		foreach (slist; serverLists) {
+			slist.disposeCustomData();
+		}
 	}
 
 

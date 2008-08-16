@@ -34,7 +34,7 @@ static this() {
 }
 
 
-static ~this() {
+void disposeNameColors() {
 	foreach (c; q3Colors) {
 		if (!c.foreground.isDisposed())
 			c.foreground.dispose();
