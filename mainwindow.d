@@ -145,6 +145,8 @@ class MainWindow
 	void minimized(bool v) { shell_.setMinimized(v); }  ///
 
 	Point size() { return shell_.getSize; }  ///
+	
+	void disposeAll() { serverTable.disposeAll(); }  ///
 
 	private {
 		Shell shell_;

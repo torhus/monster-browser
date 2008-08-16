@@ -148,12 +148,17 @@ Image getFlagImage(in char[] countryCode)
 
 static ~this()
 {
+	if (gi)
+		GeoIP_delete(gi);
+}
+
+
+/// To be called before program exit.
+void disposeFlagImages()
+{
 	foreach (key, val; flagCache)
 		if (val)
 			val.dispose;
-
-	if (gi)
-		GeoIP_delete(gi);
 }
 
 

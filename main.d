@@ -17,8 +17,10 @@ import dwt.events.ShellEvent;
 import dwt.graphics.Image;
 import dwt.widgets.Display;
 
+import colorednames : disposeNameColors;
 import common;
 import dialogs;
+import geoip : disposeFlagImages;
 version (Windows)
 	import link;
 import mainwindow;
@@ -191,6 +193,12 @@ private void _main(char[][] args)
 			display.sleep();
 	}
 
+
+	// call all necessary dispose methods
+	ServerList.disposeAllCustomData();
+	colorednames.disposeNameColors();
+	geoip.disposeFlagImages();
+	mainWindow.disposeAll();
 	foreach (icon; appIcons)
 		icon.dispose;
 	clipboard.dispose;
