@@ -9,12 +9,14 @@ debug import tango.io.Console;
 import tango.io.File;
 import tango.io.FileConduit;
 import Path = tango.io.Path;
+import tango.io.model.IConduit : InputStream;
 import tango.io.stream.BufferStream;
 import tango.io.stream.TextFileStream;
 import tango.stdc.ctype : isdigit;
 import tango.stdc.stdio : sscanf;
 import tango.stdc.stringz;
 import tango.sys.Process;
+import tango.text.convert.Format;
 import Integer = tango.text.convert.Integer;
 import tango.text.stream.LineIterator;
 
@@ -198,6 +200,107 @@ void browserRefreshList(void delegate(ServerData*) deliver,
 		db(__FILE__ ~ Integer.toString(__LINE__) ~ ": " ~ e.toString());
 	}
 }
+
+
+///
+final class QstatServerRetriever //: IServerRetriever
+{
+	this(in char[][] addresses, in char[] outputFile=null)
+	{
+		addresses_ = addresses;
+		// FIXME: how to implement the outputFile functionality?
+		//outputFile_ = saveList ? "servers.tmp" : null;
+		outputFile_ = outputFile;
+
+	}
+
+
+	void init()
+	{
+		// FIXME: check if this code could be moved into open()
+		if (Path.exists(appDir ~ REFRESHFILE))
+			Path.remove(appDir ~ REFRESHFILE);
+		serverCount_ = appendServersToFile(appDir ~ REFRESHFILE,
+		                                             Set!(char[])(addresses_));
+		log(Format("Wrote {} addresses to {}.", serverCount_, REFRESHFILE));
+	}
+
+
+	// returns 0 to abort, -1 for unknown server count
+	int open()
+	{
+		proc = new Process();
+		proc.workDir = appDir;
+		//scope (exit) if (proc) proc.wait();
+
+		try {
+			char[] cmdLine = "qstat -f " ~ REFRESHFILE ~ " -raw,game " ~ FIELDSEP ~
+							  " -P -R -default q3s";
+			if (getSetting("coloredNames") == "true")
+				cmdLine ~= " -carets";
+			version (linux)
+				cmdLine = "./" ~ cmdLine;
+
+			log("Executing '" ~ cmdLine ~ "'.");
+			// FIXME: feed qstat through stdin (-f -)?
+			proc.execute(cmdLine, null);
+		}
+		catch (ProcessException e) {
+			error("qstat not found!\nPlease reinstall " ~ APPNAME ~ ".");
+			return 0;
+		}
+		
+		//proc.stdout.close();  FIXME: any point to this?
+
+		return serverCount_;
+	}
+
+
+	InputStream inputStream()
+	{
+		// FIXME: verify that everything is initialized correctly, and that
+		// stdout is valid
+		return proc.stdout;
+	}
+
+
+	char[] outputFile() { return outputFile_; }
+
+
+	void close()
+	{
+		if (outputFile_.length) {
+			if (!abortParsing) {
+				try {
+					auto serverFile = activeMod.serverFile;
+					if (Path.exists(serverFile))
+						Path.remove(serverFile);
+					Path.rename(outputFile_, serverFile);
+				}
+				catch (IOException e) {
+					warning("Unable to save the server list to disk.");
+				}
+			}
+			else {
+				try {
+					Path.remove(outputFile_);
+				}
+				catch (IOException e) {
+					warning(e.toString());
+				}
+			}
+		}
+	}
+	
+
+	private {
+		char[][] addresses_;
+		int serverCount_;
+		//Process process_;
+		char[] outputFile_;
+	}
+}
+
 
 
 /** Kill the command line server browser process
