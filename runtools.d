@@ -6,15 +6,9 @@ module runtools;
 
 import tango.core.Exception : IOException, ProcessException;
 debug import tango.io.Console;
-import tango.io.File;
-import tango.io.FileConduit;
 import Path = tango.io.Path;
 import tango.io.model.IConduit : InputStream;
-import tango.io.stream.BufferStream;
 import tango.io.stream.TextFileStream;
-import tango.stdc.ctype : isdigit;
-import tango.stdc.stdio : sscanf;
-import tango.stdc.stringz;
 import tango.sys.Process;
 import tango.text.convert.Format;
 import Integer = tango.text.convert.Integer;
