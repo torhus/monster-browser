@@ -165,7 +165,7 @@ private void _main(char[][] args)
 	mainWindow.open();
 
 	if (arguments.fromfile) {
-		loadSavedList();
+		threadDispatcher.run(&loadSavedList);
 	}
 	else {
 		if (common.haveGslist && activeMod.useGslist) {
@@ -175,7 +175,7 @@ private void _main(char[][] args)
 			// Qstat is too slow to do a getNewList(), so just refresh
 			// the old list instead, if possible.
 			if (exists(activeMod.serverFile))
-				refreshList();
+				threadDispatcher.run(&refreshList);
 			else
 				getNewList();
 		}
@@ -183,7 +183,6 @@ private void _main(char[][] args)
 
 	// main loop
 	Display display = Display.getDefault;
-	threadDispatcher = new ThreadDispatcher;
 	while (!mainWindow.handle.isDisposed) {
 		threadDispatcher.dispatch();
 		if (!display.readAndDispatch())

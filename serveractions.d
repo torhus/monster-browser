@@ -48,7 +48,7 @@ void switchToMod(char[] name)
 			if (common.haveGslist && activeMod.useGslist)
 				getNewList();
 			else if (Path.exists(activeMod.serverFile))
-				refreshList();
+				threadDispatcher.run(&refreshList);
 			else
 				getNewList();
 		}
@@ -75,18 +75,19 @@ private void switchToActiveMod()
 }
 
 
-/** Loads the list from disk, using a new thread to do the work. */
-void loadSavedList()
+/** Loads the list from disk.  To be called through ThreadDispatcher.run(). */
+void delegate() loadSavedList()
 {
 	serverTable.clear();
 	getActiveServerList.clear();
+	GC.collect();
 
 	if (Path.exists(activeMod.serverFile)) {
 		auto retriever = new FromFileServerRetriever(activeMod.serverFile);
 		auto contr = new ServerRetrievalController(retriever);
 		contr.startMessage = "Loading saved server list...";
 		contr.noReplyMessage = "No servers were found in the file";
-		contr.start;
+		return &contr.run;
 	}
 	else {
 		Display.getDefault.asyncExec(new class Runnable {
@@ -96,6 +97,7 @@ void loadSavedList()
 				         "Unable to find a file for this mod's master server");
 			}
 		});
+		return null;
 	}
 }
 
@@ -106,29 +108,36 @@ void loadSavedList()
  *
  * If replace is true, it will instead update servers with new data.
  *
- * The querying is done in a new thread.  The function does not verify that the
- * address is valid.
+ * The function does not verify that the address is valid.
  *
  * Params:
  *     address = IP address and port of servers to query.
  *     replace = Update the servers instead of adding new ones.
  *     select  = Select the newly added or refreshed servers.
+ *
+ * Note: This is meant to be be called through ThreadDispatcher.run().
  */
-void queryServers(in char[][] addresses, bool replace=false, bool select=false)
+void delegate() queryServers(in char[][] addresses, bool replace=false,
+                                                             bool select=false)
 {
 	if (!addresses.length)
-		return;
+		return null;
 
 	auto retriever = new QstatServerRetriever(addresses);
 	auto contr = new ServerRetrievalController(retriever, replace);
 	if (select)
 		contr.autoSelect = addresses;
-	threadDispatcher.run(&contr.start);
+
+	return &contr.run;
 }
 
 
-/** Refreshes the list, in a new thread. */
-void refreshList()
+/**
+ * Refreshes the list.
+ *
+ * Note: To be called through ThreadDispatcher.run()
+ */
+void delegate() refreshList()
 {
 	Set!(char[]) servers = filterServerFile(activeMod.serverFile);
 
@@ -149,18 +158,20 @@ void refreshList()
 
 	serverTable.clear();
 	getActiveServerList.clear();
+	GC.collect();
 
 	if (servers.length) {
 		auto retriever = new QstatServerRetriever(servers.toArray);
 		auto contr = new ServerRetrievalController(retriever, false);
 		contr.startMessage =
-		                    Format("Refreshing {} servers...", servers.length);
+                            Format("Refreshing {} servers...", servers.length);
 		contr.noReplyMessage = "None of the servers replied";
-		contr.start;
+		return &contr.run;
 	}
 	else {
 		statusBar.setLeft("No servers were found for this mod");
-	}
+		return null;
+	}	
 }
 
 
@@ -182,6 +193,12 @@ class ServerRetrievalController
 		serverRetriever_= retriever;
 		replace_ = replace;
 		statusBarUpdater_ = new StatusBarUpdater;
+
+		serverRetriever_.init();
+
+		statusBar.setLeft(startMessage);
+		serverTable.notifyRefreshStarted;
+
 	}
 
 	~this()
@@ -192,21 +209,7 @@ class ServerRetrievalController
 	}
 
 	///
-	void start()
-	{
-		assert(serverThread is null || !serverThread.isRunning);
-
-		serverRetriever_.init();
-		
-		statusBar.setLeft(startMessage);
-
-		GC.collect;
-		serverThread = new Thread(&run);
-		serverTable.notifyRefreshStarted;
-		serverThread.start();
-	}
-
-	private void run()
+	void run()
 	{
 		try {
 			auto deliverDg = replace_ ? &getActiveServerList.replace :
@@ -355,8 +358,8 @@ void getNewList()
 
 	serverTable.clear();
 	getActiveServerList.clear();
-
 	GC.collect();
+
 	statusBar.setLeft("Getting new server list...");
 	log("Getting new server list for " ~ activeMod.name ~ "...");
 	serverThread = new Thread(&f);
