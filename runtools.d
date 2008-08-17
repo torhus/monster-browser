@@ -102,29 +102,102 @@ Set!(char[]) browserGetNewList()
 }
 
 
-/**
- * Loads the server list from activeMod.serverFile.
- *
- * counter will be called each time a new server has been added to serverList,
- * with the current number of servers as the argument.
- */
-void browserLoadSavedList(void delegate(int) counter=null)
+///
+interface IServerRetriever
 {
-	volatile abortParsing = false;
+	/**
+	 * Will be called after serverThread and qstat has terminated, but before
+	 * the new thread is created.
+	 *
+	 * Use for doing initialization, if needed.
+	 */
+	void init();
 
-	if (!Path.exists(activeMod.serverFile))
-		return;
 
-	try {
-		scope input = new TextFileInput(activeMod.serverFile);
-		getActiveServerList.clear();
-		qstat.parseOutput(input, &getActiveServerList.add, counter);
-		getActiveServerList.complete = !abortParsing;
-		input.close();
+	/**
+	 * Will be called in the new thread, just before inputStream.
+	 *
+	 * Use for setting up the InputStream, etc.
+	 *
+	 * Returns: The number of servers to be queried, for display in the GUI.
+     *          Return 0 to abort the retrieval process.  Return -1 if the
+	 *          number of servers is not known.  Returning -1 will not abort
+	 *          the process.
+	 */
+	int open();
+
+
+	/**
+	 * This will be handed to qstat.parseOutput as the source of input.
+	 */
+	InputStream inputStream();
+
+
+	/**
+	 * This will be handed to qstat.parseOutput as the optional output file.
+	 */
+	char[] outputFile();
+
+
+	/**
+	 * This will be called after qstat.parseOutput is done, still in the new
+	 * thread.
+	 */
+	void close();
+}
+
+
+///
+final class FromFileServerRetriever : IServerRetriever
+{
+
+	///
+	this(in char[] fileName)
+	{
+		fileName_ = fileName;
 	}
-	catch (IOException o) {
-		warning("Unable to load the server list from disk,\n"
-		      "press \'Get new list\' to download a new list.");
+
+	///
+	void init()	{ }
+
+
+	///
+	int open()
+	{
+		try {
+			input_ = new TextFileInput(fileName_);
+		}
+		catch (IOException o) {
+			warning("Unable to load the server list from disk,\n"
+				  "press \'Get new list\' to download a new list.");
+			return 0;
+		}
+		return -1;
+	}
+
+
+	///
+	InputStream inputStream()
+	{
+		return input_;
+	}
+
+
+	///
+	char[] outputFile() { return outputFile_; }
+
+
+	///
+	void close()
+	{
+		input_.close();
+	}
+	
+
+	private {
+		InputStream input_;
+		char[] fileName_;
+		char[] outputFile_;
 	}
 }
 
@@ -203,8 +276,9 @@ void browserRefreshList(void delegate(ServerData*) deliver,
 
 
 ///
-final class QstatServerRetriever //: IServerRetriever
+final class QstatServerRetriever : IServerRetriever
 {
+	///
 	this(in char[][] addresses, in char[] outputFile=null)
 	{
 		addresses_ = addresses;
@@ -215,6 +289,7 @@ final class QstatServerRetriever //: IServerRetriever
 	}
 
 
+	///
 	void init()
 	{
 		// FIXME: check if this code could be moved into open()
@@ -226,7 +301,7 @@ final class QstatServerRetriever //: IServerRetriever
 	}
 
 
-	// returns 0 to abort, -1 for unknown server count
+	///
 	int open()
 	{
 		proc = new Process();
@@ -256,6 +331,7 @@ final class QstatServerRetriever //: IServerRetriever
 	}
 
 
+	///
 	InputStream inputStream()
 	{
 		// FIXME: verify that everything is initialized correctly, and that
@@ -264,9 +340,11 @@ final class QstatServerRetriever //: IServerRetriever
 	}
 
 
+	///
 	char[] outputFile() { return outputFile_; }
 
 
+	///
 	void close()
 	{
 		if (outputFile_.length) {
