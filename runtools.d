@@ -347,25 +347,26 @@ final class QstatServerRetriever : IServerRetriever
 	///
 	void close()
 	{
-		if (outputFile_.length) {
-			if (!abortParsing) {
-				try {
-					auto serverFile = activeMod.serverFile;
-					if (Path.exists(serverFile))
-						Path.remove(serverFile);
-					Path.rename(outputFile_, serverFile);
-				}
-				catch (IOException e) {
-					warning("Unable to save the server list to disk.");
-				}
+		if (!outputFile_.length)
+			return;
+
+		if (!abortParsing) {
+			try {
+				auto serverFile = activeMod.serverFile;
+				if (Path.exists(serverFile))
+					Path.remove(serverFile);
+				Path.rename(outputFile_, serverFile);
 			}
-			else {
-				try {
-					Path.remove(outputFile_);
-				}
-				catch (IOException e) {
-					warning(e.toString());
-				}
+			catch (IOException e) {
+				warning("Unable to save the server list to disk.");
+			}
+		}
+		else {
+			try {
+				Path.remove(outputFile_);
+			}
+			catch (IOException e) {
+				warning(e.toString());
 			}
 		}
 	}
