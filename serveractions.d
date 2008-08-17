@@ -18,7 +18,6 @@ import dwt.dwthelper.Runnable;
 import dwt.widgets.Display;
 
 import common;
-import main; //: threadDispatcher;
 import mainwindow;
 import qstat;
 import runtools;
@@ -26,6 +25,7 @@ import serverlist;
 import servertable;
 import set;
 import settings;
+import threading;
 
 
 /**

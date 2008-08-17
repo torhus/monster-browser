@@ -26,12 +26,12 @@ import dwt.widgets.ToolItem;
 import common;
 import cvartable;
 import dialogs;
-import main; //: threadDispatcher;
 import playertable;
 import serveractions;
 import serverlist;
 import servertable;
 import settings;
+import threading;
 
 
 CvarTable cvarTable;
