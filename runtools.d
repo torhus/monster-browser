@@ -22,7 +22,6 @@ import tango.text.stream.LineIterator;
 
 import common;
 import dialogs;
-import main;
 import qstat;
 import serverlist;
 import servertable;

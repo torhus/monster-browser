@@ -1,6 +1,5 @@
 module main;
 
-import tango.core.Thread;
 import tango.io.Console;
 import tango.io.Path;
 import tango.io.stream.FileStream;
@@ -29,10 +28,7 @@ import runtools;
 import serveractions;
 import serverlist;
 import settings;
-
-
-Thread serverThread;
-ThreadDispatcher threadDispatcher;
+import threading;
 
 
 void main(char[][] args) ///
@@ -187,6 +183,7 @@ private void _main(char[][] args)
 
 	// main loop
 	Display display = Display.getDefault;
+	threadDispatcher = new ThreadDispatcher;
 	while (!mainWindow.handle.isDisposed) {
 		threadDispatcher.dispatch();
 		if (!display.readAndDispatch())
@@ -205,44 +202,6 @@ private void _main(char[][] args)
 	display.dispose;
 	
 	shutDownLogging;
-}
-
-
-/**
- * Stores a pointer to a function or delegate and calls it only when
- * serverThread has terminated.
- */
-class ThreadDispatcher
-{
-	void run(void function() fp) { dg_ = null; fp_ = fp; } ///
-	void run(void delegate() dg) { fp_ = null; dg_ = dg; } ///
-
-	void dispatch() ///
-	{
-		if (fp_ is null && dg_ is null)
-			return;
-
-		if (serverThread && serverThread.isRunning) {
-			volatile abortParsing = true;
-		}
-		else {
-			debug Cout("ThreadDispatcher.dispatch: Killing server browser...")
-			                                                          .newline;
-			killServerBrowser();
-
-			if (fp_ !is null) {
-				fp_();
-				fp_ = null;
-			}
-			else {
-				dg_();
-				dg_ = null;
-			}
-		}
-	}
-
-	private void function() fp_ = null;
-	private void delegate() dg_ = null;
 }
 
 
