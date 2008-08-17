@@ -79,51 +79,25 @@ private void switchToActiveMod()
 /** Loads the list from disk, using a new thread to do the work. */
 void loadSavedList()
 {
-	void f()
-	{
-		scope status = new StatusBarUpdater;
+	serverTable.clear();
+	getActiveServerList.clear();
 
-		void counter(int count)
-		{
-			status.text = "Loading saved server list... " ~
-			                                          Integer.toString(count);
-			Display.getDefault.syncExec(status);
-		}
-
-		try {
-			browserLoadSavedList(&counter);
-
-			if (arguments.quit) { // for benchmarking
-				Display.getDefault.syncExec(new class Runnable {
-					void run()
-					{
-						Stdout.formatln("Time since startup: {} seconds.",
-						                                  globalTimer.seconds);
-						mainWindow.close;
-					}
-				});
-			}
-
-			Display.getDefault.asyncExec(new class Runnable {
-				void run()
-				{
-					volatile if (!runtools.abortParsing)
-						serverTable.reset;
-					serverTable.notifyRefreshEnded;
-				}
-			});
-		}
-		catch(Exception e) {
-			logx(__FILE__, __LINE__, e);
-		}
+	if (Path.exists(activeMod.serverFile)) {
+		auto retriever = new FromFileServerRetriever(activeMod.serverFile);
+		auto contr = new ServerRetrievalController(retriever);
+		contr.startMessage = "Loading saved server list...";
+		contr.noReplyMessage = "No servers were found in the file";
+		contr.start;
 	}
-
-	assert(serverThread is null || !serverThread.isRunning);
-
-	statusBar.setLeft("Loading saved server list...");
-	serverThread = new Thread(&f);
-	serverTable.notifyRefreshStarted;
-	serverThread.start();
+	else {
+		Display.getDefault.asyncExec(new class Runnable {
+			void run()
+			{
+				statusBar.setLeft(
+				         "Unable to find a file for this mod's master server");
+			}
+		});
+	}
 }
 
 
@@ -183,7 +157,7 @@ void refreshList()
 		contr.startMessage =
 		                    Format("Refreshing {} servers...", servers.length);
 		contr.noReplyMessage = "None of the servers replied";
-		threadDispatcher.run(&contr.start);
+		contr.start;
 	}
 	else {
 		statusBar.setLeft("No servers were found for this mod");
@@ -204,7 +178,7 @@ class ServerRetrievalController
 
 
 	///
-	this(QstatServerRetriever retriever, bool replace=false)
+	this(IServerRetriever retriever, bool replace=false)
 	{
 		serverRetriever_= retriever;
 		replace_ = replace;
@@ -248,6 +222,18 @@ class ServerRetrievalController
 			                                      serverRetriever_.outputFile);
 			getActiveServerList.complete = !abortParsing;
 			serverRetriever_.close();
+			
+			// a benchmarking tool
+			if (arguments.quit) {
+				Display.getDefault.syncExec(new class Runnable {
+					void run()
+					{
+						Stdout.formatln("Time since startup: {} seconds.",
+														  globalTimer.seconds);
+						mainWindow.close;
+					}
+				});
+			}
 
 			Display.getDefault.asyncExec(new class Runnable {
 				void run()
@@ -289,7 +275,7 @@ class ServerRetrievalController
 	}
 
 	private {
-		QstatServerRetriever serverRetriever_;
+		IServerRetriever serverRetriever_;
 		uint serverCount_;
 		StatusBarUpdater statusBarUpdater_;
 		bool replace_;
