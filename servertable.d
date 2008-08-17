@@ -10,6 +10,7 @@ import dwt.events.KeyEvent;
 import dwt.events.MenuDetectEvent;
 import dwt.events.MenuDetectListener;
 import dwt.events.SelectionAdapter;
+import dwt.events.SelectionListener;
 import dwt.events.SelectionEvent;
 import dwt.graphics.Image;
 import dwt.graphics.ImageData;
@@ -69,219 +70,22 @@ class ServerTable
 
 		table_.getColumn(ServerColumn.PASSWORDED).setAlignment(DWT.CENTER);
 
-		table_.addListener(DWT.SetData, new class Listener {
-			void handleEvent(Event e)
-			{
-				TableItem item = cast(TableItem) e.item;
-				int index = table_.indexOf(item);
-				assert(index < getActiveServerList.filteredLength);
-				auto sd = getActiveServerList.getFiltered(index);
-
-				// Find and store country code.
-				/*if (sd.server[ServerColumn.COUNTRY].length == 0) {
-					char[] ip = sd.server[ServerColumn.ADDRESS];
-					auto colon = locate(ip, ':');
-					char[] country = countryCodeByAddr(ip[0..colon]);
-					sd.server[ServerColumn.COUNTRY] = country;
-				}*/
-
-				// add text
-				for (int i = ServerColumn.COUNTRY + 1; i <= ServerColumn.max;
-				                                                         i++) {
-					// http://dsource.org/projects/dwt-win/ticket/6
-					item.setText(i, sd.server[i] ? sd.server[i] : "");
-				}
-			}
-		});
+		table_.addListener(DWT.SetData, new SetDataListener);
+		table_.addSelectionListener(new MySelectionListener);
+		table_.addKeyListener(new MyKeyListener);
 
 		coloredNames_ = getSetting("coloredNames") == "true";
 		showFlags_ = (getSetting("showFlags") == "true") && initGeoIp();
 
 		if (showFlags_ || coloredNames_) {
-			table_.addListener(DWT.EraseItem, new class Listener {
-				void handleEvent(Event e) {
-					if (e.index == ServerColumn.NAME && coloredNames_ ||
-					           e.index == ServerColumn.COUNTRY && showFlags_ ||
-					           e.index == ServerColumn.PASSWORDED)
-						e.detail &= ~DWT.FOREGROUND;
-				}
-			});
-
-			table_.addListener(DWT.PaintItem, new class Listener {
-				void handleEvent(Event e) {
-					if (!((e.index == ServerColumn.NAME && coloredNames_) ||
-					        (e.index == ServerColumn.COUNTRY && showFlags_) ||
-					         e.index == ServerColumn.PASSWORDED))
-						return;
-
-					TableItem item = cast(TableItem) e.item;
-					auto i = table_.indexOf(item);
-					ServerData* sd = getActiveServerList.getFiltered(i);
-
-					enum { leftMargin = 2 }
-
-					switch (e.index) {
-						case ServerColumn.COUNTRY:
-							char[] country = sd.server[ServerColumn.COUNTRY];
-							if (showFlags_ && country.length) {
-								if (Image flag = getFlagImage(country))
-									// could cache the flag Image here
-									e.gc.drawImage(flag, e.x+1, e.y+1);
-								else
-									e.gc.drawString(country, e.x + leftMargin,
-									                                      e.y);
-							}
-							break;
-						case ServerColumn.NAME:
-							auto textX = e.x + leftMargin;
-							if (!(e.detail & DWT.SELECTED)) {
-								TextLayout tl = sd.customData;
-								if (tl is null) {
-									auto parsed = parseColors(sd.rawName);
-									tl = new TextLayout(Display.getDefault);
-									tl.setText(sd.server[ServerColumn.NAME]);
-									foreach (r; parsed.ranges)
-										tl.setStyle(r.style, r.start, r.end);
-
-									sd.customData = tl;  // cache it
-								}
-
-								tl.draw(e.gc, textX, e.y);
-							}
-							else {
-								auto name = sd.server[ServerColumn.NAME];
-								// http://dsource.org/projects/dwt-win/ticket/6
-								e.gc.drawString(name ? name : "", textX, e.y);
-							}
-							break;
-						case ServerColumn.PASSWORDED:
-							if (sd.server[ServerColumn.PASSWORDED].length)
-								e.gc.drawImage(padlockImage_, e.x+4, e.y+1);
-							break;
-						default:
-							assert(0);
-					}
-				}
-			});
-
-			table_.addListener(DWT.MouseMove, new class Listener {
-				void handleEvent(Event event) {
-					char[] text = null;
-					scope point = new Point(event.x, event.y);
-					TableItem item = table_.getItem(point);
-					if (item && item.getBounds(ServerColumn.COUNTRY).
-					                                         contains(point)) {
-						int i = table_.indexOf(item);
-						ServerData* sd = getActiveServerList.getFiltered(i);
-						char[] ip = sd.server[ServerColumn.ADDRESS];
-						auto colon = locate(ip, ':');
-						text = countryNameByAddr(ip[0..colon]);
-					}
-					if (table_.getToolTipText() != text)
-						table_.setToolTipText(text);
-				}
-			});
+			table_.addListener(DWT.EraseItem, new EraseItemListener);
+			table_.addListener(DWT.PaintItem, new PaintItemListener);
 		}
 
-		table_.addSelectionListener(new class SelectionAdapter {
-			void widgetSelected(SelectionEvent e)
-			{
-				delete selectedIps_;
-				auto list = getActiveServerList;
+		if (showFlags_)
+			table_.addListener(DWT.MouseMove, new MouseMoveListener);
 
-				synchronized (list) {
-					int[] indices = table_.getSelectionIndices;
-					char[][][] allPlayers;
-					if (indices.length) {
-						foreach (i; indices) {
-							auto sd = list.getFiltered(i);
-							selectedIps_ ~= sd.server[ServerColumn.ADDRESS];
-							allPlayers ~= sd.players;
-						}
-
-						auto sd = list.getFiltered(table_.getSelectionIndex);
-						cvarTable.setItems(sd.cvars);
-						playerTable.setItems(allPlayers);
-					}
-					else {
-						cvarTable.clear;
-						playerTable.clear;
-					}
-				}
-			}
-
-			void widgetDefaultSelected(SelectionEvent e)
-			{
-				widgetSelected(e);
-				joinServer(getActiveServerList.getFiltered(
-				                                   table_.getSelectionIndex));
-			}
-		});
-		
-		table_.addKeyListener(new class KeyAdapter {
-			public void keyPressed (KeyEvent e)
-			{
-				switch (e.keyCode) {
-					case 'a':
-						if (e.stateMask == DWT.MOD1) {
-							// DWT bug? CTRL+A works by default in SWT.
-							// In SWT, it marks all items, and fires the
-							// widgetSelected event, neither of which happens
-							// here.
-							table_.selectAll();
-							onSelectAll();
-							e.doit = false;
-						}
-						break;
-					case 'c':
-						if (e.stateMask == DWT.MOD1) {
-							onCopyAddresses();
-							e.doit = false;
-						}
-						break;
-					case 'r':
-						if (e.stateMask == DWT.MOD1) {
-							if (refreshSelected_.getEnabled)
-								onRefreshSelected();
-							e.doit = false;
-						}
-						break;
-					default:
-						break;
-				}
-			}
-		});
-
-		Listener sortListener = new class Listener {
-			void handleEvent(Event e)
-			{
-				// determine new sort column and direction
-				auto sortColumn = table_.getSortColumn;
-				auto newColumn = cast(TableColumn)e.widget;
-				int dir = table_.getSortDirection;
-
-				if (sortColumn is newColumn) {
-					dir = (dir == DWT.UP) ? DWT.DOWN : DWT.UP;
-				} else {
-					dir = DWT.UP;
-					table_.setSortColumn(newColumn);
-				}
-
-				getActiveServerList.sort(table_.indexOf(newColumn),
-				                                            (dir == DWT.DOWN));
-
-				table_.setSortDirection(dir);
-				synchronized (getActiveServerList) {
-					table_.clearAll();
-					table_.setItemCount(getActiveServerList.filteredLength());
-					// keep the same servers selected
-					int[] indices = getIndicesFromAddresses(selectedIps_);
-					// http://dsource.org/projects/dwt-win/ticket/6
-					if (indices.length)
-						table_.setSelection(indices);
-				}
-			}
-		};
+		Listener sortListener = new SortListener;
 
 		for (int i = 0; i < table_.getColumnCount(); i++) {
 			TableColumn c = table_.getColumn(i);
@@ -486,6 +290,213 @@ private:
 	bool showFlags_, coloredNames_;
 	Image padlockImage_;
 	MenuItem refreshSelected_;
+
+	class SetDataListener : Listener {
+		void handleEvent(Event e)
+		{
+			TableItem item = cast(TableItem) e.item;
+			int index = table_.indexOf(item);
+			assert(index < getActiveServerList.filteredLength);
+			auto sd = getActiveServerList.getFiltered(index);
+			
+			// Find and store country code.
+			/*if (sd.server[ServerColumn.COUNTRY].length == 0) {
+				char[] ip = sd.server[ServerColumn.ADDRESS];
+				auto colon = locate(ip, ':');
+				char[] country = countryCodeByAddr(ip[0..colon]);
+				sd.server[ServerColumn.COUNTRY] = country;
+			}*/
+
+			// add text
+			for (int i = ServerColumn.COUNTRY + 1; i <= ServerColumn.max;
+																	 i++) {
+				// http://dsource.org/projects/dwt-win/ticket/6
+				item.setText(i, sd.server[i] ? sd.server[i] : "");
+			}
+		}
+	}
+
+	class MySelectionListener : SelectionListener {
+		void widgetSelected(SelectionEvent e)
+		{
+			delete selectedIps_;
+			auto list = getActiveServerList;
+
+			synchronized (list) {
+				int[] indices = table_.getSelectionIndices;
+				char[][][] allPlayers;
+				if (indices.length) {
+					foreach (i; indices) {
+						auto sd = list.getFiltered(i);
+						selectedIps_ ~= sd.server[ServerColumn.ADDRESS];
+						allPlayers ~= sd.players;
+					}
+
+					auto sd = list.getFiltered(table_.getSelectionIndex);
+					cvarTable.setItems(sd.cvars);
+					playerTable.setItems(allPlayers);
+				}
+				else {
+					cvarTable.clear;
+					playerTable.clear;
+				}
+			}
+		}
+
+		void widgetDefaultSelected(SelectionEvent e)
+		{
+			widgetSelected(e);
+			joinServer(getActiveServerList.getFiltered(
+											   table_.getSelectionIndex));
+		}
+	}
+
+	class SortListener : Listener {
+		void handleEvent(Event e)
+		{
+			// determine new sort column and direction
+			auto sortColumn = table_.getSortColumn;
+			auto newColumn = cast(TableColumn)e.widget;
+			int dir = table_.getSortDirection;
+
+			if (sortColumn is newColumn) {
+				dir = (dir == DWT.UP) ? DWT.DOWN : DWT.UP;
+			} else {
+				dir = DWT.UP;
+				table_.setSortColumn(newColumn);
+			}
+
+			getActiveServerList.sort(table_.indexOf(newColumn),
+														(dir == DWT.DOWN));
+
+			table_.setSortDirection(dir);
+			synchronized (getActiveServerList) {
+				table_.clearAll();
+				table_.setItemCount(getActiveServerList.filteredLength());
+				// keep the same servers selected
+				int[] indices = getIndicesFromAddresses(selectedIps_);
+				// http://dsource.org/projects/dwt-win/ticket/6
+				if (indices.length)
+					table_.setSelection(indices);
+			}
+		}
+	}
+
+	class EraseItemListener : Listener {
+		void handleEvent(Event e) {
+			if (e.index == ServerColumn.NAME && coloredNames_ ||
+			                   e.index == ServerColumn.COUNTRY && showFlags_ ||
+			                   e.index == ServerColumn.PASSWORDED)
+				e.detail &= ~DWT.FOREGROUND;
+		}
+	}
+
+	class PaintItemListener : Listener {
+		void handleEvent(Event e) {
+			if (!((e.index == ServerColumn.NAME && coloredNames_) ||
+					(e.index == ServerColumn.COUNTRY && showFlags_) ||
+					 e.index == ServerColumn.PASSWORDED))
+				return;
+
+			TableItem item = cast(TableItem) e.item;
+			auto i = table_.indexOf(item);
+			ServerData* sd = getActiveServerList.getFiltered(i);
+
+			enum { leftMargin = 2 }
+
+			switch (e.index) {
+				case ServerColumn.COUNTRY:
+					char[] country = sd.server[ServerColumn.COUNTRY];
+					if (showFlags_ && country.length) {
+						if (Image flag = getFlagImage(country))
+							// could cache the flag Image here
+							e.gc.drawImage(flag, e.x+1, e.y+1);
+						else
+							e.gc.drawString(country, e.x + leftMargin, e.y);
+					}
+					break;
+				case ServerColumn.NAME:
+					auto textX = e.x + leftMargin;
+					if (!(e.detail & DWT.SELECTED)) {
+						TextLayout tl = sd.customData;
+						if (tl is null) {
+							auto parsed = parseColors(sd.rawName);
+							tl = new TextLayout(Display.getDefault);
+							tl.setText(sd.server[ServerColumn.NAME]);
+							foreach (r; parsed.ranges)
+								tl.setStyle(r.style, r.start, r.end);
+
+							sd.customData = tl;  // cache it
+						}
+
+						tl.draw(e.gc, textX, e.y);
+					}
+					else {
+						auto name = sd.server[ServerColumn.NAME];
+						// http://dsource.org/projects/dwt-win/ticket/6
+						e.gc.drawString(name ? name : "", textX, e.y);
+					}
+					break;
+				case ServerColumn.PASSWORDED:
+					if (sd.server[ServerColumn.PASSWORDED].length)
+						e.gc.drawImage(padlockImage_, e.x+4, e.y+1);
+					break;
+				default:
+					assert(0);
+			}
+		}
+	}
+
+	class MouseMoveListener : Listener {
+		void handleEvent(Event event) {
+			char[] text = null;
+			scope point = new Point(event.x, event.y);
+			TableItem item = table_.getItem(point);
+			if (item && item.getBounds(ServerColumn.COUNTRY).contains(point)) {
+				int i = table_.indexOf(item);
+				ServerData* sd = getActiveServerList.getFiltered(i);
+				char[] ip = sd.server[ServerColumn.ADDRESS];
+				auto colon = locate(ip, ':');
+				text = countryNameByAddr(ip[0..colon]);
+			}
+			if (table_.getToolTipText() != text)
+				table_.setToolTipText(text);
+		}
+	}
+
+	class MyKeyListener : KeyAdapter {
+		public void keyPressed (KeyEvent e)
+		{
+			switch (e.keyCode) {
+				case 'a':
+					if (e.stateMask == DWT.MOD1) {
+						// DWT bug? CTRL+A works by default in SWT.
+						// In SWT, it marks all items, and fires the
+						// widgetSelected event, neither of which happens
+						// here.
+						table_.selectAll();
+						onSelectAll();
+						e.doit = false;
+					}
+					break;
+				case 'c':
+					if (e.stateMask == DWT.MOD1) {
+						onCopyAddresses();
+						e.doit = false;
+					}
+					break;
+				case 'r':
+					if (e.stateMask == DWT.MOD1) {
+						if (refreshSelected_.getEnabled)
+							onRefreshSelected();
+						e.doit = false;
+					}
+					break;
+				default:
+					break;
+			}
+		}
+	}
 
 	Menu createContextMenu()
 	{
