@@ -46,11 +46,11 @@ void switchToMod(char[] name)
 		}
 		else {
 			if (common.haveGslist && activeMod.useGslist)
-				getNewList();
+				threadDispatcher.run(&getNewList);
 			else if (Path.exists(activeMod.serverFile))
 				threadDispatcher.run(&refreshList);
 			else
-				getNewList();
+				threadDispatcher.run(&getNewList);
 		}
 	}
 
@@ -135,7 +135,7 @@ void delegate() queryServers(in char[][] addresses, bool replace=false,
 /**
  * Refreshes the list.
  *
- * Note: To be called through ThreadDispatcher.run()
+ * Note: To be called through ThreadDispatcher.run().
  */
 void delegate() refreshList()
 {
@@ -162,7 +162,7 @@ void delegate() refreshList()
 
 	if (servers.length) {
 		auto retriever = new QstatServerRetriever(servers.toArray);
-		auto contr = new ServerRetrievalController(retriever, false);
+		auto contr = new ServerRetrievalController(retriever);
 		contr.startMessage =
                             Format("Refreshing {} servers...", servers.length);
 		contr.noReplyMessage = "None of the servers replied";
@@ -172,6 +172,62 @@ void delegate() refreshList()
 		statusBar.setLeft("No servers were found for this mod");
 		return null;
 	}	
+}
+
+
+/**
+ * Retrieves a new list from the master server.
+ *
+ * Note: To be called through ThreadDispatcher.run().
+ */
+void delegate() getNewList()
+{
+	void f()
+	{
+		try {
+			auto addresses = browserGetNewList();
+			log(Format("Got {} servers from {}.", addresses.length,
+			                                          activeMod.masterServer));
+
+			auto extraServers = getActiveServerList().extraServers;
+			foreach (s; extraServers)
+					addresses.add(s);
+			log(Format("Added {} extra servers.", extraServers.length));
+
+			if (addresses.length == 0) {
+				// FIXME: what to do when there are no servers?
+				Display.getDefault.asyncExec(new class Runnable {
+					void run()
+					{
+						serverTable.reset();
+						serverTable.notifyRefreshEnded;
+					}
+				});
+			}
+			else {				
+				auto retriever = new QstatServerRetriever(addresses.toArray);
+				auto contr = new ServerRetrievalController(retriever);
+				contr.startMessage = Format("Got {} servers, querying...",
+				                                             addresses.length);
+				contr.noReplyMessage = "None of the servers replied";
+				contr.run();
+			}
+		}
+		catch(Exception e) {
+			logx(__FILE__, __LINE__, e);
+		}
+
+	}
+
+	serverTable.clear();
+	getActiveServerList.clear();
+	GC.collect();
+
+	statusBar.setLeft("Getting new server list...");
+	log("Getting new server list for " ~ activeMod.name ~ "...");
+	serverTable.notifyRefreshStarted;
+	
+	return &f;
 }
 
 
@@ -196,9 +252,13 @@ class ServerRetrievalController
 
 		serverRetriever_.init();
 
-		statusBar.setLeft(startMessage);
-		serverTable.notifyRefreshStarted;
-
+		Display.getDefault.syncExec(new class Runnable {
+			void run()
+			{
+				statusBar.setLeft(startMessage);
+				serverTable.notifyRefreshStarted;
+			}
+		});
 	}
 
 	~this()
@@ -282,89 +342,6 @@ class ServerRetrievalController
 		StatusBarUpdater statusBarUpdater_;
 		bool replace_;
 	}
-}
-
-
-/**
- * Retrieves a new list from the master server.
- *
- * Uses a new thread to do the work.
- */
-void getNewList()
-{
-	void f()
-	{
-		static char[] total;
-		scope status = new StatusBarUpdater;
-
-		void counter(int count)
-		{
-			status.text = "Got " ~  total ~
-			                 " servers, querying..." ~ Integer.toString(count);
-			Display.getDefault.syncExec(status);
-		}
-
-		try {
-			auto addresses = browserGetNewList();
-			log(Format("Got {} servers from {}.", addresses.length,
-			                                          activeMod.masterServer));
-
-			auto extraServers = getActiveServerList().extraServers;
-			foreach (s; extraServers)
-					addresses.add(s);
-			log(Format("Added {} extra servers.", extraServers.length));
-
-			if (Path.exists(appDir ~ REFRESHFILE))
-				Path.remove(appDir ~ REFRESHFILE);
-			auto written = appendServersToFile(appDir ~ REFRESHFILE, addresses);
-			log(Format("Wrote {} addresses to {}.", written, REFRESHFILE));
-
-			total = Integer.toString(written);
-
-
-			if (addresses.length == 0) {
-				// FIXME: what to do when there are no servers?
-				Display.getDefault.asyncExec(new class Runnable {
-					void run()
-					{
-						serverTable.reset();
-						serverTable.notifyRefreshEnded;
-					}
-				});
-			}
-			else {
-				Display display = Display.getDefault;
-				display.asyncExec(new StatusBarUpdater("Got "  ~
-				                             total ~ " servers, querying..."));
-
-				browserRefreshList(&getActiveServerList.add, &counter, true);
-				display.asyncExec(new class Runnable {
-					void run()
-					{
-						volatile if (!runtools.abortParsing)
-							serverTable.reset;
-						serverTable.notifyRefreshEnded;
-					}
-				});
-			}
-		}
-		catch(Exception e) {
-			logx(__FILE__, __LINE__, e);
-		}
-
-	}
-
-	assert(serverThread is null || !serverThread.isRunning);
-
-	serverTable.clear();
-	getActiveServerList.clear();
-	GC.collect();
-
-	statusBar.setLeft("Getting new server list...");
-	log("Getting new server list for " ~ activeMod.name ~ "...");
-	serverThread = new Thread(&f);
-	serverTable.notifyRefreshStarted;
-	serverThread.start();
 }
 
 

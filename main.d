@@ -169,7 +169,7 @@ private void _main(char[][] args)
 	}
 	else {
 		if (common.haveGslist && activeMod.useGslist) {
-			getNewList();
+			threadDispatcher.run(&getNewList);
 		}
 		else {
 			// Qstat is too slow to do a getNewList(), so just refresh
@@ -177,7 +177,7 @@ private void _main(char[][] args)
 			if (exists(activeMod.serverFile))
 				threadDispatcher.run(&refreshList);
 			else
-				getNewList();
+				threadDispatcher.run(&getNewList);
 		}
 	}	
 
