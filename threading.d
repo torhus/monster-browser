@@ -16,12 +16,12 @@ ThreadDispatcher threadDispatcher;
  */
 final class ThreadDispatcher
 {
-	void run(void function() fp) { dg_ = null; fp_ = fp; } ///
-	void run(void delegate() function() dg) { fp_ = null; dg_ = dg; } ///
+	void run(void function() fp) { fp2_= null; fp_ = fp; } ///
+	void run(void delegate() function() fp) { fp_ = null; fp2_ = fp; } ///
 
 	void dispatch() ///
 	{
-		if (fp_ is null && dg_ is null)
+		if (fp_ is null && fp2_ is null)
 			return;
 
 		if (serverThread && serverThread.isRunning) {
@@ -37,16 +37,16 @@ final class ThreadDispatcher
 				fp_ = null;
 			}
 			else {
-				void delegate() startIt = dg_();
+				void delegate() startIt = fp2_();
 				if (startIt !is null) {
 					serverThread = new Thread(startIt);
 					serverThread.start();
 				}
-				dg_ = null;
+				fp2_= null;
 			}
 		}
 	}
 
 	private void function() fp_ = null;
-	private void delegate() function() dg_ = null;
+	private void delegate() function() fp2_= null;
 }
