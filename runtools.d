@@ -199,13 +199,10 @@ final class FromFileServerRetriever : IServerRetriever
 final class QstatServerRetriever : IServerRetriever
 {
 	///
-	this(in char[][] addresses, in char[] outputFile=null)
+	this(in char[][] addresses, bool saveList=false)
 	{
 		addresses_ = addresses;
-		// FIXME: how to implement the outputFile functionality?
-		//outputFile_ = saveList ? "servers.tmp" : null;
-		outputFile_ = outputFile;
-
+		outputFile_ = saveList ? "servers.tmp" : null;
 	}
 
 
@@ -295,7 +292,6 @@ final class QstatServerRetriever : IServerRetriever
 	private {
 		char[][] addresses_;
 		int serverCount_;
-		//Process process_;
 		char[] outputFile_;
 	}
 }
