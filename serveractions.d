@@ -17,6 +17,7 @@ import dwt.dwthelper.Runnable;
 import dwt.widgets.Display;
 
 import common;
+import dialogs;
 import mainwindow;
 import qstat;
 import runtools;
@@ -139,6 +140,11 @@ void delegate() queryServers(in char[][] addresses, bool replace=false,
  */
 void delegate() refreshList()
 {
+	if (!Path.exists(activeMod.serverFile)) {
+		error("No server list found on disk, press\n"
+                                   "\'Get new list\' to download a new list.");
+		return null;
+	}
 	Set!(char[]) servers = filterServerFile(activeMod.serverFile);
 
 	log("Refreshing server list for " ~ activeMod.name ~ "...");
@@ -205,7 +211,8 @@ void delegate() getNewList()
 				});
 			}
 			else {				
-				auto retriever = new QstatServerRetriever(addresses.toArray);
+				auto retriever = new QstatServerRetriever(addresses.toArray,
+				                                                         true);
 				auto contr = new ServerRetrievalController(retriever);
 				contr.startMessage = Format("Got {} servers, querying...",
 				                                             addresses.length);
