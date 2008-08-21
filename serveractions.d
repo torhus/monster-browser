@@ -255,16 +255,11 @@ class ServerRetrievalController
 	{
 		serverRetriever_= retriever;
 		replace_ = replace;
-		statusBarUpdater_ = new StatusBarUpdater;
 
 		serverRetriever_.init();
 
 		Display.getDefault.syncExec(new class Runnable {
-			void run()
-			{
-				statusBar.setLeft(startMessage);
-				serverTable.notifyRefreshStarted;
-			}
+			void run() { serverTable.notifyRefreshStarted; }
 		});
 	}
 
@@ -282,6 +277,10 @@ class ServerRetrievalController
 			auto deliverDg = replace_ ? &getActiveServerList.replace :
 			                            &getActiveServerList.add;
 
+			statusBarUpdater_ = new StatusBarUpdater;
+			statusBarUpdater_.text = startMessage;
+			Display.getDefault.syncExec(statusBarUpdater_);
+
 			// FIXME: handle open returning 0 to signal abort
 			int serverCount_ = serverRetriever_.open();
 			assert (serverCount_ != 0);
@@ -298,7 +297,7 @@ class ServerRetrievalController
 					void run()
 					{
 						Stdout.formatln("Time since startup: {} seconds.",
-														  globalTimer.seconds);
+						                                  globalTimer.seconds);
 						mainWindow.close;
 					}
 				});
