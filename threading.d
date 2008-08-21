@@ -6,7 +6,7 @@ debug import tango.io.Console;
 import runtools; // : abortParsing, killServerBrowser;
 
 
-Thread serverThread;
+private Thread serverThread;
 ThreadDispatcher threadDispatcher;
 
 
