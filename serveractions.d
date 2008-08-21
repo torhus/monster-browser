@@ -91,13 +91,7 @@ void delegate() loadSavedList()
 		return &contr.run;
 	}
 	else {
-		Display.getDefault.asyncExec(new class Runnable {
-			void run()
-			{
-				statusBar.setLeft(
-				         "Unable to find a file for this mod's master server");
-			}
-		});
+		statusBar.setLeft("Unable to find a file for this mod's master server");
 		return null;
 	}
 }
@@ -241,12 +235,15 @@ void delegate() getNewList()
 ///
 class ServerRetrievalController
 {
-	/// Status messages.
+	/// Status messages.  Set before calling run().
 	char[] startMessage = "Querying server(s)...";
 	char[] noReplyMessage = "There was no reply";  /// ditto
 
-	/// Set selection to these servers when retrieval is finished.  If it's
-	/// null or empty, the previous selection will be retained.
+	/* Set selection to these servers when retrieval is finished.  If it's
+	 * null or empty, the previous selection will be retained.
+	 *
+	 * Note: Set before calling run().
+	 */
 	char[][] autoSelect = null;
 
 
