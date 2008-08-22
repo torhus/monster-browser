@@ -94,10 +94,6 @@ each_server:
 			char[][] fields = split(line.dup, FIELDSEP);
 			ServerData sd;
 
-			// FIXME: workaround for tango split() bug, issue #942
-			if (fields.length == 8)
-				fields ~=  "";
-
 			assert(fields.length == 9 || fields.length == 3);
 			count++;
 			if (counter)
@@ -344,10 +340,6 @@ Set!(char[]) filterServerFile(in char[] readFrom, in char writeTo[]=null)
 
 		if (line.length >= 3 && line[0..3] == "Q3S") {
 			char[][] fields = split(line.dup, FIELDSEP);
-
-			// FIXME: workaround for tango split() bug, issue #942
-			if (fields.length == 8)
-				fields ~=  "";
 
 			assert(fields.length == 9 || fields.length == 3);
 
