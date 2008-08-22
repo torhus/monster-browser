@@ -308,11 +308,8 @@ private:
 			}*/
 
 			// add text
-			for (int i = ServerColumn.COUNTRY + 1; i <= ServerColumn.max;
-																	 i++) {
-				// http://dsource.org/projects/dwt-win/ticket/6
-				item.setText(i, sd.server[i] ? sd.server[i] : "");
-			}
+			for (int i = ServerColumn.COUNTRY + 1; i <= ServerColumn.max; i++)
+				item.setText(i, sd.server[i]);
 		}
 	}
 
@@ -374,10 +371,7 @@ private:
 				table_.clearAll();
 				table_.setItemCount(getActiveServerList.filteredLength());
 				// keep the same servers selected
-				int[] indices = getIndicesFromAddresses(selectedIps_);
-				// http://dsource.org/projects/dwt-win/ticket/6
-				if (indices.length)
-					table_.setSelection(indices);
+				table_.setSelection(getIndicesFromAddresses(selectedIps_));
 			}
 		}
 	}
@@ -433,8 +427,7 @@ private:
 					}
 					else {
 						auto name = sd.server[ServerColumn.NAME];
-						// http://dsource.org/projects/dwt-win/ticket/6
-						e.gc.drawString(name ? name : "", textX, e.y);
+						e.gc.drawString(name, textX, e.y);
 					}
 					break;
 				case ServerColumn.PASSWORDED:
