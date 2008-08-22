@@ -1,4 +1,6 @@
-/** What's specific for qstat */
+/**
+ * Functions to parse Qstat's raw format output when querying game servers.
+ */
 
 module qstat;
 
@@ -20,10 +22,7 @@ import dwt.widgets.Display;
 import colorednames;
 import common;
 import dialogs;
-import main;
-import runtools;
 import serverlist;
-import servertable;
 import set;
 import settings;
 
@@ -40,7 +39,7 @@ private enum Field {
  *
  * Throws: when outputFileName is given: IOException.
  */
-bool parseOutput(LineIterator!(char) iter, void delegate(ServerData*) deliver,
+void parseOutput(LineIterator!(char) iter, bool delegate(ServerData*) deliver,
                    void delegate(int) counter=null, char[] outputFileName=null)
 {
 	char[][] gtypes;
@@ -48,6 +47,7 @@ bool parseOutput(LineIterator!(char) iter, void delegate(ServerData*) deliver,
 	debug scope timer = new Timer;
 	int count = 0;
 	Display display = Display.getDefault;
+	bool keepGoing = true;
 
 	assert(deliver);
 
@@ -79,13 +79,8 @@ bool parseOutput(LineIterator!(char) iter, void delegate(ServerData*) deliver,
 		gtypes = defaultGameTypes;
 	}
 
-	volatile abortParsing = false;
-
 each_server:
-	while (true) {
-		volatile if (abortParsing)
-			break;
-
+	while (keepGoing) {
 		char[] line = iter.next();
 		if (line is null)
 			break;
@@ -166,20 +161,18 @@ each_server:
 
 				sd.server[ServerColumn.NAME] = stripColorCodes(sd.rawName);
 
-				deliver(&sd);
+				keepGoing = deliver(&sd);
 			}
 			else /*if (!MOD_ONLY)*/ { // server didn't respond
 				/*sd.server.length = servertable.serverHeaders.length;
-				sd.server[ServerColumn.ADDRESS] = fields[Field.ADDRESS]; // ip
-				deliver(sd);*/
+				sd.server[ServerColumn.ADDRESS] = fields[Field.ADDRESS];*/
+				keepGoing = deliver(null);
 			}
 			if (outfile) {
 				outfile.write(newline);
 			}
 		}
 	}
-
-	return !abortParsing;
 }
 
 
