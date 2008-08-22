@@ -270,8 +270,8 @@ class ServerRetrievalController
 	void run()
 	{
 		try {
-			auto deliverDg = replace_ ? &getActiveServerList.replace :
-			                            &getActiveServerList.add;
+			deliverDg_ = replace_ ? &getActiveServerList.replace :
+			                        &getActiveServerList.add;
 
 			statusBarUpdater_ = new StatusBarUpdater;
 			statusBarUpdater_.text = startMessage;
@@ -282,7 +282,8 @@ class ServerRetrievalController
 			assert (serverCount_ != 0);
 
 			scope iter = new LineIterator!(char)(serverRetriever_.inputStream);
-			qstat.parseOutput(iter, deliverDg, &counter,
+			abortParsing = false;
+			qstat.parseOutput(iter, &deliver, &counter,
 			                                      serverRetriever_.outputFile);
 			getActiveServerList.complete = !abortParsing;
 			serverRetriever_.close();
@@ -320,6 +321,13 @@ class ServerRetrievalController
 		Display.getDefault.syncExec(statusBarUpdater_);
 	}
 
+	private bool deliver(ServerData* sd)
+	{
+		if (sd !is null)
+			deliverDg_(sd);
+		return !abortParsing;
+	}
+
 	private void done()
 	{
 		if (getActiveServerList.length() > 0) {
@@ -343,6 +351,7 @@ class ServerRetrievalController
 		uint serverCount_;
 		StatusBarUpdater statusBarUpdater_;
 		bool replace_;
+		void delegate(ServerData*) deliverDg_;
 	}
 }
 
