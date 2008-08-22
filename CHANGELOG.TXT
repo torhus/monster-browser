@@ -1,3 +1,7 @@
+Work in progress - 2008-08-22
+----------------------------
+- Fix: Installer didn't create shortcuts by default.
+
 v0.4a - 2008-08-01
 ------------------
 - New: Try to autodetect Quake 3's installation path by using the registry.
