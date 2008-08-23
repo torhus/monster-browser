@@ -109,20 +109,29 @@ void delegate() loadSavedList()
  *     replace = Update the servers instead of adding new ones.
  *     select  = Select the newly added or refreshed servers.
  *
- * Note: This is meant to be be called through ThreadDispatcher.run().
  */
-void delegate() queryServers(in char[][] addresses, bool replace=false,
-                                                             bool select=false)
+void queryServers(in char[][] addresses, bool replace=false, bool select=false)
 {
+	static char[][] addresses_;
+	static bool replace_, select_;
+
+	static void delegate() f() {
+		auto retriever = new QstatServerRetriever(addresses_);
+		auto contr = new ServerRetrievalController(retriever, replace_);
+		if (select_)
+			contr.autoSelect = addresses_;
+
+		return &contr.run;
+	}
+
 	if (!addresses.length)
-		return null;
+		return;
+	
+	addresses_ = addresses;
+	replace_ = replace;
+	select_ = select;
 
-	auto retriever = new QstatServerRetriever(addresses);
-	auto contr = new ServerRetrievalController(retriever, replace);
-	if (select)
-		contr.autoSelect = addresses;
-
-	return &contr.run;
+	threadDispatcher.run(&f);
 }
 
 
