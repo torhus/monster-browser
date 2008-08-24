@@ -1,5 +1,6 @@
 module serverlist;
 
+import tango.core.Exception : IOException;
 import Path = tango.io.Path;
 debug import tango.io.Stdout;
 import tango.io.stream.TextFileStream;
@@ -17,7 +18,6 @@ import common;
 import dialogs;
 import geoip;
 import mainwindow;
-import runtools;
 import servertable;
 import set;
 import settings;
@@ -144,7 +144,10 @@ struct ServerData {
 }
 
 
-/** A list of servers. */
+/**
+ * A list of servers, with all necessary synchronization taken care of.
+ *
+ */
 class ServerList
 {
 	/**
@@ -297,18 +300,6 @@ class ServerList
 		}
 
 		return this;
-	}
-
-
-	///
-	void disposeCustomData()
-	{
-		if (getSetting("coloredNames") == "true") {
-			foreach (ref sd; list) {
-				if (sd.customData)
-					sd.customData.dispose();
-			}
-		}
 	}
 
 
@@ -615,6 +606,16 @@ private:
 		}
 		else {
 			copyListToFilteredList();
+		}
+	}
+
+	void disposeCustomData()
+	{
+		if (getSetting("coloredNames") == "true") {
+			foreach (ref sd; list) {
+				if (sd.customData)
+					sd.customData.dispose();
+			}
 		}
 	}
 
