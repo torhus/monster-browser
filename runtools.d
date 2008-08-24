@@ -300,6 +300,8 @@ final class QstatServerRetriever : IServerRetriever
  */
 bool killServerBrowser()
 {
+	log("Killing server browser...");
+
 	if (proc is null) {
 		debug Cout("proc is null").newline;
 		return false;

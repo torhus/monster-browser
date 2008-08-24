@@ -139,7 +139,6 @@ private void _main(char[][] args)
 			saveSettings();
 			statusBar.setLeft("Exiting...");
 			log("Exiting...");
-			log("Killing server browser...");
 			runtools.killServerBrowser();
 			//qstat.SaveRefreshList();
 			/*log("Waiting for threads to terminate...");
