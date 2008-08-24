@@ -38,7 +38,7 @@ void switchToMod(char[] name)
 {
 	static char[] nameCopy;
 
-	static void f() {
+	static void delegate() f() {
 		setActiveMod(nameCopy);
 
 		if (setActiveServerList(activeMod.name)) {
@@ -46,12 +46,13 @@ void switchToMod(char[] name)
 		}
 		else {
 			if (common.haveGslist && activeMod.useGslist)
-				threadDispatcher.run(&getNewList);
+				threadDispatcher.runSecond(&getNewList);
 			else if (Path.exists(activeMod.serverFile))
-				threadDispatcher.run(&refreshList);
+				threadDispatcher.runSecond(&refreshList);
 			else
-				threadDispatcher.run(&getNewList);
+				threadDispatcher.runSecond(&getNewList);
 		}
+		return null;
 	}
 
 	nameCopy = name;
