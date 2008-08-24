@@ -24,7 +24,6 @@ version (Windows)
 	import link;
 import mainwindow;
 import qstat;
-import runtools;
 import serveractions;
 import serverlist;
 import settings;
@@ -134,7 +133,7 @@ private void _main(char[][] args)
 	mainWindow.handle.addShellListener(new class ShellAdapter {
 		public void shellClosed(ShellEvent e)
 		{
-			volatile runtools.abortParsing = true;
+			threadDispatcher.abort = true;
 			statusBar.setLeft("Saving settings...");
 			log("Saving settings...");
 			saveSettings();
