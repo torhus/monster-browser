@@ -309,7 +309,8 @@ private:
 
 			// add text
 			for (int i = ServerColumn.COUNTRY + 1; i <= ServerColumn.max; i++)
-				item.setText(i, sd.server[i]);
+				// http://dsource.org/projects/dwt-win/ticket/6
+				item.setText(i, sd.server[i] ? sd.server[i] : "");
 		}
 	}
 
