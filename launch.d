@@ -8,6 +8,7 @@ version (Windows) {
 	import tango.sys.win32.CodePage;
 	import tango.sys.win32.UserGdi;
 }
+import tango.text.Util : replace;
 import Integer = tango.text.convert.Integer;
 
 import dwt.DWT;
@@ -34,7 +35,7 @@ version (Windows)
 void joinServer(ServerData *sd)
 {
 	char[] argv;
-	FilePath path = FilePath(activeMod.exePath);	
+	FilePath path = FilePath(replace(activeMod.exePath, '\\', '/'));
 	bool launch = true;
 	bool showDialog = false;
 	char[] msg;
