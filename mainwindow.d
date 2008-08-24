@@ -269,7 +269,7 @@ class FilterBar : Composite
 			setActiveMod(s);
 		}
 
-		modCombo_.clearSelection();  // FIXME: doesn't seem to work
+		modCombo_.clearSelection();
 		modCombo_.addSelectionListener(new class SelectionAdapter {
 			public void widgetSelected(SelectionEvent e)
 			{
