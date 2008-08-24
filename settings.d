@@ -350,7 +350,7 @@ private char[] autodetectQuake3Path()
 		                                       "SOFTWARE\\Id\\Quake III Arena",
 		                                       "INSTALLEXEPATH");
 		if (!q3path) {
-		log("Quake 3's installation path was not found in the registry, "
+			log("Quake 3's installation path was not found in the registry, "
 		                                   "falling back to a default value.");
 			// use a sensible default value
 			q3path = getProgramFilesDirectory;
