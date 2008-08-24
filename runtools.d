@@ -25,10 +25,6 @@ import settings;
 
 Process proc;
 
-// True if parsing of the server list is to be aborted.  Set to true before
-// calling a function to load/parse server lists.
-bool abortParsing = false;
-
 
 /// The name of the file that qstat reads addresses from when querying servers.
 char[] REFRESHFILE = "refreshlist.tmp";
@@ -267,7 +263,7 @@ final class QstatServerRetriever : IServerRetriever
 		if (!outputFile_.length)
 			return;
 
-		if (!abortParsing) {
+		if (getActiveServerList.complete) {
 			try {
 				auto serverFile = activeMod.serverFile;
 				if (Path.exists(serverFile))

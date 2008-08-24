@@ -291,10 +291,9 @@ class ServerRetrievalController
 			assert (serverCount_ != 0);
 
 			scope iter = new LineIterator!(char)(serverRetriever_.inputStream);
-			abortParsing = false;
 			qstat.parseOutput(iter, &deliver, &counter,
 			                                      serverRetriever_.outputFile);
-			getActiveServerList.complete = !abortParsing;
+			getActiveServerList.complete = !threadDispatcher.abort;
 			serverRetriever_.close();
 			
 			// a benchmarking tool
@@ -312,7 +311,7 @@ class ServerRetrievalController
 			Display.getDefault.asyncExec(new class Runnable {
 				void run()
 				{
-					volatile if (!runtools.abortParsing)
+					if (!threadDispatcher.abort)
 						done;
 					else
 						serverTable.notifyRefreshEnded;
@@ -334,7 +333,7 @@ class ServerRetrievalController
 	{
 		if (sd !is null)
 			deliverDg_(sd);
-		return !abortParsing;
+		return !threadDispatcher.abort;
 	}
 
 	private void done()
