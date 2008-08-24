@@ -21,19 +21,39 @@ final class ThreadDispatcher
 
 	bool abort;  ///
 
-	void run(void function() fp)  ///
+	
+	/**
+	 * Store a function to be called after the current secondary thread has
+	 * terminated.
+	 *
+	 * The return value of fp is a delegate that will be called in a new
+	 * thread.  If fp returns null, no new thread is started.
+	 *
+	 * This method sets the abort property to true.
+	 *
+	 * Note: This will set the function pointer stored by runSecond to null.
+	 */
+	void run(void delegate() function() fp)
 	{
 		abort = true;
-		fp2_= null;
 		fp_ = fp;
+		fp2_ = null;
 	}
 
-	void run(void delegate() function() fp)  ///
+
+	/**
+	 * Stores a function to be called after the one given to run() has ended.
+	 *
+	 * If the secondary thread is running, fp is not called until after it is
+	 * finished.
+	 *
+	 * This method does not change the abort property.
+	 */
+	void runSecond(void delegate() function() fp)  ///
 	{
-		abort = true;
-		fp_ = null;
 		fp2_ = fp;
 	}
+
 
 	void dispatch() ///
 	{
@@ -41,32 +61,39 @@ final class ThreadDispatcher
 			return;
 
 		if (thread_ !is null && thread_.isRunning) {
-			abort = true;
+			// If we have fp2_, let fp_ run to completion first, otherwise
+			// interrupt it.
+			if (fp2_ is null)
+				abort = true;
 		}
 		else {
-			debug Cout("ThreadDispatcher.dispatch: Killing server browser...")
-			                                                          .newline;
+			void delegate() function() fp;
+
 			killServerBrowser();
-			
-			abort = false;
 
 			if (fp_ !is null) {
-				fp_();
+				fp = fp_;
 				fp_ = null;
 			}
 			else {
-				void delegate() startIt = fp2_();
-				if (startIt !is null) {
-					thread_ = new Thread(startIt);
-					thread_.start();
-				}
-				fp2_= null;
+				assert(fp2_ !is null);
+				fp = fp2_;
+				fp2_ = null;
+			}
+
+			abort = false;
+			
+			void delegate() startIt = fp();
+			if (startIt !is null) {
+				thread_ = new Thread(startIt);
+				thread_.start();
 			}
 		}
 	}
 
+
 	private {
-		void function() fp_ = null;
+		void delegate() function() fp_= null;
 		void delegate() function() fp2_= null;
 		Thread thread_;
 	}
