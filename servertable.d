@@ -484,6 +484,7 @@ private:
 					}
 					break;
 				case DWT.ESC:
+					// FIXME: put this in the global event filter instead?
 					if ((e.stateMask & DWT.MODIFIER_MASK) == 0 &&
 					                               stopServerRefresh_ !is null)
 						stopServerRefresh_();

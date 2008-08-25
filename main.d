@@ -14,7 +14,10 @@ import dwt.events.KeyEvent;
 import dwt.events.ShellAdapter;
 import dwt.events.ShellEvent;
 import dwt.graphics.Image;
+import dwt.widgets.Control;
 import dwt.widgets.Display;
+import dwt.widgets.Event;
+import dwt.widgets.Listener;
 
 import colorednames : disposeNameColors;
 import common;
@@ -112,17 +115,21 @@ private void _main(char[][] args)
 		appIcons ~= new Image(Display.getDefault, stream);
 	mainWindow.handle.setImages(appIcons);
 
-	mainWindow.handle.addKeyListener(new class KeyAdapter {
-		public void keyPressed (KeyEvent e)
+	// Handle global keyboard shortcuts.
+	Display.getDefault().addFilter(DWT.KeyDown, new class Listener {
+		void handleEvent(Event e)
 		{
-			//FIXME: this function never gets called
-			debug Cout("Keypressed").newline;
+			if ((cast(Control)e.widget).getShell() !is mainWindow.handle)
+				return;
+
 			switch (e.keyCode) {
 				case DWT.F4:
 					threadDispatcher.run(&getNewList);
+					e.type = DWT.NONE;
 					break;
 				case DWT.F5:
 					threadDispatcher.run(&refreshList);
+					e.type = DWT.NONE;
 					break;
 				default:
 					break;
