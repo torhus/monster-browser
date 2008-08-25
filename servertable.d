@@ -34,7 +34,6 @@ import mainwindow;
 import serveractions;
 import serverlist;
 import settings;
-import threading;
 
 
 // should correspond to serverlist.ServerColumn
