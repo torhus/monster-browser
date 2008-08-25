@@ -265,7 +265,7 @@ class ServerRetrievalController
 		serverRetriever_.init();
 
 		Display.getDefault.syncExec(new class Runnable {
-			void run() { serverTable.notifyRefreshStarted; }
+			void run() { serverTable.notifyRefreshStarted(&stop); }
 		});
 	}
 
@@ -312,7 +312,7 @@ class ServerRetrievalController
 			Display.getDefault.asyncExec(new class Runnable {
 				void run()
 				{
-					if (!threadDispatcher.abort)
+					if (!threadDispatcher.abort || wasStopped_)
 						done;
 					else
 						serverTable.notifyRefreshEnded;
@@ -322,6 +322,13 @@ class ServerRetrievalController
 		catch(Exception e) {
 			logx(__FILE__, __LINE__, e);
 		}
+	}
+
+	///
+	void stop()
+	{
+		threadDispatcher.abort = true;
+		wasStopped_ = true;
 	}
 
 	private void counter(int count)
@@ -347,7 +354,10 @@ class ServerRetrievalController
 				          getActiveServerList.getFilteredIndex(autoSelect[0]));
 			}
 			long noReply = cast(long)serverCount_ - getActiveServerList.length;
-			serverTable.reset(index, noReply > 0 ? cast(uint)noReply : 0);
+			serverTable.reset(index);
+			statusBar.setDefaultStatus(getActiveServerList.length,
+			                           getActiveServerList.filteredLength,
+			                           noReply > 0 ? cast(uint)noReply : 0);
 		}
 		else {
 			statusBar.setLeft(noReplyMessage);
@@ -361,6 +371,7 @@ class ServerRetrievalController
 		StatusBarUpdater statusBarUpdater_;
 		bool replace_;
 		void delegate(ServerData*) deliverDg_;
+		bool wasStopped_ = false;
 	}
 }
 
