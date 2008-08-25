@@ -34,6 +34,7 @@ import mainwindow;
 import serveractions;
 import serverlist;
 import settings;
+import threading;
 
 
 // should correspond to serverlist.ServerColumn
@@ -133,8 +134,9 @@ class ServerTable
 	Table getTable() { return table_; };
 
 	///
-	void notifyRefreshStarted()
+	void notifyRefreshStarted(void delegate() stopServerRefresh=null)
 	{
+		stopServerRefresh_ = stopServerRefresh;
 		if (!refreshSelected_.isDisposed)
 			refreshSelected_.setEnabled(false);
 	}
@@ -142,6 +144,7 @@ class ServerTable
 	///
 	void notifyRefreshEnded()
 	{
+		stopServerRefresh_ = null;
 		if (!refreshSelected_.isDisposed)
 			refreshSelected_.setEnabled(true);
 	}
@@ -211,28 +214,20 @@ class ServerTable
 	 * In addition to clearing the table and refilling it with updated data
 	 * without losing the selection (like refresh()), it also:
 	 *
-	 * 1. Sets the status bar to the default status.
-	 * 2. Updates the cvar and player tables to show information for the
+	 * 1. Updates the cvar and player tables to show information for the
 	 *    selected server, or clears them if there is no server selected.
-	 * 3. Optionally sets the selection to the server specified by index.
+	 * 2. Optionally sets the selection to the server specified by index.
 	 *
 	 * Params:
-	 *     index   = An IntWrapper object.  If not null, the server with the
-	 *               given index is selected.
-	 *     noReply = If > 0, display in the status bar how many servers didn't
-	 *               reply.
+	 *     index = An IntWrapper object.  If not null, the server with the
+	 *             given index is selected.
 	 */
-	void reset(Object index=null, uint noReply=0)
+	void reset(Object index=null)
 	{
 		if(table_.isDisposed())
 			return;
 
 		refresh();
-		if (getActiveServerList.complete) {
-			statusBar.setDefaultStatus(getActiveServerList.length,
-			                           getActiveServerList.filteredLength,
-			                           noReply);
-		}
 
 		int[] indices;
 		if (index && (cast(IntWrapper)index).value != -1) {
@@ -290,6 +285,7 @@ private:
 	bool showFlags_, coloredNames_;
 	Image padlockImage_;
 	MenuItem refreshSelected_;
+	void delegate() stopServerRefresh_;
 
 	class SetDataListener : Listener {
 		void handleEvent(Event e)
@@ -344,8 +340,10 @@ private:
 		void widgetDefaultSelected(SelectionEvent e)
 		{
 			widgetSelected(e);
-			joinServer(getActiveServerList.getFiltered(
-											   table_.getSelectionIndex));
+			if (stopServerRefresh_ !is null)
+				stopServerRefresh_();
+			int index = table_.getSelectionIndex();
+			joinServer(getActiveServerList.getFiltered(index));
 		}
 	}
 
@@ -485,6 +483,11 @@ private:
 							onRefreshSelected();
 						e.doit = false;
 					}
+					break;
+				case DWT.ESC:
+					if ((e.stateMask & DWT.MODIFIER_MASK) == 0 &&
+					                               stopServerRefresh_ !is null)
+						stopServerRefresh_();
 					break;
 				default:
 					break;
