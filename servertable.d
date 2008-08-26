@@ -139,13 +139,23 @@ class ServerTable
 		if (!refreshSelected_.isDisposed)
 			refreshSelected_.setEnabled(false);
 	}
-	
+
 	///
 	void notifyRefreshEnded()
 	{
 		stopServerRefresh_ = null;
 		if (!refreshSelected_.isDisposed)
 			refreshSelected_.setEnabled(true);
+	}
+
+	///
+	bool stopRefresh()
+	{
+		if (stopServerRefresh_ !is null) {
+			stopServerRefresh_();
+			return true;
+		}
+		return false;
 	}
 
 	/*void update(Object dummy = null)
@@ -482,12 +492,6 @@ private:
 							onRefreshSelected();
 						e.doit = false;
 					}
-					break;
-				case DWT.ESC:
-					// FIXME: put this in the global event filter instead?
-					if ((e.stateMask & DWT.MODIFIER_MASK) == 0 &&
-					                               stopServerRefresh_ !is null)
-						stopServerRefresh_();
 					break;
 				default:
 					break;

@@ -29,6 +29,7 @@ import mainwindow;
 import qstat;
 import serveractions;
 import serverlist;
+import servertable;
 import settings;
 import threading;
 
@@ -123,13 +124,19 @@ private void _main(char[][] args)
 				return;
 
 			switch (e.keyCode) {
+				case DWT.ESC:
+					if ((e.stateMask & DWT.MODIFIER_MASK) == 0) {
+						serverTable.stopRefresh();
+						e.type = DWT.None;
+					}
+					break;
 				case DWT.F4:
 					threadDispatcher.run(&getNewList);
-					e.type = DWT.NONE;
+					e.type = DWT.None;
 					break;
 				case DWT.F5:
 					threadDispatcher.run(&refreshList);
-					e.type = DWT.NONE;
+					e.type = DWT.None;
 					break;
 				default:
 					break;
