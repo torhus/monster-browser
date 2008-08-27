@@ -92,8 +92,7 @@ class MonitorNotify
 	{
 		parent_ = parent;
 		shell_ = new Shell(parent_, DWT.DIALOG_TRIM | DWT.APPLICATION_MODAL/* | DWT.ON_TOP*/);
-		GridLayout topLayout = new GridLayout();
-		shell_.setLayout(topLayout);
+		shell_.setLayout(new GridLayout);
 		shell_.setText("Join Server");
 
 		shell_.open();
@@ -183,8 +182,7 @@ class JoinDialog
 	{
 		parent_ = parent;
 		shell_ = new Shell(parent_, DWT.DIALOG_TRIM | DWT.APPLICATION_MODAL);
-		GridLayout topLayout = new GridLayout();
-		shell_.setLayout(topLayout);
+		shell_.setLayout(new GridLayout);
 		shell_.setText("Join Server");
 
 		// command line
@@ -197,8 +195,7 @@ class JoinDialog
 		pwdData.horizontalAlignment = DWT.CENTER;
 		pwdComposite.setLayoutData(pwdData);
 
-		RowLayout pwdLayout = new RowLayout();
-		pwdComposite.setLayout(pwdLayout);
+		pwdComposite.setLayout(new RowLayout);
 		Label labelB = new Label(pwdComposite, DWT.NONE);
 		labelB.setText("Password:");
 		pwdText_ = new Text(pwdComposite, DWT.SINGLE | DWT.BORDER);
@@ -268,8 +265,7 @@ class SpecifyServerDialog
 	{
 		parent_ = parent;
 		shell_ = new Shell(parent_, DWT.DIALOG_TRIM | DWT.APPLICATION_MODAL);
-		GridLayout topLayout = new GridLayout();
-		shell_.setLayout(topLayout);
+		shell_.setLayout(new GridLayout);
 		shell_.setText("Specify Server");
 
 		// address input
@@ -278,8 +274,7 @@ class SpecifyServerDialog
 		addressData.horizontalAlignment = DWT.CENTER;
 		addressComposite.setLayoutData(addressData);
 
-		auto addressLayout = new GridLayout();
-		addressComposite.setLayout(addressLayout);
+		addressComposite.setLayout(new GridLayout);
 		Label labelB = new Label(addressComposite, DWT.NONE);
 		labelB.setText("Address (123.123.123.123 or 123.123.123.123:12345):");
 		addressText_ = new Text(addressComposite, DWT.SINGLE | DWT.BORDER);
@@ -399,8 +394,7 @@ class SettingsDialog
 		GridData gridData = new GridData();
 		gridData.horizontalAlignment = DWT.CENTER;
 		mainComposite.setLayoutData(gridData);
-		GridLayout mainLayout = new GridLayout();
-		mainComposite.setLayout(mainLayout);
+		mainComposite.setLayout(new GridLayout);
 
 		// executable path
 		Label labelB = new Label(mainComposite, DWT.NONE);
