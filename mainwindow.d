@@ -203,8 +203,8 @@ class FilterBar : Composite
 	///
 	this(Composite parent)
 	{
-		filterComposite_ = new Composite(parent, DWT.NONE);
-		button1_ = new Button(filterComposite_, DWT.CHECK);
+		super(parent, DWT.NONE);
+		button1_ = new Button(this, DWT.CHECK);
 		button1_.setText("Not empty");
 		button1_.addSelectionListener(new class SelectionAdapter {
 			public void widgetSelected(SelectionEvent e)
@@ -224,7 +224,7 @@ class FilterBar : Composite
 			}
 		});
 
-		button2_ = new Button(filterComposite_, DWT.CHECK);
+		button2_ = new Button(this, DWT.CHECK);
 		button2_.setText("Has humans");
 		button2_.addSelectionListener(new class SelectionAdapter {
 			public void widgetSelected(SelectionEvent e)
@@ -254,7 +254,7 @@ class FilterBar : Composite
 		combo.select(0);*/
 
 		// mod selection
-		modCombo_ = new Combo(filterComposite_, DWT.DROP_DOWN);
+		modCombo_ = new Combo(this, DWT.DROP_DOWN);
 		setMods(settings.modNames);
 		if (getSetting("startWithLastMod") == "true") {
 			char[] s = getSetting("lastMod");
@@ -299,7 +299,7 @@ class FilterBar : Composite
 			}
 		});
 
-		filterComposite_.setLayout(new RowLayout(DWT.HORIZONTAL));
+		setLayout(new RowLayout(DWT.HORIZONTAL));
 	}
 
 	/// Set the contents of the mod name drop-down list.
@@ -338,7 +338,6 @@ class FilterBar : Composite
 
 
 private:
-	Composite filterComposite_;
 	Button button1_, button2_;
 	Combo modCombo_;
 }
