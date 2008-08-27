@@ -7,8 +7,10 @@ import Integer = tango.text.convert.Integer;
 
 import dwt.DWT;
 import dwt.custom.SashForm;
+import dwt.dwthelper.ByteArrayInputStream;
 import dwt.events.SelectionAdapter;
 import dwt.events.SelectionEvent;
+import dwt.graphics.Image;
 import dwt.graphics.Point;
 import dwt.layout.FillLayout;
 import dwt.layout.GridData;
@@ -63,44 +65,38 @@ class MainWindow
 		if (getSetting("windowMaximized") == "true")
 			shell_.setMaximized(true);
 
-		GridLayout gridLayout = new GridLayout();
-		gridLayout.numColumns = 2;
-		shell_.setLayout(gridLayout);
+		shell_.setLayout(new GridLayout(2, false));
 
 
 		// *********** MAIN WINDOW TOP ***************
 		Composite topComposite = new Composite(shell_, DWT.NONE);
-		GridData gridData = new GridData(GridData.HORIZONTAL_ALIGN_FILL |
-		                                 GridData.GRAB_HORIZONTAL);
-		gridData.horizontalSpan = 2;
-		topComposite.setLayoutData(gridData);
-		topComposite.setLayout(new FillLayout(DWT.HORIZONTAL));
+		auto topData = new GridData(DWT.FILL, DWT.CENTER, true, false, 2, 1);
+		topComposite.setLayoutData(topData);
+		auto topLayout = new GridLayout(2, false);
+		topLayout.horizontalSpacing = 50;
+		topComposite.setLayout(topLayout);
 
 		ToolBar toolBar = createToolbar(topComposite);
 
 		// filtering options
 		filterBar = new FilterBar(topComposite);
 
-
 		// ************** SERVER LIST, PLAYER LIST, CVARS LIST ***************
 		middleForm = new SashForm(shell_, DWT.HORIZONTAL);
-		gridData = new GridData(GridData.FILL_BOTH);
-		middleForm.setLayoutData(gridData);
+		auto middleData = new GridData(DWT.FILL, DWT.FILL, true, true);
+		middleForm.setLayoutData(middleData);
 
 		// server table widget
 		serverTable = new ServerTable(middleForm);
-		gridData = new GridData(GridData.FILL_VERTICAL);
-		// FIXME: doesn't work
-		//gridData.widthHint = 610;  // FIXME: automate using table's info
-		serverTable.getTable().setLayoutData(gridData);
+		auto serverTableData = new GridData(DWT.LEFT, DWT.FILL, false, false);
+		serverTable.getTable().setLayoutData(serverTableData);
 
 		// parent for player and cvar tables
 		rightForm = new SashForm(middleForm, DWT.VERTICAL);
-		gridData = new GridData(GridData.FILL_BOTH);
-		rightForm.setLayoutData(gridData);
+		auto rightData = new GridData(DWT.FILL, DWT.FILL, true, true);
+		rightForm.setLayoutData(rightData);
 
-		FillLayout rightLayout = new FillLayout(DWT.VERTICAL);
-		rightForm.setLayout(rightLayout);
+		rightForm.setLayout(new FillLayout(DWT.VERTICAL));
 
 		int[] weights = parseIntegerSequence(getSessionState("middleWeights"));
 		weights.length = 2;  // FIXME: use defaults instead?
@@ -108,13 +104,9 @@ class MainWindow
 
 		// player list
 		playerTable = new PlayerTable(rightForm);
-		gridData = new GridData();
-		playerTable.getTable().setLayoutData(gridData);
 
 		// Server info, cvars, etc
 		cvarTable = new CvarTable(rightForm);
-		gridData = new GridData();
-		cvarTable.getTable().setLayoutData(gridData);
 
 		weights = parseIntegerSequence(getSessionState("rightWeights"));
 		weights.length = 2;  // FIXME: use defaults instead?
@@ -123,11 +115,10 @@ class MainWindow
 
 		// **************** STATUS BAR ******************************
 		Composite statusComposite = new Composite(shell_, DWT.NONE);
-		gridData = new GridData(GridData.HORIZONTAL_ALIGN_FILL |
-		                        GridData.GRAB_HORIZONTAL);
-		gridData.horizontalSpan = 2;
-		statusComposite.setLayoutData(gridData);
-		statusComposite.setLayout(new FillLayout(DWT.HORIZONTAL));
+		auto statusData = new GridData(DWT.FILL, DWT.CENTER, true, false);
+		statusData.horizontalSpan = 2;
+		statusComposite.setLayoutData(statusData);
+		statusComposite.setLayout(new FillLayout);
 		statusBar = new StatusBar(statusComposite);
 		statusBar.setLeft(APPNAME ~ " is ready.");
 	}
@@ -299,7 +290,7 @@ class FilterBar : Composite
 			}
 		});
 
-		setLayout(new RowLayout(DWT.HORIZONTAL));
+		setLayout(new RowLayout);
 	}
 
 	/// Set the contents of the mod name drop-down list.
@@ -349,6 +340,7 @@ ToolBar createToolbar(Composite parent) ///
 
 	auto button1 = new ToolItem(toolBar, DWT.PUSH);
 	button1.setText("Get new list");
+	//button1.setImage(loadImage!("res/32px-Crystal_Clear_action_down.png"));
 	button1.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{
@@ -360,6 +352,7 @@ ToolBar createToolbar(Composite parent) ///
 
 	ToolItem button2 = new ToolItem(toolBar, DWT.PUSH);
 	button2.setText("Refresh list");
+	//button2.setImage(loadImage!("res/32px-Crystal_Clear_action_reload.png"));
 	button2.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{
@@ -371,6 +364,7 @@ ToolBar createToolbar(Composite parent) ///
 
 	auto button3 = new ToolItem(toolBar, DWT.PUSH);
 	button3.setText("Specify...");
+	//button3.setImage(loadImage!("res/32px-Crystal_Clear_action_edit_add.png"));
 	button3.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{
@@ -400,6 +394,7 @@ ToolBar createToolbar(Composite parent) ///
 
 	auto button5 = new ToolItem(toolBar, DWT.PUSH);
 	button5.setText("Settings...");
+	//button5.setImage(loadImage!("res/32px-Crystal_Clear_action_configure.png"));
 	button5.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{
@@ -410,4 +405,16 @@ ToolBar createToolbar(Composite parent) ///
 	});
 
 	return toolBar;
+}
+
+
+private Image loadImage(char[] name)()
+{
+	return _loadImage(cast(byte[])import(name));
+}
+
+
+private Image _loadImage(byte[] data)
+{
+	return new Image(Display.getDefault, new ByteArrayInputStream(data));
 }
