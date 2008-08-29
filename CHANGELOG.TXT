@@ -1,5 +1,6 @@
-Work in progress - 2008-08-22
-----------------------------
+Work in progress - 2008-08-28
+-----------------------------
+- New: Can now press Esc to interrupt operations.
 - Fix: Installer didn't create shortcuts by default.
 
 v0.4a - 2008-08-01
