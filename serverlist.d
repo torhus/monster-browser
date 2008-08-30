@@ -21,6 +21,7 @@ import mainwindow;
 import servertable;
 import set;
 import settings;
+import threading;
 
 
 /// Server filter bitflags.
@@ -367,9 +368,19 @@ class ServerList
 			filters_ = newFilters;
 			updateFilteredList();
 		}
-		//display.asyncExec(null, &serverTable.reset);
+
 		Display.getDefault.asyncExec(new class Runnable {
-			void run() { serverTable.reset(); }
+			void run()
+			{
+				serverTable.reset();
+
+				auto list = getActiveServerList();
+				synchronized (list)
+				if (1 || list.complete) {
+					statusBar.setDefaultStatus(list.length,
+			                                   list.filteredLength);
+				}
+			}
 		});
 	}
 
