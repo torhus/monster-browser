@@ -178,6 +178,8 @@ class ServerTable
 	 */
 	void refresh(Object index = null)
 	{
+		auto list = getActiveServerList();
+
 		if(table_.isDisposed())
 			return;
 
@@ -187,7 +189,7 @@ class ServerTable
 
 			if (i <= getBottomIndex() /*&& i >= table_.getTopIndex()*/) {
 				table_.clearAll();
-				table_.setItemCount(getActiveServerList.filteredLength);
+				table_.setItemCount(list.filteredLength);
 			}
 
 			// not sure which way is the fastest...
@@ -197,7 +199,7 @@ class ServerTable
 					foreach (ref sel; selected) {
 						if (i <= sel) {
 							sel++;
-							assert(sel < getActiveServerList.filteredLength);
+							assert(sel < list.filteredLength);
 						}
 					}
 					table_.setSelection(selected);
@@ -215,7 +217,7 @@ class ServerTable
 		}
 		else {
 			table_.clearAll();
-			table_.setItemCount(getActiveServerList.filteredLength);
+			table_.setItemCount(list.filteredLength);
 		}
 	}
 
@@ -233,10 +235,13 @@ class ServerTable
 	 */
 	void reset(Object index=null)
 	{
+		auto list = getActiveServerList();
+
 		if(table_.isDisposed())
 			return;
 
-		refresh();
+		table_.clearAll();
+		table_.setItemCount(list.filteredLength);
 
 		int[] indices;
 		if (index && (cast(IntWrapper)index).value != -1) {
@@ -248,8 +253,7 @@ class ServerTable
 
 		if (indices.length) {
 			table_.setSelection(indices);
-
-			auto list = getActiveServerList;
+			
 			char[][][] allPlayers;
 			foreach (i; indices)
 				allPlayers ~= list.getFiltered(i).players;
