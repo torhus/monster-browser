@@ -1,5 +1,6 @@
 module servertable;
 
+import tango.stdc.math : ceil;
 import tango.text.Util;
 import Integer = tango.text.convert.Integer;
 
@@ -166,64 +167,48 @@ class ServerTable
 
 
 	/**
-	 * Clears the table and refills it with updated data.  Keeps the same
-	 * selection if there was one, and if index is not null.
+	 * If necessary clears the table and refills it with updated data.
 	 *
-	 * Params:
-	 *     index = An IntWrapper object.  Set this to the index of the last
-	 *             added element.  If refilling the contents of the table would
-	 *             not make this element visible, the table is not refilled.
-	 *             If the argument is null, the table is always refilled.
-	 *
+	 * Keeps the same selection if there was one.
 	 */
-	void refresh(Object index = null)
+	void refresh()
 	{
-		auto list = getActiveServerList();
-
 		if(table_.isDisposed())
 			return;
 
-		if (index) {
-			int[] selected = table_.getSelectionIndices;
-			int i = (cast(IntWrapper)index).value;
+		auto list = getActiveServerList();
+		int filteredLength = list.filteredLength;
+		int itemCount = table_.getItemCount();
+		int bottom = getBottomIndex();
+		bool bottomMoved = false;
 
-			if (i <= getBottomIndex() /*&& i >= table_.getTopIndex()*/) {
-				table_.clearAll();
-				table_.setItemCount(list.filteredLength);
-			}
-
-			// not sure which way is the fastest...
-			version (all) {
-				if (selected.length) {
-					// Restore selection, compensating for the newly inserted item.
-					foreach (ref sel; selected) {
-						if (i <= sel) {
-							sel++;
-							assert(sel < list.filteredLength);
-						}
-					}
-					table_.setSelection(selected);
-				}
-			}
-			else {
-				// Move all selection markers below the new item down by one.
-				foreach (sel; selected) {
-					if (i <= sel) {
-						table_.deselect(sel);
-						table_.select(sel + 1);
-					}
-				}
-			}
+		// Check to see if the bottommost visible item has moved or not.
+		if (bottom < filteredLength && bottom < itemCount) {
+			TableItem bottomItem = table_.getItem(bottom);
+			enum { col = ServerColumn.ADDRESS }
+			if (bottomItem.getText(col) !=
+		                                list.getFiltered(bottom).server[col])
+				bottomMoved = true;
 		}
-		else {
+
+		// Only refill the Table if visible items, or items further up have
+		// moved.  Refilling every time is very, very slow.
+		if (bottomMoved || itemCount < bottom ||
+		                                      bottom == (filteredLength - 1)) {
+			table_.setItemCount(filteredLength);
 			table_.clearAll();
-			table_.setItemCount(list.filteredLength);
 		}
+
+		// Keep the same servers selected.
+		// FIXME: very slow, can optimize by making
+		// ServerList.getFilteredIndex() use a hash map (ip => index)
+		table_.setSelection(getIndicesFromAddresses(selectedIps_));
 	}
 
 	/**
 	 * In addition to clearing the table and refilling it with updated data
-	 * without losing the selection (like refresh()), it also:
+	 * without losing the selection (like refresh(), only unconditionally), it
+	 * also:
 	 *
 	 * 1. Updates the cvar and player tables to show information for the
 	 *    selected server, or clears them if there is no server selected.
@@ -583,7 +568,8 @@ private:
 
 	int getBottomIndex()
 	{
-		return table_.getClientArea().height / table_.getItemHeight() +
-		                                                  table_.getTopIndex();
+		double q = cast(double)(table_.getClientArea().height -
+		                    table_.getHeaderHeight()) / table_.getItemHeight();
+		return cast(int)ceil(q) + table_.getTopIndex() - 1;
 	}
 }
