@@ -608,7 +608,8 @@ private:
 			foreach (i, ref sd; list) {
 				if (sd.hasHumans) {
 					filteredList ~= &sd;
-					filteredIpHash_[sd.server[ServerColumn.ADDRESS]] = i;
+					filteredIpHash_[sd.server[ServerColumn.ADDRESS]] =
+					                                   filteredList.length - 1;
 				}
 			}
 			filteredIpHash_.rehash;
@@ -618,7 +619,8 @@ private:
 			foreach (i, ref sd; list) {
 				if (sd.hasBots || sd.hasHumans) {
 					filteredList ~= &sd;
-					filteredIpHash_[sd.server[ServerColumn.ADDRESS]] = i;
+					filteredIpHash_[sd.server[ServerColumn.ADDRESS]] =
+					                                   filteredList.length - 1;
 				}
 			}
 			filteredIpHash_.rehash;
