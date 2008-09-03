@@ -260,19 +260,13 @@ class ServerList
 	/**
 	 * Given the IP and port number, find a server in the filtered list.
 	 *
-	 * Does a linear search.
-	 *
 	 * Returns: the server's index, or -1 if not found.
 	 */
 	int getFilteredIndex(char[] ipAndPort)
 	{
-		if (!ipAndPort.length)
-			return -1;
-
-		synchronized (this)
-		foreach (int i, ServerData* sd; filteredList) {
-			if (sd.server[ServerColumn.ADDRESS] == ipAndPort)
-				return i;
+		synchronized (this) {
+			if (int* i = ipAndPort in filteredIpHash_)
+				return *i;
 		}
 		return -1;
 	}
@@ -295,6 +289,7 @@ class ServerList
 			//list.length = 0;
 			delete filteredList;
 			delete list;
+			filteredIpHash_ = null;
 			complete = false;
 		}
 
@@ -396,6 +391,8 @@ class ServerList
 private:
 	ServerData[] list;
 	ServerData*[] filteredList;
+	// maps addresses to indices into the filtered list
+	int[char[]] filteredIpHash_;
 	Set!(char[]) extraServers_;
 
 	int sortColumn_ = ServerColumn.NAME;
@@ -543,11 +540,14 @@ private:
 		memmove(filteredList.ptr + index + 1, filteredList.ptr + index,
 		           (filteredList.length - 1 - index) * filteredList[0].sizeof);
 		filteredList[index] = sd;
+		filteredIpHash_[sd.server[ServerColumn.ADDRESS]] = index;
 	}
 
 	void appendToFiltered(ServerData* psd)
 	{
 		filteredList ~= psd;
+		filteredIpHash_[psd.server[ServerColumn.ADDRESS]] =
+		                                               filteredList.length - 1;
 	}
 
 	void removeFromFiltered(ServerData* psd)
@@ -557,6 +557,7 @@ private:
 		memmove(filteredList.ptr + i, filteredList.ptr + i + 1,
 		               (filteredList.length - 1 - i) * filteredList[0].sizeof);
 		filteredList.length = filteredList.length - 1;
+		filteredIpHash_.remove(psd.server[ServerColumn.ADDRESS]);
 	}
 
 	char[] getCountryCode(ServerData* sd)
@@ -570,9 +571,12 @@ private:
 	void copyListToFilteredList()
 	{
 		filteredList.length = list.length;
+		filteredIpHash_ = null;
 		for (size_t i=0; i < list.length; i++) {
 			filteredList[i] = &list[i];
+			filteredIpHash_[list[i].server[ServerColumn.ADDRESS]] = i;
 		}
+		filteredIpHash_.rehash;
 	}
 
 	bool isFilteredOut(ServerData* sd)
@@ -600,18 +604,24 @@ private:
 		}
 		filteredList.length = 0;
 		if (filters_ & Filter.HAS_HUMANS) {
-			foreach (ref sd; list) {
+			filteredIpHash_ = null;
+			foreach (i, ref sd; list) {
 				if (sd.hasHumans) {
 					filteredList ~= &sd;
+					filteredIpHash_[sd.server[ServerColumn.ADDRESS]] = i;
 				}
 			}
+			filteredIpHash_.rehash;
 		}
 		else if (filters_ & Filter.NOT_EMPTY) {
-			foreach (ref sd; list) {
+			filteredIpHash_ = null;
+			foreach (i, ref sd; list) {
 				if (sd.hasBots || sd.hasHumans) {
 					filteredList ~= &sd;
+					filteredIpHash_[sd.server[ServerColumn.ADDRESS]] = i;
 				}
 			}
+			filteredIpHash_.rehash;
 		}
 		else {
 			copyListToFilteredList();
