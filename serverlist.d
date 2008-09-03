@@ -605,7 +605,7 @@ private:
 		filteredList.length = 0;
 		if (filters_ & Filter.HAS_HUMANS) {
 			filteredIpHash_ = null;
-			foreach (i, ref sd; list) {
+			foreach (ref sd; list) {
 				if (sd.hasHumans) {
 					filteredList ~= &sd;
 					filteredIpHash_[sd.server[ServerColumn.ADDRESS]] =
@@ -616,7 +616,7 @@ private:
 		}
 		else if (filters_ & Filter.NOT_EMPTY) {
 			filteredIpHash_ = null;
-			foreach (i, ref sd; list) {
+			foreach (ref sd; list) {
 				if (sd.hasBots || sd.hasHumans) {
 					filteredList ~= &sd;
 					filteredIpHash_[sd.server[ServerColumn.ADDRESS]] =
