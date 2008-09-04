@@ -260,19 +260,15 @@ class ServerList
 	/**
 	 * Given the IP and port number, find a server in the filtered list.
 	 *
-	 * Does a linear search.
-	 *
 	 * Returns: the server's index, or -1 if not found.
 	 */
 	int getFilteredIndex(char[] ipAndPort)
 	{
-		if (!ipAndPort.length)
-			return -1;
-
-		synchronized (this)
-		foreach (int i, ServerData* sd; filteredList) {
-			if (sd.server[ServerColumn.ADDRESS] == ipAndPort)
-				return i;
+		synchronized (this) {
+			if (filteredIpHash_ is null)
+				createFilteredIpHash();
+			if (int* i = ipAndPort in filteredIpHash_)
+				return *i;
 		}
 		return -1;
 	}
@@ -295,6 +291,7 @@ class ServerList
 			//list.length = 0;
 			delete filteredList;
 			delete list;
+			filteredIpHash_ = null;
 			complete = false;
 		}
 
@@ -396,6 +393,8 @@ class ServerList
 private:
 	ServerData[] list;
 	ServerData*[] filteredList;
+	// maps addresses to indices into the filtered list
+	int[char[]] filteredIpHash_;
 	Set!(char[]) extraServers_;
 
 	int sortColumn_ = ServerColumn.NAME;
@@ -543,11 +542,13 @@ private:
 		memmove(filteredList.ptr + index + 1, filteredList.ptr + index,
 		           (filteredList.length - 1 - index) * filteredList[0].sizeof);
 		filteredList[index] = sd;
+		filteredIpHash_ = null;
 	}
 
 	void appendToFiltered(ServerData* psd)
 	{
 		filteredList ~= psd;
+		filteredIpHash_ = null;
 	}
 
 	void removeFromFiltered(ServerData* psd)
@@ -557,6 +558,7 @@ private:
 		memmove(filteredList.ptr + i, filteredList.ptr + i + 1,
 		               (filteredList.length - 1 - i) * filteredList[0].sizeof);
 		filteredList.length = filteredList.length - 1;
+		filteredIpHash_.remove(psd.server[ServerColumn.ADDRESS]);
 	}
 
 	char[] getCountryCode(ServerData* sd)
@@ -573,6 +575,7 @@ private:
 		for (size_t i=0; i < list.length; i++) {
 			filteredList[i] = &list[i];
 		}
+		filteredIpHash_ = null;
 	}
 
 	bool isFilteredOut(ServerData* sd)
@@ -605,6 +608,7 @@ private:
 					filteredList ~= &sd;
 				}
 			}
+			filteredIpHash_ = null;
 		}
 		else if (filters_ & Filter.NOT_EMPTY) {
 			foreach (ref sd; list) {
@@ -612,10 +616,19 @@ private:
 					filteredList ~= &sd;
 				}
 			}
+			filteredIpHash_ = null;
 		}
 		else {
 			copyListToFilteredList();
 		}
+	}
+
+	void createFilteredIpHash()
+	{
+		// FIXME: could use Tango's HashMap instead, for less memory waste and
+		// more speed.
+		foreach (int i, sd; filteredList)
+			filteredIpHash_[sd.server[ServerColumn.ADDRESS]] = i;
 	}
 
 	void disposeCustomData()

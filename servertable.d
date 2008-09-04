@@ -200,9 +200,8 @@ class ServerTable
 		}
 
 		// Keep the same servers selected.
-		// FIXME: very slow, can optimize by making
-		// ServerList.getFilteredIndex() use a hash map (ip => index)
-		table_.setSelection(getIndicesFromAddresses(selectedIps_));
+		int[] indices = getIndicesFromAddresses(selectedIps_);
+		table_.setSelection(indices);
 	}
 
 	/**
