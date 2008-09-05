@@ -40,12 +40,11 @@ private enum Field {
  * Throws: when outputFileName is given: IOException.
  */
 void parseOutput(LineIterator!(char) iter, bool delegate(ServerData*) deliver,
-                   void delegate(int) counter=null, char[] outputFileName=null)
+                                                    char[] outputFileName=null)
 {
 	char[][] gtypes;
 	BufferOutput outfile;
 	debug scope timer = new Timer;
-	int count = 0;
 	Display display = Display.getDefault;
 	bool keepGoing = true;
 
@@ -95,9 +94,6 @@ each_server:
 			ServerData sd;
 
 			assert(fields.length == 9 || fields.length == 3);
-			count++;
-			if (counter)
-				counter(count);
 
 			if (fields.length >= 9) {
 				bool keep_server = false;

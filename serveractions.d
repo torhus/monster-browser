@@ -292,8 +292,7 @@ class ServerRetrievalController
 			assert (serverCount_ != 0);
 
 			scope iter = new LineIterator!(char)(serverRetriever_.inputStream);
-			qstat.parseOutput(iter, &deliver, &counter,
-			                                      serverRetriever_.outputFile);
+			qstat.parseOutput(iter, &deliver, serverRetriever_.outputFile);
 			getActiveServerList.complete = !threadDispatcher.abort;
 			serverRetriever_.close();
 			
@@ -331,16 +330,14 @@ class ServerRetrievalController
 		wasStopped_ = true;
 	}
 
-	private void counter(int count)
-	{
-		statusBarUpdater_.text = startMessage ~ Integer.toString(count);
-		Display.getDefault.syncExec(statusBarUpdater_);
-	}
-
 	private bool deliver(ServerData* sd)
 	{
 		if (sd !is null)
 			deliverDg_(sd);
+
+		statusBarUpdater_.text = startMessage ~ Integer.toString(counter_++);
+		Display.getDefault.syncExec(statusBarUpdater_);
+
 		return !threadDispatcher.abort;
 	}
 
@@ -368,6 +365,7 @@ class ServerRetrievalController
 	private {
 		IServerRetriever serverRetriever_;
 		uint serverCount_;
+		int counter_ = 0;
 		StatusBarUpdater statusBarUpdater_;
 		bool replace_;
 		void delegate(ServerData*) deliverDg_;
