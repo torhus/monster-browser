@@ -8,6 +8,7 @@ import tango.text.Ascii;
 import tango.text.Util;
 import Integer = tango.text.convert.Integer;
 import tango.stdc.string : memmove;
+import tango.util.container.HashMap;
 
 import dwt.DWT;
 import dwt.dwthelper.Runnable;
@@ -159,6 +160,9 @@ class ServerList
 
 
 	///
+	this() { filteredIpHash_ = new HashMap!(char[], int); }
+
+	///
 	void add(ServerData* sd)
 	{
 		bool refresh = false;
@@ -265,7 +269,7 @@ class ServerList
 	int getFilteredIndex(char[] ipAndPort)
 	{
 		synchronized (this) {
-			if (filteredIpHash_ is null)
+			if (!filteredIpHashValid_)
 				createFilteredIpHash();
 			if (int* i = ipAndPort in filteredIpHash_)
 				return *i;
@@ -291,7 +295,7 @@ class ServerList
 			//list.length = 0;
 			delete filteredList;
 			delete list;
-			filteredIpHash_ = null;
+			filteredIpHash_.reset();
 			complete = false;
 		}
 
@@ -394,7 +398,8 @@ private:
 	ServerData[] list;
 	ServerData*[] filteredList;
 	// maps addresses to indices into the filtered list
-	int[char[]] filteredIpHash_;
+	HashMap!(char[], int) filteredIpHash_;
+	bool filteredIpHashValid_ = false;
 	Set!(char[]) extraServers_;
 
 	int sortColumn_ = ServerColumn.NAME;
@@ -542,13 +547,13 @@ private:
 		memmove(filteredList.ptr + index + 1, filteredList.ptr + index,
 		           (filteredList.length - 1 - index) * filteredList[0].sizeof);
 		filteredList[index] = sd;
-		filteredIpHash_ = null;
+		filteredIpHashValid_ = false;
 	}
 
 	void appendToFiltered(ServerData* psd)
 	{
 		filteredList ~= psd;
-		filteredIpHash_ = null;
+		filteredIpHashValid_ = false;
 	}
 
 	void removeFromFiltered(ServerData* psd)
@@ -558,7 +563,7 @@ private:
 		memmove(filteredList.ptr + i, filteredList.ptr + i + 1,
 		               (filteredList.length - 1 - i) * filteredList[0].sizeof);
 		filteredList.length = filteredList.length - 1;
-		filteredIpHash_.remove(psd.server[ServerColumn.ADDRESS]);
+		filteredIpHash_.removeKey(psd.server[ServerColumn.ADDRESS]);
 	}
 
 	char[] getCountryCode(ServerData* sd)
@@ -575,7 +580,7 @@ private:
 		for (size_t i=0; i < list.length; i++) {
 			filteredList[i] = &list[i];
 		}
-		filteredIpHash_ = null;
+		filteredIpHashValid_ = false;
 	}
 
 	bool isFilteredOut(ServerData* sd)
@@ -608,7 +613,7 @@ private:
 					filteredList ~= &sd;
 				}
 			}
-			filteredIpHash_ = null;
+			filteredIpHashValid_ = false;
 		}
 		else if (filters_ & Filter.NOT_EMPTY) {
 			foreach (ref sd; list) {
@@ -616,7 +621,7 @@ private:
 					filteredList ~= &sd;
 				}
 			}
-			filteredIpHash_ = null;
+			filteredIpHashValid_ = false;
 		}
 		else {
 			copyListToFilteredList();
@@ -625,10 +630,10 @@ private:
 
 	void createFilteredIpHash()
 	{
-		// FIXME: could use Tango's HashMap instead, for less memory waste and
-		// more speed.
+		filteredIpHash_.clear();
 		foreach (int i, sd; filteredList)
 			filteredIpHash_[sd.server[ServerColumn.ADDRESS]] = i;
+		filteredIpHashValid_ = true;
 	}
 
 	void disposeCustomData()
