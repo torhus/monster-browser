@@ -72,9 +72,15 @@ class MainWindow
 		Composite topComposite = new Composite(shell_, DWT.NONE);
 		auto topData = new GridData(DWT.FILL, DWT.CENTER, true, false, 2, 1);
 		topComposite.setLayoutData(topData);
-		auto topLayout = new GridLayout(2, false);
-		topLayout.horizontalSpacing = 50;
-		topComposite.setLayout(topLayout);
+		version (none) {
+			// This layout works better when the buttons have images.
+			auto topLayout = new GridLayout(2, false);
+			topLayout.horizontalSpacing = 50;
+			topComposite.setLayout(topLayout);
+		}
+		else {
+			topComposite.setLayout(new FillLayout);
+		}
 
 		ToolBar toolBar = createToolbar(topComposite);
 
