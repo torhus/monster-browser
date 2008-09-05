@@ -262,7 +262,7 @@ class ServerRetrievalController
 		serverRetriever_= retriever;
 		replace_ = replace;
 
-		serverRetriever_.init();
+		serverRetriever_.initialize();
 
 		Display.getDefault.syncExec(new class Runnable {
 			void run() { serverTable.notifyRefreshStarted(&stop); }
