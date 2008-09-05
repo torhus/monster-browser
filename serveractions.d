@@ -343,17 +343,17 @@ class ServerRetrievalController
 
 	private void done()
 	{
-		if (getActiveServerList.length() > 0) {
-			IntWrapper index = null;
+		ServerList list = getActiveServerList();
+
+		if (list.length() > 0) {
+			int index = -1;
 			if (autoSelect.length) {
 				// FIXME: select them all, not just the first one
-				index = new IntWrapper(
-				          getActiveServerList.getFilteredIndex(autoSelect[0]));
+				index = list.getFilteredIndex(autoSelect[0]);
 			}
-			long noReply = cast(long)serverCount_ - getActiveServerList.length;
+			long noReply = cast(long)serverCount_ - list.length;
 			serverTable.reset(index);
-			statusBar.setDefaultStatus(getActiveServerList.length,
-			                           getActiveServerList.filteredLength,
+			statusBar.setDefaultStatus(list.length, list.filteredLength,
 			                           noReply > 0 ? cast(uint)noReply : 0);
 		}
 		else {
