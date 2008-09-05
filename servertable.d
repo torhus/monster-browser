@@ -214,10 +214,10 @@ class ServerTable
 	 * 2. Optionally sets the selection to the server specified by index.
 	 *
 	 * Params:
-	 *     index = An IntWrapper object.  If not null, the server with the
-	 *             given index is selected.
+	 *     index = If not equal to -1, the server with the given index is
+	 *             selected.
 	 */
-	void reset(Object index=null)
+	void reset(int index=-1)
 	{
 		auto list = getActiveServerList();
 
@@ -228,12 +228,10 @@ class ServerTable
 		table_.setItemCount(list.filteredLength);
 
 		int[] indices;
-		if (index && (cast(IntWrapper)index).value != -1) {
-			indices ~= (cast(IntWrapper)index).value;
-		}
-		else {
+		if (index != -1)
+			indices ~= index;
+		else
 			indices = getIndicesFromAddresses(selectedIps_);
-		}
 
 		if (indices.length) {
 			table_.setSelection(indices);

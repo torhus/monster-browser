@@ -171,14 +171,6 @@ void logx(char[] file, int line, Exception e)
 }
 
 
-/// Wrapper for an int.  Needed because std.boxer is broken, as of dmd 0.160.
-class IntWrapper {
-public:
-	this(int v=0) { value = v; }
-	int value;
-}
-
-
 version (Windows)
 	const char[] newline = "\r\n";
 else
