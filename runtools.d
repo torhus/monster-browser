@@ -100,7 +100,7 @@ interface IServerRetriever
 	 *
 	 * Use for doing initialization, if needed.
 	 */
-	void init();
+	void initialize();
 
 
 	/**
@@ -147,7 +147,7 @@ final class FromFileServerRetriever : IServerRetriever
 	}
 
 	///
-	void init()	{ }
+	void initialize() { }
 
 
 	///
@@ -203,7 +203,7 @@ final class QstatServerRetriever : IServerRetriever
 
 
 	///
-	void init()
+	void initialize()
 	{
 		// FIXME: check if this code could be moved into open()
 		if (Path.exists(appDir ~ REFRESHFILE))
