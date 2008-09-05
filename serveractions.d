@@ -287,14 +287,12 @@ class ServerRetrievalController
 			statusBarUpdater_.text = startMessage;
 			Display.getDefault.syncExec(statusBarUpdater_);
 
-			// FIXME: handle open returning 0 to signal abort
-			int serverCount_ = serverRetriever_.open();
+			// FIXME: handle prepare returning 0 to signal abort
+			int serverCount_ = serverRetriever_.prepare();
 			assert (serverCount_ != 0);
 
-			scope iter = new LineIterator!(char)(serverRetriever_.inputStream);
-			qstat.parseOutput(iter, &deliver, serverRetriever_.outputFile);
+			serverRetriever_.retrieve(&deliver);
 			getActiveServerList.complete = !threadDispatcher.abort;
-			serverRetriever_.close();
 			
 			// a benchmarking tool
 			if (arguments.quit) {

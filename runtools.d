@@ -98,41 +98,33 @@ interface IServerRetriever
 	 * Will be called after serverThread and qstat has terminated, but before
 	 * the new thread is created.
 	 *
-	 * Use for doing initialization, if needed.
+	 * Use for doing initialization at this stage, if needed.
 	 */
 	void initialize();
 
 
 	/**
-	 * Will be called in the new thread, just before inputStream.
-	 *
-	 * Use for setting up the InputStream, etc.
+	 * Will be called in the new thread, just before retrieve().
 	 *
 	 * Returns: The number of servers to be queried, for display in the GUI.
      *          Return 0 to abort the retrieval process.  Return -1 if the
 	 *          number of servers is not known.  Returning -1 will not abort
 	 *          the process.
 	 */
-	int open();
+	int prepare();
 
 
 	/**
-	 * This will be handed to qstat.parseOutput as the source of input.
+	 * Retrieves all servers, handing each one to the deliver delegate.
+	 *
+	 * If deliver's argument is null the server is ignored.  Useful for servers
+	 * that timed out.  deliver should still be called, since it's also used
+	 * for updating the progress counter.
+	 *
+	 * If deliver returns false, the server retrieval process is aborted.
 	 */
-	InputStream inputStream();
+	void retrieve(bool delegate(ServerData*) deliver);
 
-
-	/**
-	 * This will be handed to qstat.parseOutput as the optional output file.
-	 */
-	char[] outputFile();
-
-
-	/**
-	 * This will be called after qstat.parseOutput is done, still in the new
-	 * thread.
-	 */
-	void close();
 }
 
 
@@ -146,12 +138,13 @@ final class FromFileServerRetriever : IServerRetriever
 		fileName_ = fileName;
 	}
 
+
 	///
 	void initialize() { }
 
 
 	///
-	int open()
+	int prepare()
 	{
 		try {
 			input_ = new TextFileInput(fileName_);
@@ -166,27 +159,17 @@ final class FromFileServerRetriever : IServerRetriever
 
 
 	///
-	InputStream inputStream()
+	void retrieve(bool delegate(ServerData*) deliver)
 	{
-		return input_;
-	}
-
-
-	///
-	char[] outputFile() { return outputFile_; }
-
-
-	///
-	void close()
-	{
+		scope iter = new LineIterator!(char)(input_);
+		qstat.parseOutput(iter, deliver);
 		input_.close();
 	}
-	
+
 
 	private {
 		InputStream input_;
 		char[] fileName_;
-		char[] outputFile_;
 	}
 }
 
@@ -205,7 +188,7 @@ final class QstatServerRetriever : IServerRetriever
 	///
 	void initialize()
 	{
-		// FIXME: check if this code could be moved into open()
+		// FIXME: check if this code could be moved into prepare()
 		if (Path.exists(appDir ~ REFRESHFILE))
 			Path.remove(appDir ~ REFRESHFILE);
 		serverCount_ = appendServersToFile(appDir ~ REFRESHFILE,
@@ -215,7 +198,7 @@ final class QstatServerRetriever : IServerRetriever
 
 
 	///
-	int open()
+	int prepare()
 	{
 		proc = new Process();
 		proc.workDir = appDir;
@@ -245,20 +228,17 @@ final class QstatServerRetriever : IServerRetriever
 
 
 	///
-	InputStream inputStream()
+	void retrieve(bool delegate(ServerData*) deliver)
 	{
+		scope iter = new LineIterator!(char)(proc.stdout);
 		// FIXME: verify that everything is initialized correctly, and that
 		// stdout is valid
-		return proc.stdout;
+		qstat.parseOutput(iter, deliver, outputFile_);
+		close();
 	}
 
 
-	///
-	char[] outputFile() { return outputFile_; }
-
-
-	///
-	void close()
+	private void close()
 	{
 		if (!outputFile_.length)
 			return;
