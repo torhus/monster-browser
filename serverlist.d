@@ -162,8 +162,8 @@ class ServerList
 	///
 	this() { filteredIpHash_ = new HashMap!(char[], int); }
 
-	///
-	void add(ServerData* sd)
+	/// Returns false if the added server is filtered out.
+	bool add(ServerData* sd)
 	{
 		bool refresh = false;
 		int index;
@@ -177,10 +177,8 @@ class ServerList
 				refresh = true;
 			}
 		}
-		if (refresh && !arguments.norefresh)
-			Display.getDefault.syncExec(new class Runnable {
-				void run() { serverTable.refresh(); }
-			});
+
+		return refresh;
 	}
 
 
