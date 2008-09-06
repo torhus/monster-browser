@@ -21,6 +21,7 @@ import mainwindow;
 import qstat;
 import runtools;
 import serverlist;
+import serverqueue;
 import servertable;
 import set;
 import settings;
@@ -280,8 +281,13 @@ class ServerRetrievalController
 	void run()
 	{
 		try {
-			deliverDg_ = replace_ ? &getActiveServerList.replace :
-			                        &getActiveServerList.add;
+			if (replace_) {
+				deliverDg_ = &getActiveServerList.replace;
+			}
+			else {
+				serverQueue_ = new ServerQueue(&getActiveServerList.add);
+				deliverDg_ = &serverQueue_.add;
+			}
 
 			statusBarUpdater_ = new StatusBarUpdater;
 			statusBarUpdater_.text = startMessage;
@@ -305,6 +311,9 @@ class ServerRetrievalController
 					}
 				});
 			}
+
+			if (serverQueue_ !is null)
+				serverQueue_.addRemainingAndStop();
 
 			Display.getDefault.asyncExec(new class Runnable {
 				void run()
@@ -368,6 +377,7 @@ class ServerRetrievalController
 		bool replace_;
 		void delegate(ServerData*) deliverDg_;
 		bool wasStopped_ = false;
+		ServerQueue serverQueue_;
 	}
 }
 
