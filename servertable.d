@@ -180,21 +180,25 @@ class ServerTable
 		int filteredLength = list.filteredLength;
 		int itemCount = table_.getItemCount();
 		int bottom = getBottomIndex();
-		bool bottomMoved = false;
+		bool needRefresh = false;
 
 		// Check to see if the bottommost visible item has moved or not.
 		if (bottom < filteredLength && bottom < itemCount) {
 			TableItem bottomItem = table_.getItem(bottom);
 			enum { col = ServerColumn.ADDRESS }
 			if (bottomItem.getText(col) !=
-		                                list.getFiltered(bottom).server[col])
-				bottomMoved = true;
+		                                  list.getFiltered(bottom).server[col])
+				needRefresh = true;
+		}
+
+		if (!scrollBarFixDone_  && (filteredLength - 1) > bottom) {
+			needRefresh = true;
+			scrollBarFixDone_ = true;
 		}
 
 		// Only refill the Table if visible items, or items further up have
 		// moved.  Refilling every time is very, very slow.
-		if (bottomMoved || itemCount < bottom ||
-		                                      bottom == (filteredLength - 1)) {
+		if (needRefresh || itemCount < bottom) {
 			table_.setItemCount(filteredLength);
 			table_.clearAll();
 		}
@@ -259,6 +263,8 @@ class ServerTable
 
 		table_.setItemCount(0);
 		table_.clearAll;
+		scrollBarFixDone_ = false;
+
 		cvarTable.clear;
 		playerTable.clear;
 	}
@@ -281,6 +287,7 @@ private:
 	Image padlockImage_;
 	MenuItem refreshSelected_;
 	void delegate() stopServerRefresh_;
+	bool scrollBarFixDone_ = false;
 
 	class SetDataListener : Listener {
 		void handleEvent(Event e)
