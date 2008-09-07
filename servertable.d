@@ -191,14 +191,14 @@ class ServerTable
 				needRefresh = true;
 		}
 
-		if (!scrollBarFixDone_  && (filteredLength - 1) > bottom) {
+		/*if (!scrollBarFixDone_  && (filteredLength - 1) > bottom) {
 			needRefresh = true;
 			scrollBarFixDone_ = true;
-		}
+		}*/
 
 		// Only refill the Table if visible items, or items further up have
 		// moved.  Refilling every time is very, very slow.
-		if (needRefresh || itemCount < bottom) {
+		if (needRefresh || itemCount <= bottom) {
 			table_.setItemCount(filteredLength);
 			table_.clearAll();
 		}
