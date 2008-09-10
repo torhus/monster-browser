@@ -3,6 +3,7 @@ module servertable;
 import tango.stdc.math : ceil;
 import tango.text.Util;
 import Integer = tango.text.convert.Integer;
+import tango.util.container.HashMap;
 
 import dwt.DWT;
 import dwt.dwthelper.ByteArrayInputStream;
@@ -118,6 +119,8 @@ class ServerTable
 		                                    cast(byte[])import("padlock.png"));
 		auto data = new ImageData(stream);
 		padlockImage_ = new Image(Display.getDefault, data.scaledTo(12, 12));
+
+		selectedIps_ = new HashMap!(char[], int);
 	}
 
 
@@ -204,8 +207,9 @@ class ServerTable
 		}
 
 		// Keep the same servers selected.
-		int[] indices = getIndicesFromAddresses(selectedIps_);
-		table_.setSelection(indices);
+		foreach (ip, v; selectedIps_)
+			selectedIps_[ip] = list.getFilteredIndex(ip);
+		table_.setSelection(selectedIps_.toArray());
 	}
 
 	/**
@@ -232,10 +236,14 @@ class ServerTable
 		table_.setItemCount(list.filteredLength);
 
 		int[] indices;
-		if (index != -1)
+		if (index != -1) {
 			indices ~= index;
-		else
-			indices = getIndicesFromAddresses(selectedIps_);
+		}
+		else {
+			foreach (ip, v; selectedIps_)
+				selectedIps_[ip] = list.getFilteredIndex(ip);
+			indices = selectedIps_.toArray();
+		}
 
 		if (indices.length) {
 			table_.setSelection(indices);
@@ -272,7 +280,7 @@ class ServerTable
 	///
 	void forgetSelection()
 	{
-		delete selectedIps_;
+		selectedIps_.reset();
 	}
 	
 
@@ -282,7 +290,7 @@ class ServerTable
 private:
 	Table table_;
 	Composite parent_;
-	char[][] selectedIps_;
+	HashMap!(char[], int) selectedIps_;
 	bool showFlags_, coloredNames_;
 	Image padlockImage_;
 	MenuItem refreshSelected_;
@@ -315,7 +323,7 @@ private:
 	class MySelectionListener : SelectionListener {
 		void widgetSelected(SelectionEvent e)
 		{
-			delete selectedIps_;
+			selectedIps_.clear();
 			auto list = getActiveServerList;
 
 			synchronized (list) {
@@ -324,7 +332,7 @@ private:
 				if (indices.length) {
 					foreach (i; indices) {
 						auto sd = list.getFiltered(i);
-						selectedIps_ ~= sd.server[ServerColumn.ADDRESS];
+						selectedIps_[sd.server[ServerColumn.ADDRESS]] = i;
 						allPlayers ~= sd.players;
 					}
 
@@ -356,6 +364,7 @@ private:
 			auto sortColumn = table_.getSortColumn;
 			auto newColumn = cast(TableColumn)e.widget;
 			int dir = table_.getSortDirection;
+			auto list = getActiveServerList();
 
 			if (sortColumn is newColumn) {
 				dir = (dir == DWT.UP) ? DWT.DOWN : DWT.UP;
@@ -364,15 +373,16 @@ private:
 				table_.setSortColumn(newColumn);
 			}
 
-			getActiveServerList.sort(table_.indexOf(newColumn),
-														(dir == DWT.DOWN));
+			list.sort(table_.indexOf(newColumn), (dir == DWT.DOWN));
 
 			table_.setSortDirection(dir);
-			synchronized (getActiveServerList) {
+			synchronized (list) {
 				table_.clearAll();
-				table_.setItemCount(getActiveServerList.filteredLength());
+				table_.setItemCount(list.filteredLength());
 				// keep the same servers selected
-				table_.setSelection(getIndicesFromAddresses(selectedIps_));
+				foreach (ip, v; selectedIps_)
+					selectedIps_[ip] = list.getFilteredIndex(ip);
+				table_.setSelection(selectedIps_.toArray());
 			}
 		}
 	}
@@ -524,7 +534,10 @@ private:
 
 	void onCopyAddresses()
 	{		
-		char[] s = join(selectedIps_, newline);
+		char[][] addresses;
+		foreach (ip, v; selectedIps_)
+			addresses ~= ip;
+		char[] s = join(addresses, newline);
 		if (s.length) {
 			s ~= newline;
 			copyToClipboard(s);
@@ -533,13 +546,19 @@ private:
 
 	void onRefreshSelected()
 	{
-		if (selectedIps_.length)
-			queryServers(selectedIps_, true);
+		char[][] addresses;
+
+		if (selectedIps_.size == 0)
+			return;
+
+		foreach (ip, v; selectedIps_)
+			addresses ~= ip;
+		queryServers(addresses, true);
 	}
 	
 	void onSelectAll()
 	{
-		selectedIps_.length = 0;
+		selectedIps_.clear();
 		auto list = getActiveServerList;
 
 		synchronized (list) {
@@ -547,7 +566,7 @@ private:
 
 			for (size_t i=0; i < list.filteredLength; i++) {
 				auto sd = list.getFiltered(i);
-				selectedIps_ ~= sd.server[ServerColumn.ADDRESS];
+				selectedIps_[sd.server[ServerColumn.ADDRESS]] = i;
 				allPlayers ~= sd.players;
 			}
 
