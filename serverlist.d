@@ -375,7 +375,7 @@ class ServerList
 
 				auto list = getActiveServerList();
 				synchronized (list)
-				if (1 || list.complete) {
+				if (!serverTable.refreshInProgress) {
 					statusBar.setDefaultStatus(list.length,
 			                                   list.filteredLength);
 				}
