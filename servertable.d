@@ -139,6 +139,7 @@ class ServerTable
 	///
 	void notifyRefreshStarted(void delegate() stopServerRefresh=null)
 	{
+		refreshInProgress_ = true;
 		stopServerRefresh_ = stopServerRefresh;
 		if (!refreshSelected_.isDisposed)
 			refreshSelected_.setEnabled(false);
@@ -147,6 +148,7 @@ class ServerTable
 	///
 	void notifyRefreshEnded()
 	{
+		refreshInProgress_ = false;
 		stopServerRefresh_ = null;
 		if (!refreshSelected_.isDisposed)
 			refreshSelected_.setEnabled(true);
@@ -155,12 +157,16 @@ class ServerTable
 	///
 	bool stopRefresh()
 	{
+		refreshInProgress_ = false;
 		if (stopServerRefresh_ !is null) {
 			stopServerRefresh_();
 			return true;
 		}
 		return false;
 	}
+
+	///
+	bool refreshInProgress() { return refreshInProgress_ ; }
 
 	/*void update(Object dummy = null)
 	{
@@ -296,6 +302,7 @@ private:
 	MenuItem refreshSelected_;
 	void delegate() stopServerRefresh_;
 	bool scrollBarFixDone_ = false;
+	bool refreshInProgress_ = false;
 
 	class SetDataListener : Listener {
 		void handleEvent(Event e)
