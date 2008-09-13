@@ -135,8 +135,7 @@ class PlayerTable
 	void setItems(char[][][] players)
 	{
 		players_ = players;
-		if (players_.length)
-			addCleanPlayerNames();
+		addCleanPlayerNames();
 		reset();
 	}
 

@@ -42,7 +42,6 @@ class CvarTable
 
 	void setItems(char[][][] items)  ///
 	{
-		assert (items && items.length);
 		table_.setItemCount(0);
 		foreach (v; items) {
 			TableItem item = new TableItem(table_, DWT.NONE);

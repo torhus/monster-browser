@@ -255,12 +255,16 @@ class ServerTable
 			table_.setSelection(indices);
 			
 			char[][][] allPlayers;
-			foreach (i; indices)
-				allPlayers ~= list.getFiltered(i).players;
+			foreach (i; indices) {
+				if (i < list.filteredLength)
+					allPlayers ~= list.getFiltered(i).players;
+			}
 			playerTable.setItems(allPlayers);
 
-			auto sd = list.getFiltered(table_.getSelectionIndex);
-			cvarTable.setItems(sd.cvars);
+			cvarTable.clear();
+			int i = table_.getSelectionIndex();
+			if (i >= 0 && i < list.filteredLength)
+				cvarTable.setItems(list.getFiltered(i).cvars);
 		}
 		else {
 			table_.deselectAll();
