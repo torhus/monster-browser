@@ -350,7 +350,7 @@ ToolBar createToolbar(Composite parent) ///
 	button1.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{
-			threadDispatcher.run(&getNewList);
+			threadManager.run(&getNewList);
 		}
 	});
 
@@ -362,7 +362,7 @@ ToolBar createToolbar(Composite parent) ///
 	button2.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{
-			threadDispatcher.run(&refreshList);
+			threadManager.run(&refreshList);
 		}
 	});
 

@@ -131,11 +131,11 @@ private void _main(char[][] args)
 					}
 					break;
 				case DWT.F4:
-					threadDispatcher.run(&getNewList);
+					threadManager.run(&getNewList);
 					e.type = DWT.None;
 					break;
 				case DWT.F5:
-					threadDispatcher.run(&refreshList);
+					threadManager.run(&refreshList);
 					e.type = DWT.None;
 					break;
 				default:
@@ -147,7 +147,7 @@ private void _main(char[][] args)
 	mainWindow.handle.addShellListener(new class ShellAdapter {
 		public void shellClosed(ShellEvent e)
 		{
-			threadDispatcher.abort = true;
+			threadManager.abort = true;
 			statusBar.setLeft("Saving settings...");
 			log("Saving settings...");
 			saveSettings();
@@ -172,31 +172,31 @@ private void _main(char[][] args)
 	
 	clipboard = new Clipboard(Display.getDefault);
 
-	threadDispatcher = new ThreadDispatcher;
+	threadManager = new ThreadManager;
 
 	mainWindow.open();
 
 	if (arguments.fromfile) {
-		threadDispatcher.run(&loadSavedList);
+		threadManager.run(&loadSavedList);
 	}
 	else {
 		if (common.haveGslist && activeMod.useGslist) {
-			threadDispatcher.run(&getNewList);
+			threadManager.run(&getNewList);
 		}
 		else {
 			// Qstat is too slow to do a getNewList(), so just refresh
 			// the old list instead, if possible.
 			if (exists(activeMod.serverFile))
-				threadDispatcher.run(&refreshList);
+				threadManager.run(&refreshList);
 			else
-				threadDispatcher.run(&getNewList);
+				threadManager.run(&getNewList);
 		}
 	}	
 
 	// main loop
 	Display display = Display.getDefault;
 	while (!mainWindow.handle.isDisposed) {
-		threadDispatcher.dispatch();
+		threadManager.dispatch();
 		if (!display.readAndDispatch())
 			display.sleep();
 	}
