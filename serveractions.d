@@ -47,17 +47,17 @@ void switchToMod(char[] name)
 		}
 		else {
 			if (common.haveGslist && activeMod.useGslist)
-				threadDispatcher.runSecond(&getNewList);
+				threadManager.runSecond(&getNewList);
 			else if (Path.exists(activeMod.serverFile))
-				threadDispatcher.runSecond(&refreshList);
+				threadManager.runSecond(&refreshList);
 			else
-				threadDispatcher.runSecond(&getNewList);
+				threadManager.runSecond(&getNewList);
 		}
 		return null;
 	}
 
 	nameCopy = name;
-	threadDispatcher.run(&f);
+	threadManager.run(&f);
 }
 
 
@@ -77,7 +77,7 @@ private void switchToActiveMod()
 }
 
 
-/** Loads the list from disk.  To be called through ThreadDispatcher.run(). */
+/** Loads the list from disk.  To be called through ThreadManager.run(). */
 void delegate() loadSavedList()
 {
 	serverTable.clear();
@@ -133,14 +133,14 @@ void queryServers(in char[][] addresses, bool replace=false, bool select=false)
 	replace_ = replace;
 	select_ = select;
 
-	threadDispatcher.run(&f);
+	threadManager.run(&f);
 }
 
 
 /**
  * Refreshes the list.
  *
- * Note: To be called through ThreadDispatcher.run().
+ * Note: To be called through ThreadManager.run().
  */
 void delegate() refreshList()
 {
@@ -188,7 +188,7 @@ void delegate() refreshList()
 /**
  * Retrieves a new list from the master server.
  *
- * Note: To be called through ThreadDispatcher.run().
+ * Note: To be called through ThreadManager.run().
  */
 void delegate() getNewList()
 {
@@ -298,7 +298,7 @@ class ServerRetrievalController
 			assert (serverCount_ != 0);
 
 			serverRetriever_.retrieve(&deliver);
-			getActiveServerList.complete = !threadDispatcher.abort;
+			getActiveServerList.complete = !threadManager.abort;
 			
 			// a benchmarking tool
 			if (arguments.quit) {
@@ -318,7 +318,7 @@ class ServerRetrievalController
 			Display.getDefault.asyncExec(new class Runnable {
 				void run()
 				{
-					if (!threadDispatcher.abort || wasStopped_)
+					if (!threadManager.abort || wasStopped_)
 						done;
 					else
 						serverTable.notifyRefreshEnded;
@@ -333,7 +333,7 @@ class ServerRetrievalController
 	///
 	void stop()
 	{
-		threadDispatcher.abort = true;
+		threadManager.abort = true;
 		wasStopped_ = true;
 	}
 
@@ -345,7 +345,7 @@ class ServerRetrievalController
 		statusBarUpdater_.text = startMessage ~ Integer.toString(counter_++);
 		Display.getDefault.syncExec(statusBarUpdater_);
 
-		return !threadDispatcher.abort;
+		return !threadManager.abort;
 	}
 
 	private void done()
