@@ -22,7 +22,6 @@ import mainwindow;
 import servertable;
 import set;
 import settings;
-import threadmanager;
 
 
 /// Server filter bitflags.
