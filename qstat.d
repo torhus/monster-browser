@@ -37,9 +37,12 @@ private enum Field {
 /**
  * Parse Qstat's output.
  *
+ * Returns: true if all servers were parsed and delivered, false if it stopped
+ *          prematurely because of deliver() returning false;
+ *
  * Throws: when outputFileName is given: IOException.
  */
-void parseOutput(LineIterator!(char) iter, bool delegate(ServerData*) deliver,
+bool parseOutput(LineIterator!(char) iter, bool delegate(ServerData*) deliver,
                                                     char[] outputFileName=null)
 {
 	char[][] gtypes;
@@ -165,6 +168,8 @@ each_server:
 			}
 		}
 	}
+	
+	return keepGoing;
 }
 
 
