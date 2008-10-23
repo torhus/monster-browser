@@ -233,17 +233,16 @@ final class QstatServerRetriever : IServerRetriever
 		scope iter = new LineIterator!(char)(proc.stdout);
 		// FIXME: verify that everything is initialized correctly, and that
 		// stdout is valid
-		qstat.parseOutput(iter, deliver, outputFile_);
-		close();
+		completed_ = qstat.parseOutput(iter, deliver, outputFile_);
+
+		if (outputFile_.length)
+			renameOutputFile();
 	}
 
 
-	private void close()
+	private void renameOutputFile()
 	{
-		if (!outputFile_.length)
-			return;
-
-		if (getActiveServerList.complete) {
+		if (completed_ ) {
 			try {
 				auto serverFile = activeMod.serverFile;
 				if (Path.exists(serverFile))
@@ -269,6 +268,7 @@ final class QstatServerRetriever : IServerRetriever
 		char[][] addresses_;
 		int serverCount_;
 		char[] outputFile_;
+		bool completed_;
 	}
 }
 
