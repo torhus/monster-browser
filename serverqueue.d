@@ -71,7 +71,7 @@ class ServerQueue
 			if (stop_)
 				return;
 			if (addAll() && !arguments.norefresh)
-				serverTable.refresh;
+				serverTable.quickRefresh;
 		}
 	}
 

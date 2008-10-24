@@ -180,7 +180,7 @@ class ServerTable
 	 *
 	 * Keeps the same selection if there was one.
 	 */
-	void refresh()
+	void quickRefresh()
 	{
 		if(table_.isDisposed())
 			return;
@@ -231,7 +231,7 @@ class ServerTable
 	 *     index = If not equal to -1, the server with the given index is
 	 *             selected.
 	 */
-	void reset(int index=-1)
+	void fullRefresh(int index=-1)
 	{
 		auto list = getActiveServerList();
 
