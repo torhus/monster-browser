@@ -205,7 +205,7 @@ class ServerList
 			Display.getDefault.syncExec(new class Runnable {
 				void run()
 				{
-					serverTable.refresh();
+					serverTable.quickRefresh;
 				}
 			});
 	}
@@ -370,7 +370,7 @@ class ServerList
 		Display.getDefault.asyncExec(new class Runnable {
 			void run()
 			{
-				serverTable.reset();
+				serverTable.fullRefresh;
 
 				auto list = getActiveServerList();
 				synchronized (list)

@@ -339,7 +339,7 @@ class SpecifyServerDialog
 							        "try turning off the filters.");
 							int i = getActiveServerList.getFilteredIndex(address);
 							if (i != -1)
-								serverTable.reset(i);
+								serverTable.fullRefresh(i);
 						}
 					}
 				}

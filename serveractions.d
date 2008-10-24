@@ -68,12 +68,12 @@ void switchToMod(char[] name)
  */
 private void switchToActiveMod()
 {
-	getActiveServerList.sort();
+	ServerList serverList = getActiveServerList;
 
-	serverTable.forgetSelection();
-	serverTable.reset();
-	statusBar.setDefaultStatus(getActiveServerList.length,
-	                           getActiveServerList.filteredLength);
+	serverList.sort;
+	serverTable.forgetSelection;
+	serverTable.fullRefresh;
+	statusBar.setDefaultStatus(serverList.length, serverList.filteredLength);
 }
 
 
@@ -209,7 +209,7 @@ void delegate() getNewList()
 				Display.getDefault.asyncExec(new class Runnable {
 					void run()
 					{
-						serverTable.reset();
+						serverTable.fullRefresh;
 						serverTable.notifyRefreshEnded;
 					}
 				});
@@ -359,7 +359,7 @@ class ServerRetrievalController
 				index = list.getFilteredIndex(autoSelect[0]);
 			}
 			long noReply = cast(long)serverCount_ - list.length;
-			serverTable.reset(index);
+			serverTable.fullRefresh(index);
 			statusBar.setDefaultStatus(list.length, list.filteredLength,
 			                           noReply > 0 ? cast(uint)noReply : 0);
 		}
