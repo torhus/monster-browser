@@ -1,15 +1,11 @@
 module serverqueue;
 
-import tango.core.Thread;
-import tango.core.sync.Semaphore;
-import tango.util.log.Trace;
-
 import dwt.dwthelper.Runnable;
 import dwt.widgets.Display;
 
-import common;
+import common : arguments;
 import mainwindow;
-import serverlist;
+import serverlist : ServerData;
 
 
 ///
@@ -19,10 +15,10 @@ class ServerQueue
 	this(bool delegate(ServerData*) addDg)
 	{
 		addDg_ = addDg;
-		semaphore_ = new Semaphore;
-		adderThread_ = new Thread(&adder);
-		adderThread_.isDaemon = true;
-		adderThread_.start();
+		
+		Display.getDefault.syncExec(new class Runnable {
+			void run() { createTimerTask; }
+		});
 	}
 
 
@@ -37,48 +33,45 @@ class ServerQueue
 	void add(ServerData* sd)
 	{
 		synchronized (this) list_ ~= *sd;
-		semaphore_.notify();
 	}
 
 
 	///
 	void addRemainingAndStop()
 	{
+		Display.getDefault.syncExec(new class Runnable {
+			void run() { synchronizedAdd(); }
+		});
 		stop_ = true;
-		semaphore_.notify();
-		Trace.format("Waiting for adderThread_...").flush;
-		while (adderThread_.isRunning) { }
-		Trace.formatln("done.").flush;
-
-		synchronized (this) {
-			if (list_.length == 0)
-				return;
-
-			bool refresh = addAll();
-			if (refresh) {
-				Display.getDefault.syncExec(new class Runnable {
-					void run() { serverTable.refresh(); }
-				});
-			}
-		}
-	
 	}
 
 
-	///
-	private void adder()
+	/// Note: Must be called by the GUI thread.
+	private void createTimerTask()
 	{
-		while (!stop_) {
-			do semaphore_.wait();
-			while (!stop_ && list_.length == 0);
-
-			synchronized (this) {
-				bool refresh = addAll();
-				if (refresh && !arguments.norefresh)
-					Display.getDefault.asyncExec(new class Runnable {
-						void run() { serverTable.refresh(); }
-					});
+		Display.getDefault.timerExec(100, new class Runnable {
+			void run()
+			{
+				if (stop_)
+					return;
+				synchronizedAdd;
+				createTimerTask;
 			}
+		});
+	}
+
+
+	/// Note: Must be called by the GUI thread.
+	private void synchronizedAdd()
+	{
+		if (list_.length == 0)
+			return;
+
+		synchronized (this) {
+			if (stop_)
+				return;
+			if (addAll() && !arguments.norefresh)
+				serverTable.refresh;
 		}
 	}
 
@@ -101,8 +94,6 @@ class ServerQueue
 	private {
 		ServerData[] list_;
 		bool delegate(ServerData*) addDg_;
-		Semaphore semaphore_;
-		Thread adderThread_;
 		bool stop_ = false;
 	}
 }
