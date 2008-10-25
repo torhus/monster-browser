@@ -118,7 +118,7 @@ void queryServers(in char[][] addresses, bool replace=false, bool select=false)
 	static bool replace_, select_;
 
 	static void delegate() f() {
-		auto retriever = new QstatServerRetriever(addresses_);
+		auto retriever = new QstatServerRetriever(Set!(char[])(addresses_));
 		auto contr = new ServerRetrievalController(retriever, replace_);
 		if (select_)
 			contr.autoSelect = addresses_;
@@ -171,7 +171,7 @@ void delegate() refreshList()
 	GC.collect();
 
 	if (servers.length) {
-		auto retriever = new QstatServerRetriever(servers.toArray);
+		auto retriever = new QstatServerRetriever(servers);
 		auto contr = new ServerRetrievalController(retriever);
 		contr.startMessage =
                             Format("Refreshing {} servers...", servers.length);
@@ -214,9 +214,8 @@ void delegate() getNewList()
 					}
 				});
 			}
-			else {				
-				auto retriever = new QstatServerRetriever(addresses.toArray,
-				                                                         true);
+			else {
+				auto retriever = new QstatServerRetriever(addresses, true);
 				auto contr = new ServerRetrievalController(retriever);
 				contr.startMessage = Format("Got {} servers, querying...",
 				                                             addresses.length);
