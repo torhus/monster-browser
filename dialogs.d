@@ -33,6 +33,7 @@ import common;
 import mainwindow;
 import serveractions;
 import serverlist;
+import servertable;
 import settings;
 
 

@@ -30,13 +30,16 @@ import dwt.widgets.TableItem;
 
 import colorednames;
 import common;
+import cvartable;
 import geoip;
 import launch;
-import mainwindow;
+import playertable;
 import serveractions;
 import serverlist;
 import settings;
 
+
+ServerTable serverTable;  ///
 
 // should correspond to serverlist.ServerColumn
 char[][] serverHeaders =

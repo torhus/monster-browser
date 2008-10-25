@@ -13,10 +13,11 @@ import dwt.widgets.TableItem;
 
 import colorednames;
 import common;
-import main;
 import serverlist;
 import settings;
 
+
+PlayerTable playerTable;  ///
 
 // should correspond to serverlist.PlayerColumn
 char[][] playerHeaders = ["Name", "Score", "Ping"];

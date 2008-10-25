@@ -7,9 +7,11 @@ import dwt.widgets.TableColumn;
 import dwt.widgets.TableItem;
 
 import common;
-import main;
 import serverlist;
 import settings;
+
+
+CvarTable cvarTable;  ///
 
 
 ///

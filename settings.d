@@ -8,10 +8,12 @@ import Integer = tango.text.convert.Integer;
 import tango.stdc.stdio;
 
 import common;
+import cvartable;
 import ini;
+import playertable;
 import mainwindow;
 import serverlist;
-
+import servertable;
 
 version (Windows) {
 	import tango.stdc.stringz;

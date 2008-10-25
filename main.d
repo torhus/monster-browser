@@ -26,7 +26,6 @@ import geoip : disposeFlagImages;
 version (Windows)
 	import link;
 import mainwindow;
-import qstat;
 import serveractions;
 import serverlist;
 import servertable;

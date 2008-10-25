@@ -4,8 +4,8 @@ import dwt.dwthelper.Runnable;
 import dwt.widgets.Display;
 
 import common : arguments;
-import mainwindow;
 import serverlist : ServerData;
+import servertable;
 
 
 ///
