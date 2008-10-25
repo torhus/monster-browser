@@ -36,13 +36,10 @@ import settings;
 import threadmanager;
 
 
-CvarTable cvarTable;
-PlayerTable playerTable;
-ServerTable serverTable;
-StatusBar statusBar;
-FilterBar filterBar;
-SashForm middleForm, rightForm;
-MainWindow mainWindow;
+StatusBar statusBar;  ///
+FilterBar filterBar;  ///
+SashForm middleForm, rightForm;  ///
+MainWindow mainWindow;  ///
 
 
 ///

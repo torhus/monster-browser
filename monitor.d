@@ -6,7 +6,6 @@ import tango.core.Thread;
 
 import common;
 import dialogs;
-import main;
 import serveractions;
 
 
