@@ -178,7 +178,7 @@ final class FromFileServerRetriever : IServerRetriever
 final class QstatServerRetriever : IServerRetriever
 {
 	///
-	this(in char[][] addresses, bool saveList=false)
+	this(Set!(char[]) addresses, bool saveList=false)
 	{
 		addresses_ = addresses;
 		outputFile_ = saveList ? "servers.tmp" : null;
@@ -191,8 +191,7 @@ final class QstatServerRetriever : IServerRetriever
 		// FIXME: check if this code could be moved into prepare()
 		if (Path.exists(appDir ~ REFRESHFILE))
 			Path.remove(appDir ~ REFRESHFILE);
-		serverCount_ = appendServersToFile(appDir ~ REFRESHFILE,
-		                                             Set!(char[])(addresses_));
+		serverCount_ = appendServersToFile(appDir ~ REFRESHFILE, addresses_);
 		log(Format("Wrote {} addresses to {}.", serverCount_, REFRESHFILE));
 	}
 
@@ -265,7 +264,7 @@ final class QstatServerRetriever : IServerRetriever
 	
 
 	private {
-		char[][] addresses_;
+		Set!(char[]) addresses_;
 		int serverCount_;
 		char[] outputFile_;
 		bool completed_;
