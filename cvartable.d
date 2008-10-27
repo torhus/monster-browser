@@ -44,11 +44,13 @@ class CvarTable
 
 	void setItems(char[][][] items)  ///
 	{
+		table_.setRedraw(false);
 		table_.setItemCount(0);
 		foreach (v; items) {
 			TableItem item = new TableItem(table_, DWT.NONE);
       		item.setText(v);
       	}
+		table_.setRedraw(true);
   	}
 
 	void clear()  ///
