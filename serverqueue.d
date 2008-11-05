@@ -4,7 +4,7 @@ import dwt.dwthelper.Runnable;
 import dwt.widgets.Display;
 
 import common : arguments;
-import serverlist : ServerData;
+import serverlist;
 import servertable;
 
 
@@ -15,10 +15,9 @@ class ServerQueue
 	this(bool delegate(ServerData*) addDg)
 	{
 		addDg_ = addDg;
-		
-		Display.getDefault.syncExec(new class Runnable {
-			void run() { createTimerTask; }
-		});
+
+		timerTask_ = new TimerTask;
+		Display.getDefault.syncExec(timerTask_);
 	}
 
 
@@ -47,17 +46,14 @@ class ServerQueue
 
 
 	/// Note: Must be called by the GUI thread.
-	private void createTimerTask()
-	{
-		Display.getDefault.timerExec(100, new class Runnable {
-			void run()
-			{
-				if (stop_)
-					return;
-				synchronizedAdd;
-				createTimerTask;
-			}
-		});
+	private class TimerTask : Runnable {
+		void run()
+		{
+			if (stop_)
+				return;
+			synchronizedAdd;
+			Display.getDefault.timerExec(100, timerTask_);
+		}
 	}
 
 
@@ -95,5 +91,6 @@ class ServerQueue
 		ServerData[] list_;
 		bool delegate(ServerData*) addDg_;
 		bool stop_ = false;
+		TimerTask timerTask_;
 	}
 }
