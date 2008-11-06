@@ -1,5 +1,6 @@
 module serverlist;
 
+import tango.core.Array;
 import tango.core.Exception : IOException;
 import Path = tango.io.Path;
 debug import tango.io.Stdout;
@@ -165,14 +166,13 @@ class ServerList
 	bool add(ServerData* sd)
 	{
 		bool refresh = false;
-		int index;
 
 		synchronized (this) {
 			isSorted_ = false;
 			sd.server[ServerColumn.COUNTRY] = getCountryCode(sd);
 			list ~= *sd;
 			if (!isFilteredOut(sd)) {
-				index = _insertSorted(&list[$ - 1]);
+				insertSorted(&list[$ - 1]);
 				refresh = true;
 			}
 		}
@@ -184,8 +184,6 @@ class ServerList
 	///
 	void replace(ServerData* sd)
 	{
-		int index = -1;
-
 		synchronized (this) {
 			isSorted_ = false;
 			int i = getIndex(sd.server[ServerColumn.ADDRESS]);
@@ -198,7 +196,7 @@ class ServerList
 			list[i] = *sd;
 			removeFromFiltered(sd);
 			if (!isFilteredOut(sd))
-				index = _insertSorted(&list[i]);
+				insertSorted(&list[i]);
 		}
 
 		if (!arguments.norefresh)
@@ -457,82 +455,12 @@ private:
 	/**
 	 * Insert a server in sorted order in the filtered list.
 	 */
-	int _insertSorted(ServerData* sd)
+	size_t insertSorted(ServerData* sd)
 	{
-		bool less(ServerData* a, ServerData* b)
-		{
-			return (*a < *b);
-		}
+		static bool less(ServerData* a, ServerData* b) { return (*a < *b); }
 
-		bool greaterOrEq(ServerData* a, ServerData* b)
-		{
-			return (*a >= *b);
-		}
-
-		size_t index;
-
-		if (filteredList.length == 0) {
-			index = filteredList.length;
-			insertInFiltered(index, sd);
-		}
-		else {
-			size_t i = filteredList.length / 2;
-			size_t delta = i;
-			if (delta < 1) delta = 1;
-			for (;;) {
-				if (delta > 1) {
-					delta /= 2;
-				}
-				if (less(sd, filteredList[i])) {
-					if (i == 0) {
-						index = 0;
-						insertInFiltered(0, sd);
-						break;
-					}
-					else if (greaterOrEq(sd, filteredList[i-1])) {
-						index = i;
-						insertInFiltered(i, sd);
-						break;
-					}
-					else {
-						i -= delta;
-					}
-				}
-				else {
-					if (i == filteredList.length - 1) {
-						index = filteredList.length;
-						insertInFiltered(index, sd);
-						break;
-					}
-					else if (less(sd, filteredList[i+1])) {
-							insertInFiltered(i+1, sd);
-							index = i+1;
-							break;
-					}
-					else {
-						i += delta;
-					}
-				}
-			}
-		}
-
-		debug {
-			auto fL = filteredList;
-			auto i = index;
-
-			// Verify that the new element was inserted at the right location, by
-			// comparing it to the elements before and after it.
-			if (!((i == 0 || greaterOrEq(fL[i], fL[i-1])) &&
-			      (i == (fL.length - 1)	 || less(fL[i], fL[i + 1])))) {
-
-				db("_insertSorted, index = " ~ Integer.toString(i) ~ "\n" ~
-				   "new: " ~ sd.server[ServerColumn.NAME] ~ "\n" ~
-				   "i-1:" ~ (i > 0 ? fL[i-1].server[ServerColumn.NAME]  : "START") ~ "\n" ~
-				   "i:  " ~ fL[i].server[ServerColumn.NAME] ~ "\n" ~
-				   "i+1:" ~ (i < (fL.length - 1) ? fL[i+1].server[ServerColumn.NAME] : "END"));
-			}
-		}
-
+		auto index = ubound(filteredList, sd, &less);
+		insertInFiltered(index, sd);
 		return index;
 	}
 
