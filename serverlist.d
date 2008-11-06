@@ -473,7 +473,7 @@ private:
 
 		if (filteredList.length == 0) {
 			index = filteredList.length;
-			appendToFiltered(sd);
+			insertInFiltered(index, sd);
 		}
 		else {
 			size_t i = filteredList.length / 2;
@@ -501,7 +501,7 @@ private:
 				else {
 					if (i == filteredList.length - 1) {
 						index = filteredList.length;
-						appendToFiltered(sd);
+						insertInFiltered(index, sd);
 						break;
 					}
 					else if (less(sd, filteredList[i+1])) {
@@ -538,18 +538,18 @@ private:
 
 	void insertInFiltered(size_t index, ServerData* sd)
 	{
-		assert (index < filteredList.length);
+		assert (index <= filteredList.length);
 
+		size_t oldLength = filteredList.length;
 		filteredList.length = filteredList.length + 1;
-		memmove(filteredList.ptr + index + 1, filteredList.ptr + index,
-		           (filteredList.length - 1 - index) * filteredList[0].sizeof);
-		filteredList[index] = sd;
-		filteredIpHashValid_ = false;
-	}
 
-	void appendToFiltered(ServerData* psd)
-	{
-		filteredList ~= psd;
+		if (index < oldLength) {
+			auto ptr = filteredList.ptr + index;
+			size_t bytes = (oldLength - index) * filteredList[0].sizeof;
+			memmove(ptr + 1, ptr, bytes);
+		}
+		filteredList[index] = sd;
+
 		filteredIpHashValid_ = false;
 	}
 
