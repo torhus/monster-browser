@@ -266,8 +266,10 @@ class ServerList
 		synchronized (this) {
 			if (!filteredIpHashValid_)
 				createFilteredIpHash();
-			if (int* i = ipAndPort in filteredIpHash_)
+			if (int* i = ipAndPort in filteredIpHash_) {
+				assert(*i >= 0 && *i < filteredList.length);
 				return *i;
+			}
 		}
 		return -1;
 	}
@@ -466,13 +468,13 @@ private:
 
 	void insertInFiltered(size_t index, ServerData* sd)
 	{
-		assert (index <= filteredList.length);
+		assert(index <= filteredList.length);
 
 		size_t oldLength = filteredList.length;
 		filteredList.length = filteredList.length + 1;
 
 		if (index < oldLength) {
-			auto ptr = filteredList.ptr + index;
+			ServerData** ptr = filteredList.ptr + index;
 			size_t bytes = (oldLength - index) * filteredList[0].sizeof;
 			memmove(ptr + 1, ptr, bytes);
 		}
@@ -485,9 +487,12 @@ private:
 	{
 		int i = getFilteredIndex(psd.server[ServerColumn.ADDRESS]);
 		assert(i != -1);
-		memmove(filteredList.ptr + i, filteredList.ptr + i + 1,
-		               (filteredList.length - 1 - i) * filteredList[0].sizeof);
+
+		ServerData** ptr = filteredList.ptr + i;
+		size_t bytes = (filteredList.length - 1 - i) * filteredList[0].sizeof;
+		memmove(ptr, ptr + 1, bytes);
 		filteredList.length = filteredList.length - 1;
+
 		filteredIpHash_.removeKey(psd.server[ServerColumn.ADDRESS]);
 	}
 
