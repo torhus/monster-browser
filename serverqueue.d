@@ -15,9 +15,7 @@ class ServerQueue
 	this(bool delegate(ServerData*) addDg)
 	{
 		addDg_ = addDg;
-
-		timerTask_ = new TimerTask;
-		Display.getDefault.syncExec(timerTask_);
+		Display.getDefault.syncExec(new TimerTask);
 	}
 
 
@@ -52,7 +50,7 @@ class ServerQueue
 			if (stop_)
 				return;
 			synchronizedAdd;
-			Display.getDefault.timerExec(100, timerTask_);
+			Display.getDefault.timerExec(100, this);
 		}
 	}
 
@@ -91,6 +89,5 @@ class ServerQueue
 		ServerData[] list_;
 		bool delegate(ServerData*) addDg_;
 		bool stop_ = false;
-		TimerTask timerTask_;
 	}
 }
