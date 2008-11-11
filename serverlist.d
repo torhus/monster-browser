@@ -181,8 +181,8 @@ class ServerList
 	}
 
 
-	///
-	void replace(ServerData* sd)
+	/// Always returns true.
+	bool replace(ServerData* sd)
 	{
 		synchronized (this) {
 			isSorted_ = false;
@@ -199,13 +199,7 @@ class ServerList
 				insertSorted(&list[i]);
 		}
 
-		if (!arguments.norefresh)
-			Display.getDefault.syncExec(new class Runnable {
-				void run()
-				{
-					serverTable.quickRefresh;
-				}
-			});
+		return true;
 	}
 
 
