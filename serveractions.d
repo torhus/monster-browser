@@ -280,13 +280,11 @@ class ServerRetrievalController
 	void run()
 	{
 		try {
-			if (replace_) {
-				deliverDg_ = &getActiveServerList.replace;
-			}
-			else {
-				serverQueue_ = new ServerQueue(&getActiveServerList.add);
-				deliverDg_ = &serverQueue_.add;
-			}
+			auto serverList = getActiveServerList();
+			auto dg = replace_ ? &serverList.replace : &serverList.add;
+
+			serverQueue_ = new ServerQueue(dg);
+			deliverDg_ = &serverQueue_.add;
 
 			statusBarUpdater_ = new StatusBarUpdater;
 			statusBarUpdater_.text = startMessage;
@@ -297,8 +295,8 @@ class ServerRetrievalController
 			assert (serverCount_ != 0);
 
 			serverRetriever_.retrieve(&deliver);
-			getActiveServerList.complete = !threadManager.abort;
-			
+			serverList.complete = !threadManager.abort;
+
 			// a benchmarking tool
 			if (arguments.quit) {
 				Display.getDefault.syncExec(new class Runnable {
