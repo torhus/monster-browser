@@ -9,7 +9,7 @@ Then click on 'Get new list'.  That might take a while, but you can use 'Refresh
 
 The filters and column sorting should be pretty straight forward to use.  You can leave the filters on while doing a refresh or getting a new list, all the servers will be queried anyway.
 
-To join a server, just select it and double click or press <enter>.  If the server requires a password, or has an optional password for reserved slots, a password dialog will pop up.  The password will be stored.
+To join a server, just select it and double click or press <enter>.  If the server requires a password, or has an optional password for reserved slots, a password dialog will pop up.  The password will be stored on disk.
 
 
 Customizing the Mod List
@@ -22,6 +22,16 @@ Adding Extra Servers
 If you want to check a server that isn't registered with the master server, you can click on 	'Specify...' to add it to the list.  There's an option to save it to disk, so that it won't be lost when you restart Monster Browser.
 
 If you have more than a couple of servers to add, it's easier to add them directly to a file called '<modname>.extra' in the Monster Browser directory.  The format is just one IP address per line, with or without a port number.  For instance, when refreshing a list or getting a new list for the cpma mod, Monster Browser checks for existance of a file called 'cpma.extra', and adds any servers listed in it to the list of servers to query.  These files are also where the 'Specify...' feature saves the added servers to.
+
+
+Keyboard shortcuts
+------------------
+F4     - Get new list
+F5     - Refresh list
+Enter  - Join server
+Ctrl+R - Refresh selected server(s)
+Ctrl+C - Copy the addresses of selected server(s) to the clipboard
+Esc    - Abort action
 
 
 Info and contact
