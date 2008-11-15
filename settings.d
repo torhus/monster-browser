@@ -29,27 +29,34 @@ version (Windows) {
 /// Access to mod-specific configuration.
 struct Mod
 {
-	char[] name; ///
+	char[] name; /// Quake 3 gamename, like "baseq3".
 
-	char[] masterServer()  ///
+	char[] masterServer()  /// Like "master3.idsoftware.com".
 	{
 		return section.getValue("masterServer", "master3.idsoftware.com");
 	}
 
-	char[] serverFile() ///
+	char[] serverFile() /// Like "master3.idsoftware.com.lst".
 	{
 		return appDir ~ replace(masterServer.dup, ':', '_') ~ ".lst";
 	}
 
-	char[] extraServersFile() { return appDir ~ name ~ ".extra"; }  ///
+	char[] extraServersFile() /// Like "baseq3.extra".
+	{
+		return appDir ~ name ~ ".extra";
+	}
 
-	char[] exePath()  ///
+	/**
+	 * Returns exePath from the mod-specific configuration, or gamePath from
+	 * settings.ini if the former is not set.
+	 */
+	char[] exePath()
 	{
 		char[] r = section["exePath"];
 		return r ? r : getSetting("gamePath");
 	}
 
-	bool useGslist()
+	bool useGslist() /// Use gslist instead of qstat when querying master?
 	{
 		char[] r = section["useGslist"];
 		return r ? (r == "true") : true;
@@ -59,9 +66,9 @@ struct Mod
 }
 
 
-char[][] modNames;  /// The mod names shown in the mod selection pull-down.
+char[][] modNames;  /// The names of all mods loaded from the mod config file.
 Mod activeMod; /// Configuration for the active mod.
-char[] modFileName;  ///
+char[] modFileName;  /// Name of the file containing options for each mod.
 
 private {
 	char[] settingsFileName;
@@ -135,7 +142,19 @@ void setActiveMod(char[] name)
 }
 
 
-void loadModFile()  ///
+/**
+ * Load the mod-specific configuration.
+ *
+ * Updates the activeMod global, setting it to the first mod found in the
+ * config file if it wasn't set already.
+ *
+ * If the mod config file is not found, a default file is created and used
+ * instead.
+ *
+ * This function can be called again to reload the configuration after it has
+ * been changed on disk.
+ */
+void loadModFile()
 {
 	assert(modFileName.length);
 
@@ -149,8 +168,8 @@ void loadModFile()  ///
 	modsIni.remove("");
 
 	if (modsIni.sections.length < 1) {
-		// Invalid format, probably the old version.  Just overwrite with defaults
-		// and try again.
+		// Invalid format, probably the old version.  Just overwrite with
+		// defaults and try again.
 		writeDefaultModsFile();
 		delete modsIni;
 		modsIni = new Ini(modFileName);
@@ -184,6 +203,12 @@ private void writeDefaultModsFile()
 
 /**
  * Load program settings, mod configuration, and saved session state.
+ *
+ * Missing settings are replaced by defaults, this also happens if the config
+ * file is missing altogether.
+ *
+ * If the "gamePath" setting is missing, attempts to find quake3.exe by looking
+ * in the registry.  If that fails, a sensible default is used.
  */
 void loadSettings()
 {
@@ -224,7 +249,7 @@ void loadSettings()
  */
 void saveSettings()
 {
-	if (!mainWindow.maximized && !mainWindow.minimized) {
+	if (!mainWindow.maximized) {
 		char[] width  = Integer.toString(mainWindow.size.x);
 		char[] height = Integer.toString(mainWindow.size.y);
 		setSetting("windowSize", width ~ "x" ~ height);
@@ -242,7 +267,12 @@ void saveSettings()
 }
 
 
-char[] getSetting(char[] key) ///
+/**
+ * Returns the setting's value, or a default if not set.
+ *
+ * Will assert in debug mode if a non-existent key is given.
+ */
+char[] getSetting(in char[] key)
 {
 	assert(settingsIni && settingsIni.sections.length > 0);
 	IniSection sec = settingsIni["Settings"];
@@ -253,7 +283,12 @@ char[] getSetting(char[] key) ///
 }
 
 
-void setSetting(char[] key, char[] value) ///
+/**
+ * Set a setting.
+ *
+ * Will assert in debug mode if a non-existent key is given.
+ */
+void setSetting(char[] key, char[] value)
 {
 	assert(settingsIni && settingsIni.sections.length > 0);
 	IniSection sec = settingsIni["Settings"];
@@ -263,7 +298,14 @@ void setSetting(char[] key, char[] value) ///
 }
 
 
-char[] getPassword(char[] ip) ///
+/**
+ * Retrieve a stored password.
+ *
+ * ip is an IP address, with an optional colon and port number at the end.
+ *
+ * Returns: The password, or an empty string if none was found.
+ */
+char[] getPassword(in char[] ip)
 {
 	IniSection sec = settingsIni.section("Passwords");
 	if (sec is null)
@@ -272,7 +314,8 @@ char[] getPassword(char[] ip) ///
 }
 
 
-void setPassword(char[] ip, char[] password) ///
+/// Stores server passwords for later retrieval by getPassword().
+void setPassword(char[] ip, char[] password)
 {
 	IniSection sec = settingsIni.addSection("Passwords");
 	sec.setValue(ip, password);
@@ -335,7 +378,12 @@ private void gatherSessionState()
 }
 
 
-char[] getSessionState(in char[] key) ///
+/**
+ * Returns the setting's value, or a default if not set.
+ *
+ * Will assert in debug mode if a non-existent key is given.
+ */
+char[] getSessionState(in char[] key)
 {
 	IniSection sec = settingsIni.section("Session");
 	assert(sec !is null);
