@@ -1,5 +1,6 @@
-Work in progress - 2008-08-28
+Work in progress - 2008-10-15
 -----------------------------
+- New: Can now press F4 to get a new list, F5 to refresh.
 - New: Can now press Esc to interrupt operations.
 - Fix: Installer didn't create shortcuts by default.
 
