@@ -13,6 +13,7 @@ import tango.stdc.ctype : isdigit;
 import tango.text.Ascii;
 import tango.text.Util;
 import Float = tango.text.convert.Float;
+debug import tango.text.convert.Format;
 import tango.text.convert.Integer;
 import tango.text.stream.LineIterator;
 
@@ -48,6 +49,7 @@ bool parseOutput(LineIterator!(char) iter, bool delegate(ServerData*) deliver,
 	char[][] gtypes;
 	BufferOutput outfile;
 	debug scope timer = new Timer;
+	debug scope timer2 = new Timer;
 	Display display = Display.getDefault;
 	bool keepGoing = true;
 
@@ -83,7 +85,9 @@ bool parseOutput(LineIterator!(char) iter, bool delegate(ServerData*) deliver,
 
 each_server:
 	while (keepGoing) {
+		debug checkTime(timer2, "1");
 		char[] line = iter.next();
+		debug checkTime(timer2, "2");
 		if (line is null)
 			break;
 
@@ -156,20 +160,32 @@ each_server:
 
 				sd.server[ServerColumn.NAME] = stripColorCodes(sd.rawName);
 
+				debug checkTime(timer2, "3");
 				keepGoing = deliver(&sd);
+				debug checkTime(timer2, "4");
 			}
 			else /*if (!MOD_ONLY)*/ { // server didn't respond
 				/*sd.server.length = servertable.serverHeaders.length;
 				sd.server[ServerColumn.ADDRESS] = fields[Field.ADDRESS];*/
+				debug checkTime(timer2, "3x");
 				keepGoing = deliver(null);
+				debug checkTime(timer2, "4x");
 			}
 			if (outfile) {
 				outfile.write(newline);
 			}
 		}
 	}
-	
+
 	return keepGoing;
+}
+
+
+debug private void checkTime(Timer t, char[] name)
+{
+	if (t.seconds >= 2)
+		log(Format("qstat timer {}: {}", name, t.seconds));
+	t.restart;
 }
 
 
