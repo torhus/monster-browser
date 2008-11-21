@@ -168,6 +168,8 @@ void log(char[] s)
 void logx(char[] file, int line, Exception e)
 {
 	log(file, line, e.classinfo.name ~ ": " ~ e.toString());
+	if (e.info)
+		log(e.info.toString());
 }
 
 
