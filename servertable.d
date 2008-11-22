@@ -370,7 +370,8 @@ private:
 			if (stopServerRefresh_ !is null)
 				stopServerRefresh_();
 			int index = table_.getSelectionIndex();
-			joinServer(getActiveServerList.getFiltered(index));
+			ServerList serverList = getActiveServerList;			
+			joinServer(serverList.modName, serverList.getFiltered(index));
 		}
 	}
 
@@ -528,8 +529,9 @@ private:
 		menu.setDefaultItem(item);
 		item.addSelectionListener(new class SelectionAdapter {
 			void widgetSelected(SelectionEvent e) {
-				joinServer(getActiveServerList.getFiltered(
-				                                  table_.getSelectionIndex()));
+				auto serverList = getActiveServerList;
+				joinServer(serverList.modName,
+				           serverList.getFiltered(table_.getSelectionIndex()));
 			}
 		});
 

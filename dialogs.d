@@ -285,7 +285,8 @@ class SpecifyServerDialog
 		addressText_.setLayoutData(addressTextData);
 
 		saveButton_ = new Button (shell_, DWT.CHECK);
-		saveButton_.setText("Save server on file ('" ~ activeMod.extraServersFile ~ "')");
+		char[] file = getModConfig(filterBar.selectedMod).extraServersFile;
+		saveButton_.setText("Save server on file ('" ~ file ~ "')");
 		auto saveButtonData = new GridData;
 		saveButtonData.horizontalAlignment = DWT.CENTER;
 		saveButton_.setLayoutData(saveButtonData);
@@ -323,22 +324,24 @@ class SpecifyServerDialog
 						closeDialog = false;
 					}
 					else {
-						if (getActiveServerList.getIndex(address) == -1) {
-							auto list = getActiveServerList();
+						auto serverList = getActiveServerList();
+						if (serverList.getIndex(address) == -1) {
 							if (saveButton_.getSelection()) {
-								if (!(address in list.extraServers)) {
+								if (!(address in serverList.extraServers)) {
+									Mod mod =
+									       getModConfig(filterBar.selectedMod);
+									char[] file = mod.extraServersFile;
 									// FIXME: error check here (FileException)
-									File(activeMod.extraServersFile)
-								                    .append(address ~ newline);
+									File(file).append(address ~ newline);
 								}
 							}
-							list.addExtraServer(address);
+							serverList.addExtraServer(address);
 							queryServers([address], false, true);
 						}
 						else {
 							info("That server is already on the list.  If you can't see it, "
 							        "try turning off the filters.");
-							int i = getActiveServerList.getFilteredIndex(address);
+							int i = serverList.getFilteredIndex(address);
 							if (i != -1)
 								serverTable.fullRefresh(i);
 						}

@@ -36,23 +36,23 @@ char[] REFRESHFILE = "refreshlist.tmp";
  *
  * Returns: A set containing the IP addresses of the servers.
  */
-Set!(char[]) browserGetNewList()
+Set!(char[]) browserGetNewList(in Mod mod)
 {
 	char[] cmdLine;
 	size_t count = -1;
 	Set!(char[]) addresses;
-	bool gslist = common.haveGslist && activeMod.useGslist;
+	bool gslist = common.haveGslist && mod.useGslist;
 
 	if (gslist)
 		cmdLine = "gslist -n quake3 -o 5";
 	else
-		cmdLine = "qstat -q3m,68,outfile " ~ activeMod.masterServer ~ ",-";
+		cmdLine = "qstat -q3m,68,outfile " ~ mod.masterServer ~ ",-";
 
 	version (linux)
 		cmdLine = "./" ~ cmdLine;
 
-	if (gslist && MOD_ONLY && activeMod.name!= "baseq3")
-		cmdLine ~= " -f \"(gametype = \'" ~ activeMod.name ~ "\'\")";
+	if (gslist && MOD_ONLY && mod.name!= "baseq3")
+		cmdLine ~= " -f \"(gametype = \'" ~ mod.name ~ "\'\")";
 
 	proc = new Process();
 	proc.workDir = appDir;
@@ -243,7 +243,8 @@ final class QstatServerRetriever : IServerRetriever
 	{
 		if (completed_ ) {
 			try {
-				auto serverFile = activeMod.serverFile;
+				Mod mod = getModConfig(getActiveServerList.modName);
+				char[] serverFile = mod.serverFile;
 				if (Path.exists(serverFile))
 					Path.remove(serverFile);
 				Path.rename(outputFile_, serverFile);
@@ -261,7 +262,7 @@ final class QstatServerRetriever : IServerRetriever
 			}
 		}
 	}
-	
+
 
 	private {
 		Set!(char[]) addresses_;

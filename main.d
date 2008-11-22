@@ -166,7 +166,7 @@ private void _main(char[][] args)
 		}
 	});
 
-	setActiveServerList(activeMod.name);
+	setActiveServerList(filterBar.selectedMod);
 	serverTable.getTable.setFocus();
 	
 	clipboard = new Clipboard(Display.getDefault);
@@ -174,18 +174,20 @@ private void _main(char[][] args)
 	threadManager = new ThreadManager;
 
 	mainWindow.open();
+	
+	Mod mod = getModConfig(filterBar.selectedMod);
 
 	if (arguments.fromfile) {
 		threadManager.run(&loadSavedList);
 	}
 	else {
-		if (common.haveGslist && activeMod.useGslist) {
+		if (common.haveGslist && mod.useGslist) {
 			threadManager.run(&getNewList);
 		}
 		else {
 			// Qstat is too slow to do a getNewList(), so just refresh
 			// the old list instead, if possible.
-			if (exists(activeMod.serverFile))
+			if (exists(mod.serverFile))
 				threadManager.run(&refreshList);
 			else
 				threadManager.run(&getNewList);

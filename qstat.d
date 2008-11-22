@@ -47,6 +47,7 @@ bool parseOutput(LineIterator!(char) iter, bool delegate(ServerData*) deliver,
                                                     char[] outputFileName=null)
 {
 	char[][] gtypes;
+	char[] modName = getActiveServerList.modName;
 	BufferOutput outfile;
 	debug scope timer = new Timer;
 	debug scope timer2 = new Timer;
@@ -75,9 +76,9 @@ bool parseOutput(LineIterator!(char) iter, bool delegate(ServerData*) deliver,
 		debug log("	qstat.parseOutput took " ~
 		                  Float.toString(timer.seconds) ~ " seconds.");
 	}
-
-	if (activeMod.name in gameTypes) {
-		gtypes = gameTypes[activeMod.name];
+	
+	if (modName in gameTypes) {
+		gtypes = gameTypes[modName];
 	}
 	else {
 		gtypes = defaultGameTypes;
@@ -105,12 +106,12 @@ each_server:
 			if (fields.length >= 9) {
 				bool keep_server = false;
 
-				if (icompare(fields[Field.GAME], activeMod.name) == 0)
+				if (icompare(fields[Field.GAME], modName) == 0)
 					keep_server = true;
 
-				/*if (activeMod.name != "baseq3" &&
+				/*if (modName != "baseq3" &&
 				             MOD_ONLY &&
-				             icmp(fields[Field.GAME], activeMod.name) != 0) {
+				             icmp(fields[Field.GAME], modName) != 0) {
 					debug printf("skipped %.*s\n", line);
 					debug line = readLine();
 					debug printf("        %.*s\n", line);
@@ -134,7 +135,7 @@ each_server:
 					outfile.write(line);
 					outfile.write(newline);
 				}
-				char[] matchMod = keep_server ? null : activeMod.name;
+				char[] matchMod = keep_server ? null : modName;
 				if (!parseCvars(line, &sd, matchMod, gtypes))
 					continue each_server;
 				sortStringArray(sd.cvars);
@@ -318,10 +319,11 @@ private void invalidInteger(in char[] serverName, in char[] badValue)
 
 
 /**
- * Parses a server list file to find the addresses of all servers for the
- * currently active mod.  Optionally outputs the IP and port numbers to a file.
+ * Parses a server list file to find the addresses of all servers for a mod
+ * Optionally outputs the IP and port numbers to a file.
  *
  * Params:
+ *     modName  = Name of the mod.
  *     readFrom = File to read from.  The format is taken to be
  *                qstat's raw output.
  *     writeTo  = Optional. File to write to. The format is one IP:PORT combo
@@ -332,7 +334,8 @@ private void invalidInteger(in char[] serverName, in char[] badValue)
  *
  * Throws: IOException.
  */
-Set!(char[]) filterServerFile(in char[] readFrom, in char writeTo[]=null)
+Set!(char[]) filterServerFile(in char[] modName, in char[] readFrom,
+                                                        in char writeTo[]=null)
 {
 	scope infile = new TextFileInput(readFrom);
 	scope OutputStream outfile;
@@ -367,7 +370,7 @@ Set!(char[]) filterServerFile(in char[] readFrom, in char writeTo[]=null)
 				outputServer(fields[Field.ADDRESS]);
 			}
 			else if (/*activeMod.name != "baseq3" &&*/
-			               icompare(fields[Field.GAME], activeMod.name) == 0) {
+			               icompare(fields[Field.GAME], modName) == 0) {
 				outputServer(fields[Field.ADDRESS]);
 			}
 			else { // need to parse cvars to find out which mod this server runs
@@ -378,12 +381,12 @@ Set!(char[]) filterServerFile(in char[] readFrom, in char writeTo[]=null)
 					// Not sure if it's right to check 'game' or not.  Might
 					// end up including too many servers.
 					if (cvar[0] == "game" &&
-					                  icompare(cvar[1], activeMod.name) == 0) {
+					                  icompare(cvar[1], modName) == 0) {
 						outputServer(fields[Field.ADDRESS]);
 						break;
 					}
 					if (cvar[0] == "gamename" &&
-					                  icompare(cvar[1], activeMod.name) == 0) {
+					                  icompare(cvar[1], modName) == 0) {
 						outputServer(fields[Field.ADDRESS]);
 						break;
 					}
