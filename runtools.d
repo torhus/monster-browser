@@ -18,16 +18,11 @@ import common;
 import dialogs;
 import qstat;
 import serverlist;
-import servertable;
 import set;
 import settings;
 
 
-Process proc;
-
-
-/// The name of the file that qstat reads addresses from when querying servers.
-char[] REFRESHFILE = "refreshlist.tmp";
+private Process proc;
 
 
 /**
@@ -39,28 +34,26 @@ char[] REFRESHFILE = "refreshlist.tmp";
 Set!(char[]) browserGetNewList(in Mod mod)
 {
 	char[] cmdLine;
-	size_t count = -1;
 	Set!(char[]) addresses;
 	bool gslist = common.haveGslist && mod.useGslist;
 
-	if (gslist)
-		cmdLine = "gslist -n quake3 -o 5";
-	else
-		cmdLine = "qstat -q3m,68,outfile " ~ mod.masterServer ~ ",-";
-
 	version (linux)
-		cmdLine = "./" ~ cmdLine;
+		cmdLine ~= "./";
 
+	if (gslist)
+		cmdLine ~= "gslist -n quake3 -o 5";
+	else
+		cmdLine ~= "qstat -q3m,68,outfile " ~ mod.masterServer ~ ",-";
+
+	// use gslist's server-sider filtering
 	if (gslist && MOD_ONLY && mod.name!= "baseq3")
 		cmdLine ~= " -f \"(gametype = \'" ~ mod.name ~ "\'\")";
 
-	proc = new Process();
-	proc.workDir = appDir;
-	//scope (exit) if (proc) proc.wait();
-
 	try {
+		proc = new Process(cmdLine);
+		proc.workDir = appDir;
 		log("Executing '" ~ cmdLine ~ "'.");
-		proc.execute(cmdLine, null);
+		proc.execute();
 	}
 	catch (ProcessException e) {
 		char[] s = gslist ? "gslist" : "qstat";
@@ -74,7 +67,6 @@ Set!(char[]) browserGetNewList(in Mod mod)
 			auto lineIter= new LineIterator!(char)(proc.stdout);
 			size_t start = gslist ? 0 : "q3s ".length;
 			addresses = collectIpAddresses(lineIter, start);
-			//proc.stdout.close();  FIXME: any point to this?
 		}
 		catch (IOException e) {
 			//logx(__FILE__, __LINE__, e);
@@ -199,10 +191,6 @@ final class QstatServerRetriever : IServerRetriever
 	///
 	int prepare()
 	{
-		proc = new Process();
-		proc.workDir = appDir;
-		//scope (exit) if (proc) proc.wait();
-
 		try {
 			char[] cmdLine = "qstat -f " ~ REFRESHFILE ~ " -raw,game " ~ FIELDSEP ~
 							  " -P -R -default q3s";
@@ -211,16 +199,16 @@ final class QstatServerRetriever : IServerRetriever
 			version (linux)
 				cmdLine = "./" ~ cmdLine;
 
+			proc = new Process(cmdLine);
+			proc.workDir = appDir;
 			log("Executing '" ~ cmdLine ~ "'.");
 			// FIXME: feed qstat through stdin (-f -)?
-			proc.execute(cmdLine, null);
+			proc.execute();
 		}
 		catch (ProcessException e) {
 			error("qstat not found!\nPlease reinstall " ~ APPNAME ~ ".");
 			return 0;
 		}
-		
-		//proc.stdout.close();  FIXME: any point to this?
 
 		return serverCount_;
 	}
@@ -265,6 +253,8 @@ final class QstatServerRetriever : IServerRetriever
 
 
 	private {
+		static const char[] REFRESHFILE = "refreshlist.tmp";
+
 		Set!(char[]) addresses_;
 		int serverCount_;
 		char[] outputFile_;
