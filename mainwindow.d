@@ -263,12 +263,15 @@ class FilterBar : Composite
 			}
 		}
 
+		lastSelectedMod_ = modCombo_.getText();
+
 		modCombo_.clearSelection();
 		modCombo_.addSelectionListener(new class SelectionAdapter {
 			public void widgetSelected(SelectionEvent e)
 			{
 				serverTable.getTable.setFocus();
-				switchToMod((cast(Combo)e.widget).getText());
+				lastSelectedMod_ = (cast(Combo)e.widget).getText();
+				switchToMod(lastSelectedMod_);
 			}
 
 			public void widgetDefaultSelected(SelectionEvent e)
@@ -290,6 +293,7 @@ class FilterBar : Composite
 				}
 
 				serverTable.getTable.setFocus();
+				lastSelectedMod_ = s;
 				switchToMod(s);
 			}
 		});
@@ -298,10 +302,10 @@ class FilterBar : Composite
 	}
 
 
-	/// The currently selected mod name.
+	/// The last selected mod name.
 	char[] selectedMod()
 	{
-		return modCombo_.getText();
+		return lastSelectedMod_;
 	}
 
 
@@ -342,6 +346,7 @@ class FilterBar : Composite
 
 private:
 	Button button1_, button2_;
+	char[] lastSelectedMod_;
 	Combo modCombo_;
 }
 
