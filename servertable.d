@@ -216,15 +216,18 @@ class ServerTable
 		}
 
 		// Keep the same servers selected.
-		foreach (ip, v; selectedIps_)
-			selectedIps_[ip] = list.getFilteredIndex(ip);
-		table_.setSelection(selectedIps_.toArray());
+		table_.deselectAll();
+		foreach (ip, v; selectedIps_) {
+			int index = list.getFilteredIndex(ip);
+			selectedIps_[ip] = index;
+			table_.select(index);
+		}
 	}
 
 	/**
 	 * In addition to clearing the table and refilling it with updated data
-	 * without losing the selection (like refresh(), only unconditionally), it
-	 * also:
+	 * without losing the selection (like quickRefresh(), only
+	 * unconditionally), it also:
 	 *
 	 * 1. Updates the cvar and player tables to show information for the
 	 *    selected server, or clears them if there is no server selected.
