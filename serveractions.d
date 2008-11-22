@@ -40,15 +40,14 @@ void switchToMod(char[] name)
 	static char[] nameCopy;
 
 	static void delegate() f() {
-		setActiveMod(nameCopy);
-
-		if (setActiveServerList(activeMod.name)) {
+		if (setActiveServerList(nameCopy)) {
 			switchToActiveMod();
 		}
 		else {
-			if (common.haveGslist && activeMod.useGslist)
+			Mod mod = getModConfig(nameCopy);
+			if (common.haveGslist && mod.useGslist)
 				threadManager.runSecond(&getNewList);
-			else if (Path.exists(activeMod.serverFile))
+			else if (Path.exists(mod.serverFile))
 				threadManager.runSecond(&refreshList);
 			else
 				threadManager.runSecond(&getNewList);
@@ -84,8 +83,9 @@ void delegate() loadSavedList()
 	getActiveServerList.clear();
 	GC.collect();
 
-	if (Path.exists(activeMod.serverFile)) {
-		auto retriever = new FromFileServerRetriever(activeMod.serverFile);
+	char[] file = getModConfig(getActiveServerList.modName).serverFile;
+	if (Path.exists(file)) {
+		auto retriever = new FromFileServerRetriever(file);
 		auto contr = new ServerRetrievalController(retriever);
 		contr.startMessage = "Loading saved server list...";
 		contr.noReplyMessage = "No servers were found in the file";
@@ -144,16 +144,18 @@ void queryServers(in char[][] addresses, bool replace=false, bool select=false)
  */
 void delegate() refreshList()
 {
-	if (!Path.exists(activeMod.serverFile)) {
+	Mod mod = getModConfig(getActiveServerList.modName);
+
+	if (!Path.exists(mod.serverFile)) {
 		error("No server list found on disk, press\n"
                                    "\'Get new list\' to download a new list.");
 		return null;
 	}
-	Set!(char[]) servers = filterServerFile(activeMod.serverFile);
+	Set!(char[]) servers = filterServerFile(mod.name, mod.serverFile);
 
-	log("Refreshing server list for " ~ activeMod.name ~ "...");
+	log("Refreshing server list for " ~ mod.name ~ "...");
 	char[] tmp;
-	char[] sfile = tail(activeMod.serverFile, "/", tmp);
+	char[] sfile = tail(mod.serverFile, "/", tmp);
 	log(Format("Found {} servers in {}.", servers.length, sfile));
 
 	// merge in the extra servers
@@ -195,11 +197,13 @@ void delegate() getNewList()
 	void f()
 	{
 		try {
-			auto addresses = browserGetNewList();
+			ServerList serverList = getActiveServerList();
+			Mod mod = getModConfig(serverList.modName);
+			auto addresses = browserGetNewList(mod);
 			log(Format("Got {} servers from {}.", addresses.length,
-			                                          activeMod.masterServer));
+			                                                mod.masterServer));
 
-			auto extraServers = getActiveServerList().extraServers;
+			auto extraServers = serverList.extraServers;
 			foreach (s; extraServers)
 					addresses.add(s);
 			log(Format("Added {} extra servers.", extraServers.length));
@@ -234,7 +238,8 @@ void delegate() getNewList()
 	GC.collect();
 
 	statusBar.setLeft("Getting new server list...");
-	log("Getting new server list for " ~ activeMod.name ~ "...");
+	char[] modName = getActiveServerList.modName;
+	log("Getting new server list for " ~ modName ~ "...");
 	serverTable.notifyRefreshStarted;
 	
 	return &f;

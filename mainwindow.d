@@ -256,11 +256,11 @@ class FilterBar : Composite
 			if (i == -1) {
 				modCombo_.add(s);
 				modCombo_.select(modCombo_.getItemCount() - 1);
+				createModConfig(s);
 			}
 			else {
 				modCombo_.select(i);
 			}
-			setActiveMod(s);
 		}
 
 		modCombo_.clearSelection();
@@ -283,6 +283,7 @@ class FilterBar : Composite
 				if (i == -1) {
 					combo.add(s);
 					combo.select(combo.getItemCount() - 1);
+					createModConfig(s);
 				}
 				else {
 					combo.select(i);
@@ -295,6 +296,14 @@ class FilterBar : Composite
 
 		setLayout(new RowLayout);
 	}
+
+
+	/// The currently selected mod name.
+	char[] selectedMod()
+	{
+		return modCombo_.getText();
+	}
+
 
 	/// Set the contents of the mod name drop-down list.
 	void setMods(char[][] list)

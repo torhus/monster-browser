@@ -160,7 +160,16 @@ class ServerList
 
 
 	///
-	this() { filteredIpHash_ = new HashMap!(char[], int); }
+	this(in char[] modName)
+	{
+		modName_ = modName;
+		filteredIpHash_ = new HashMap!(char[], int);
+	}
+
+
+	///
+	char[] modName() { return modName_; }
+
 
 	/// Returns false if the added server is filtered out.
 	bool add(ServerData* sd)
@@ -392,6 +401,7 @@ private:
 	HashMap!(char[], int) filteredIpHash_;
 	bool filteredIpHashValid_ = false;
 	Set!(char[]) extraServers_;
+	char[] modName_;
 
 	int sortColumn_ = ServerColumn.NAME;
 	int oldSortColumn_ = -1;
@@ -627,11 +637,11 @@ bool setActiveServerList(char[] modName)
 		thereAlready = slist.complete;
 	}
 	else {
-		activeServerList = new ServerList;
+		activeServerList = new ServerList(modName);
 		serverLists[modName] = activeServerList;
 		thereAlready = false;
 
-		auto file = activeMod.extraServersFile;
+		auto file = getModConfig(modName).extraServersFile;
 		try {
 			if (Path.exists(file)) {
 				auto input = new TextFileInput(file);

@@ -67,7 +67,6 @@ struct Mod
 
 
 char[][] modNames;  /// The names of all mods loaded from the mod config file.
-Mod activeMod; /// Configuration for the active mod.
 char[] modFileName;  /// Name of the file containing options for each mod.
 
 private {
@@ -130,15 +129,41 @@ private {
 
 
 /**
- * Update the activeMod global to contain data for a new mod.
+ * Get configuration for a mod.
+ *
+ * Throws: Exception if no config was found.
+ *
  */
-void setActiveMod(char[] name)
+Mod getModConfig(in char[] name)
 {
-	if (modsIni[name] is null)
-		modsIni.addSection(name);
+	Mod mod;
+	
+	mod.name = name;
+	mod.section = modsIni[name];
+	
+	if (mod.section is null)
+		throw new Exception("getModConfig: non-existant mod");
+	
+	return mod;
+}
 
-	activeMod.name = name;
-	activeMod.section = modsIni[name];
+
+/**
+ * Add configuration for a new mod.
+ *
+ * Throws: Exception if config was already there for this mod.
+ *
+ */
+Mod createModConfig(in char[] name)
+{
+	Mod mod;
+
+	if (modsIni[name] !is null)
+		throw new Exception("createModConfig: preexistant mod name");
+
+	mod.section = modsIni.addSection(name);
+	mod.name = name;
+	return mod;
 }
 
 
@@ -178,12 +203,6 @@ void loadModFile()
 
 	foreach (sec; modsIni)
 		modNames ~= sec.name;
-
-	if (activeMod.name)
-		setActiveMod(activeMod.name);
-	else
-		setActiveMod(modNames[0]);
-
 }
 
 
@@ -257,7 +276,7 @@ void saveSettings()
 	setSetting("windowMaximized", mainWindow.maximized ?
 	                                                 "true" : "false");
 
-	setSetting("lastMod", activeMod.name);
+	setSetting("lastMod", filterBar.selectedMod);
 
 	gatherSessionState();
 
