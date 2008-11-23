@@ -43,11 +43,10 @@ private enum Field {
  *
  * Throws: when outputFileName is given: IOException.
  */
-bool parseOutput(LineIterator!(char) iter, bool delegate(ServerData*) deliver,
-                                                    char[] outputFileName=null)
+bool parseOutput(in char[] modName, LineIterator!(char) iter,
+                bool delegate(ServerData*) deliver, char[] outputFileName=null)
 {
 	char[][] gtypes;
-	char[] modName = getActiveServerList.modName;
 	BufferOutput outfile;
 	debug scope timer = new Timer;
 	debug scope timer2 = new Timer;
