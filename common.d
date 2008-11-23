@@ -98,6 +98,8 @@ char[] initLogging(char[] name="LOG.TXT")
 	else
 		mode = FileConduit.WriteCreate;
 
+	mode.share = FileConduit.Share.Read;
+
 	try {
 		logfile = new FileConduit(path, mode);
 	}
