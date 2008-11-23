@@ -125,9 +125,9 @@ final class FromFileServerRetriever : IServerRetriever
 {
 
 	///
-	this(in char[] fileName)
+	this(in char[] modName)
 	{
-		fileName_ = fileName;
+		Mod mod_ = getModConfig(modName);
 	}
 
 
@@ -139,7 +139,7 @@ final class FromFileServerRetriever : IServerRetriever
 	int prepare()
 	{
 		try {
-			input_ = new TextFileInput(fileName_);
+			input_ = new TextFileInput(mod_.serverFile);
 		}
 		catch (IOException o) {
 			warning("Unable to load the server list from disk,\n"
@@ -154,14 +154,14 @@ final class FromFileServerRetriever : IServerRetriever
 	void retrieve(bool delegate(ServerData*) deliver)
 	{
 		scope iter = new LineIterator!(char)(input_);
-		qstat.parseOutput(iter, deliver);
+		qstat.parseOutput(mod_.name, iter, deliver);
 		input_.close();
 	}
 
 
 	private {
 		InputStream input_;
-		char[] fileName_;
+		Mod mod_;
 	}
 }
 
@@ -170,8 +170,9 @@ final class FromFileServerRetriever : IServerRetriever
 final class QstatServerRetriever : IServerRetriever
 {
 	///
-	this(Set!(char[]) addresses, bool saveList=false)
+	this(in char[] modName, Set!(char[]) addresses, bool saveList=false)
 	{
+		modName_ = modName;
 		addresses_ = addresses;
 		outputFile_ = saveList ? "servers.tmp" : null;
 	}
@@ -220,7 +221,7 @@ final class QstatServerRetriever : IServerRetriever
 		scope iter = new LineIterator!(char)(proc.stdout);
 		// FIXME: verify that everything is initialized correctly, and that
 		// stdout is valid
-		completed_ = qstat.parseOutput(iter, deliver, outputFile_);
+		completed_ = qstat.parseOutput(modName_, iter, deliver, outputFile_);
 
 		if (outputFile_.length)
 			renameOutputFile();
@@ -231,7 +232,7 @@ final class QstatServerRetriever : IServerRetriever
 	{
 		if (completed_ ) {
 			try {
-				Mod mod = getModConfig(getActiveServerList.modName);
+				Mod mod = getModConfig(modName_);
 				char[] serverFile = mod.serverFile;
 				if (Path.exists(serverFile))
 					Path.remove(serverFile);
@@ -256,6 +257,7 @@ final class QstatServerRetriever : IServerRetriever
 		static const char[] REFRESHFILE = "refreshlist.tmp";
 
 		Set!(char[]) addresses_;
+		char[] modName_;
 		int serverCount_;
 		char[] outputFile_;
 		bool completed_;

@@ -83,9 +83,9 @@ void delegate() loadSavedList()
 	getActiveServerList.clear();
 	GC.collect();
 
-	char[] file = getModConfig(getActiveServerList.modName).serverFile;
-	if (Path.exists(file)) {
-		auto retriever = new FromFileServerRetriever(file);
+	Mod mod = getModConfig(getActiveServerList().modName);
+	if (Path.exists(mod.serverFile)) {
+		auto retriever = new FromFileServerRetriever(mod.name);
 		auto contr = new ServerRetrievalController(retriever);
 		contr.startMessage = "Loading saved server list...";
 		contr.noReplyMessage = "No servers were found in the file";
@@ -118,7 +118,9 @@ void queryServers(in char[][] addresses, bool replace=false, bool select=false)
 	static bool replace_, select_;
 
 	static void delegate() f() {
-		auto retriever = new QstatServerRetriever(Set!(char[])(addresses_));
+		char[] modName = getActiveServerList().modName;
+		auto retriever = new QstatServerRetriever(modName,
+		                                             Set!(char[])(addresses_));
 		auto contr = new ServerRetrievalController(retriever, replace_);
 		if (select_)
 			contr.autoSelect = addresses_;
@@ -173,7 +175,7 @@ void delegate() refreshList()
 	GC.collect();
 
 	if (servers.length) {
-		auto retriever = new QstatServerRetriever(servers);
+		auto retriever = new QstatServerRetriever(mod.name, servers);
 		auto contr = new ServerRetrievalController(retriever);
 		contr.startMessage =
                             Format("Refreshing {} servers...", servers.length);
@@ -219,7 +221,8 @@ void delegate() getNewList()
 				});
 			}
 			else {
-				auto retriever = new QstatServerRetriever(addresses, true);
+				auto retriever = new QstatServerRetriever(mod.name, addresses,
+				                                                         true);
 				auto contr = new ServerRetrievalController(retriever);
 				contr.startMessage = Format("Got {} servers, querying...",
 				                                             addresses.length);
