@@ -8,6 +8,7 @@ import Integer = tango.text.convert.Integer;
 import dwt.DWT;
 import dwt.custom.SashForm;
 import dwt.dwthelper.ByteArrayInputStream;
+import dwt.dwthelper.Runnable;
 import dwt.events.SelectionAdapter;
 import dwt.events.SelectionEvent;
 import dwt.graphics.Image;
@@ -215,6 +216,8 @@ class FilterBar : Composite
 					list.setFilters(list.getFilters() | Filter.NOT_EMPTY);
 				else
 					list.setFilters(list.getFilters() & ~Filter.NOT_EMPTY);
+
+				refreshServerTable();
 			}
 		});
 
@@ -230,6 +233,8 @@ class FilterBar : Composite
 					list.setFilters(list.getFilters() | Filter.HAS_HUMANS);
 				else
 					list.setFilters(list.getFilters() & ~Filter.HAS_HUMANS);
+
+				refreshServerTable();
 
 			}
 		});
@@ -341,6 +346,24 @@ class FilterBar : Composite
 		else {
 			modCombo_.select(sel);
 		}
+	}
+
+
+	private void refreshServerTable()
+	{
+		Display.getDefault.asyncExec(new class Runnable {
+			void run()
+			{
+				serverTable.fullRefresh;
+
+				auto list = getActiveServerList();
+				synchronized (list)
+				if (!serverTable.refreshInProgress) {
+					statusBar.setDefaultStatus(list.length,
+			                                   list.filteredLength);
+				}
+			}
+		});
 	}
 
 

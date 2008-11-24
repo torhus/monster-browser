@@ -12,14 +12,12 @@ import tango.stdc.string : memmove;
 import tango.util.container.HashMap;
 
 import dwt.DWT;
-import dwt.dwthelper.Runnable;
 import dwt.graphics.TextLayout;
 import dwt.widgets.Display;
 
 import common;
 import dialogs;
 import geoip;
-import mainwindow;
 import servertable;
 import set;
 import settings;
@@ -369,20 +367,6 @@ class ServerList
 			filters_ = newFilters;
 			updateFilteredList();
 		}
-
-		Display.getDefault.asyncExec(new class Runnable {
-			void run()
-			{
-				serverTable.fullRefresh;
-
-				auto list = getActiveServerList();
-				synchronized (list)
-				if (!serverTable.refreshInProgress) {
-					statusBar.setDefaultStatus(list.length,
-			                                   list.filteredLength);
-				}
-			}
-		});
 	}
 
 	Filter getFilters() { return filters_; } ///
