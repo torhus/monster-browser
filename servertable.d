@@ -203,11 +203,6 @@ class ServerTable
 				needRefresh = true;
 		}
 
-		/*if (!scrollBarFixDone_  && (filteredLength - 1) > bottom) {
-			needRefresh = true;
-			scrollBarFixDone_ = true;
-		}*/
-
 		// Only refill the Table if visible items, or items further up have
 		// moved.  Refilling every time is very, very slow.
 		if (needRefresh || itemCount <= bottom) {
@@ -287,7 +282,6 @@ class ServerTable
 
 		table_.setItemCount(0);
 		table_.clearAll;
-		scrollBarFixDone_ = false;
 
 		cvarTable.clear;
 		playerTable.clear;
@@ -311,7 +305,6 @@ private:
 	Image padlockImage_;
 	MenuItem refreshSelected_;
 	void delegate() stopServerRefresh_;
-	bool scrollBarFixDone_ = false;
 	bool refreshInProgress_ = false;
 
 	class SetDataListener : Listener {
