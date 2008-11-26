@@ -41,9 +41,11 @@ void switchToMod(char[] name)
 
 	static void delegate() f() {
 		if (setActiveServerList(nameCopy)) {
+			serverTable.setServerList(nameCopy);
 			switchToActiveMod();
 		}
 		else {
+			serverTable.setServerList(nameCopy);
 			Mod mod = getModConfig(nameCopy);
 			if (common.haveGslist && mod.useGslist)
 				threadManager.runSecond(&getNewList);

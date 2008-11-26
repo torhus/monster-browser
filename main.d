@@ -167,6 +167,7 @@ private void _main(char[][] args)
 	});
 
 	setActiveServerList(filterBar.selectedMod);
+	serverTable.setServerList(filterBar.selectedMod);
 	serverTable.getTable.setFocus();
 	
 	clipboard = new Clipboard(Display.getDefault);

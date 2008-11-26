@@ -130,6 +130,12 @@ class ServerTable
 	///
 	void disposeAll() { padlockImage_.dispose; }
 
+	///
+	void setServerList(in char[] modName)
+	{
+		serverList_ = getServerList(modName);	
+	}
+
 	/// The index of the currently active sort column.
 	int sortColumn() { return table_.indexOf(table_.getSortColumn()); }
 
@@ -174,7 +180,7 @@ class ServerTable
 	/*void update(Object dummy = null)
 	{
 		if (!table_.isDisposed)
-			table_.setItemCount(getActiveServerList.filteredLength);
+			table_.setItemCount(serverList_.filteredLength);
 	}*/
 
 
@@ -188,32 +194,30 @@ class ServerTable
 		if(table_.isDisposed())
 			return;
 
-		auto list = getActiveServerList();
-		int filteredLength = list.filteredLength;
 		int itemCount = table_.getItemCount();
 		int bottom = getBottomIndex();
 		bool needRefresh = false;
 
 		// Check to see if the bottommost visible item has moved or not.
-		if (bottom < filteredLength && bottom < itemCount) {
+		if (bottom < serverList_.filteredLength && bottom < itemCount) {
 			TableItem bottomItem = table_.getItem(bottom);
 			enum { col = ServerColumn.ADDRESS }
 			if (bottomItem.getText(col) !=
-		                                  list.getFiltered(bottom).server[col])
+		                           serverList_.getFiltered(bottom).server[col])
 				needRefresh = true;
 		}
 
 		// Only refill the Table if visible items, or items further up have
 		// moved.  Refilling every time is very, very slow.
 		if (needRefresh || itemCount <= bottom) {
-			table_.setItemCount(filteredLength);
+			table_.setItemCount(serverList_.filteredLength);
 			table_.clearAll();
 		}
 
 		// Keep the same servers selected.
 		table_.deselectAll();
 		foreach (ip, v; selectedIps_) {
-			int index = list.getFilteredIndex(ip);
+			int index = serverList_.getFilteredIndex(ip);
 			selectedIps_[ip] = index;
 			table_.select(index);
 		}
@@ -234,13 +238,11 @@ class ServerTable
 	 */
 	void fullRefresh(int index=-1)
 	{
-		auto list = getActiveServerList();
-
 		if(table_.isDisposed())
 			return;
 
 		table_.clearAll();
-		table_.setItemCount(list.filteredLength);
+		table_.setItemCount(serverList_.filteredLength);
 
 		int[] indices;
 		if (index != -1) {
@@ -248,7 +250,7 @@ class ServerTable
 		}
 		else {
 			foreach (ip, v; selectedIps_)
-				selectedIps_[ip] = list.getFilteredIndex(ip);
+				selectedIps_[ip] = serverList_.getFilteredIndex(ip);
 			indices = selectedIps_.toArray();
 		}
 
@@ -257,15 +259,15 @@ class ServerTable
 			
 			char[][][] allPlayers;
 			foreach (i; indices) {
-				if (i < list.filteredLength)
-					allPlayers ~= list.getFiltered(i).players;
+				if (i < serverList_.filteredLength)
+					allPlayers ~= serverList_.getFiltered(i).players;
 			}
 			playerTable.setItems(allPlayers);
 
 			cvarTable.clear();
 			int i = table_.getSelectionIndex();
-			if (i >= 0 && i < list.filteredLength)
-				cvarTable.setItems(list.getFiltered(i).cvars);
+			if (i >= 0 && i < serverList_.filteredLength)
+				cvarTable.setItems(serverList_.getFiltered(i).cvars);
 		}
 		else {
 			table_.deselectAll();
@@ -300,6 +302,7 @@ class ServerTable
 private:
 	Table table_;
 	Composite parent_;
+	ServerList serverList_;
 	HashMap!(char[], int) selectedIps_;
 	bool showFlags_, coloredNames_;
 	Image padlockImage_;
@@ -312,8 +315,8 @@ private:
 		{
 			TableItem item = cast(TableItem) e.item;
 			int index = table_.indexOf(item);
-			assert(index < getActiveServerList.filteredLength);
-			auto sd = getActiveServerList.getFiltered(index);
+			assert(index < serverList_.filteredLength);
+			auto sd = serverList_.getFiltered(index);
 			
 			// Find and store country code.
 			/*if (sd.server[ServerColumn.COUNTRY].length == 0) {
@@ -334,19 +337,19 @@ private:
 		void widgetSelected(SelectionEvent e)
 		{
 			selectedIps_.clear();
-			auto list = getActiveServerList;
 
-			synchronized (list) {
+			synchronized (serverList_) {
 				int[] indices = table_.getSelectionIndices;
 				char[][][] allPlayers;
 				if (indices.length) {
 					foreach (i; indices) {
-						auto sd = list.getFiltered(i);
+						auto sd = serverList_.getFiltered(i);
 						selectedIps_[sd.server[ServerColumn.ADDRESS]] = i;
 						allPlayers ~= sd.players;
 					}
 
-					auto sd = list.getFiltered(table_.getSelectionIndex);
+					auto sd =
+					         serverList_.getFiltered(table_.getSelectionIndex);
 					cvarTable.setItems(sd.cvars);
 					playerTable.setItems(allPlayers);
 				}
@@ -363,8 +366,7 @@ private:
 			if (stopServerRefresh_ !is null)
 				stopServerRefresh_();
 			int index = table_.getSelectionIndex();
-			ServerList serverList = getActiveServerList;			
-			joinServer(serverList.modName, serverList.getFiltered(index));
+			joinServer(serverList_.modName, serverList_.getFiltered(index));
 		}
 	}
 
@@ -375,7 +377,6 @@ private:
 			auto sortColumn = table_.getSortColumn;
 			auto newColumn = cast(TableColumn)e.widget;
 			int dir = table_.getSortDirection;
-			auto list = getActiveServerList();
 
 			if (sortColumn is newColumn) {
 				dir = (dir == DWT.UP) ? DWT.DOWN : DWT.UP;
@@ -384,15 +385,15 @@ private:
 				table_.setSortColumn(newColumn);
 			}
 
-			list.sort(table_.indexOf(newColumn), (dir == DWT.DOWN));
+			serverList_.sort(table_.indexOf(newColumn), (dir == DWT.DOWN));
 
 			table_.setSortDirection(dir);
-			synchronized (list) {
+			synchronized (serverList_) {
 				table_.clearAll();
-				table_.setItemCount(list.filteredLength());
+				table_.setItemCount(serverList_.filteredLength());
 				// keep the same servers selected
 				foreach (ip, v; selectedIps_)
-					selectedIps_[ip] = list.getFilteredIndex(ip);
+					selectedIps_[ip] = serverList_.getFilteredIndex(ip);
 				table_.setSelection(selectedIps_.toArray());
 			}
 		}
@@ -416,7 +417,7 @@ private:
 
 			TableItem item = cast(TableItem) e.item;
 			auto i = table_.indexOf(item);
-			ServerData* sd = getActiveServerList.getFiltered(i);
+			ServerData* sd = serverList_.getFiltered(i);
 
 			enum { leftMargin = 2 }
 
@@ -469,7 +470,7 @@ private:
 			TableItem item = table_.getItem(point);
 			if (item && item.getBounds(ServerColumn.COUNTRY).contains(point)) {
 				int i = table_.indexOf(item);
-				ServerData* sd = getActiveServerList.getFiltered(i);
+				ServerData* sd = serverList_.getFiltered(i);
 				char[] ip = sd.server[ServerColumn.ADDRESS];
 				auto colon = locate(ip, ':');
 				text = countryNameByAddr(ip[0..colon]);
@@ -522,9 +523,8 @@ private:
 		menu.setDefaultItem(item);
 		item.addSelectionListener(new class SelectionAdapter {
 			void widgetSelected(SelectionEvent e) {
-				auto serverList = getActiveServerList;
-				joinServer(serverList.modName,
-				           serverList.getFiltered(table_.getSelectionIndex()));
+				joinServer(serverList_.modName,
+				          serverList_.getFiltered(table_.getSelectionIndex()));
 			}
 		});
 
@@ -571,18 +571,17 @@ private:
 	void onSelectAll()
 	{
 		selectedIps_.clear();
-		auto list = getActiveServerList;
 
-		synchronized (list) {
+		synchronized (serverList_) {
 			char[][][] allPlayers;
 
-			for (size_t i=0; i < list.filteredLength; i++) {
-				auto sd = list.getFiltered(i);
+			for (size_t i=0; i < serverList_.filteredLength; i++) {
+				auto sd = serverList_.getFiltered(i);
 				selectedIps_[sd.server[ServerColumn.ADDRESS]] = i;
 				allPlayers ~= sd.players;
 			}
 
-			auto sd = list.getFiltered(table_.getSelectionIndex);
+			auto sd = serverList_.getFiltered(table_.getSelectionIndex);
 			cvarTable.setItems(sd.cvars);
 			playerTable.setItems(allPlayers);
 		}
@@ -591,10 +590,9 @@ private:
 	int[] getIndicesFromAddresses(char[][] addresses)
 	{
 		int[] indices;
-		auto list = getActiveServerList;
-		
+
 		foreach (char[] a; addresses) {
-			int i = list.getFilteredIndex(a);
+			int i = serverList_.getFilteredIndex(a);
 			if (i != -1)
 				indices ~= i;
 		}

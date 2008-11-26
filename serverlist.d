@@ -310,27 +310,36 @@ class ServerList
 	 * Like sort(), but lets you spesify _sort _column and order.
 	 *
 	 * The given _sort _column and order will be used for all subsequent
-	 * sorting, until new values are given.
+	 * sorting, until new values are given.  Set update to false if you don't
+	 * want the actual sorting to be done, but only set the order.
 	 */
-	void sort(int column, bool reversed=false)
+	void sort(int column, bool reversed=false, bool update=true)
 	{
 		synchronized (this) {
 			setSort(column, reversed);
-			_sort();
-			updateFilteredList();
+			if (update) {
+				_sort();
+				updateFilteredList();
+			}
 		}
 	}
 
 
-	/// Sets filters and updates the list accordingly.
-	void setFilters(Filter newFilters)
+	/**
+	 * Sets filters and updates the list accordingly.
+	 *
+	 * Set update to false if you don't want the filters to be applied
+	 * immediately.
+	 */
+	void setFilters(Filter newFilters, bool update=true)
 	{
 		if (newFilters == filters_)
 			return;
 
 		synchronized (this) {
 			filters_ = newFilters;
-			updateFilteredList();
+			if (update)
+				updateFilteredList();
 		}
 	}
 
@@ -620,7 +629,7 @@ bool setActiveServerList(char[] modName)
 	// hack to get the correct filtering set up for the new list,
 	// save the old one here for later use
 	if (activeServerList !is null) {
-		savedFilters = activeServerList.filters_;
+		savedFilters = activeServerList.getFilters();
 	}
 	else {
 		savedFilters = cast(Filter)Integer.convert(
@@ -650,12 +659,12 @@ bool setActiveServerList(char[] modName)
 		}
 	}
 
-	activeServerList.filters_ = savedFilters;
+	activeServerList.setFilters(savedFilters, false);
 
 	auto sortCol = serverTable.getTable.getSortColumn();
 	synchronized (activeServerList) {
-		activeServerList.setSort(serverTable.getTable.indexOf(sortCol),
-	                      (serverTable.getTable.getSortDirection() == DWT.DOWN));
+		activeServerList.sort(serverTable.getTable.indexOf(sortCol),
+	             (serverTable.getTable.getSortDirection() == DWT.DOWN), false);
 	}
 
 	return thereAlready;
@@ -666,4 +675,12 @@ bool setActiveServerList(char[] modName)
 ServerList getActiveServerList()
 {
 	return activeServerList;
+}
+
+
+///
+ServerList getServerList(in char[] modName)
+{
+	assert(modName in serverLists);
+	return serverLists[modName];
 }
