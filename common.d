@@ -376,12 +376,10 @@ class Timer
 /**
  * In-place merge sort for arrays.  This is a stable sort.
  *
- * If lessOrEqual is null, the <= operator is used instead.
- *
  * Note: Allocates (a.length + 1) / 2 of heap memory, in order to speed up
-         sorting.
+ *       sorting.
  */
-void mergeSort(T)(T[] a, bool delegate(T a, T b) lessOrEqual=null)
+void mergeSort(T)(T[] a, bool delegate(T a, T b) lessOrEqual)
 {
 	T[] b;
 
@@ -419,8 +417,6 @@ void mergeSort(T)(T[] a, bool delegate(T a, T b) lessOrEqual=null)
 	}
 
 	if (a.length > 0) {
-		if (lessOrEqual is null)
-			lessOrEqual = (T a, T b) { return a <= b; };
 		b = new T[(a.length + 1) / 2];
 		_mergeSort(0, a.length - 1);
 		delete b;
