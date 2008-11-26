@@ -71,41 +71,6 @@ struct ServerData {
 
 	TextLayout customData = null;
 
-	/// Compares according to activeServerList's settings.
-	int opCmp(ServerData other)
-	{
-		int result;
-
-		switch (activeServerList.sortColumn_) {
-			case ServerColumn.PLAYERS:
-				result = other.humanCount - humanCount;
-				if (result)
-					break;
-
-				result = other.botCount - botCount;
-				if (result)
-					break;
-
-				result = other.maxClients - maxClients;
-				if (result)
-					break;
-
-				break;
-
-			case ServerColumn.PING:
-				result = Integer.toInt(server[ServerColumn.PING]) -
-				         Integer.toInt(other.server[ServerColumn.PING]);
-				break;
-
-			default:
-				result = icompare(server[activeServerList.sortColumn_],
-				                  other.server[activeServerList.sortColumn_]);
-		}
-
-		return (activeServerList.reversed_ ? -result : result);
-	}
-
-
 	/// Extract some info about the server. Always returns >= 0.
 	int humanCount()
 	{
@@ -432,9 +397,14 @@ private:
 	void _sort()
 	{
 		debug scope timer = new Timer;
+		
+		bool lessOrEqual(ServerData a, ServerData b)
+		{
+			return compare(&a, &b) <= 0;
+		}
 
 		if (!isSorted_ || sortColumn_ != oldSortColumn_) {
-			mergeSort(list);
+			mergeSort(list, &lessOrEqual);
 			isSorted_ = true;
 		}
 
@@ -447,11 +417,52 @@ private:
 	 */
 	size_t insertSorted(ServerData* sd)
 	{
-		static bool less(ServerData* a, ServerData* b) { return (*a < *b); }
+		bool less(ServerData* a, ServerData* b)
+		{
+			return compare(a, b) < 0;
+		}
 
 		auto index = ubound(filteredList, sd, &less);
 		insertInFiltered(index, sd);
 		return index;
+	}
+
+	/**
+	 * Compares two ServerData instances according to the current sort order.
+	 *
+	 * Returns: >0 if a is smaller, <0 if b is smaller, 0 if they are equal.
+	 */
+	int compare(in ServerData* a, in ServerData* b)
+	{
+		int result;
+
+		switch (sortColumn_) {
+			case ServerColumn.PLAYERS:
+				result = b.humanCount - a.humanCount;
+				if (result)
+					break;
+
+				result = b.botCount - a.botCount;
+				if (result)
+					break;
+
+				result = b.maxClients - a.maxClients;
+				if (result)
+					break;
+
+				break;
+
+			case ServerColumn.PING:
+				result = Integer.toInt(a.server[ServerColumn.PING]) -
+				         Integer.toInt(b.server[ServerColumn.PING]);
+				break;
+
+			default:
+				result = icompare(a.server[sortColumn_],
+				                  b.server[sortColumn_]);
+		}
+
+		return (reversed_ ? -result : result);
 	}
 
 	void insertInFiltered(size_t index, ServerData* sd)
