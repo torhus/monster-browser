@@ -324,12 +324,11 @@ class SpecifyServerDialog
 						closeDialog = false;
 					}
 					else {
-						auto serverList = getActiveServerList();
+						auto serverList = serverTable.getServerList();
 						if (serverList.getIndex(address) == -1) {
 							if (saveButton_.getSelection()) {
 								if (!(address in serverList.extraServers)) {
-									Mod mod =
-									       getModConfig(filterBar.selectedMod);
+									Mod mod = getModConfig(serverList.modName);
 									char[] file = mod.extraServersFile;
 									// FIXME: error check here (FileException)
 									File(file).append(address ~ newline);

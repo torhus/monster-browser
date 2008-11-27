@@ -51,10 +51,9 @@ enum ServerColumn {
 	COUNTRY, NAME, PASSWORDED, PING, PLAYERS, GAMETYPE, MAP, ADDRESS
 };
 
-private {
-	ServerList activeServerList;
-	ServerList[char[]] serverLists;
-}
+
+// FIXME: where to put this?
+ServerList[char[]] serverLists;
 
 
 /** Stores all data for a server. */
@@ -605,82 +604,4 @@ private:
 		}
 		Stdout.newline;
 	}
-}
-
-
-/**
- * Sets the activeServerList global to refer to the ServerList object
- * for the mod given by modName.
- *
- * If there is no ServerList object for the given mod, one will be created,
- * and the corresponding list of extra servers will be loaded from disk.
- *
- * Returns:  true if the mod already had a ServerList object, false if a new
- *           one had to be created.  Also returns false if the object exists,
- *           but contains an incomplete list.
- *
- * Throws: OutOfMemoryError
- */
-bool setActiveServerList(char[] modName)
-{
-	bool thereAlready;
-	Filter savedFilters;
-
-	// hack to get the correct filtering set up for the new list,
-	// save the old one here for later use
-	if (activeServerList !is null) {
-		savedFilters = activeServerList.getFilters();
-	}
-	else {
-		savedFilters = cast(Filter)Integer.convert(
-		                                       getSessionState("filterState"));
-	}
-
-	if (ServerList* slist = modName in serverLists) {
-		activeServerList = *slist;
-		thereAlready = slist.complete;
-	}
-	else {
-		activeServerList = new ServerList(modName);
-		serverLists[modName] = activeServerList;
-		thereAlready = false;
-
-		auto file = getModConfig(modName).extraServersFile;
-		try {
-			if (Path.exists(file)) {
-				auto input = new TextFileInput(file);
-				auto servers = collectIpAddresses(input);
-				input.close;
-				activeServerList.extraServers_ = servers;
-			}
-		}
-		catch (IOException e) {
-			log("Error when reading \"" ~ file ~ "\".");
-		}
-	}
-
-	activeServerList.setFilters(savedFilters, false);
-
-	auto sortCol = serverTable.getTable.getSortColumn();
-	synchronized (activeServerList) {
-		activeServerList.sort(serverTable.getTable.indexOf(sortCol),
-	             (serverTable.getTable.getSortDirection() == DWT.DOWN), false);
-	}
-
-	return thereAlready;
-}
-
-
-/** Returns the active server list. */
-ServerList getActiveServerList()
-{
-	return activeServerList;
-}
-
-
-///
-ServerList getServerList(in char[] modName)
-{
-	assert(modName in serverLists);
-	return serverLists[modName];
 }
