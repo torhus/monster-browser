@@ -1,5 +1,6 @@
 module servertable;
 
+import tango.io.stream.TextFileStream;
 import tango.stdc.math : ceil;
 import tango.text.Util;
 import Integer = tango.text.convert.Integer;
@@ -130,11 +131,70 @@ class ServerTable
 	///
 	void disposeAll() { padlockImage_.dispose; }
 
-	///
-	void setServerList(in char[] modName)
+	/**
+	 * Sets the currently active ServerList.
+	 *
+	 * If there is no ServerList object for the given mod, one will be created,
+	 * and the corresponding list of extra servers will be loaded from disk.
+	 *
+	 * Returns:  true if the mod already had a ServerList object, false if a
+	 *           new one had to be created.  Also returns false if the object
+	 *           exists, but contains an incomplete list.
+	 *
+	 * Throws: OutOfMemoryError
+	 */
+	bool setServerList(in char[] modName)
 	{
-		serverList_ = getServerList(modName);	
+		bool thereAlready;
+		Filter savedFilters;
+
+		// hack to get the correct filtering set up for the new list,
+		// save the old one here for later use
+		if (serverList_ !is null) {
+			savedFilters = serverList_.getFilters();
+		}
+		else {
+			savedFilters = cast(Filter)Integer.convert(
+			                                   getSessionState("filterState"));
+		}
+
+		if (ServerList* list = modName in serverLists) {
+			serverList_ = *list;
+			thereAlready = serverList_.complete;
+		}
+		else {
+			serverList_ = new ServerList(modName);
+			serverLists[modName] = serverList_;
+			thereAlready = false;
+
+			auto file = getModConfig(modName).extraServersFile;
+			try {
+				if (Path.exists(file)) {
+					auto input = new TextFileInput(file);
+					auto servers = collectIpAddresses(input);
+					input.close;
+					foreach (s; servers)
+						serverList_.addExtraServer(s);
+				}
+			}
+			catch (IOException e) {
+				log("Error when reading \"" ~ file ~ "\".");
+			}
+		}
+
+		serverList_.setFilters(savedFilters, false);
+
+		auto sortCol = table_.getSortColumn();
+		synchronized (serverList_) {
+			serverList_.sort(table_.indexOf(sortCol),
+			                   (table_.getSortDirection() == DWT.DOWN), false);
+		}
+
+		return thereAlready;
 	}
+
+	///
+	ServerList getServerList() { return serverList_; }
 
 	/// The index of the currently active sort column.
 	int sortColumn() { return table_.indexOf(table_.getSortColumn()); }

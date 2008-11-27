@@ -40,12 +40,17 @@ void switchToMod(char[] name)
 	static char[] nameCopy;
 
 	static void delegate() f() {
-		if (setActiveServerList(nameCopy)) {
-			serverTable.setServerList(nameCopy);
-			switchToActiveMod();
+		if (serverTable.setServerList(nameCopy)) {
+			ServerList serverList = serverTable.getServerList();
+
+			// FIXME: move into setServerList?
+			serverList.sort;
+			serverTable.forgetSelection;
+			serverTable.fullRefresh;
+			statusBar.setDefaultStatus(serverList.length,
+			                           serverList.filteredLength);
 		}
 		else {
-			serverTable.setServerList(nameCopy);
 			Mod mod = getModConfig(nameCopy);
 			if (common.haveGslist && mod.useGslist)
 				threadManager.runSecond(&getNewList);
@@ -62,30 +67,16 @@ void switchToMod(char[] name)
 }
 
 
-/**
- * Make the serverTable display the server list contained by activeServerList.
- *
- * Useful for updating the display after calling setActiveServerList.
- */
-private void switchToActiveMod()
-{
-	ServerList serverList = getActiveServerList;
-
-	serverList.sort;
-	serverTable.forgetSelection;
-	serverTable.fullRefresh;
-	statusBar.setDefaultStatus(serverList.length, serverList.filteredLength);
-}
-
-
 /** Loads the list from disk.  To be called through ThreadManager.run(). */
 void delegate() loadSavedList()
 {
+	ServerList serverList = serverTable.getServerList();
+
 	serverTable.clear();
-	getActiveServerList.clear();
+	serverList.clear();
 	GC.collect();
 
-	Mod mod = getModConfig(getActiveServerList().modName);
+	Mod mod = getModConfig(serverList.modName);
 	if (Path.exists(mod.serverFile)) {
 		auto retriever = new FromFileServerRetriever(mod.name);
 		auto contr = new ServerRetrievalController(retriever);
@@ -120,7 +111,7 @@ void queryServers(in char[][] addresses, bool replace=false, bool select=false)
 	static bool replace_, select_;
 
 	static void delegate() f() {
-		char[] modName = getActiveServerList().modName;
+		char[] modName = serverTable.getServerList().modName;
 		auto retriever = new QstatServerRetriever(modName,
 		                                             Set!(char[])(addresses_));
 		auto contr = new ServerRetrievalController(retriever, replace_);
@@ -148,7 +139,8 @@ void queryServers(in char[][] addresses, bool replace=false, bool select=false)
  */
 void delegate() refreshList()
 {
-	Mod mod = getModConfig(getActiveServerList.modName);
+	ServerList serverList = serverTable.getServerList();
+	Mod mod = getModConfig(serverList.modName);
 
 	if (!Path.exists(mod.serverFile)) {
 		error("No server list found on disk, press\n"
@@ -163,7 +155,7 @@ void delegate() refreshList()
 	log(Format("Found {} servers in {}.", servers.length, sfile));
 
 	// merge in the extra servers
-	Set!(char[]) extraServers = getActiveServerList.extraServers;
+	Set!(char[]) extraServers = serverList.extraServers;
 	auto oldLength = servers.length;
 	foreach (server; extraServers)
 		servers.add(server);
@@ -173,7 +165,7 @@ void delegate() refreshList()
 	                                        delta, extraServers.length-delta));
 
 	serverTable.clear();
-	getActiveServerList.clear();
+	serverList.clear();
 	GC.collect();
 
 	if (servers.length) {
@@ -201,7 +193,7 @@ void delegate() getNewList()
 	void f()
 	{
 		try {
-			ServerList serverList = getActiveServerList();
+			ServerList serverList = serverTable.getServerList();
 			Mod mod = getModConfig(serverList.modName);
 			auto addresses = browserGetNewList(mod);
 			log(Format("Got {} servers from {}.", addresses.length,
@@ -239,11 +231,11 @@ void delegate() getNewList()
 	}
 
 	serverTable.clear();
-	getActiveServerList.clear();
+	serverTable.getServerList().clear();
 	GC.collect();
 
 	statusBar.setLeft("Getting new server list...");
-	char[] modName = getActiveServerList.modName;
+	char[] modName = serverTable.getServerList().modName;
 	log("Getting new server list for " ~ modName ~ "...");
 	serverTable.notifyRefreshStarted;
 	
@@ -290,7 +282,7 @@ class ServerRetrievalController
 	void run()
 	{
 		try {
-			auto serverList = getActiveServerList();
+			auto serverList = serverTable.getServerList();
 			auto dg = replace_ ? &serverList.replace : &serverList.add;
 
 			serverQueue_ = new ServerQueue(dg);
@@ -357,7 +349,7 @@ class ServerRetrievalController
 
 	private void done()
 	{
-		ServerList list = getActiveServerList();
+		ServerList list = serverTable.getServerList();
 
 		if (list.length() > 0) {
 			int index = -1;
