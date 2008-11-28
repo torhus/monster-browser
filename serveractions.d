@@ -100,7 +100,7 @@ void delegate() loadSavedList()
  * The function does not verify that the address is valid.
  *
  * Params:
- *     address = IP address and port of servers to query.
+ *     addresses = IP address and port of servers to query.
  *     replace = Update the servers instead of adding new ones.
  *     select  = Select the newly added or refreshed servers.
  *
@@ -246,12 +246,18 @@ void delegate() getNewList()
 ///
 class ServerRetrievalController
 {
-	/// Status messages.  Set before calling run().
+	/**
+	 * Status bar messages.
+	 *
+	 * Set before calling run() if you don't want the defaults to be used.
+	 */
 	char[] startMessage = "Querying server(s)...";
 	char[] noReplyMessage = "There was no reply";  /// ditto
 
-	/* Set selection to these servers when retrieval is finished.  If it's
-	 * null or empty, the previous selection will be retained.
+	/**
+     * Set selection to these servers when retrieval is finished.
+	 *
+	 * If null or empty, the previous selection will be retained.
 	 *
 	 * Note: Set before calling run().
 	 */
