@@ -50,21 +50,21 @@ void disposeNameColors() {
 // FIXME: ColoredName.cleanName is not being used anywhere.  ColoredName could
 // also  be made a struct, to avoid some heap allocation.
 class ColoredName {
-	char[] cleanName;
-	ColorRange[] ranges;
+	char[] cleanName;     ///  The string in question, stripped of color codes.
+	ColorRange[] ranges;  ///
 }
 
 
 /** A color and a range to apply it to. */
 struct ColorRange {
-	TextStyle style;
-	int start;
-	int end;
+	TextStyle style;  /// Contains an SWT Color object set to the right color.
+	int start;        /// The first character this ColorRange applies to.
+	int end;          /// The last character this ColorRange applies to.
 }
 
 
 /**
- * Parse colored names.
+ * Parse a string containing color codes.
  *
  */
 ColoredName parseColors(in char[] s)
@@ -118,7 +118,7 @@ unittest {
 
 
 /**
- *  Strip color codes from quake3 names.
+ *  Strip the color codes from a string.
  */
 char[] stripColorCodes(in char[] s)
 {
