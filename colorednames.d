@@ -1,3 +1,7 @@
+/**
+ * Decoding of Quake 3 style player and server name color codes.
+ */
+ 
 module colorednames;
 
 import tango.stdc.ctype;
@@ -65,38 +69,38 @@ struct ColorRange {
  */
 ColoredName parseColors(in char[] s)
 {
-	ColoredName cname = new ColoredName;
-	ColorRange crange;
+	ColoredName name = new ColoredName;
+	ColorRange range;
 
 	for (int i=0; i < s.length; i++) {
 		if (s[i] == '^' && (i == s.length-1 || s[i+1] != '^')) {
 			// terminate the previous range
-			if (cname.ranges.length)
-				cname.ranges[$-1].end = cname.cleanName.length - 1;
+			if (name.ranges.length)
+				name.ranges[$-1].end = name.cleanName.length - 1;
 			if (i == s.length-1)
 				break;
 
 			i++;
 
-			crange.start = cname.cleanName.length;
+			range.start = name.cleanName.length;
 
 			/* The method of getting the index is straight from quake3 1.32b's
 			 * q_shared.h.
 			 */
-			crange.style = q3Colors[(s[i] - '0') & 7];
+			range.style = q3Colors[(s[i] - '0') & 7];
 
-			cname.ranges ~= crange;
+			name.ranges ~= range;
 		}
 		else {
-			cname.cleanName ~= s[i];
+			name.cleanName ~= s[i];
 		}
 	}
 
 	// terminate the last range
-	if (cname.ranges.length)
-		cname.ranges[$-1].end = cname.cleanName.length - 1;
+	if (name.ranges.length)
+		name.ranges[$-1].end = name.cleanName.length - 1;
 
-	return cname;
+	return name;
 }
 
 
