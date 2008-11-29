@@ -371,17 +371,20 @@ private:
 	synchronized invariant()
 	{
 		if (filteredList.length > list.length) {
-			error("filteredlist.length == ", filteredList.length,
-			              "\nlist.length == ", list.length);
+			error("filteredlist.length == {}\nlist.length == {}",
+			                                 filteredList.length, list.length);
 			assert(0);
 		}
 		if (!(filters_ || filteredList.length == list.length ||
 		                  filteredList.length == (list.length - 1))) {
 			error("ServerList invariant broken!\n",
-			              "\nfilters_ & Filter.HAS_HUMANS: ", filters_ & Filter.HAS_HUMANS,
-			              "\nfilters_ & Filter.NOT_EMPTY: ", filters_ & Filter.NOT_EMPTY,
-			              "\nlist.length: ", list.length,
-			              "\nfilteredList.length: ", filteredList.length);
+			              "\nfilters_ & Filter.HAS_HUMANS: {}"
+			              "\nfilters_ & Filter.NOT_EMPTY: {}"
+			              "\nlist.length: {}"
+			              "\nfilteredList.length: {}",
+			              filters_ & Filter.HAS_HUMANS,
+			              filters_ & Filter.NOT_EMPTY,
+			              list.length, filteredList.length);
 			assert(0);
 		}
 	}
