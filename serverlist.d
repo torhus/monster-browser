@@ -142,7 +142,7 @@ class ServerList
 			sd.server[ServerColumn.COUNTRY] = getCountryCode(sd);
 			list ~= *sd;
 			if (!isFilteredOut(sd)) {
-				insertSorted(&list[$ - 1]);
+				insertSorted(list.length -1);
 				refresh = true;
 			}
 		}
@@ -166,7 +166,7 @@ class ServerList
 			list[i] = *sd;
 			removeFromFiltered(sd);
 			if (!isFilteredOut(sd))
-				insertSorted(&list[i]);
+				insertSorted(i);
 		}
 
 		return true;
@@ -194,7 +194,7 @@ class ServerList
 	{
 		synchronized (this) {
 			assert(i >= 0 && i < filteredList.length);
-			return filteredList[i];
+			return &list[filteredList[i]];
 		}
 	}
 
@@ -352,7 +352,7 @@ class ServerList
  ***********************************************************************/
 private:
 	ServerData[] list;
-	ServerData*[] filteredList;
+	size_t[] filteredList;
 	// maps addresses to indices into the filtered list
 	HashMap!(char[], int) filteredIpHash_;
 	bool filteredIpHashValid_ = false;
@@ -422,16 +422,15 @@ private:
 	/**
 	 * Insert a server in sorted order in the filtered list.
 	 */
-	size_t insertSorted(ServerData* sd)
+	void insertSorted(size_t listIndex)
 	{
-		bool less(ServerData* a, ServerData* b)
+		bool less(size_t a, size_t b)
 		{
-			return compare(a, b) < 0;
+			return compare(&list[a], &list[b]) < 0;
 		}
 
-		auto index = ubound(filteredList, sd, &less);
-		insertInFiltered(index, sd);
-		return index;
+		auto i = ubound(filteredList, listIndex, &less);
+		insertInFiltered(i, listIndex);
 	}
 
 	/**
@@ -472,7 +471,7 @@ private:
 		return (reversed_ ? -result : result);
 	}
 
-	void insertInFiltered(size_t index, ServerData* sd)
+	void insertInFiltered(size_t index, size_t listIndex)
 	{
 		assert(index <= filteredList.length);
 
@@ -480,11 +479,11 @@ private:
 		filteredList.length = filteredList.length + 1;
 
 		if (index < oldLength) {
-			ServerData** ptr = filteredList.ptr + index;
+			size_t* ptr = filteredList.ptr + index;
 			size_t bytes = (oldLength - index) * filteredList[0].sizeof;
 			memmove(ptr + 1, ptr, bytes);
 		}
-		filteredList[index] = sd;
+		filteredList[index] = listIndex;
 
 		filteredIpHashValid_ = false;
 	}
@@ -494,7 +493,7 @@ private:
 		int i = getFilteredIndex(psd.server[ServerColumn.ADDRESS]);
 		assert(i != -1);
 
-		ServerData** ptr = filteredList.ptr + i;
+		size_t* ptr = filteredList.ptr + i;
 		size_t bytes = (filteredList.length - 1 - i) * filteredList[0].sizeof;
 		memmove(ptr, ptr + 1, bytes);
 		filteredList.length = filteredList.length - 1;
@@ -513,9 +512,9 @@ private:
 	void copyListToFilteredList()
 	{
 		filteredList.length = list.length;
-		for (size_t i=0; i < list.length; i++) {
-			filteredList[i] = &list[i];
-		}
+		for (size_t i=0; i < list.length; i++)
+			filteredList[i] = i;
+
 		filteredIpHashValid_ = false;
 	}
 
@@ -539,23 +538,21 @@ private:
 	 */
 	void updateFilteredList()
 	{
-		if (!isSorted_) {
+		if (!isSorted_)
 			_sort();
-		}
+
 		filteredList.length = 0;
 		if (filters_ & Filter.HAS_HUMANS) {
-			foreach (ref sd; list) {
-				if (sd.hasHumans) {
-					filteredList ~= &sd;
-				}
+			foreach (i, ref sd; list) {
+				if (sd.hasHumans)
+					filteredList ~= i;
 			}
 			filteredIpHashValid_ = false;
 		}
 		else if (filters_ & Filter.NOT_EMPTY) {
-			foreach (ref sd; list) {
-				if (sd.hasBots || sd.hasHumans) {
-					filteredList ~= &sd;
-				}
+			foreach (i, ref sd; list) {
+				if (sd.hasBots || sd.hasHumans)
+					filteredList ~= i;
 			}
 			filteredIpHashValid_ = false;
 		}
@@ -567,8 +564,8 @@ private:
 	void createFilteredIpHash()
 	{
 		filteredIpHash_.clear();
-		foreach (int i, sd; filteredList)
-			filteredIpHash_[sd.server[ServerColumn.ADDRESS]] = i;
+		foreach (int i, listIndex; filteredList)
+			filteredIpHash_[list[listIndex].server[ServerColumn.ADDRESS]] = i;
 		filteredIpHashValid_ = true;
 	}
 
@@ -587,7 +584,8 @@ private:
 	{
 		Stdout.formatln("printFiltered(): {} elements in filteredList.",
 		                filteredList.length);
-		foreach (i, ServerData* sd; filteredList) {
+		foreach (i, listIndex; filteredList) {
+			ServerData sd = list[listIndex];
 			Stdout(/*i, ": ",*/ sd.server[ServerColumn.NAME]).newline;
 		}
 		Stdout.newline;
