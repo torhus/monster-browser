@@ -4,7 +4,6 @@ import tango.core.Array;
 import tango.core.Exception : IOException;
 import Path = tango.io.Path;
 debug import tango.io.Stdout;
-import tango.io.stream.TextFileStream;
 import tango.text.Ascii;
 import tango.text.Util;
 import Integer = tango.text.convert.Integer;
