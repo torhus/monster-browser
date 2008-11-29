@@ -363,7 +363,7 @@ private void gatherSessionState()
 
 	// state of filters
 	sec.setValue("filterState",
-	                Integer.toString(serverTable.getServerList().getFilters()));
+	                Integer.toString(serverTable.serverList.getFilters()));
 
 	// server sort order
 	value = Integer.toString(serverTable.sortColumn);

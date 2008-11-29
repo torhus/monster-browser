@@ -204,7 +204,7 @@ class FilterBar : Composite
 		notEmptyButton_.addSelectionListener(new class SelectionAdapter {
 			public void widgetSelected(SelectionEvent e)
 			{
-				ServerList list = serverTable.getServerList();
+				ServerList list = serverTable.serverList;
 				bool notEmpty = notEmptyButton_.getSelection() != 0;
 
 				if (notEmptyButton_.getSelection()) {
@@ -226,7 +226,7 @@ class FilterBar : Composite
 		hasHumansButton_.addSelectionListener(new class SelectionAdapter {
 			public void widgetSelected(SelectionEvent e)
 			{
-				ServerList list = serverTable.getServerList();
+				ServerList list = serverTable.serverList;
 				bool hasHumans = hasHumansButton_.getSelection() != 0;
 
 				if (hasHumans)
@@ -370,7 +370,7 @@ class FilterBar : Composite
 			{
 				serverTable.fullRefresh;
 
-				auto list = serverTable.getServerList();
+				auto list = serverTable.serverList;
 				synchronized (list)
 				if (!serverTable.refreshInProgress) {
 					statusBar.setDefaultStatus(list.length,

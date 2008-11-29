@@ -150,8 +150,8 @@ class ServerTable
 		}
 	}
 
-	///
-	ServerList getServerList() { return serverList_; }
+	/// The ServerList currently being used.
+	ServerList serverList() { return serverList_; }
 
 	/// The index of the currently active sort column.
 	int sortColumn() { return table_.indexOf(table_.getSortColumn()); }

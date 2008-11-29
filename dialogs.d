@@ -324,7 +324,7 @@ class SpecifyServerDialog
 						closeDialog = false;
 					}
 					else {
-						auto serverList = serverTable.getServerList();
+						auto serverList = serverTable.serverList;
 						if (serverList.getIndex(address) == -1) {
 							if (saveButton_.getSelection()) {
 								if (!(address in serverList.extraServers)) {

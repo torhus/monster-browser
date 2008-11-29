@@ -82,9 +82,9 @@ void switchToMod(char[] name)
 				threadManager.runSecond(&getNewList);
 		}
 		else {
-			serverTable.getServerList.sort;
-			serverTable.forgetSelection;
-			serverTable.fullRefresh;
+			serverTable.serverList.sort();
+			serverTable.forgetSelection();
+			serverTable.fullRefresh();
 			statusBar.setDefaultStatus(serverList.length,
 			                                        serverList.filteredLength);
 		}
@@ -100,7 +100,7 @@ void switchToMod(char[] name)
 /** Loads the list from disk.  To be called through ThreadManager.run(). */
 void delegate() loadSavedList()
 {
-	ServerList serverList = serverTable.getServerList();
+	ServerList serverList = serverTable.serverList;
 
 	serverTable.clear();
 	serverList.clear();
@@ -141,7 +141,7 @@ void queryServers(in char[][] addresses, bool replace=false, bool select=false)
 	static bool replace_, select_;
 
 	static void delegate() f() {
-		char[] modName = serverTable.getServerList().modName;
+		char[] modName = serverTable.serverList.modName;
 		auto retriever = new QstatServerRetriever(modName,
 		                                             Set!(char[])(addresses_));
 		auto contr = new ServerRetrievalController(retriever, replace_);
@@ -169,7 +169,7 @@ void queryServers(in char[][] addresses, bool replace=false, bool select=false)
  */
 void delegate() refreshList()
 {
-	ServerList serverList = serverTable.getServerList();
+	ServerList serverList = serverTable.serverList;
 	Mod mod = getModConfig(serverList.modName);
 
 	if (!Path.exists(mod.serverFile)) {
@@ -223,7 +223,7 @@ void delegate() getNewList()
 	void f()
 	{
 		try {
-			ServerList serverList = serverTable.getServerList();
+			ServerList serverList = serverTable.serverList;
 			Mod mod = getModConfig(serverList.modName);
 			auto addresses = browserGetNewList(mod);
 			log(Format("Got {} servers from {}.", addresses.length,
@@ -261,11 +261,11 @@ void delegate() getNewList()
 	}
 
 	serverTable.clear();
-	serverTable.getServerList().clear();
+	serverTable.serverList.clear();
 	GC.collect();
 
 	statusBar.setLeft("Getting new server list...");
-	char[] modName = serverTable.getServerList().modName;
+	char[] modName = serverTable.serverList.modName;
 	log("Getting new server list for " ~ modName ~ "...");
 	serverTable.notifyRefreshStarted;
 	
@@ -318,7 +318,7 @@ class ServerRetrievalController
 	void run()
 	{
 		try {
-			auto serverList = serverTable.getServerList();
+			auto serverList = serverTable.serverList;
 			auto dg = replace_ ? &serverList.replace : &serverList.add;
 
 			serverQueue_ = new ServerQueue(dg);
@@ -385,7 +385,7 @@ class ServerRetrievalController
 
 	private void done()
 	{
-		ServerList list = serverTable.getServerList();
+		ServerList list = serverTable.serverList;
 
 		if (list.length() > 0) {
 			int index = -1;
