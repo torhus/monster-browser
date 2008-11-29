@@ -1,6 +1,5 @@
 module servertable;
 
-import tango.io.stream.TextFileStream;
 import tango.stdc.math : ceil;
 import tango.text.Util;
 import Integer = tango.text.convert.Integer;
@@ -34,7 +33,7 @@ import common;
 import cvartable;
 import geoip;
 import launch;
-import mainwindow;  // temporary, for filterBar
+import mainwindow;
 import playertable;
 import serveractions;
 import serverlist;
@@ -135,52 +134,20 @@ class ServerTable
 	/**
 	 * Sets the currently active ServerList.
 	 *
-	 * If there is no ServerList object for the given mod, one will be created,
-	 * and the corresponding list of extra servers will be loaded from disk.
-	 *
-	 * Returns:  true if the mod already had a ServerList object, false if a
-	 *           new one had to be created.  Also returns false if the object
-	 *           exists, but contains an incomplete list.
-	 *
-	 * Throws: OutOfMemoryError
+	 * The new ServerList will be configured with the current sort order and
+	 * filter settings.
 	 */
-	bool setServerList(in char[] modName)
+	void setServerList(ServerList newList)
 	{
-		bool thereAlready;
+		int sortCol = table_.indexOf(table_.getSortColumn());
 
-		if (ServerList* list = modName in serverLists) {
-			serverList_ = *list;
-			thereAlready = serverList_.complete;
-		}
-		else {
-			serverList_ = new ServerList(modName);
-			serverLists[modName] = serverList_;
-			thereAlready = false;
-
-			auto file = getModConfig(modName).extraServersFile;
-			try {
-				if (Path.exists(file)) {
-					auto input = new TextFileInput(file);
-					auto servers = collectIpAddresses(input);
-					input.close;
-					foreach (s; servers)
-						serverList_.addExtraServer(s);
-				}
-			}
-			catch (IOException e) {
-				log("Error when reading \"" ~ file ~ "\".");
-			}
-		}
-
-		serverList_.setFilters(filterBar.filterState, false);
-
-		auto sortCol = table_.getSortColumn();
+		serverList_ = newList;
+		
 		synchronized (serverList_) {
-			serverList_.sort(table_.indexOf(sortCol),
-			                   (table_.getSortDirection() == DWT.DOWN), false);
+			serverList_.setFilters(filterBar.filterState, false);
+			serverList_.sort(sortCol,
+			                 (table_.getSortDirection() == DWT.DOWN), false);
 		}
-
-		return thereAlready;
 	}
 
 	///
