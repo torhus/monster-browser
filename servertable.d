@@ -34,6 +34,7 @@ import common;
 import cvartable;
 import geoip;
 import launch;
+import mainwindow;  // temporary, for filterBar
 import playertable;
 import serveractions;
 import serverlist;
@@ -146,17 +147,6 @@ class ServerTable
 	bool setServerList(in char[] modName)
 	{
 		bool thereAlready;
-		Filter savedFilters;
-
-		// hack to get the correct filtering set up for the new list,
-		// save the old one here for later use
-		if (serverList_ !is null) {
-			savedFilters = serverList_.getFilters();
-		}
-		else {
-			savedFilters = cast(Filter)Integer.convert(
-			                                   getSessionState("filterState"));
-		}
 
 		if (ServerList* list = modName in serverLists) {
 			serverList_ = *list;
@@ -182,7 +172,7 @@ class ServerTable
 			}
 		}
 
-		serverList_.setFilters(savedFilters, false);
+		serverList_.setFilters(filterBar.filterState, false);
 
 		auto sortCol = table_.getSortColumn();
 		synchronized (serverList_) {

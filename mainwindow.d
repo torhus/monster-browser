@@ -199,16 +199,16 @@ class FilterBar : Composite
 	this(Composite parent)
 	{
 		super(parent, DWT.NONE);
-		button1_ = new Button(this, DWT.CHECK);
-		button1_.setText("Not empty");
-		button1_.addSelectionListener(new class SelectionAdapter {
+		notEmptyButton_ = new Button(this, DWT.CHECK);
+		notEmptyButton_.setText("Not empty");
+		notEmptyButton_.addSelectionListener(new class SelectionAdapter {
 			public void widgetSelected(SelectionEvent e)
 			{
 				ServerList list = serverTable.getServerList();
-				bool notEmpty = button1_.getSelection() != 0;
+				bool notEmpty = notEmptyButton_.getSelection() != 0;
 
-				if (button1_.getSelection()) {
-					button2_.setSelection(false);
+				if (notEmptyButton_.getSelection()) {
+					hasHumansButton_.setSelection(false);
 					list.setFilters(list.getFilters() & ~Filter.HAS_HUMANS);
 				}
 
@@ -221,13 +221,13 @@ class FilterBar : Composite
 			}
 		});
 
-		button2_ = new Button(this, DWT.CHECK);
-		button2_.setText("Has humans");
-		button2_.addSelectionListener(new class SelectionAdapter {
+		hasHumansButton_ = new Button(this, DWT.CHECK);
+		hasHumansButton_.setText("Has humans");
+		hasHumansButton_.addSelectionListener(new class SelectionAdapter {
 			public void widgetSelected(SelectionEvent e)
 			{
 				ServerList list = serverTable.getServerList();
-				bool hasHumans = button2_.getSelection() != 0;
+				bool hasHumans = hasHumansButton_.getSelection() != 0;
 
 				if (hasHumans)
 					list.setFilters(list.getFilters() | Filter.HAS_HUMANS);
@@ -243,9 +243,9 @@ class FilterBar : Composite
 		Filter state = cast(Filter)Integer.convert(
 		                                       getSessionState("filterState"));
 		if (state & Filter.NOT_EMPTY)
-			button1_.setSelection(true);
+			notEmptyButton_.setSelection(true);
 		if (state & Filter.HAS_HUMANS)
-			button2_.setSelection(true);
+			hasHumansButton_.setSelection(true);
 
 		// game type selection
 		/*Combo combo = new Combo(filterComposite_, DWT.READ_ONLY);
@@ -314,6 +314,20 @@ class FilterBar : Composite
 	}
 
 
+	/// State of filter selection buttons.
+	Filter filterState()
+	{
+		Filter f;
+		
+		if(notEmptyButton_.getSelection())
+			f |= Filter.NOT_EMPTY;
+		if (hasHumansButton_.getSelection())
+			f |= Filter.HAS_HUMANS;
+
+		return f;
+	}
+
+
 	/// Set the contents of the mod name drop-down list.
 	void setMods(char[][] list)
 	{
@@ -368,7 +382,7 @@ class FilterBar : Composite
 
 
 private:
-	Button button1_, button2_;
+	Button notEmptyButton_, hasHumansButton_;
 	char[] lastSelectedMod_;
 	Combo modCombo_;
 }
