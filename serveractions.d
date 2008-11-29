@@ -7,6 +7,7 @@ module serveractions;
 import tango.core.Memory;
 import Path = tango.io.Path;
 import tango.io.Stdout;
+import tango.io.stream.TextFileStream;
 import tango.text.Util;
 import tango.text.convert.Format;
 import Integer = tango.text.convert.Integer;
@@ -37,32 +38,61 @@ import threadmanager;
  */
 void switchToMod(char[] name)
 {
-	static char[] nameCopy;
+	static char[] modName;
 
 	static void delegate() f() {
-		if (serverTable.setServerList(nameCopy)) {
-			ServerList serverList = serverTable.getServerList();
+		ServerList serverList;
+		bool needRefresh;
 
-			// FIXME: move into setServerList?
-			serverList.sort;
-			serverTable.forgetSelection;
-			serverTable.fullRefresh;
-			statusBar.setDefaultStatus(serverList.length,
-			                           serverList.filteredLength);
+		if (ServerList* list = modName in serverLists) {
+			serverList = *list;
+			needRefresh = !serverList.complete;
 		}
 		else {
-			Mod mod = getModConfig(nameCopy);
-			if (common.haveGslist && mod.useGslist)
+			serverList = new ServerList(modName);
+			serverLists[modName] = serverList;
+			needRefresh = true;
+
+			auto file = getModConfig(modName).extraServersFile;
+			try {
+				if (Path.exists(file)) {
+					auto input = new TextFileInput(file);
+					auto servers = collectIpAddresses(input);
+					input.close;
+					foreach (s; servers)
+						serverList.addExtraServer(s);
+				}
+			}
+			catch (IOException e) {
+				log("Error when reading \"" ~ file ~ "\".");
+			}
+		}
+
+		serverTable.setServerList(serverList);
+
+		if (needRefresh) {
+			Mod mod = getModConfig(modName);
+			if (arguments.fromfile && Path.exists(mod.serverFile))
+				threadManager.runSecond(&loadSavedList);
+			else if (common.haveGslist && mod.useGslist)
 				threadManager.runSecond(&getNewList);
 			else if (Path.exists(mod.serverFile))
 				threadManager.runSecond(&refreshList);
 			else
 				threadManager.runSecond(&getNewList);
 		}
+		else {
+			serverTable.getServerList.sort;
+			serverTable.forgetSelection;
+			serverTable.fullRefresh;
+			statusBar.setDefaultStatus(serverList.length,
+			                                        serverList.filteredLength);
+		}
+
 		return null;
 	}
 
-	nameCopy = name;
+	modName = name;
 	threadManager.run(&f);
 }
 
