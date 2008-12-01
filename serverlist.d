@@ -51,10 +51,6 @@ enum ServerColumn {
 };
 
 
-// FIXME: where to put this?
-ServerList[char[]] serverLists;
-
-
 /** Stores all data for a server. */
 struct ServerData {
 	/// server name, with any color codes intact
@@ -264,15 +260,6 @@ class ServerList
 	}
 
 
-	///
-	static void disposeAllCustomData()
-	{
-		foreach (slist; serverLists) {
-			slist.disposeCustomData();
-		}
-	}
-
-
 	/**
 	 * Add an extra server to be included when doing a refresh.
 	 *
@@ -343,6 +330,22 @@ class ServerList
 
 	Filter getFilters() { return filters_; } ///
 
+
+	/**
+	 * Call customData.dispose() on each of the ServerData structs.
+	 *
+	 * Does nothing if "coloredNames" is not set to "true".
+	 */
+	void disposeCustomData()
+	{
+		if (getSetting("coloredNames") != "true")
+			return;
+
+		foreach (ref sd; list) {
+			if (sd.customData)
+				sd.customData.dispose();
+		}
+	}
 
 
 /***********************************************************************
@@ -570,16 +573,6 @@ private:
 		foreach (int i, listIndex; filteredList)
 			filteredIpHash_[list[listIndex].server[ServerColumn.ADDRESS]] = i;
 		filteredIpHashValid_ = true;
-	}
-
-	void disposeCustomData()
-	{
-		if (getSetting("coloredNames") == "true") {
-			foreach (ref sd; list) {
-				if (sd.customData)
-					sd.customData.dispose();
-			}
-		}
 	}
 
 	/// Prints the filtered list and its length to stdout.

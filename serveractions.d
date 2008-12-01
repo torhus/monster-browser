@@ -29,6 +29,10 @@ import settings;
 import threadmanager;
 
 
+/// When switchToMod creates a new ServerList object, it's stored here.
+ServerList[char[]] serverListCache;
+
+
 /**
  * Switches the active mod.
  *
@@ -44,13 +48,13 @@ void switchToMod(char[] name)
 		ServerList serverList;
 		bool needRefresh;
 
-		if (ServerList* list = modName in serverLists) {
+		if (ServerList* list = modName in serverListCache) {
 			serverList = *list;
 			needRefresh = !serverList.complete;
 		}
 		else {
 			serverList = new ServerList(modName);
-			serverLists[modName] = serverList;
+			serverListCache[modName] = serverList;
 			needRefresh = true;
 
 			auto file = getModConfig(modName).extraServersFile;
