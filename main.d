@@ -11,8 +11,6 @@ import dwt.dnd.Clipboard;
 import dwt.dwthelper.ByteArrayInputStream;
 import dwt.events.KeyAdapter;
 import dwt.events.KeyEvent;
-import dwt.events.ShellAdapter;
-import dwt.events.ShellEvent;
 import dwt.graphics.Image;
 import dwt.widgets.Control;
 import dwt.widgets.Display;
@@ -27,7 +25,6 @@ version (Windows)
 	import link;
 import mainwindow;
 import serveractions;
-import serverlist;
 import servertable;
 import settings;
 import threadmanager;
@@ -140,29 +137,6 @@ private void _main(char[][] args)
 				default:
 					break;
 			}
-		}
-	});
-
-	mainWindow.handle.addShellListener(new class ShellAdapter {
-		public void shellClosed(ShellEvent e)
-		{
-			threadManager.abort = true;
-			statusBar.setLeft("Saving settings...");
-			log("Saving settings...");
-			saveSettings();
-			statusBar.setLeft("Exiting...");
-			log("Exiting...");
-			runtools.killServerBrowser();
-			//qstat.SaveRefreshList();
-			/*log("Waiting for threads to terminate...");
-			foreach (i, t; Thread.getAll()) {
-				if (t != Thread.getThis()) {
-					log("Waiting for thread " ~
-											  Integer.toString(i) ~ "...");
-					t.join();
-					log("    ...thread " ~ Integer.toString(i) ~ " done.");
-				}
-			}*/
 		}
 	});
 

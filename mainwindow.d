@@ -11,6 +11,8 @@ import dwt.dwthelper.ByteArrayInputStream;
 import dwt.dwthelper.Runnable;
 import dwt.events.SelectionAdapter;
 import dwt.events.SelectionEvent;
+import dwt.events.ShellAdapter;
+import dwt.events.ShellEvent;
 import dwt.graphics.Image;
 import dwt.graphics.Point;
 import dwt.layout.FillLayout;
@@ -30,6 +32,7 @@ import common;
 import cvartable;
 import dialogs;
 import playertable;
+import runtools;
 import serveractions;
 import serverlist;
 import servertable;
@@ -53,6 +56,7 @@ class MainWindow
 	{
 		shell_ = new Shell(Display.getDefault);
 		shell_.setText(APPNAME ~ " " ~ VERSION);
+		shell_.addShellListener(new MyShellListener);
 
 		// restore saved size and state
 		char[] size = getSetting("windowSize");
@@ -142,6 +146,31 @@ class MainWindow
 	Point size() { return shell_.getSize; }  ///
 	
 	void disposeAll() { serverTable.disposeAll(); }  ///
+
+
+	///
+	private class MyShellListener : ShellAdapter {
+		/// Handler for the shellClosed event.
+		void shellClosed(ShellEvent e)
+		{
+			threadManager.abort = true;
+			statusBar.setLeft("Saving settings...");
+			log("Saving settings...");
+			saveSettings();
+			statusBar.setLeft("Exiting...");
+			log("Exiting...");
+			runtools.killServerBrowser();
+			//qstat.SaveRefreshList();
+			/*log("Waiting for threads to terminate...");
+			foreach (i, t; Thread.getAll()) {
+				if (t != Thread.getThis()) {
+					log("Waiting for thread " ~ Integer.toString(i) ~ "...");
+					t.join();
+					log("    ...thread " ~ Integer.toString(i) ~ " done.");
+				}
+			}*/
+		}
+	}
 
 	private {
 		Shell shell_;
