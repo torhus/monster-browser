@@ -185,7 +185,8 @@ private void _main(char[][] args)
 
 
 	// call all necessary dispose methods
-	ServerList.disposeAllCustomData();
+	foreach (slist; serverListCache)
+		slist.disposeCustomData();
 	colorednames.disposeNameColors();
 	geoip.disposeFlagImages();
 	mainWindow.disposeAll();
