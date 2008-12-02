@@ -43,11 +43,12 @@ Set!(char[]) browserGetNewList(in Mod mod)
 	if (gslist)
 		cmdLine ~= "gslist -n quake3 -o 5";
 	else
-		cmdLine ~= "qstat -q3m,68,outfile " ~ mod.masterServer ~ ",-";
+		cmdLine ~= "qstat -q3m," ~ mod.protocolVersion ~ ",outfile " ~
+		                                               mod.masterServer ~ ",-";
 
 	// use gslist's server-sider filtering
-	if (gslist && MOD_ONLY && mod.name!= "baseq3")
-		cmdLine ~= " -f \"(gametype = \'" ~ mod.name ~ "\'\")";
+	if (gslist && MOD_ONLY && mod.mod!= "baseq3")
+		cmdLine ~= " -f \"(gametype = \'" ~ mod.mod ~ "\'\")";
 
 	try {
 		proc = new Process(cmdLine);
@@ -172,7 +173,7 @@ final class QstatServerRetriever : IServerRetriever
 	///
 	this(in char[] modName, Set!(char[]) addresses, bool saveList=false)
 	{
-		modName_ = modName;
+		mod_ = getModConfig(modName);
 		addresses_ = addresses;
 		outputFile_ = saveList ? "servers.tmp" : null;
 	}
@@ -221,7 +222,7 @@ final class QstatServerRetriever : IServerRetriever
 		scope iter = new LineIterator!(char)(proc.stdout);
 		// FIXME: verify that everything is initialized correctly, and that
 		// stdout is valid
-		completed_ = qstat.parseOutput(modName_, iter, deliver, outputFile_);
+		completed_ = qstat.parseOutput(mod_.mod, iter, deliver, outputFile_);
 
 		if (outputFile_.length)
 			renameOutputFile();
@@ -232,8 +233,7 @@ final class QstatServerRetriever : IServerRetriever
 	{
 		if (completed_ ) {
 			try {
-				Mod mod = getModConfig(modName_);
-				char[] serverFile = mod.serverFile;
+				char[] serverFile = mod_.serverFile;
 				if (Path.exists(serverFile))
 					Path.remove(serverFile);
 				Path.rename(outputFile_, serverFile);
@@ -257,7 +257,7 @@ final class QstatServerRetriever : IServerRetriever
 		static const char[] REFRESHFILE = "refreshlist.tmp";
 
 		Set!(char[]) addresses_;
-		char[] modName_;
+		Mod mod_;
 		int serverCount_;
 		char[] outputFile_;
 		bool completed_;
