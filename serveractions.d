@@ -181,7 +181,7 @@ void delegate() refreshList()
                                    "\'Get new list\' to download a new list.");
 		return null;
 	}
-	Set!(char[]) servers = filterServerFile(mod.name, mod.serverFile);
+	Set!(char[]) servers = filterServerFile(mod.mod, mod.serverFile);
 
 	log("Refreshing server list for " ~ mod.name ~ "...");
 	char[] tmp;

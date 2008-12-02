@@ -29,11 +29,21 @@ version (Windows) {
 /// Access to mod-specific configuration.
 struct Mod
 {
-	char[] name; /// Quake 3 gamename, like "baseq3".
+	char[] name;  /// Section name in the mod config file.
+
+	char[] mod()  /// Quake 3 gamename, like "baseq3".  Defaults to name.
+	{
+		return section.getValue("mod", name);
+	}
 
 	char[] masterServer()  /// Like "master3.idsoftware.com".
 	{
 		return section.getValue("masterServer", "master3.idsoftware.com");
+	}
+
+	char[] protocolVersion()  /// Defaults to 68.
+	{
+		return section.getValue("protocolVersion", "68");
 	}
 
 	char[] serverFile() /// Like "master3.idsoftware.com.lst".
@@ -66,8 +76,8 @@ struct Mod
 }
 
 
-char[][] modNames;  /// The names of all mods loaded from the mod config file.
-char[] modFileName;  /// Name of the file containing options for each mod.
+char[][] modNames;  /// The names of all games loaded from the mod config file.
+char[] modFileName;  /// Name of the file containing options for each game.
 
 private {
 	char[] settingsFileName;
@@ -79,6 +89,10 @@ private {
 	    "; like this example:\n"
 	    ";\n"
 	    "; [mymod]\n"
+		"; mod=mymodxyz\n"
+		"; (mod defaults to being the section name)\n"
+		"; protocolVersion=67\n"
+		"; (protocolVersion defaults to 68)\n"
 	    "; exePath=C:\\Program Files\\My Mod Directory\\mymod.exe\n"
 	    "; masterServer=master.mymod.com\n"
 	    ";\n"
@@ -94,6 +108,12 @@ private {
 	    "[q3ut4]\n"
 	    "masterServer=master.urbanterror.net\n"
 	    "\n"
+		"[tremulous]\n"
+		"mod=base\n"
+		"masterServer=master.tremulous.net:30710\n"
+		"protocolVersion=69\n"
+		"exePath=%ProgramFiles%\\Tremulous\\tremulous.exe\n"
+		"\n"
 	    "[baseq3]\n\n"
 	    "[osp]\n\n"
 	    "[cpma]\n\n"
