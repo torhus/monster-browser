@@ -26,10 +26,13 @@ version (Windows) {
 }
 
 
-/// Access to mod-specific configuration.
-struct Mod
+/// Configuration for a game.
+struct GameConfig
 {
-	char[] name;  /// Section name in the mod config file.
+	char[] name() /// Section name in the mod config file.
+	{
+		return name_;
+	}
 
 	char[] mod()  /// Quake 3 gamename, like "baseq3".  Defaults to name.
 	{
@@ -72,6 +75,7 @@ struct Mod
 		return r ? (r == "true") : true;
 	}
 
+	private char[] name_;
 	private IniSection section;
 }
 
@@ -154,17 +158,14 @@ private {
  * Throws: Exception if no config was found.
  *
  */
-Mod getModConfig(in char[] name)
+GameConfig getGameConfig(in char[] name)
 {
-	Mod mod;
-	
-	mod.name = name;
-	mod.section = modsIni[name];
-	
-	if (mod.section is null)
-		throw new Exception("getModConfig: non-existant mod");
-	
-	return mod;
+	IniSection section = modsIni[name];
+
+	if (section is null)
+		throw new Exception("getGameConfig: non-existant mod");
+
+	return GameConfig(name, section);
 }
 
 
@@ -174,16 +175,14 @@ Mod getModConfig(in char[] name)
  * Throws: Exception if config was already there for this mod.
  *
  */
-Mod createModConfig(in char[] name)
+GameConfig createModConfig(in char[] name)
 {
-	Mod mod;
-
 	if (modsIni[name] !is null)
 		throw new Exception("createModConfig: preexistant mod name");
 
-	mod.section = modsIni.addSection(name);
-	mod.name = name;
-	return mod;
+	IniSection section = modsIni.addSection(name);
+
+	return GameConfig(name, modsIni.addSection(name));
 }
 
 

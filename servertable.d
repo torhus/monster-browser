@@ -382,7 +382,7 @@ private:
 			if (stopServerRefresh_ !is null)
 				stopServerRefresh_();
 			int index = table_.getSelectionIndex();
-			joinServer(serverList_.modName, serverList_.getFiltered(index));
+			joinServer(serverList_.gameName, serverList_.getFiltered(index));
 		}
 	}
 
@@ -539,7 +539,7 @@ private:
 		menu.setDefaultItem(item);
 		item.addSelectionListener(new class SelectionAdapter {
 			void widgetSelected(SelectionEvent e) {
-				joinServer(serverList_.modName,
+				joinServer(serverList_.gameName,
 				          serverList_.getFiltered(table_.getSelectionIndex()));
 			}
 		});
