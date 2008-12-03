@@ -117,15 +117,15 @@ class ServerList
 
 
 	///
-	this(in char[] modName)
+	this(in char[] gameName)
 	{
-		modName_ = modName;
+		gameName_ = gameName;
 		filteredIpHash_ = new HashMap!(char[], int);
 	}
 
 
 	///
-	char[] modName() { return modName_; }
+	char[] gameName() { return gameName_; }
 
 
 	/// Returns false if the added server is filtered out.
@@ -360,7 +360,7 @@ private:
 	HashMap!(char[], int) filteredIpHash_;
 	bool filteredIpHashValid_ = false;
 	Set!(char[]) extraServers_;
-	char[] modName_;
+	char[] gameName_;
 
 	int sortColumn_ = ServerColumn.NAME;
 	int oldSortColumn_ = -1;

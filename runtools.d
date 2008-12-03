@@ -31,11 +31,11 @@ private Process proc;
  *
  * Returns: A set containing the IP addresses of the servers.
  */
-Set!(char[]) browserGetNewList(in Mod mod)
+Set!(char[]) browserGetNewList(in GameConfig game)
 {
 	char[] cmdLine;
 	Set!(char[]) addresses;
-	bool gslist = common.haveGslist && mod.useGslist;
+	bool gslist = common.haveGslist && game.useGslist;
 
 	version (linux)
 		cmdLine ~= "./";
@@ -43,12 +43,12 @@ Set!(char[]) browserGetNewList(in Mod mod)
 	if (gslist)
 		cmdLine ~= "gslist -n quake3 -o 5";
 	else
-		cmdLine ~= "qstat -q3m," ~ mod.protocolVersion ~ ",outfile " ~
-		                                               mod.masterServer ~ ",-";
+		cmdLine ~= "qstat -q3m," ~ game.protocolVersion ~ ",outfile " ~
+		                                              game.masterServer ~ ",-";
 
 	// use gslist's server-sider filtering
-	if (gslist && MOD_ONLY && mod.mod!= "baseq3")
-		cmdLine ~= " -f \"(gametype = \'" ~ mod.mod ~ "\'\")";
+	if (gslist && MOD_ONLY && game.mod != "baseq3")
+		cmdLine ~= " -f \"(gametype = \'" ~ game.mod ~ "\'\")";
 
 	try {
 		proc = new Process(cmdLine);
@@ -126,9 +126,9 @@ final class FromFileServerRetriever : IServerRetriever
 {
 
 	///
-	this(in char[] modName)
+	this(in char[] game)
 	{
-		Mod mod_ = getModConfig(modName);
+		GameConfig game_ = getGameConfig(game);
 	}
 
 
@@ -140,7 +140,7 @@ final class FromFileServerRetriever : IServerRetriever
 	int prepare()
 	{
 		try {
-			input_ = new TextFileInput(mod_.serverFile);
+			input_ = new TextFileInput(game_.serverFile);
 		}
 		catch (IOException o) {
 			warning("Unable to load the server list from disk,\n"
@@ -155,14 +155,14 @@ final class FromFileServerRetriever : IServerRetriever
 	void retrieve(bool delegate(ServerData*) deliver)
 	{
 		scope iter = new LineIterator!(char)(input_);
-		qstat.parseOutput(mod_.name, iter, deliver);
+		qstat.parseOutput(game_.name, iter, deliver);
 		input_.close();
 	}
 
 
 	private {
 		InputStream input_;
-		Mod mod_;
+		GameConfig game_;
 	}
 }
 
@@ -171,9 +171,9 @@ final class FromFileServerRetriever : IServerRetriever
 final class QstatServerRetriever : IServerRetriever
 {
 	///
-	this(in char[] modName, Set!(char[]) addresses, bool saveList=false)
+	this(in char[] game, Set!(char[]) addresses, bool saveList=false)
 	{
-		mod_ = getModConfig(modName);
+		game_ = getGameConfig(game);
 		addresses_ = addresses;
 		outputFile_ = saveList ? "servers.tmp" : null;
 	}
@@ -222,7 +222,7 @@ final class QstatServerRetriever : IServerRetriever
 		scope iter = new LineIterator!(char)(proc.stdout);
 		// FIXME: verify that everything is initialized correctly, and that
 		// stdout is valid
-		completed_ = qstat.parseOutput(mod_.mod, iter, deliver, outputFile_);
+		completed_ = qstat.parseOutput(game_.mod, iter, deliver, outputFile_);
 
 		if (outputFile_.length)
 			renameOutputFile();
@@ -233,7 +233,7 @@ final class QstatServerRetriever : IServerRetriever
 	{
 		if (completed_ ) {
 			try {
-				char[] serverFile = mod_.serverFile;
+				char[] serverFile = game_.serverFile;
 				if (Path.exists(serverFile))
 					Path.remove(serverFile);
 				Path.rename(outputFile_, serverFile);
@@ -257,7 +257,7 @@ final class QstatServerRetriever : IServerRetriever
 		static const char[] REFRESHFILE = "refreshlist.tmp";
 
 		Set!(char[]) addresses_;
-		Mod mod_;
+		GameConfig game_;
 		int serverCount_;
 		char[] outputFile_;
 		bool completed_;

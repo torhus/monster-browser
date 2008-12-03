@@ -42,22 +42,22 @@ ServerList[char[]] serverListCache;
  */
 void switchToMod(char[] name)
 {
-	static char[] modName;
+	static char[] gameName;
 
 	static void delegate() f() {
 		ServerList serverList;
 		bool needRefresh;
 
-		if (ServerList* list = modName in serverListCache) {
+		if (ServerList* list = gameName in serverListCache) {
 			serverList = *list;
 			needRefresh = !serverList.complete;
 		}
 		else {
-			serverList = new ServerList(modName);
-			serverListCache[modName] = serverList;
+			serverList = new ServerList(gameName);
+			serverListCache[gameName] = serverList;
 			needRefresh = true;
 
-			auto file = getModConfig(modName).extraServersFile;
+			auto file = getGameConfig(gameName).extraServersFile;
 			try {
 				if (Path.exists(file)) {
 					auto input = new TextFileInput(file);
@@ -75,12 +75,12 @@ void switchToMod(char[] name)
 		serverTable.setServerList(serverList);
 
 		if (needRefresh) {
-			Mod mod = getModConfig(modName);
-			if (arguments.fromfile && Path.exists(mod.serverFile))
+			GameConfig game = getGameConfig(gameName);
+			if (arguments.fromfile && Path.exists(game.serverFile))
 				threadManager.runSecond(&loadSavedList);
-			else if (common.haveGslist && mod.useGslist)
+			else if (common.haveGslist && game.useGslist)
 				threadManager.runSecond(&getNewList);
-			else if (Path.exists(mod.serverFile))
+			else if (Path.exists(game.serverFile))
 				threadManager.runSecond(&refreshList);
 			else
 				threadManager.runSecond(&getNewList);
@@ -96,7 +96,7 @@ void switchToMod(char[] name)
 		return null;
 	}
 
-	modName = name;
+	gameName = name;
 	threadManager.run(&f);
 }
 
@@ -110,9 +110,9 @@ void delegate() loadSavedList()
 	serverList.clear();
 	GC.collect();
 
-	Mod mod = getModConfig(serverList.modName);
-	if (Path.exists(mod.serverFile)) {
-		auto retriever = new FromFileServerRetriever(mod.name);
+	GameConfig game = getGameConfig(serverList.gameName);
+	if (Path.exists(game.serverFile)) {
+		auto retriever = new FromFileServerRetriever(game.name);
 		auto contr = new ServerRetrievalController(retriever);
 		contr.startMessage = "Loading saved server list...";
 		contr.noReplyMessage = "No servers were found in the file";
@@ -145,8 +145,8 @@ void queryServers(in char[][] addresses, bool replace=false, bool select=false)
 	static bool replace_, select_;
 
 	static void delegate() f() {
-		char[] modName = serverTable.serverList.modName;
-		auto retriever = new QstatServerRetriever(modName,
+		char[] gameName = serverTable.serverList.gameName;
+		auto retriever = new QstatServerRetriever(gameName,
 		                                             Set!(char[])(addresses_));
 		auto contr = new ServerRetrievalController(retriever, replace_);
 		if (select_)
@@ -174,18 +174,18 @@ void queryServers(in char[][] addresses, bool replace=false, bool select=false)
 void delegate() refreshList()
 {
 	ServerList serverList = serverTable.serverList;
-	Mod mod = getModConfig(serverList.modName);
+	GameConfig game = getGameConfig(serverList.gameName);
 
-	if (!Path.exists(mod.serverFile)) {
+	if (!Path.exists(game.serverFile)) {
 		error("No server list found on disk, press\n"
                                    "\'Get new list\' to download a new list.");
 		return null;
 	}
-	Set!(char[]) servers = filterServerFile(mod.mod, mod.serverFile);
+	Set!(char[]) servers = filterServerFile(game.mod, game.serverFile);
 
-	log("Refreshing server list for " ~ mod.name ~ "...");
+	log("Refreshing server list for " ~ game.name ~ "...");
 	char[] tmp;
-	char[] sfile = tail(mod.serverFile, "/", tmp);
+	char[] sfile = tail(game.serverFile, "/", tmp);
 	log(Format("Found {} servers in {}.", servers.length, sfile));
 
 	// merge in the extra servers
@@ -203,7 +203,7 @@ void delegate() refreshList()
 	GC.collect();
 
 	if (servers.length) {
-		auto retriever = new QstatServerRetriever(mod.name, servers);
+		auto retriever = new QstatServerRetriever(game.name, servers);
 		auto contr = new ServerRetrievalController(retriever);
 		contr.startMessage =
                             Format("Refreshing {} servers...", servers.length);
@@ -228,10 +228,10 @@ void delegate() getNewList()
 	{
 		try {
 			ServerList serverList = serverTable.serverList;
-			Mod mod = getModConfig(serverList.modName);
-			auto addresses = browserGetNewList(mod);
+			GameConfig game = getGameConfig(serverList.gameName);
+			auto addresses = browserGetNewList(game);
 			log(Format("Got {} servers from {}.", addresses.length,
-			                                                mod.masterServer));
+			                                               game.masterServer));
 
 			auto extraServers = serverList.extraServers;
 			foreach (s; extraServers)
@@ -249,7 +249,7 @@ void delegate() getNewList()
 				});
 			}
 			else {
-				auto retriever = new QstatServerRetriever(mod.name, addresses,
+				auto retriever = new QstatServerRetriever(game.name, addresses,
 				                                                         true);
 				auto contr = new ServerRetrievalController(retriever);
 				contr.startMessage = Format("Got {} servers, querying...",
@@ -269,8 +269,8 @@ void delegate() getNewList()
 	GC.collect();
 
 	statusBar.setLeft("Getting new server list...");
-	char[] modName = serverTable.serverList.modName;
-	log("Getting new server list for " ~ modName ~ "...");
+	char[] gameName = serverTable.serverList.gameName;
+	log("Getting new server list for " ~ gameName ~ "...");
 	serverTable.notifyRefreshStarted;
 	
 	return &f;

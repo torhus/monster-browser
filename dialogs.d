@@ -285,7 +285,7 @@ class SpecifyServerDialog
 		addressText_.setLayoutData(addressTextData);
 
 		saveButton_ = new Button (shell_, DWT.CHECK);
-		char[] file = getModConfig(filterBar.selectedMod).extraServersFile;
+		char[] file = getGameConfig(filterBar.selectedMod).extraServersFile;
 		saveButton_.setText("Save server on file ('" ~ file ~ "')");
 		auto saveButtonData = new GridData;
 		saveButtonData.horizontalAlignment = DWT.CENTER;
@@ -328,8 +328,9 @@ class SpecifyServerDialog
 						if (serverList.getIndex(address) == -1) {
 							if (saveButton_.getSelection()) {
 								if (!(address in serverList.extraServers)) {
-									Mod mod = getModConfig(serverList.modName);
-									char[] file = mod.extraServersFile;
+									GameConfig game =
+									        getGameConfig(serverList.gameName);
+									char[] file = game.extraServersFile;
 									// FIXME: error check here (FileException)
 									File(file).append(address ~ newline);
 								}

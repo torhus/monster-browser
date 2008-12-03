@@ -32,11 +32,11 @@ version (Windows)
  *
  * Displays an error message if the game executable was not found.
  */
-void joinServer(in char[] modName, ServerData *sd)
+void joinServer(in char[] gameName, ServerData *sd)
 {
 	char[] argv;
-	Mod modConfig = getModConfig(modName);
-	FilePath path = FilePath(replace(modConfig.exePath, '\\', '/'));
+	GameConfig game = getGameConfig(gameName);
+	FilePath path = FilePath(replace(game.exePath, '\\', '/'));
 	bool launch = true;
 	bool showDialog = false;
 	char[] msg;
@@ -47,7 +47,7 @@ void joinServer(in char[] modName, ServerData *sd)
 	}
 
 	if (MOD_ONLY) {
-		argv = "+set fs_game " ~ modName;
+		argv = "+set fs_game " ~ game.mod;
 	}
 	argv ~= " +connect " ~ sd.server[ServerColumn.ADDRESS];
 
@@ -64,7 +64,7 @@ void joinServer(in char[] modName, ServerData *sd)
 
 	if (showDialog) {
 		scope JoinDialog dialog = new JoinDialog(mainWindow.handle,
-		                                         sd.server[ServerColumn.NAME], msg);
+		                                    sd.server[ServerColumn.NAME], msg);
 
 		dialog.password = getPassword(sd.server[ServerColumn.ADDRESS]);
 
