@@ -128,7 +128,7 @@ final class FromFileServerRetriever : IServerRetriever
 	///
 	this(in char[] game)
 	{
-		GameConfig game_ = getGameConfig(game);
+		game_ = getGameConfig(game);
 	}
 
 
