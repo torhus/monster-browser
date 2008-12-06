@@ -8,6 +8,7 @@ import tango.core.Exception : IOException, ProcessException;
 debug import tango.io.Console;
 import Path = tango.io.Path;
 import tango.io.model.IConduit : InputStream;
+import tango.io.stream.FileStream;
 import tango.io.stream.TextFileStream;
 import tango.sys.Process;
 import tango.text.convert.Format;
@@ -180,22 +181,17 @@ final class QstatServerRetriever : IServerRetriever
 
 
 	///
-	void initialize()
-	{
-		// FIXME: check if this code could be moved into prepare()
-		if (Path.exists(appDir ~ REFRESHFILE))
-			Path.remove(appDir ~ REFRESHFILE);
-		serverCount_ = appendServersToFile(appDir ~ REFRESHFILE, addresses_);
-		log(Format("Wrote {} addresses to {}.", serverCount_, REFRESHFILE));
-	}
+	void initialize() { }
 
 
 	///
 	int prepare()
 	{
 		try {
-			char[] cmdLine = "qstat -f " ~ REFRESHFILE ~ " -raw,game " ~ FIELDSEP ~
-							  " -P -R -default q3s";
+			char[] cmdLine = "qstat -f - -raw,game " ~ FIELDSEP ~ " -P -R" ~
+			                                                   " -default q3s";
+			FileOutput dumpFile;
+
 			if (getSetting("coloredNames") == "true")
 				cmdLine ~= " -carets";
 			version (linux)
@@ -204,15 +200,31 @@ final class QstatServerRetriever : IServerRetriever
 			proc = new Process(cmdLine);
 			proc.workDir = appDir;
 			log("Executing '" ~ cmdLine ~ "'.");
-			// FIXME: feed qstat through stdin (-f -)?
 			proc.execute();
+			
+			if (arguments.dumplist)
+				dumpFile = new FileOutput("refreshlist.tmp");
+
+			foreach (address; addresses_) {
+				proc.stdin.write(address);
+				proc.stdin.write(newline);
+				if (dumpFile) {
+					dumpFile.write(address);
+					dumpFile.write(newline);
+				}
+			}
+			proc.stdin.flush.close;
+			log(Format("Fed {} addresses to qstat.", addresses_.length));
+
+			scope (exit) if (dumpFile)
+				dumpFile.flush.close;
 		}
 		catch (ProcessException e) {
 			error("qstat not found!\nPlease reinstall " ~ APPNAME ~ ".");
 			return 0;
 		}
 
-		return serverCount_;
+		return addresses_.length;
 	}
 
 
@@ -254,11 +266,8 @@ final class QstatServerRetriever : IServerRetriever
 
 
 	private {
-		static const char[] REFRESHFILE = "refreshlist.tmp";
-
 		Set!(char[]) addresses_;
 		GameConfig game_;
-		int serverCount_;
 		char[] outputFile_;
 		bool completed_;
 	}

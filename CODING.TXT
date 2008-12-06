@@ -61,10 +61,11 @@ redirect   - Redirect stdout and stderr (Cout and Cerr) to the file DEBUG.OUT.
 
 Command line arguments (for testing/benchmarking)
 -------------------------------------------------
+dumplist  - Dump the list of servers to be refreshed to a file.
 fromfile  - Get servers from disk instead of through the network.
 norefresh - Don't refresh the server table GUI while receiving servers.
 quit      - Print time since startup and then quit, after loading the server
-            list from disk.  Only works in combination with 'fromfile'.
+            list from disk.
 
 
 -----------
