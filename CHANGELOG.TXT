@@ -1,5 +1,7 @@
-Work in progress - 2008-10-15
+Work in progress - 2008-12-06
 -----------------------------
+- New: Added support for Tremulous.
+- New: Added "mod" and "protocolVersion" keys to the mod configuration.
 - New: Can now press F4 to get a new list, F5 to refresh.
 - New: Can now press Esc to interrupt operations.
 - Fix: Installer didn't create shortcuts by default.
