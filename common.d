@@ -35,6 +35,7 @@ else
 
 struct arguments {  ///
 static:
+	bool dumplist  = false;  ///
 	bool fromfile  = false;  ///
 	bool norefresh = false;  ///
 	bool quit      = false;  ///
@@ -514,36 +515,14 @@ Set!(char[]) collectIpAddresses(StreamIterator!(char) iter, uint start=0)
 }
 
 
-/**
- * Append IP addresses to a file, skipping addresses in skipList.
- *
- * Returns: The number of servers that were written to the file.
- */
-uint appendServersToFile(in char[] fileName, in Set!(char[]) servers,
-                         in Set!(char[]) skipList=Set!(char[])())
-{
-	scope output = new BufferOutput(
-	                    new FileConduit(fileName, FileConduit.WriteAppending));
-	uint count = 0;
-
-	foreach (address; servers) {
-		if (!(address in skipList)) {
-			output.write(address);
-			output.write(newline);
-			count++;
-		}
-	}
-
-	output.flush.close;
-	return count;
-}
-
-
 /// Sets the values of the common.arguments struct.
 void parseCmdLine(char[][] args)
 {
 	foreach (arg; args[1..$]) {
 		switch (arg) {
+			case "dumplist":
+				arguments.dumplist = true;
+				break;
 			case "fromfile":
 				arguments.fromfile = true;
 				break;
