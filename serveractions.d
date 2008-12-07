@@ -29,18 +29,18 @@ import settings;
 import threadmanager;
 
 
-/// When switchToMod creates a new ServerList object, it's stored here.
+/// When switchToGame creates a new ServerList object, it's stored here.
 ServerList[char[]] serverListCache;
 
 
 /**
- * Switches the active mod.
+ * Switches the active game.
  *
  * Takes care of everything, updating the GUI as necessary, querying servers or
- * a master server if there's no pre-existing data for the mod, etc.  Most of
+ * a master server if there's no pre-existing data for the game, etc.  Most of
  * the work is done in a new thread.
  */
-void switchToMod(char[] name)
+void switchToGame(char[] name)
 {
 	static char[] gameName;
 
@@ -119,7 +119,8 @@ void delegate() loadSavedList()
 		return &contr.run;
 	}
 	else {
-		statusBar.setLeft("Unable to find a file for this mod's master server");
+		statusBar.setLeft(
+		                "Unable to find a file for this game's master server");
 		return null;
 	}
 }
@@ -211,7 +212,7 @@ void delegate() refreshList()
 		return &contr.run;
 	}
 	else {
-		statusBar.setLeft("No servers were found for this mod");
+		statusBar.setLeft("No servers were found for this game");
 		return null;
 	}	
 }

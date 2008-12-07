@@ -147,7 +147,7 @@ private void _main(char[][] args)
 	mainWindow.open();
 
 	serverTable.getTable.setFocus();
-	switchToMod(filterBar.selectedMod);
+	switchToGame(filterBar.selectedGame);
 
 	// main loop
 	Display display = Display.getDefault;

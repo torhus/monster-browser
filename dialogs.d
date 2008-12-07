@@ -285,7 +285,7 @@ class SpecifyServerDialog
 		addressText_.setLayoutData(addressTextData);
 
 		saveButton_ = new Button (shell_, DWT.CHECK);
-		char[] file = getGameConfig(filterBar.selectedMod).extraServersFile;
+		char[] file = getGameConfig(filterBar.selectedGame).extraServersFile;
 		saveButton_.setText("Save server on file ('" ~ file ~ "')");
 		auto saveButtonData = new GridData;
 		saveButtonData.horizontalAlignment = DWT.CENTER;
@@ -408,29 +408,29 @@ class SettingsDialog
 		gridData = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
 		pathText_.setLayoutData(gridData);
 
-		// startup mod
+		// startup game
 		Group startupGroup = new Group(mainComposite, DWT.SHADOW_ETCHED_IN);
 		startupGroup.setText("Start with");
 		auto startupLayout = new GridLayout();
 		startupGroup.setLayout(startupLayout);
 		startupDefaultButton_ = new Button(startupGroup, DWT.RADIO);
-		startupDefaultButton_.setText("Default mod");
+		startupDefaultButton_.setText("Default game");
 		startupLastButton_ = new Button(startupGroup, DWT.RADIO);
-		startupLastButton_.setText("Last used mod");
+		startupLastButton_.setText("Last used game");
 
 		if (getSetting("startWithLastMod") == "true")
 			startupLastButton_.setSelection(true);
 		else
 			startupDefaultButton_.setSelection(true);
 
-		// mods button
-		Button modsButton = new Button(mainComposite, DWT.PUSH);
-		modsButton.setText("Mods...");
-		modsButton.setLayoutData(new GridData(BUTTON_SIZE));
-		modsButton.addSelectionListener(new class SelectionAdapter {
+		// games button
+		Button gamesButton = new Button(mainComposite, DWT.PUSH);
+		gamesButton.setText("Games...");
+		gamesButton.setLayoutData(new GridData(BUTTON_SIZE));
+		gamesButton.addSelectionListener(new class SelectionAdapter {
 			public void widgetSelected(SelectionEvent e)
 			{
-				Program.launch(settings.modFileName);
+				Program.launch(settings.gamesFileName);
 			}
 		});
 
@@ -463,9 +463,9 @@ class SettingsDialog
 					s = (startupLastButton_.getSelection()) ? "true" : "false";
 					setSetting("startWithLastMod", s);
 				}
-				// in case the mod list was edited
-				settings.loadModFile();
-				filterBar.setMods(settings.modNames);
+				// in case the game list was edited
+				settings.loadGamesFile();
+				filterBar.setGames(settings.gameNames);
 
 				shell_.close();
 			}

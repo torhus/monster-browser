@@ -28,7 +28,7 @@ private Process proc;
 
 /**
  * Run qstat or gslist (determined by the haveGslist variable) to retrieve a
- * list of servers from the active mod's master server.
+ * list of servers from the game's master server.
  *
  * Returns: A set containing the IP addresses of the servers.
  */

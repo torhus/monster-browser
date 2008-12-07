@@ -281,31 +281,31 @@ class FilterBar : Composite
 		combo.setItems(gametypes);
 		combo.select(0);*/
 
-		// mod selection
-		modCombo_ = new Combo(this, DWT.DROP_DOWN);
-		setMods(settings.modNames);
+		// game selection
+		gamesCombo_ = new Combo(this, DWT.DROP_DOWN);
+		setGames(settings.gameNames);
 		if (getSetting("startWithLastMod") == "true") {
 			char[] s = getSetting("lastMod");
-			int i = findString(settings.modNames, s);
+			int i = findString(settings.gameNames, s);
 			if (i == -1) {
-				modCombo_.add(s);
-				modCombo_.select(modCombo_.getItemCount() - 1);
-				createModConfig(s);
+				gamesCombo_.add(s);
+				gamesCombo_.select(gamesCombo_.getItemCount() - 1);
+				createGameConfig(s);
 			}
 			else {
-				modCombo_.select(i);
+				gamesCombo_.select(i);
 			}
 		}
 
-		lastSelectedMod_ = modCombo_.getText();
+		lastSelectedGame_ = gamesCombo_.getText();
 
-		modCombo_.clearSelection();
-		modCombo_.addSelectionListener(new class SelectionAdapter {
+		gamesCombo_.clearSelection();
+		gamesCombo_.addSelectionListener(new class SelectionAdapter {
 			public void widgetSelected(SelectionEvent e)
 			{
 				serverTable.getTable.setFocus();
-				lastSelectedMod_ = (cast(Combo)e.widget).getText();
-				switchToMod(lastSelectedMod_);
+				lastSelectedGame_ = (cast(Combo)e.widget).getText();
+				switchToGame(lastSelectedGame_);
 			}
 
 			public void widgetDefaultSelected(SelectionEvent e)
@@ -315,20 +315,20 @@ class FilterBar : Composite
 					return;
 				}
 
-				int i = findString(modNames, s);
+				int i = findString(gameNames, s);
 				Combo combo = (cast(Combo) e.widget);
 				if (i == -1) {
 					combo.add(s);
 					combo.select(combo.getItemCount() - 1);
-					createModConfig(s);
+					createGameConfig(s);
 				}
 				else {
 					combo.select(i);
 				}
 
 				serverTable.getTable.setFocus();
-				lastSelectedMod_ = s;
-				switchToMod(s);
+				lastSelectedGame_ = s;
+				switchToGame(s);
 			}
 		});
 
@@ -336,10 +336,10 @@ class FilterBar : Composite
 	}
 
 
-	/// The last selected mod name.
-	char[] selectedMod()
+	/// The last selected game name.
+	char[] selectedGame()
 	{
-		return lastSelectedMod_;
+		return lastSelectedGame_;
 	}
 
 
@@ -357,8 +357,8 @@ class FilterBar : Composite
 	}
 
 
-	/// Set the contents of the mod name drop-down list.
-	void setMods(char[][] list)
+	/// Set the contents of the game name drop-down list.
+	void setGames(char[][] list)
 	{
 		int sel, n, height;
 		Point p;
@@ -367,27 +367,27 @@ class FilterBar : Composite
 		if (list is null)
 			return;
 
-		sel = modCombo_.getSelectionIndex();
-		items = modCombo_.getItems();
+		sel = gamesCombo_.getSelectionIndex();
+		items = gamesCombo_.getItems();
 		foreach (s; list) {
 			if (findString(items, s) == -1) {
-				modCombo_.add(s);
+				gamesCombo_.add(s);
 			}
 		}
-		n = modCombo_.getItemCount();
+		n = gamesCombo_.getItemCount();
 		if (n > 10) {
 			n = 10;
 		}
-		p = modCombo_.getSize();
-		height = modCombo_.getItemHeight() * n;
+		p = gamesCombo_.getSize();
+		height = gamesCombo_.getItemHeight() * n;
 		// FIXME: setSize doesn't seem to do anything here :(
-		modCombo_.setSize(p.x, height);
+		gamesCombo_.setSize(p.x, height);
 
 		if (sel == -1) {
-			modCombo_.select(0);
+			gamesCombo_.select(0);
 		}
 		else {
-			modCombo_.select(sel);
+			gamesCombo_.select(sel);
 		}
 	}
 
@@ -412,8 +412,8 @@ class FilterBar : Composite
 
 private:
 	Button notEmptyButton_, hasHumansButton_;
-	char[] lastSelectedMod_;
-	Combo modCombo_;
+	char[] lastSelectedGame_;
+	Combo gamesCombo_;
 }
 
 
