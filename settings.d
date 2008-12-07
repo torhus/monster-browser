@@ -29,7 +29,7 @@ version (Windows) {
 /// Configuration for a game.
 struct GameConfig
 {
-	char[] name() /// Section name in the mod config file.
+	char[] name() /// Section name in the game config file.
 	{
 		return name_;
 	}
@@ -60,7 +60,7 @@ struct GameConfig
 	}
 
 	/**
-	 * Returns exePath from the mod-specific configuration, or gamePath from
+	 * Returns exePath from the game configuration, or gamePath from
 	 * settings.ini if the former is not set.
 	 */
 	char[] exePath()
@@ -80,25 +80,25 @@ struct GameConfig
 }
 
 
-char[][] modNames;  /// The names of all games loaded from the mod config file.
-char[] modFileName;  /// Name of the file containing options for each game.
+char[][] gameNames;  /// The names of all games loaded from the config file.
+char[] gamesFileName;  /// Name of the file containing options for each game.
 
 private {
 	char[] settingsFileName;
 
-	const char[] defaultModsFile =
-	    "; Monster Browser mods configuration\n"
+	const char[] defaultGamesFile =
+	    "; Monster Browser game configuration\n"
 	    ";\n"
-	    "; Just put each mod in square brackets, then you can list options under it, \n"
+	    "; Just put each game in square brackets, then you can list options under it,\n"
 	    "; like this example:\n"
 	    ";\n"
-	    "; [mymod]\n"
-		"; mod=mymodxyz\n"
-		"; (mod defaults to being the section name)\n"
-		"; protocolVersion=67\n"
-		"; (protocolVersion defaults to 68)\n"
-	    "; exePath=C:\\Program Files\\My Mod Directory\\mymod.exe\n"
-	    "; masterServer=master.mymod.com\n"
+	    "; [mygame]\n"
+	    "; mod=mymodxyz\n"
+	    "; (mod defaults to being the section name)\n"
+	    "; protocolVersion=67\n"
+	    "; (protocolVersion defaults to 68)\n"
+	    "; exePath=C:\\Program Files\\My Game\\mygame.exe\n"
+	    "; masterServer=master.mygame.com\n"
 	    ";\n"
 	    "; Lines beginning with a \";\" are comments.\n"
 	    "\n"
@@ -106,25 +106,25 @@ private {
 	    "\n"
 	    "[wop]\n"
 	    "exePath=%ProgramFiles%\\World of Padman\\wop.exe\n"
-		"useGslist=false\n"
+	    "useGslist=false\n"
 	    "masterServer=wopmaster.kickchat.com:27955\n"
 	    "\n"
 	    "[q3ut4]\n"
 	    "masterServer=master.urbanterror.net\n"
 	    "\n"
-		"[tremulous]\n"
-		"mod=base\n"
-		"masterServer=master.tremulous.net:30710\n"
-		"protocolVersion=69\n"
-		"exePath=%ProgramFiles%\\Tremulous\\tremulous.exe\n"
-		"\n"
+	    "[tremulous]\n"
+	    "mod=base\n"
+	    "masterServer=master.tremulous.net:30710\n"
+	    "protocolVersion=69\n"
+	    "exePath=%ProgramFiles%\\Tremulous\\tremulous.exe\n"
+	    "\n"
 	    "[baseq3]\n\n"
 	    "[osp]\n\n"
 	    "[cpma]\n\n"
 	    "[InstaUnlagged]\n\n";
 
 	Ini settingsIni;
-	Ini modsIni;
+	Ini gamesIni;
 
 	struct Setting {
 		char[] name;
@@ -153,94 +153,91 @@ private {
 
 
 /**
- * Get configuration for a mod.
+ * Get configuration for a game.
  *
  * Throws: Exception if no config was found.
  *
  */
 GameConfig getGameConfig(in char[] name)
 {
-	IniSection section = modsIni[name];
+	IniSection section = gamesIni[name];
 
 	if (section is null)
-		throw new Exception("getGameConfig: non-existant mod");
+		throw new Exception("getGameConfig: non-existant game");
 
 	return GameConfig(name, section);
 }
 
 
 /**
- * Add configuration for a new mod.
+ * Add configuration for a new game.
  *
- * Throws: Exception if config was already there for this mod.
+ * Throws: Exception if config was already there for this game.
  *
  */
-GameConfig createModConfig(in char[] name)
+GameConfig createGameConfig(in char[] name)
 {
-	if (modsIni[name] !is null)
-		throw new Exception("createModConfig: preexistant mod name");
+	if (gamesIni[name] !is null)
+		throw new Exception("createGameConfig: preexistant game name");
 
-	IniSection section = modsIni.addSection(name);
+	IniSection section = gamesIni.addSection(name);
 
-	return GameConfig(name, modsIni.addSection(name));
+	return GameConfig(name, gamesIni.addSection(name));
 }
 
 
 /**
- * Load the mod-specific configuration.
+ * Load the game-specific configuration.
  *
- * Updates the activeMod global, setting it to the first mod found in the
- * config file if it wasn't set already.
- *
- * If the mod config file is not found, a default file is created and used
+ * If the game config file is not found, a default file is created and used
  * instead.
  *
  * This function can be called again to reload the configuration after it has
  * been changed on disk.
  */
-void loadModFile()
+void loadGamesFile()
 {
-	assert(modFileName.length);
+	assert(gamesFileName.length);
 
-	if (!Path.exists(modFileName))
-		writeDefaultModsFile();
+	if (!Path.exists(gamesFileName))
+		writeDefaultGamesFile();
 
-	delete modsIni;
-	modsIni = new Ini(modFileName);
+	delete gamesIni;
+	gamesIni = new Ini(gamesFileName);
 
 	// remove the nameless section caused by comments
-	modsIni.remove("");
+	gamesIni.remove("");
 
-	if (modsIni.sections.length < 1) {
+	if (gamesIni.sections.length < 1) {
 		// Invalid format, probably the old version.  Just overwrite with
 		// defaults and try again.
-		writeDefaultModsFile();
-		delete modsIni;
-		modsIni = new Ini(modFileName);
-		modsIni.remove("");
+		writeDefaultGamesFile();
+		delete gamesIni;
+		gamesIni = new Ini(gamesFileName);
+		gamesIni.remove("");
 	}
 
-	foreach (sec; modsIni)
-		modNames ~= sec.name;
+	foreach (sec; gamesIni)
+		gameNames ~= sec.name;
 }
 
 
-private void writeDefaultModsFile()
+private void writeDefaultGamesFile()
 {
-	char[] text = defaultModsFile;
+	char[] text = defaultGamesFile;
 
 	version (Windows)
 		text = substitute(text, "%ProgramFiles%", getProgramFilesDirectory());
 
 	// Use C IO to get line ending translation.
-	FILE* f = fopen((modFileName ~ '\0').ptr, "w");
+	FILE* f = fopen((gamesFileName ~ '\0').ptr, "w");
 	fwrite(text.ptr, 1, text.length, f);
 	fclose(f);
 }
 
 
 /**
- * Load program settings, mod configuration, and saved session state.
+ * Load program settings, games configuration, and saved session state.
  *
  * Missing settings are replaced by defaults, this also happens if the config
  * file is missing altogether.
@@ -277,8 +274,8 @@ void loadSettings()
 
 	loadSessionState();
 
-	modFileName = appDir ~ "mods.ini";
-	loadModFile();
+	gamesFileName = appDir ~ "mods.ini";
+	loadGamesFile();
 }
 
 
@@ -295,7 +292,7 @@ void saveSettings()
 	setSetting("windowMaximized", mainWindow.maximized ?
 	                                                 "true" : "false");
 
-	setSetting("lastMod", filterBar.selectedMod);
+	setSetting("lastMod", filterBar.selectedGame);
 
 	gatherSessionState();
 
