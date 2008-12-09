@@ -63,12 +63,10 @@ private void _main(char[][] args)
 		Cerr.output = new FileOutput("NUL");
 	}
 
-	if (char[] error = initLogging) {
-		debug warning(error);
-		// Don't allow for release until refreshlist.tmp conflict is resolved.
-		version (Final)			 
-			assert(0);
-	}	
+	try
+		initLogging();
+	catch (IOException e)
+		debug warning(e.toString());
 
 	log("Using path '" ~ appDir ~ "'.");
 

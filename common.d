@@ -80,12 +80,9 @@ private {
  * Will write a startup message including the current date and time to it if it
  * was successfully opened.
  *
- * Returns: null on success, an error message if there was a problem.
- *
- * Throws: IOException if there was a problem writing to the file after
- *         successfully opening it.
+ * Throws: IOException.
  */
-char[] initLogging(char[] name="LOG.TXT")
+void initLogging(char[] name="LOG.TXT")
 {
 	const char[] sep =
 	           "-------------------------------------------------------------";
@@ -95,28 +92,18 @@ char[] initLogging(char[] name="LOG.TXT")
 	char[] path = appDir ~ name;
 
 	if (Path.exists(path) && Path.fileSize(path) < MAX_LOG_SIZE)
-		mode = FileConduit.WriteExisting;
+		mode = FileConduit.WriteAppending;
 	else
 		mode = FileConduit.WriteCreate;
 
 	mode.share = FileConduit.Share.Read;
 
-	try {
-		logfile = new FileConduit(path, mode);
-	}
-	catch (IOException e) {
-		error = e.toString;
-	}
+	logfile = new FileConduit(path, mode);
 
-	if (logfile) {
-		logfile.seek(0, FileConduit.Anchor.End);
-		auto t = time(null);
-		char[] timestamp = ctime(&t)[0..24];
-		logfile.write(newline ~ sep ~ newline ~ APPNAME ~ " " ~ VERSION ~
-		                 " started at " ~ timestamp ~ newline ~ sep ~ newline);
-	}
-
-	return error;
+	time_t t = time(null);
+	char[] timestamp = ctime(&t)[0..24];
+	logfile.write(newline ~ sep ~ newline ~ APPNAME ~ " " ~ VERSION ~
+	                     " started at " ~ timestamp ~ newline ~ sep ~ newline);
 }
 
 
