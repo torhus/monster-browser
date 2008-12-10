@@ -24,7 +24,6 @@ import dwt.dnd.TextTransfer;
 import dwt.dwthelper.utils;
 import dwt.widgets.Table;
 
-import dialogs;
 import set;
 
 
@@ -114,23 +113,6 @@ void shutDownLogging()
 		logfile.flush.close;
 		logfile = null;
 	}
-}
-
-
-/// Display a debug message in a dialog box.
-void db(in char[] fmt, ...)
-{
-	debug {
-		char[] msg = Format.convert(_arguments, _argptr, fmt);
-		messageBox(msg, "Debug", DWT.NONE);
-	}
-}
-
-
-/// Display a multi-line debug message in a dialog box.
-void db(char[][] array)
-{
-	debug db(join(array, "\n"));
 }
 
 

@@ -16,7 +16,7 @@ import Integer = tango.text.convert.Integer;
 import tango.text.stream.LineIterator;
 
 import common;
-import dialogs;
+import messageboxes;
 import qstat;
 import serverlist;
 import set;

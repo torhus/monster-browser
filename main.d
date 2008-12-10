@@ -19,11 +19,11 @@ import dwt.widgets.Listener;
 
 import colorednames : disposeNameColors;
 import common;
-import dialogs;
 import geoip : disposeFlagImages;
 version (Windows)
 	import link;
 import mainwindow;
+import messageboxes;
 import serveractions;
 import servertable;
 import settings;
