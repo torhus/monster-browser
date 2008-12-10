@@ -17,8 +17,8 @@ import dwt.dwthelper.Runnable;
 import dwt.widgets.Display;
 
 import common;
-import dialogs;
 import mainwindow;
+import messageboxes;
 import qstat;
 import runtools;
 import serverlist;

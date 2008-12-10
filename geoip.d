@@ -14,8 +14,8 @@ import dwt.graphics.Image;
 import dwt.widgets.Display;
 
 import common;
-import dialogs;
 import flagdata;
+import messageboxes;
 
 
 private {
@@ -146,11 +146,11 @@ Image getFlagImage(in char[] countryCode)
 }
 
 
-static ~this()
+/*static ~this()
 {
 	if (gi)
 		GeoIP_delete(gi);
-}
+}*/
 
 
 /// To be called before program exit.
@@ -159,6 +159,12 @@ void disposeFlagImages()
 	foreach (key, val; flagCache)
 		if (val)
 			val.dispose;
+
+	// Replaces the module destructor, because of a circular dependency error
+	// caused by r529.  Can probably fix by not importing the messageboxes
+	// module.
+	if (gi)
+		GeoIP_delete(gi);
 }
 
 

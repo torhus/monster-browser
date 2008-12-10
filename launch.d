@@ -17,6 +17,7 @@ import colorednames;
 import common;
 import dialogs;
 import mainwindow;
+import messageboxes;
 import serverlist;
 import settings;
 

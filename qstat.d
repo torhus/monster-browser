@@ -22,7 +22,7 @@ import dwt.widgets.Display;
 
 import colorednames;
 import common;
-import dialogs;
+import messageboxes;
 import serverlist;
 import set;
 import settings;

@@ -15,8 +15,8 @@ import dwt.graphics.TextLayout;
 import dwt.widgets.Display;
 
 import common;
-import dialogs;
 import geoip;
+import messageboxes;
 import servertable;
 import set;
 import settings;
