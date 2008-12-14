@@ -4,8 +4,6 @@ import tango.core.Version;
 import tango.io.Console;
 import tango.io.FileConduit;
 import Path = tango.io.Path;
-import tango.io.stream.BufferStream;
-import tango.io.stream.TextFileStream;
 import tango.stdc.ctype : isdigit;
 import tango.stdc.stdlib : qsort;
 import tango.stdc.string;
