@@ -163,7 +163,7 @@ class ServerTable
 	Table getTable() { return table_; };
 
 	///
-	void notifyRefreshStarted(void delegate() stopServerRefresh=null)
+	void notifyRefreshStarted(void delegate(bool) stopServerRefresh=null)
 	{
 		refreshInProgress_ = true;
 		stopServerRefresh_ = stopServerRefresh;
@@ -181,11 +181,14 @@ class ServerTable
 	}
 
 	///
-	bool stopRefresh()
+	bool stopRefresh(bool addRemaining)
 	{
+		if (!refreshInProgress_)
+			return true;
+
 		refreshInProgress_ = false;
 		if (stopServerRefresh_ !is null) {
-			stopServerRefresh_();
+			stopServerRefresh_(addRemaining);
 			return true;
 		}
 		return false;
@@ -324,7 +327,7 @@ private:
 	bool showFlags_, coloredNames_;
 	Image padlockImage_;
 	MenuItem refreshSelected_;
-	void delegate() stopServerRefresh_;
+	void delegate(bool) stopServerRefresh_;
 	bool refreshInProgress_ = false;
 
 	class SetDataListener : Listener {
@@ -380,7 +383,7 @@ private:
 		{
 			widgetSelected(e);
 			if (stopServerRefresh_ !is null)
-				stopServerRefresh_();
+				stopServerRefresh_(true);
 			int index = table_.getSelectionIndex();
 			joinServer(serverList_.gameName, serverList_.getFiltered(index));
 		}

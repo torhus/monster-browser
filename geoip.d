@@ -148,8 +148,10 @@ Image getFlagImage(in char[] countryCode)
 
 /*static ~this()
 {
-	if (gi)
+	if (gi) {
 		GeoIP_delete(gi);
+		gi = null;
+	}
 }*/
 
 
@@ -163,8 +165,10 @@ void disposeFlagImages()
 	// Replaces the module destructor, because of a circular dependency error
 	// caused by r529.  Can probably fix by not importing the messageboxes
 	// module.
-	if (gi)
+	if (gi) {
 		GeoIP_delete(gi);
+		gi = null;
+	}
 }
 
 
