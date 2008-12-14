@@ -120,7 +120,7 @@ private void _main(char[][] args)
 			switch (e.keyCode) {
 				case DWT.ESC:
 					if ((e.stateMask & DWT.MODIFIER_MASK) == 0) {
-						serverTable.stopRefresh();
+						serverTable.stopRefresh(true);
 						e.type = DWT.None;
 					}
 					break;
@@ -159,9 +159,9 @@ private void _main(char[][] args)
 	// call all necessary dispose methods
 	foreach (slist; serverListCache)
 		slist.disposeCustomData();
+	mainWindow.disposeAll();
 	colorednames.disposeNameColors();
 	geoip.disposeFlagImages();
-	mainWindow.disposeAll();
 	foreach (icon; appIcons)
 		icon.dispose;
 	clipboard.dispose;

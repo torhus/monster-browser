@@ -353,7 +353,7 @@ class ServerRetrievalController
 			}
 
 			if (serverQueue_ !is null)
-				serverQueue_.addRemainingAndStop();
+				serverQueue_.stop(addRemaining_);
 
 			Display.getDefault.asyncExec(new class Runnable {
 				void run()
@@ -371,10 +371,11 @@ class ServerRetrievalController
 	}
 
 	///
-	void stop()
+	void stop(bool addRemaining)
 	{
 		threadManager.abort = true;
 		wasStopped_ = true;
+		addRemaining_ = addRemaining;
 	}
 
 	private bool deliver(ServerData* sd)
@@ -417,6 +418,7 @@ class ServerRetrievalController
 		bool replace_;
 		void delegate(ServerData*) deliverDg_;
 		bool wasStopped_ = false;
+		bool addRemaining_ = true;
 		ServerQueue serverQueue_;
 	}
 }

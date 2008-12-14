@@ -34,11 +34,13 @@ class ServerQueue
 
 
 	///
-	void addRemainingAndStop()
+	void stop(bool addRemaining)
 	{
-		Display.getDefault.syncExec(new class Runnable {
-			void run() { synchronizedAdd(); }
-		});
+		if (addRemaining) {
+			Display.getDefault.syncExec(new class Runnable {
+				void run() { synchronizedAdd(); }
+			});
+		}
 		stop_ = true;
 	}
 

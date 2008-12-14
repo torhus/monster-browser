@@ -153,7 +153,8 @@ class MainWindow
 		/// Handler for the shellClosed event.
 		void shellClosed(ShellEvent e)
 		{
-			threadManager.abort = true;
+			bool stopped = serverTable.stopRefresh(false);
+			assert(stopped);
 			statusBar.setLeft("Saving settings...");
 			log("Saving settings...");
 			saveSettings();
