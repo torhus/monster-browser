@@ -43,11 +43,12 @@ bool initGeoIp()
 		geoIpLib = SharedLib.load("GeoIP.dll");
 		bindFunc!(GeoIP_open)(geoIpLib);
 		bindFunc!(GeoIP_delete)(geoIpLib);
+		bindFunc!(GeoIP_database_info)(geoIpLib);
 		bindFunc!(GeoIP_country_code_by_addr)(geoIpLib);
 		bindFunc!(GeoIP_country_name_by_addr)(geoIpLib);
 	}
 	catch (SharedLibException e) {
-		log("Unable to load GeoIP.dll, flags will not be shown.");
+		log("Error when loading GeoIP.dll, flags will not be shown.");
 		return false;
 	}
 
@@ -58,12 +59,15 @@ bool initGeoIp()
 		geoIpLib.unload;
 	}
 	else {
+		char[] info = fromStringz(GeoIP_database_info(gi));
+
+		log("Loaded GeoIP database: " ~ info);
 		initFlagFiles;
 		if (flagFiles is null || flagFiles.length == 0) {
 			log("No flag data was found.");
-			geoIpLib.unload;
-			//GeoIP_delete(gi);  // For some reason, this crashes.
+			GeoIP_delete(gi);
 			gi = null;
+			geoIpLib.unload;
 		}
 	}
 
@@ -185,6 +189,7 @@ enum /*GeoIPOptions*/ {
 extern (C) {
 	GeoIP* function(in char* filename, int flags) GeoIP_open;
 	void function(GeoIP* gi) GeoIP_delete;
+	char* function(GeoIP* gi) GeoIP_database_info;
 	char* function(GeoIP* gi, in char* addr) GeoIP_country_code_by_addr;
 	char* function(GeoIP* gi, in char* addr) GeoIP_country_name_by_addr;
 }
