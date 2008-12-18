@@ -154,7 +154,7 @@ class MainWindow
 		void shellClosed(ShellEvent e)
 		{
 			bool stopped = serverTable.stopRefresh(false);
-			assert(stopped);
+			assert(stopped);  // doesn't seem to be a problem in release builds
 			statusBar.setLeft("Saving settings...");
 			log("Saving settings...");
 			saveSettings();

@@ -300,7 +300,7 @@ class ServerRetrievalController
 
 
 	/**
-     * Set selection to these servers when retrieval is finished.
+	 * Set selection to these servers when retrieval is finished.
 	 *
 	 * If null or empty, the previous selection will be retained.
 	 *
@@ -340,37 +340,35 @@ class ServerRetrievalController
 	void run()
 	{
 		try {
-			auto serverList = serverTable.serverList;
-			auto dg = replace_ ? &serverList.replace : &serverList.add;
-
-			serverQueue_ = new ServerQueue(dg);
-			deliverDg_ = &serverQueue_.add;
-
 			statusBarUpdater_ = new StatusBarUpdater;
 			statusBarUpdater_.text = startMessage;
 			Display.getDefault.syncExec(statusBarUpdater_);
 
-			// FIXME: handle prepare returning 0 to signal abort
-			int serverCount_ = serverRetriever_.prepare();
-			assert (serverCount_ != 0);
+			serverCount_ = serverRetriever_.prepare();
 
-			serverRetriever_.retrieve(&deliver);
-			serverList.complete = !threadManager.abort;
+			if (serverCount_ > 0) {
+				auto serverList = serverTable.serverList;
+				auto dg = replace_ ? &serverList.replace : &serverList.add;
 
-			// a benchmarking tool
-			if (arguments.quit) {
-				Display.getDefault.syncExec(new class Runnable {
-					void run()
-					{
-						Stdout.formatln("Time since startup: {} seconds.",
-						                                  globalTimer.seconds);
-						mainWindow.close;
-					}
-				});
-			}
+				serverQueue_ = new ServerQueue(dg);
+				deliverDg_ = &serverQueue_.add;
 
-			if (serverQueue_ !is null)
+				serverRetriever_.retrieve(&deliver);
+				serverList.complete = !threadManager.abort;
+
+				// a benchmarking tool
+				if (arguments.quit) {
+					Display.getDefault.syncExec(new class Runnable {
+						void run()
+						{
+							Stdout.formatln("Time since startup: {} seconds.",
+							                              globalTimer.seconds);
+							mainWindow.close;
+						}
+					});
+				}
 				serverQueue_.stop(addRemaining_);
+			}
 
 			Display.getDefault.asyncExec(new class Runnable {
 				void run()
@@ -389,7 +387,7 @@ class ServerRetrievalController
 
 
 	/**
-     * Stops the whole process.
+	 * Stops the whole process.
 	 *
 	 * If addRemaining is true, any servers already received will be added to
 	 * to the server list.
