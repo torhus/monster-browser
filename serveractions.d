@@ -40,7 +40,7 @@ ServerList[char[]] serverListCache;
  * a master server if there's no pre-existing data for the game, etc.  Most of
  * the work is done in a new thread.
  */
-void switchToGame(char[] name)
+void switchToGame(in char[] name)
 {
 	static char[] gameName;
 
@@ -278,7 +278,16 @@ void delegate() getNewList()
 }
 
 
-///
+/**
+ * This class controls most of the process of querying a list of game servers.
+ *
+ * Objects of this class takes care of all GUI updates necessary while
+ * querying servers.
+ *
+ * The process is mostly configured through the IServerRetriever object given
+ * to the constructor.  This object does the actual querying, parsing, saving
+ * of server lists to disk, etc.
+ */
 class ServerRetrievalController
 {
 	/**
@@ -288,6 +297,7 @@ class ServerRetrievalController
 	 */
 	char[] startMessage = "Querying server(s)...";
 	char[] noReplyMessage = "There was no reply";  /// ditto
+
 
 	/**
      * Set selection to these servers when retrieval is finished.
@@ -312,6 +322,7 @@ class ServerRetrievalController
 		});
 	}
 
+
 	~this()
 	{
 		if (statusBarUpdater_)
@@ -319,7 +330,13 @@ class ServerRetrievalController
 
 	}
 
-	///
+
+	/**
+	 * Call this to start the process.
+	 *
+	 * Note: primarily to be called in a secondary thread, not tested when
+	 *       running in the GUI thread.
+	 */
 	void run()
 	{
 		try {
@@ -370,13 +387,20 @@ class ServerRetrievalController
 		}
 	}
 
-	///
+
+	/**
+     * Stops the whole process.
+	 *
+	 * If addRemaining is true, any servers already received will be added to
+	 * to the server list.
+	 */
 	void stop(bool addRemaining)
 	{
 		threadManager.abort = true;
 		wasStopped_ = true;
 		addRemaining_ = addRemaining;
 	}
+
 
 	private bool deliver(ServerData* sd)
 	{
@@ -388,6 +412,7 @@ class ServerRetrievalController
 
 		return !threadManager.abort;
 	}
+
 
 	private void done()
 	{
@@ -409,6 +434,7 @@ class ServerRetrievalController
 		}
 		serverTable.notifyRefreshEnded;
 	}
+
 
 	private {
 		IServerRetriever serverRetriever_;
