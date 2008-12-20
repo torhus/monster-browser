@@ -17,6 +17,7 @@ import dwt.dwthelper.Runnable;
 import dwt.widgets.Display;
 
 import common;
+//import liststorage;
 import mainwindow;
 import messageboxes;
 import qstat;
@@ -422,6 +423,10 @@ class ServerRetrievalController
 				// FIXME: select them all, not just the first one
 				index = list.getFilteredIndex(autoSelect[0]);
 			}
+
+			// testing XML storage
+			//saveServerList(list);
+
 			long noReply = 0;
 			if (serverCount_ > 0)
 				noReply = cast(long)serverCount_ - list.length;
