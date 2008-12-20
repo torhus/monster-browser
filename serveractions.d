@@ -346,7 +346,7 @@ class ServerRetrievalController
 
 			serverCount_ = serverRetriever_.prepare();
 
-			if (serverCount_ > 0) {
+			if (serverCount_ != 0) {
 				auto serverList = serverTable.serverList;
 				auto dg = replace_ ? &serverList.replace : &serverList.add;
 
@@ -422,10 +422,12 @@ class ServerRetrievalController
 				// FIXME: select them all, not just the first one
 				index = list.getFilteredIndex(autoSelect[0]);
 			}
-			long noReply = cast(long)serverCount_ - list.length;
+			long noReply = 0;
+			if (serverCount_ > 0)
+				noReply = cast(long)serverCount_ - list.length;
 			serverTable.fullRefresh(index);
 			statusBar.setDefaultStatus(list.length, list.filteredLength,
-			                           noReply > 0 ? cast(uint)noReply : 0);
+			                                                cast(uint)noReply);
 		}
 		else {
 			statusBar.setLeft(noReplyMessage);
@@ -436,7 +438,7 @@ class ServerRetrievalController
 
 	private {
 		IServerRetriever serverRetriever_;
-		uint serverCount_;
+		int serverCount_;
 		int counter_ = 0;
 		StatusBarUpdater statusBarUpdater_;
 		bool replace_;
