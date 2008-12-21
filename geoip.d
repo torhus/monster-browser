@@ -15,7 +15,6 @@ import dwt.widgets.Display;
 
 import common;
 import flagdata;
-import messageboxes;
 
 
 private {
@@ -54,8 +53,7 @@ bool initGeoIp()
 
 	gi = GeoIP_open(toStringz(appDir ~ "GeoIP.dat"), GEOIP_MEMORY_CACHE);
 	if (gi is null) {
-		warning("GeoIP.dat was not found, flags will not be shown.\n"
-		        "Reinstalling " ~ APPNAME ~ " will probably fix this.");
+		log("GeoIP.dat was not found, flags will not be shown.\n");
 		geoIpLib.unload;
 	}
 	else {
