@@ -4,7 +4,7 @@
 
 module liststorage;
 
-import tango.io.Stdout;
+import tango.io.FileConduit;
 import tango.text.xml.DocPrinter;
 import tango.text.xml.Document;
 
@@ -12,7 +12,7 @@ import serverlist;
 
 
 ///
-void saveServerList(in ServerList serverList)
+void saveServerList(in ServerList serverList, in char[] fileName)
 {
 	scope doc = new Document!(char);
 
@@ -33,8 +33,18 @@ void saveServerList(in ServerList serverList)
 		playersToXml(doc.root.lastChild.lastChild, sd);
 	}
 
-	auto print = new DocPrinter!(char);
-	Stdout(print(doc)).newline;
+	scope printer = new DocPrinter!(char);
+	scope f = new FileConduit(fileName, FileConduit.WriteCreate);
+
+	void printDg(char[][] str...)
+	{
+		foreach (s; str)
+			f.write(s);
+	}
+
+	printer(doc.root, &printDg);
+	f.write("\r\n");
+	f.flush.close;
 }
 
 

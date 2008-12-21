@@ -425,7 +425,8 @@ class ServerRetrievalController
 			}
 
 			// testing XML storage
-			//saveServerList(list);
+			//char[] file = getGameConfig(list.gameName).serverFileXml;
+			//saveServerList(list, file);
 
 			long noReply = 0;
 			if (serverCount_ > 0)
