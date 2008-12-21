@@ -137,15 +137,31 @@ class MainWindow
 
 	void close() { shell_.close; }  ///
 
-	bool maximized()       { return shell_.getMaximized; }  ///
-	void maximized(bool v) { shell_.setMaximized(v); }  ///
-
 	bool minimized()       { return shell_.getMinimized; }  ///
 	void minimized(bool v) { shell_.setMinimized(v); }  ///
 
-	Point size() { return shell_.getSize; }  ///
-	
-	void disposeAll() { serverTable.disposeAll(); }  ///
+
+	///
+	void disposeAll()
+	{
+		serverTable.disposeAll();
+	}
+
+
+	///  Saves the session state.
+	private void saveState()
+	{
+		serverTable.saveState();
+		
+		if (!shell_.getMaximized()) {
+			char[] width  = Integer.toString(shell_.getSize().x);
+			char[] height = Integer.toString(shell_.getSize().y);
+			setSetting("windowSize", width ~ "x" ~ height);
+	}
+		setSetting("windowMaximized", shell_.getMaximized() ?
+		                                                     "true" : "false");
+		filterBar.saveState();
+	}
 
 
 	///
@@ -155,12 +171,10 @@ class MainWindow
 		{
 			bool stopped = serverTable.stopRefresh(false);
 			assert(stopped);  // doesn't seem to be a problem in release builds
-			statusBar.setLeft("Saving settings...");
-			log("Saving settings...");
-			saveSettings();
 			statusBar.setLeft("Exiting...");
 			log("Exiting...");
 			runtools.killServerBrowser();
+			saveState();
 			//qstat.SaveRefreshList();
 			/*log("Waiting for threads to terminate...");
 			foreach (i, t; Thread.getAll()) {
@@ -390,6 +404,13 @@ class FilterBar : Composite
 		else {
 			gamesCombo_.select(sel);
 		}
+	}
+
+	
+	///  Saves the session state.
+	private void saveState()
+	{
+		setSetting("lastMod", lastSelectedGame_);
 	}
 
 

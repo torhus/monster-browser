@@ -8,12 +8,7 @@ import Integer = tango.text.convert.Integer;
 import tango.stdc.stdio;
 
 import common;
-import cvartable;
 import ini;
-import playertable;
-import mainwindow;
-import serverlist;
-import servertable;
 
 version (Windows) {
 	import tango.stdc.stringz;
@@ -284,18 +279,6 @@ void loadSettings()
  */
 void saveSettings()
 {
-	if (!mainWindow.maximized) {
-		char[] width  = Integer.toString(mainWindow.size.x);
-		char[] height = Integer.toString(mainWindow.size.y);
-		setSetting("windowSize", width ~ "x" ~ height);
-	}
-	setSetting("windowMaximized", mainWindow.maximized ?
-	                                                 "true" : "false");
-
-	setSetting("lastMod", filterBar.selectedGame);
-
-	gatherSessionState();
-
 	if (settingsIni.modified) {
 		settingsIni.save();
 	}
@@ -370,49 +353,6 @@ private void loadSessionState()
 }
 
 
-private void gatherSessionState()
-{
-	char[] value;
-	IniSection sec = settingsIni.section("Session");
-
-	assert(sec !is null);
-
-	// state of filters
-	sec.setValue("filterState",
-	                Integer.toString(serverTable.serverList.getFilters()));
-
-	// server sort order
-	value = Integer.toString(serverTable.sortColumn);
-	if (serverTable.sortReversed)
-		value ~= "r";
-	sec.setValue("serverSortOrder", value);
-
-	// player sort order
-	value = Integer.toString(playerTable.sortColumn);
-	if (playerTable.sortReversed)
-		value ~= "r";
-	sec.setValue("playerSortOrder", value);
-
-	// middle SashForm weights
-	sec.setValue("middleWeights", toCsv(middleForm.getWeights()));
-
-	// right SashForm weights
-	sec.setValue("rightWeights", toCsv(rightForm.getWeights()));
-
-	// cvarColumnWidths
-	value = toCsv(getColumnWidths(cvarTable.getTable()));
-	sec.setValue("cvarColumnWidths", value);
-
-	// playerColumnWidths
-	value = toCsv(getColumnWidths(playerTable.getTable()));
-	sec.setValue("playerColumnWidths", value);
-
-	// serverColumnWidths
-	value = toCsv(getColumnWidths(serverTable.getTable()));
-	sec.setValue("serverColumnWidths", value);
-}
-
-
 /**
  * Returns the setting's value, or a default if not set.
  *
@@ -425,6 +365,21 @@ char[] getSessionState(in char[] key)
 	assert(sec[key], key ~ " not found.\n\n"
 	                  "All settings need to have a default.");
 	return sec[key];
+}
+
+
+/**
+ * Set a session state setting.
+ *
+ * Will assert in debug mode if a non-existent key is given.
+ */
+void setSessionState(in char[] key, in char[] value)
+{
+	assert(settingsIni && settingsIni.sections.length > 0);
+	IniSection sec = settingsIni.section("Session");
+
+	assert(sec[key]);
+	sec[key] = value;
 }
 
 
