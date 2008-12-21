@@ -166,7 +166,10 @@ private void _main(char[][] args)
 		icon.dispose;
 	clipboard.dispose;
 	display.dispose;
-	
+
+	log("Saving settings...");
+	saveSettings();
+
 	shutDownLogging;
 }
 
