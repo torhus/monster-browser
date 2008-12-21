@@ -6,6 +6,7 @@ import Path = tango.io.Path;
 debug import tango.io.Stdout;
 import tango.text.Ascii;
 import tango.text.Util;
+import tango.text.convert.Format;
 import Integer = tango.text.convert.Integer;
 import tango.stdc.string : memmove;
 import tango.util.container.HashMap;
@@ -16,7 +17,6 @@ import dwt.widgets.Display;
 
 import common;
 import geoip;
-import messageboxes;
 import set;
 import settings;
 
@@ -373,21 +373,21 @@ private:
 	synchronized invariant()
 	{
 		if (filteredList.length > list.length) {
-			error("filteredlist.length == {}\nlist.length == {}",
-			                                 filteredList.length, list.length);
-			assert(0);
+			log(Format("filteredlist.length == {}\nlist.length == {}",
+			                                filteredList.length, list.length));
+			assert(0, "Details in log file.");
 		}
 		if (!(filters_ || filteredList.length == list.length ||
 		                  filteredList.length == (list.length - 1))) {
-			error("ServerList invariant broken!\n",
+			log(Format("ServerList invariant broken!\n",
 			              "\nfilters_ & Filter.HAS_HUMANS: {}"
 			              "\nfilters_ & Filter.NOT_EMPTY: {}"
 			              "\nlist.length: {}"
 			              "\nfilteredList.length: {}",
 			              filters_ & Filter.HAS_HUMANS,
 			              filters_ & Filter.NOT_EMPTY,
-			              list.length, filteredList.length);
-			assert(0);
+			              list.length, filteredList.length));
+			assert(0, "Details in log file.");
 		}
 	}
 
