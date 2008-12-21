@@ -17,7 +17,6 @@ import dwt.widgets.Display;
 import common;
 import geoip;
 import messageboxes;
-import servertable;
 import set;
 import settings;
 
