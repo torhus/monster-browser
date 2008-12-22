@@ -135,37 +135,22 @@ class ServerTable
 	///  Saves the session state.
 	void saveState()
 	{
-		// state of filters
-		setSessionState("filterState",
-		                Integer.toString(serverTable.serverList.getFilters()));
-
-		// server sort order
 		char[] serverOrder = Integer.toString(serverTable.sortColumn);
 		if (serverTable.sortReversed)
 			serverOrder ~= "r";
 		setSessionState("serverSortOrder", serverOrder);
 
-		// player sort order
 		char[] playerOrder = Integer.toString(playerTable.sortColumn);
 		if (playerTable.sortReversed)
 			playerOrder ~= "r";
 		setSessionState("playerSortOrder", playerOrder);
 
-		// middle SashForm weights
-		setSessionState("middleWeights", toCsv(middleForm.getWeights()));
-
-		// right SashForm weights
-		setSessionState("rightWeights", toCsv(rightForm.getWeights()));
-
-		// cvarColumnWidths
 		char[] cvarWidth = toCsv(getColumnWidths(cvarTable.getTable()));
 		setSessionState("cvarColumnWidths", cvarWidth);
 
-		// playerColumnWidths
 		char[] playerWidth = toCsv(getColumnWidths(playerTable.getTable()));
 		setSessionState("playerColumnWidths", playerWidth);
 
-		// serverColumnWidths
 		char[] serverWidth = toCsv(getColumnWidths(serverTable.getTable()));
 		setSessionState("serverColumnWidths", serverWidth);
 	}

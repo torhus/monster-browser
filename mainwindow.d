@@ -42,7 +42,6 @@ import threadmanager;
 
 StatusBar statusBar;  ///
 FilterBar filterBar;  ///
-SashForm middleForm, rightForm;  ///
 MainWindow mainWindow;  ///
 
 
@@ -90,35 +89,35 @@ class MainWindow
 		filterBar = new FilterBar(topComposite);
 
 		// ************** SERVER LIST, PLAYER LIST, CVARS LIST ***************
-		middleForm = new SashForm(shell_, DWT.HORIZONTAL);
+		middleForm_ = new SashForm(shell_, DWT.HORIZONTAL);
 		auto middleData = new GridData(DWT.FILL, DWT.FILL, true, true);
-		middleForm.setLayoutData(middleData);
+		middleForm_.setLayoutData(middleData);
 
 		// server table widget
-		serverTable = new ServerTable(middleForm);
+		serverTable = new ServerTable(middleForm_);
 		auto serverTableData = new GridData(DWT.LEFT, DWT.FILL, false, false);
 		serverTable.getTable().setLayoutData(serverTableData);
 
 		// parent for player and cvar tables
-		rightForm = new SashForm(middleForm, DWT.VERTICAL);
+		rightForm_ = new SashForm(middleForm_, DWT.VERTICAL);
 		auto rightData = new GridData(DWT.FILL, DWT.FILL, true, true);
-		rightForm.setLayoutData(rightData);
+		rightForm_.setLayoutData(rightData);
 
-		rightForm.setLayout(new FillLayout(DWT.VERTICAL));
+		rightForm_.setLayout(new FillLayout(DWT.VERTICAL));
 
 		int[] weights = parseIntegerSequence(getSessionState("middleWeights"));
 		weights.length = 2;  // FIXME: use defaults instead?
-		middleForm.setWeights(weights);;
+		middleForm_.setWeights(weights);;
 
 		// player list
-		playerTable = new PlayerTable(rightForm);
+		playerTable = new PlayerTable(rightForm_);
 
 		// Server info, cvars, etc
-		cvarTable = new CvarTable(rightForm);
+		cvarTable = new CvarTable(rightForm_);
 
 		weights = parseIntegerSequence(getSessionState("rightWeights"));
 		weights.length = 2;  // FIXME: use defaults instead?
-		rightForm.setWeights(weights);
+		rightForm_.setWeights(weights);
 
 
 		// **************** STATUS BAR ******************************
@@ -157,17 +156,19 @@ class MainWindow
 			char[] width  = Integer.toString(shell_.getSize().x);
 			char[] height = Integer.toString(shell_.getSize().y);
 			setSetting("windowSize", width ~ "x" ~ height);
-	}
+		}
 		setSetting("windowMaximized", shell_.getMaximized() ?
 		                                                     "true" : "false");
+		setSessionState("middleWeights", toCsv(middleForm_.getWeights()));
+		setSessionState("rightWeights", toCsv(rightForm_.getWeights()));
+
 		filterBar.saveState();
 	}
 
 
-	///
+	/// Handles the shell close event.
 	private class MyShellListener : ShellAdapter {
-		/// Handler for the shellClosed event.
-		void shellClosed(ShellEvent e)
+		void shellClosed(ShellEvent e)  ///
 		{
 			bool stopped = serverTable.stopRefresh(false);
 			assert(stopped);  // doesn't seem to be a problem in release builds
@@ -175,20 +176,12 @@ class MainWindow
 			log("Exiting...");
 			runtools.killServerBrowser();
 			saveState();
-			//qstat.SaveRefreshList();
-			/*log("Waiting for threads to terminate...");
-			foreach (i, t; Thread.getAll()) {
-				if (t != Thread.getThis()) {
-					log("Waiting for thread " ~ Integer.toString(i) ~ "...");
-					t.join();
-					log("    ...thread " ~ Integer.toString(i) ~ " done.");
-				}
-			}*/
 		}
 	}
 
 	private {
 		Shell shell_;
+		SashForm middleForm_, rightForm_;
 	}
 }
 
@@ -411,6 +404,7 @@ class FilterBar : Composite
 	private void saveState()
 	{
 		setSetting("lastMod", lastSelectedGame_);
+		setSessionState("filterState", Integer.toString(filterState));
 	}
 
 
