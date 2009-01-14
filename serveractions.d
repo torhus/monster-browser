@@ -405,6 +405,8 @@ class ServerRetrievalController
 	{
 		if (sd !is null)
 			deliverDg_(sd);
+		else
+			timedOut_++;
 
 		statusBarUpdater_.text = startMessage ~ Integer.toString(counter_++);
 		Display.getDefault.syncExec(statusBarUpdater_);
@@ -428,12 +430,9 @@ class ServerRetrievalController
 			//char[] file = getGameConfig(list.gameName).serverFileXml;
 			//saveServerList(list, file);
 
-			long noReply = 0;
-			if (serverCount_ > 0)
-				noReply = cast(long)serverCount_ - list.length;
 			serverTable.fullRefresh(index);
 			statusBar.setDefaultStatus(list.length, list.filteredLength,
-			                                                cast(uint)noReply);
+			                                                        timedOut_);
 		}
 		else {
 			statusBar.setLeft(noReplyMessage);
@@ -446,6 +445,7 @@ class ServerRetrievalController
 		IServerRetriever serverRetriever_;
 		int serverCount_;
 		int counter_ = 0;
+		uint timedOut_ = 0;
 		StatusBarUpdater statusBarUpdater_;
 		bool replace_;
 		void delegate(ServerData*) deliverDg_;
