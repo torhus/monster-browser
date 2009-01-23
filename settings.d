@@ -49,13 +49,6 @@ struct GameConfig
 		return appDir ~ replace(masterServer.dup, ':', '_') ~ ".lst";
 	}
 
-
-	char[] serverFileXml() /// Like "master3.idsoftware.com.xml".
-	{
-		return appDir ~ replace(masterServer.dup, ':', '_') ~ ".xml";
-	}
-
-
 	char[] extraServersFile() /// Like "baseq3.extra".
 	{
 		return appDir ~ name ~ ".extra";

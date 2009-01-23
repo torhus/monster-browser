@@ -17,7 +17,7 @@ import dwt.dwthelper.Runnable;
 import dwt.widgets.Display;
 
 import common;
-//import liststorage;
+//import masterlist;
 import mainwindow;
 import messageboxes;
 import qstat;
@@ -427,8 +427,8 @@ class ServerRetrievalController
 			}
 
 			// testing XML storage
-			//char[] file = getGameConfig(list.gameName).serverFileXml;
-			//saveServerList(list, file);
+			//char[] name = getGameConfig(list.gameName).masterServer;
+			//saveServerList(list, name);
 
 			serverTable.fullRefresh(index);
 			statusBar.setDefaultStatus(list.length, list.filteredLength,
