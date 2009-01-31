@@ -2,7 +2,9 @@
 
 module settings;
 
+import tango.core.Exception;
 import Path = tango.io.Path;
+import tango.text.Ascii;
 import tango.text.Util;
 import Integer = tango.text.convert.Integer;
 import tango.stdc.stdio;
@@ -17,7 +19,10 @@ version (Windows) {
 
 	enum { CSIDL_PROGRAM_FILES = 38 }
 	extern (Windows) BOOL SHGetSpecialFolderPathA(HWND, LPSTR, int, BOOL);
-	const HKEY HKEY_LOCAL_MACHINE = cast(HKEY)0x80000002;
+
+	const HKEY_CLASSES_ROOT  = cast(HKEY)0x80000000;
+	const HKEY_CURRENT_USER  = cast(HKEY)0x80000001;
+	const HKEY_LOCAL_MACHINE = cast(HKEY)0x80000002;
 }
 
 
@@ -390,9 +395,8 @@ void setSessionState(in char[] key, in char[] value)
 private char[] autodetectQuake3Path()
 {
 	version (Windows) {
-		char[] q3path = getRegistryStringValue(HKEY_LOCAL_MACHINE,
-		                                       "SOFTWARE\\Id\\Quake III Arena",
-		                                       "INSTALLEXEPATH");
+		char[] q3path = getRegistryStringValue("HKEY_LOCAL_MACHINE\\"
+		                      "SOFTWARE\\Id\\Quake III Arena\\INSTALLEXEPATH");
 		if (!q3path) {
 			log("Quake 3's installation path was not found in the registry, "
 		                                   "falling back to a default value.");
@@ -409,7 +413,7 @@ private char[] autodetectQuake3Path()
 }
 
 /**
- * Get the default program install directory, or an educated guess if not
+ * Get the default program files directory, or an educated guess if not
  * found.
  * 
  * Sample return: "C:\Program Files".
@@ -424,9 +428,12 @@ private char[] getProgramFilesDirectory()
 }
 
 
-// BUGS: Doesn't convert arguments to ANSI.
-private char[] getRegistryStringValue(HKEY key, in char[] subKey,
-                                                                in char[] name)
+/**
+ * Throws: IllegalArgumentException if the argument is not a valid key.
+ *
+ * BUGS: Doesn't convert arguments to ANSI.
+ */
+private char[] getRegistryStringValue(in char[] key)
 {
 	HKEY hKey;
 	DWORD dwType = REG_SZ;
@@ -436,7 +443,16 @@ private char[] getRegistryStringValue(HKEY key, in char[] subKey,
 	LONG status;
 	char[] retval = null;
 
-	status = RegOpenKeyExA(key, toStringz(subKey), 0L, KEY_ALL_ACCESS, &hKey);
+	char[][] parts = split(key, "\\");
+	if (parts.length < 3)
+		throw new IllegalArgumentException("Invalid registry key " ~ key);
+
+	HKEY keyConst = hkeyFromString(parts[0]);
+	char[] subKey = join(parts[1..$-1], "\\");
+	char[] name = parts[$-1];
+
+	status = RegOpenKeyExA(keyConst, toStringz(subKey), 0L, KEY_ALL_ACCESS,
+	                                                                    &hKey);
 
 	if (status == ERROR_SUCCESS) {
 		status = RegQueryValueExA(hKey, toStringz(name), NULL, &dwType, lpData,
@@ -460,4 +476,18 @@ private char[] getRegistryStringValue(HKEY key, in char[] subKey,
 	}
 
 	return retval;
+}
+
+
+/// Throws: IllegalArgumentException.
+private HKEY hkeyFromString(in char[] s)
+{
+	if (icompare(s, "HKEY_CLASSES_ROOT") == 0)
+		return HKEY_CLASSES_ROOT;
+	if (icompare(s, "HKEY_CURRENT_USER") == 0)
+		return HKEY_CURRENT_USER;
+	if (icompare(s, "HKEY_LOCAL_MACHINE") == 0)
+		return HKEY_LOCAL_MACHINE;
+		
+	throw new IllegalArgumentException("Invalid HKEY " ~ s);
 }
