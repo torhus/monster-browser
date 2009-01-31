@@ -1,5 +1,5 @@
-Work in progress - 2009-01-30
------------------------------
+v0.4b - 2009-02-01
+------------------
 - New: Added default settings and game type names for Smokin' Guns.
 - New: Added support for Tremulous.
 - New: Added "regKey" and "exeName" keys to the game configuration, to support
