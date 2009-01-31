@@ -1,7 +1,10 @@
-Work in progress - 2008-12-06
+Work in progress - 2009-01-30
 -----------------------------
+- New: Added default settings and game type names for Smokin' Guns.
 - New: Added support for Tremulous.
-- New: Added "mod" and "protocolVersion" keys to the mod configuration.
+- New: Added "regKey" and "exeName" keys to the game configuration, to support
+       getting the install path from the registry.
+- New: Added "mod" and "protocolVersion" keys to the game configuration.
 - New: Can now press F4 to get a new list, F5 to refresh.
 - New: Can now press Esc to interrupt operations.
 - Fix: Installer didn't create shortcuts by default.

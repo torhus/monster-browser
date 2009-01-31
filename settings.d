@@ -60,13 +60,36 @@ struct GameConfig
 	}
 
 	/**
-	 * Returns exePath from the game configuration, or gamePath from
-	 * settings.ini if the former is not set.
+	 * The path to the game's executable, including the file name.
+	 *
+	 * The path is looked for in several places, in this order of priority:
+	 *
+	 * $(OL $(LI regKey + exeName from the game configuration)
+	 *      $(LI _exePath from the game configuration)
+	 *      $(LI gamePath from settings.ini))
 	 */
 	char[] exePath()
 	{
-		char[] r = section["exePath"];
-		return r ? r : getSetting("gamePath");
+		char[] path = null;
+		char[] key = section["regKey"];
+		char[] file = section["exeName"];
+
+		if (key && file) {
+			try {
+				if (char[] dir = getRegistryStringValue(key))
+					path = dir ~ '\\' ~ file;
+				else
+					log("regKey not found: " ~ key);
+			}
+			catch (IllegalArgumentException e) {
+				log(e.toString());
+			}
+		}
+
+		if (path is null)
+			path = section["exePath"];
+
+		return path ? path : getSetting("gamePath");
 	}
 
 	bool useGslist() /// Use gslist instead of qstat when querying master?
@@ -89,23 +112,30 @@ private {
 	const char[] defaultGamesFile =
 `; Monster Browser game configuration
 ;
-; Just put each game in square brackets, then you can list options under it,
-; like this example:
+; Just put each game in square brackets, then you can list options under it.
 ;
-; [mygame]
-; mod=mymodxyz
-; (mod defaults to being the section name)
-; protocolVersion=67
-; (protocolVersion defaults to 68)
-; exePath=C:\\Program Files\\My Game\\mygame.exe
-; masterServer=master.mygame.com
+; Available options:
+;
+; mod (defaults to being the same as the section name)
+; regKey
+; exeName
+; exePath (defaults to gamePath from settings.ini. Only used if regKey or
+;          exeName are missing.)
+; example: exePath=C:\\Program Files\\My Game\\mygame.exe
+; masterServer (defaults to master3.idsoftware.com)
+; protocolVersion (defaults to 68)
 ;
 ; Lines beginning with a ";" are comments.
 
-[westernq3]
+[smokinguns]
+regKey=HKEY_LOCAL_MACHINE\SOFTWARE\Smokin' Guns Productions\Smokin' Guns\InstallPath
+exeName=smokinguns.exe
+exePath=%ProgramFiles%\Smokin' Guns\smokinguns.exe
 
 [wop]
-exePath=%ProgramFiles%\\World of Padman\\wop.exe
+regKey=HKEY_LOCAL_MACHINE\SOFTWARE\World of Padman\Path
+exeName=wop.exe
+exePath=%ProgramFiles%\World of Padman\wop.exe
 useGslist=false
 masterServer=wopmaster.kickchat.com:27955
 
@@ -114,9 +144,12 @@ masterServer=master.urbanterror.net
 
 [tremulous]
 mod=base
+regKey=HKEY_LOCAL_MACHINE\SOFTWARE\Tremulous\InstallDir
+exeName=tremulous.exe
+exePath=%ProgramFiles%\Tremulous\tremulous.exe
 masterServer=master.tremulous.net:30710
 protocolVersion=69
-exePath=%ProgramFiles%\\Tremulous\\tremulous.exe
+
 
 [baseq3]
 
@@ -135,7 +168,7 @@ exePath=%ProgramFiles%\\Tremulous\\tremulous.exe
 		char[] value;
 	}
 	Setting[] defaults = [{"coloredNames", "true"},
-	                      {"lastMod", "westernq3"},
+	                      {"lastMod", "smokinguns"},
 	                      {"minimizeOnGameLaunch", "true"},
 	                      {"showFlags", "true"},
 	                      {"startWithLastMod", "true"},
