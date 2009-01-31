@@ -37,13 +37,22 @@ void joinServer(in char[] gameName, ServerData *sd)
 {
 	char[] argv;
 	GameConfig game = getGameConfig(gameName);
-	FilePath path = FilePath(replace(game.exePath, '\\', '/'));
+	char[] pathString = game.exePath;
+	FilePath path;
 	bool launch = true;
 	bool showDialog = false;
 	char[] msg;
 
-	if (!path.exists) {
-		error(path.toString ~ " was not found,\nplease check your settings.");
+	if (!pathString) {
+		error("No path found for " ~ gameName ~
+		                                      ", please check your settings.");
+		return;
+	}
+
+	path = FilePath(replace(pathString, '\\', '/'));
+	if (!path.exists || path.isFolder) {
+		error(path.toString ~ " was not found or is not a file,\n"
+		                                        "please check your settings.");
 		return;
 	}
 

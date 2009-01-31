@@ -62,7 +62,7 @@ struct GameConfig
 	/**
 	 * The path to the game's executable, including the file name.
 	 *
-	 * The path is looked for in several places, in this order of priority:
+	 * The path is looked for in several places, in this order:
 	 *
 	 * $(OL $(LI regKey + exeName from the game configuration)
 	 *      $(LI _exePath from the game configuration)
@@ -71,25 +71,28 @@ struct GameConfig
 	char[] exePath()
 	{
 		char[] path = null;
-		char[] key = section["regKey"];
-		char[] file = section["exeName"];
+		char[] regKey = section["regKey"];
+		char[] exeName = section["exeName"];
+		bool badRegKey = false;
 
-		if (key && file) {
+		if (regKey && exeName) {
 			try {
-				if (char[] dir = getRegistryStringValue(key))
-					path = dir ~ '\\' ~ file;
+				if (char[] dir = getRegistryStringValue(regKey))
+					path = dir ~ '\\' ~ exeName;
 				else
-					log("regKey not found: " ~ key);
+					log("regKey not found: " ~ regKey);
 			}
 			catch (IllegalArgumentException e) {
 				log(e.toString());
+				badRegKey = true;
 			}
 		}
 
-		if (path is null)
+		if (!path && !badRegKey)
 			path = section["exePath"];
 
-		return path ? path : getSetting("gamePath");
+		return path ? path : !(regKey || exeName) ? getSetting("gamePath") :
+		                                                                  null;
 	}
 
 	bool useGslist() /// Use gslist instead of qstat when querying master?
@@ -116,14 +119,14 @@ private {
 ;
 ; Available options:
 ;
-; mod (defaults to being the same as the section name)
-; regKey
-; exeName
-; exePath (defaults to gamePath from settings.ini. Only used if regKey or
-;          exeName are missing.)
-; example: exePath=C:\\Program Files\\My Game\\mygame.exe
-; masterServer (defaults to master3.idsoftware.com)
-; protocolVersion (defaults to 68)
+; mod     - defaults to being the same as the section name
+; regKey  - need to set exeName too if using this
+; exeName - combined with the value found through regKey to form the full path
+; exePath - Only used if regKey or exeName are missing. If exePath is missing
+;           too, gamePath from the global settings is used instead.
+;           example: exePath=C:\Program Files\My Game\mygame.exe
+; masterServer    - defaults to master3.idsoftware.com
+; protocolVersion - defaults to 68
 ;
 ; Lines beginning with a ";" are comments.
 
@@ -149,7 +152,7 @@ exeName=tremulous.exe
 exePath=%ProgramFiles%\Tremulous\tremulous.exe
 masterServer=master.tremulous.net:30710
 protocolVersion=69
-
+useGslist=false
 
 [baseq3]
 
@@ -478,7 +481,7 @@ private char[] getRegistryStringValue(in char[] key)
 
 	char[][] parts = split(key, "\\");
 	if (parts.length < 3)
-		throw new IllegalArgumentException("Invalid registry key " ~ key);
+		throw new IllegalArgumentException("Invalid registry key: " ~ key);
 
 	HKEY keyConst = hkeyFromString(parts[0]);
 	char[] subKey = join(parts[1..$-1], "\\");
@@ -522,5 +525,5 @@ private HKEY hkeyFromString(in char[] s)
 	if (icompare(s, "HKEY_LOCAL_MACHINE") == 0)
 		return HKEY_LOCAL_MACHINE;
 		
-	throw new IllegalArgumentException("Invalid HKEY " ~ s);
+	throw new IllegalArgumentException("Invalid HKEY: " ~ s);
 }
