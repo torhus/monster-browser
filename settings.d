@@ -82,41 +82,45 @@ private {
 	char[] settingsFileName;
 
 	const char[] defaultGamesFile =
-	    "; Monster Browser game configuration\n"
-	    ";\n"
-	    "; Just put each game in square brackets, then you can list options under it,\n"
-	    "; like this example:\n"
-	    ";\n"
-	    "; [mygame]\n"
-	    "; mod=mymodxyz\n"
-	    "; (mod defaults to being the section name)\n"
-	    "; protocolVersion=67\n"
-	    "; (protocolVersion defaults to 68)\n"
-	    "; exePath=C:\\Program Files\\My Game\\mygame.exe\n"
-	    "; masterServer=master.mygame.com\n"
-	    ";\n"
-	    "; Lines beginning with a \";\" are comments.\n"
-	    "\n"
-	    "[westernq3]\n"
-	    "\n"
-	    "[wop]\n"
-	    "exePath=%ProgramFiles%\\World of Padman\\wop.exe\n"
-	    "useGslist=false\n"
-	    "masterServer=wopmaster.kickchat.com:27955\n"
-	    "\n"
-	    "[q3ut4]\n"
-	    "masterServer=master.urbanterror.net\n"
-	    "\n"
-	    "[tremulous]\n"
-	    "mod=base\n"
-	    "masterServer=master.tremulous.net:30710\n"
-	    "protocolVersion=69\n"
-	    "exePath=%ProgramFiles%\\Tremulous\\tremulous.exe\n"
-	    "\n"
-	    "[baseq3]\n\n"
-	    "[osp]\n\n"
-	    "[cpma]\n\n"
-	    "[InstaUnlagged]\n\n";
+`; Monster Browser game configuration
+;
+; Just put each game in square brackets, then you can list options under it,
+; like this example:
+;
+; [mygame]
+; mod=mymodxyz
+; (mod defaults to being the section name)
+; protocolVersion=67
+; (protocolVersion defaults to 68)
+; exePath=C:\\Program Files\\My Game\\mygame.exe
+; masterServer=master.mygame.com
+;
+; Lines beginning with a ";" are comments.
+
+[westernq3]
+
+[wop]
+exePath=%ProgramFiles%\\World of Padman\\wop.exe
+useGslist=false
+masterServer=wopmaster.kickchat.com:27955
+
+[q3ut4]
+masterServer=master.urbanterror.net
+
+[tremulous]
+mod=base
+masterServer=master.tremulous.net:30710
+protocolVersion=69
+exePath=%ProgramFiles%\\Tremulous\\tremulous.exe
+
+[baseq3]
+
+[osp]
+
+[cpma]
+
+[InstaUnlagged]
+`;
 
 	Ini settingsIni;
 	Ini gamesIni;
@@ -142,7 +146,7 @@ private {
 	                                 {"cvarColumnWidths", "90,90"},
 	                                 {"playerColumnWidths", "100,40,40"},
 	                                 {"serverColumnWidths",
-									              "27,250,21,32,50,40,90,130"},
+	                                              "27,250,21,32,50,40,90,130"},
 	                                ];
 }
 
