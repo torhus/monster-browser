@@ -4,10 +4,6 @@
 
 - Give sensible errors messages in case of connection problems etc.
 
-- Show in the status bar how many servers didn't reply during a refresh.  ASE
-  doesn't do that, so you need to turn off the filters to see if everything is
-  ok, or if there was a connection problem etc.
-
 - If loading servers without refreshing the GUI, there is no point in calling
   _insertSorted, or to get country codes.
 
@@ -20,9 +16,3 @@
   memory use.  Could also have a look at GC.minimize().
 
 - Don't select (mark) a server twice (Specify server).
-
-- Make master.tremulous.net work.  Tremulous support seems to have been added
-  in qstat 2.11.
-
-- Allow for other q3 protocol versions than 68, maybe settable in mods.ini?
-  Is it better to default to no protocol filtering?

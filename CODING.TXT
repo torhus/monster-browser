@@ -78,13 +78,7 @@ Please be aware that gslist is subject to some legal controversy, please read
 this link before redistributing it from a US server:
 http://aluigi.altervista.org/papers.htm#distrust
 
-
 PathfinderET is also included, as a source of ideas for this project.
-
-
-Please feel free to clean up my code if you like.  It was coded in a very
-ad hoc, step by step way, so the code organization is a bit random in some
-places.  Sorry about that.
 
 
 -torhu at yahoo com
