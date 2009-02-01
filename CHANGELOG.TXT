@@ -7,6 +7,7 @@ v0.4b - 2009-02-01
 - New: Added "mod" and "protocolVersion" keys to the game configuration.
 - New: Can now press F4 to get a new list, F5 to refresh.
 - New: Can now press Esc to interrupt operations.
+- Change: Made name colors darker for better readability.
 - Fix: Installer didn't create shortcuts by default.
 
 v0.4a - 2008-08-01
