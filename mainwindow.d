@@ -170,8 +170,7 @@ class MainWindow
 	private class MyShellListener : ShellAdapter {
 		void shellClosed(ShellEvent e)  ///
 		{
-			bool stopped = serverTable.stopRefresh(false);
-			assert(stopped);  // doesn't seem to be a problem in release builds
+			serverTable.stopRefresh(false);
 			statusBar.setLeft("Exiting...");
 			log("Exiting...");
 			runtools.killServerBrowser();
