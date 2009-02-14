@@ -17,9 +17,6 @@ debug import tango.text.convert.Format;
 import tango.text.convert.Integer;
 import tango.text.stream.LineIterator;
 
-import dwt.dwthelper.Runnable;
-import dwt.widgets.Display;
-
 import colorednames;
 import common;
 import messageboxes;
@@ -44,13 +41,13 @@ private enum Field {
  * Throws: when outputFileName is given: IOException.
  */
 bool parseOutput(in char[] modName, LineIterator!(char) iter,
-                bool delegate(ServerData*) deliver, char[] outputFileName=null)
+                bool delegate(ServerData*, bool replied, bool matched) deliver,
+				                                    char[] outputFileName=null)
 {
 	char[][] gtypes;
 	BufferOutput outfile;
 	debug scope timer = new Timer;
 	debug scope timer2 = new Timer;
-	Display display = Display.getDefault;
 	bool keepGoing = true;
 
 	assert(deliver);
@@ -101,13 +98,14 @@ each_server:
 			ServerData sd;
 
 			assert(fields.length == 9 || fields.length == 3);
+			bool timeout = fields.length == 3;
 
-			if (fields.length >= 9) {
-				bool keep_server = false;
+			sd.server.length = ServerColumn.max + 1;
+			
+			// still got the address in case of a timeout
+			sd.server[ServerColumn.ADDRESS] = fields[Field.ADDRESS];
 
-				if (icompare(fields[Field.GAME], modName) == 0)
-					keep_server = true;
-
+			if (!timeout) {
 				/*if (modName != "baseq3" &&
 				             MOD_ONLY &&
 				             icmp(fields[Field.GAME], modName) != 0) {
@@ -115,9 +113,7 @@ each_server:
 					debug line = readLine();
 					debug printf("        %.*s\n", line);
 					continue each_server;
-				}*/
-
-				sd.server.length = ServerColumn.max + 1;
+				}*/	
 
 				sd.rawName = fields[Field.NAME];
 				sd.server[ServerColumn.COUNTRY] = "";
@@ -126,17 +122,18 @@ each_server:
 				sd.server[ServerColumn.PLAYERS] = "";
 				sd.server[ServerColumn.GAMETYPE] = "";
 				sd.server[ServerColumn.MAP] = fields[Field.MAP];
-				sd.server[ServerColumn.ADDRESS] = fields[Field.ADDRESS];
 
-				// parse cvars
+				// cvar line
 				line = iter.next();
 				if (outfile) {
 					outfile.write(line);
 					outfile.write(newline);
 				}
-				char[] matchMod = keep_server ? null : modName;
-				if (!parseCvars(line, &sd, matchMod, gtypes))
-					continue each_server;
+				
+				char[] matchMod = (icompare(fields[Field.GAME], modName) == 0)
+				                                              ? null : modName;
+				bool matches = parseCvars(line, &sd, matchMod, gtypes);
+
 				sortStringArray(sd.cvars);
 
 				// parse players
@@ -161,14 +158,14 @@ each_server:
 				sd.server[ServerColumn.NAME] = stripColorCodes(sd.rawName);
 
 				debug checkTime(timer2, "3");
-				keepGoing = deliver(&sd);
+				keepGoing = deliver(&sd, true, matches);
 				debug checkTime(timer2, "4");
 			}
 			else /*if (!MOD_ONLY)*/ { // server didn't respond
 				/*sd.server.length = servertable.serverHeaders.length;
 				sd.server[ServerColumn.ADDRESS] = fields[Field.ADDRESS];*/
 				debug checkTime(timer2, "3x");
-				keepGoing = deliver(null);
+				keepGoing = deliver(&sd, false, false);
 				debug checkTime(timer2, "4x");
 			}
 			if (outfile) {

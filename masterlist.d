@@ -2,6 +2,7 @@ module masterlist;
 
 import tango.io.FileConduit;
 debug import tango.io.Stdout;
+import tango.text.Util;
 import tango.text.xml.DocPrinter;
 import tango.text.xml.Document;
 
@@ -43,7 +44,8 @@ class MasterList
 	void save()
 	{
 		scope printer = new DocPrinter!(char);
-		scope f = new FileConduit(name_ ~ ".xml", FileConduit.WriteCreate);
+		char[] fname = replace(name_ ~ ".xml", ':', '_');
+		scope f = new FileConduit(fname, FileConduit.WriteCreate);
 
 		void printDg(char[][] str...)
 		{
@@ -86,18 +88,4 @@ class MasterList
 		Document!(char) doc_;
 		Document!(char).Node root_;
 	}
-}
-
-
-///
-void saveServerList(in ServerList serverList, in char[] name)
-{
-	auto master = new MasterList(name);
-	
-	for (int i=0; i < serverList.filteredLength; i++) {
-		ServerData* sd = serverList.getFiltered(i);
-		master.addServer(sd);
-	}
-	
-	master.save;
 }
