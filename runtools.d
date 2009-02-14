@@ -111,13 +111,10 @@ interface IServerRetriever
 	/**
 	 * Retrieves all servers, handing each one to the deliver delegate.
 	 *
-	 * If deliver's argument is null the server is ignored.  Useful for servers
-	 * that timed out.  deliver should still be called, since it's also used
-	 * for updating the progress counter.
-	 *
 	 * If deliver returns false, the server retrieval process is aborted.
 	 */
-	void retrieve(bool delegate(ServerData*) deliver);
+	void retrieve(bool delegate(ServerData*, bool replied, bool matched)
+	                                                                  deliver);
 
 }
 
@@ -153,7 +150,8 @@ final class FromFileServerRetriever : IServerRetriever
 
 
 	///
-	void retrieve(bool delegate(ServerData*) deliver)
+	void retrieve(bool delegate(ServerData*, bool replied, bool matched)
+	                                                                   deliver)
 	{
 		scope iter = new LineIterator!(char)(input_);
 		qstat.parseOutput(game_.name, iter, deliver);
@@ -229,7 +227,8 @@ final class QstatServerRetriever : IServerRetriever
 
 
 	///
-	void retrieve(bool delegate(ServerData*) deliver)
+	void retrieve(bool delegate(ServerData*, bool replied, bool deliver)
+	                                                                   deliver)
 	{
 		scope iter = new LineIterator!(char)(proc.stdout);
 		// FIXME: verify that everything is initialized correctly, and that

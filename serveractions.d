@@ -17,7 +17,7 @@ import dwt.dwthelper.Runnable;
 import dwt.widgets.Display;
 
 import common;
-//import masterlist;
+import masterlist;
 import mainwindow;
 import messageboxes;
 import qstat;
@@ -29,6 +29,9 @@ import set;
 import settings;
 import threadmanager;
 
+
+/// Master server lists indexed by server address.
+MasterList[char[]] masterLists;
 
 /// When switchToGame creates a new ServerList object, it's stored here.
 ServerList[char[]] serverListCache;
@@ -310,13 +313,24 @@ class ServerRetrievalController
 	char[][] autoSelect = null;
 
 
-	///
-	this(IServerRetriever retriever, bool replace=false)
+	/**
+	 * Params:
+	 *     replace = Pass the received servers to ServerList.replace instead of
+	 *               the default ServerList.add.
+	 *     store   = Add or update this server in the MasterList object
+	 *               associated with this game/mod.
+	 */
+	this(IServerRetriever retriever, bool replace=false, bool store=true)
 	{
 		serverRetriever_= retriever;
 		replace_ = replace;
+		store_ = store;
 
 		serverRetriever_.initialize();
+
+		ServerList list = serverTable.serverList;
+		char[] serverName = getGameConfig(list.gameName).masterServer;
+		master_ = new MasterList(serverName);
 
 		Display.getDefault.syncExec(new class Runnable {
 			void run() { serverTable.notifyRefreshStarted(&stop); }
@@ -401,15 +415,20 @@ class ServerRetrievalController
 	}
 
 
-	private bool deliver(ServerData* sd)
+	private bool deliver(ServerData* sd, bool replied, bool matched)
 	{
-		if (sd !is null)
-			deliverDg_(sd);
-		else
+		if (replied) {
+			if (matched)
+				deliverDg_(sd);
+		}
+		else {
 			timedOut_++;
+		}		
 
 		statusBarUpdater_.text = startMessage ~ Integer.toString(counter_++);
 		Display.getDefault.syncExec(statusBarUpdater_);
+		
+		master_.addServer(sd);
 
 		return !threadManager.abort;
 	}
@@ -419,17 +438,16 @@ class ServerRetrievalController
 	{
 		ServerList list = serverTable.serverList;
 
-		if (list.length() > 0) {
+		if (list.length > 0) {
 			int index = -1;
 			if (autoSelect.length) {
 				// FIXME: select them all, not just the first one
 				index = list.getFilteredIndex(autoSelect[0]);
 			}
 
-			// testing XML storage
-			//char[] name = getGameConfig(list.gameName).masterServer;
-			//saveServerList(list, name);
-
+			if (store_)
+				master_.save();
+			
 			serverTable.fullRefresh(index);
 			statusBar.setDefaultStatus(list.length, list.filteredLength,
 			                                                        timedOut_);
@@ -448,9 +466,11 @@ class ServerRetrievalController
 		uint timedOut_ = 0;
 		StatusBarUpdater statusBarUpdater_;
 		bool replace_;
+		bool store_;
 		void delegate(ServerData*) deliverDg_;
 		bool wasStopped_ = false;
 		bool addRemaining_ = true;
+		MasterList master_;
 		ServerQueue serverQueue_;
 	}
 }
