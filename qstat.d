@@ -225,7 +225,7 @@ body {
 
 	foreach (char[] s; temp) {
 		char[][] cvar = new char[][2];
-		cvar[0] = tail(s, "=", cvar[1]);
+		cvar[0] = head(s, "=", cvar[1]);
 		switch (cvar[0]) {
 			case "gametype":
 				uint ate;
