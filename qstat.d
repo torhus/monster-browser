@@ -224,7 +224,8 @@ body {
 		keepServer = true;
 
 	foreach (char[] s; temp) {
-		char[][] cvar = split(s, "=");
+		char[][] cvar = new char[][2];
+		cvar[0] = tail(s, "=", cvar[1]);
 		switch (cvar[0]) {
 			case "gametype":
 				uint ate;
