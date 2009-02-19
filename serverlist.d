@@ -17,6 +17,7 @@ import dwt.widgets.Display;
 
 import common;
 import geoip;
+import masterlist;
 import set;
 import settings;
 
@@ -103,6 +104,18 @@ struct ServerData {
 }
 
 
+/// Returns true if this server runs the correct mod.
+bool matchMod(in ServerData* sd, in char[] mod)
+{
+	foreach (cvar; sd.cvars) {
+		if ((cvar[0] == "game" || cvar[0] == "gamename") &&
+		                                           icompare(cvar[1], mod) == 0)
+			return true;
+	}
+	return false;
+}
+
+
 /**
  * A list of servers, with all necessary synchronization taken care of.
  *
@@ -117,15 +130,20 @@ class ServerList
 
 
 	///
-	this(in char[] gameName)
+	this(in char[] gameName, MasterList master)
 	{
 		gameName_ = gameName;
+		master_ = master;
 		filteredIpHash_ = new HashMap!(char[], int);
 	}
 
 
 	///
 	char[] gameName() { return gameName_; }
+	
+	
+	///
+	MasterList master() { return master_; }
 
 
 	/// Returns false if the added server is filtered out.
@@ -361,6 +379,7 @@ private:
 	bool filteredIpHashValid_ = false;
 	Set!(char[]) extraServers_;
 	char[] gameName_;
+	MasterList master_;
 
 	int sortColumn_ = ServerColumn.NAME;
 	int oldSortColumn_ = -1;

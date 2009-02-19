@@ -30,10 +30,11 @@ import settings;
 import threadmanager;
 
 
-/// Master server lists indexed by server address.
+/// Master server lists indexed by server domain name and port number.
 MasterList[char[]] masterLists;
 
-/// When switchToGame creates a new ServerList object, it's stored here.
+/// ServerList cache indexed by mod name.
+// FIXME: needs to be index by mod + game name instead.
 ServerList[char[]] serverListCache;
 
 
@@ -49,6 +50,7 @@ void switchToGame(in char[] name)
 	static char[] gameName;
 
 	static void delegate() f() {
+		MasterList master;
 		ServerList serverList;
 		bool needRefresh;
 
@@ -57,7 +59,17 @@ void switchToGame(in char[] name)
 			needRefresh = !serverList.complete;
 		}
 		else {
-			serverList = new ServerList(gameName);
+			char[] masterName = getGameConfig(gameName).masterServer;
+
+			if (auto m = masterName in masterLists) {
+				master = *m;
+			}
+			else {
+				master = new MasterList(masterName);
+				masterLists[masterName] = master;
+			}
+
+			serverList = new ServerList(gameName, master);
 			serverListCache[gameName] = serverList;
 			needRefresh = true;
 
@@ -84,7 +96,8 @@ void switchToGame(in char[] name)
 				threadManager.runSecond(&loadSavedList);
 			else if (common.haveGslist && game.useGslist)
 				threadManager.runSecond(&getNewList);
-			else if (Path.exists(game.serverFile))
+			//else if (Path.exists(game.serverFile))
+			else if (master.length > 0)
 				threadManager.runSecond(&refreshList);
 			else
 				threadManager.runSecond(&getNewList);
@@ -162,7 +175,7 @@ void queryServers(in char[][] addresses, bool replace=false, bool select=false)
 
 	if (!addresses.length)
 		return;
-	
+
 	addresses_ = addresses;
 	replace_ = replace;
 	select_ = select;
@@ -179,19 +192,29 @@ void queryServers(in char[][] addresses, bool replace=false, bool select=false)
 void delegate() refreshList()
 {
 	ServerList serverList = serverTable.serverList;
+	MasterList master = serverList.master;
 	GameConfig game = getGameConfig(serverList.gameName);
 
-	if (!Path.exists(game.serverFile)) {
+	if (master.length == 0 && !master.load()) {
 		error("No server list found on disk, press\n"
                                    "\'Get new list\' to download a new list.");
 		return null;
 	}
-	Set!(char[]) servers = filterServerFile(game.mod, game.serverFile);
+
+	Set!(char[]) servers;
+
+	bool test(in ServerData* sd) { return matchMod(sd, game.mod); }
+
+	void emit(ServerHandle sh)
+	{
+		servers.add(master.getServerData(sh).server[ServerColumn.ADDRESS]);
+	}
+
+	master.filter(&test, &emit);
 
 	log("Refreshing server list for " ~ game.name ~ "...");
-	char[] tmp;
-	char[] sfile = tail(game.serverFile, "/", tmp);
-	log(Format("Found {} servers in {}.", servers.length, sfile));
+	log(Format("Found {} servers, master is {}.", servers.length,
+	                                                             master.name));
 
 	// merge in the extra servers
 	Set!(char[]) extraServers = serverList.extraServers;
@@ -218,7 +241,7 @@ void delegate() refreshList()
 	else {
 		statusBar.setLeft("No servers were found for this game");
 		return null;
-	}	
+	}
 }
 
 
@@ -277,7 +300,7 @@ void delegate() getNewList()
 	char[] gameName = serverTable.serverList.gameName;
 	log("Getting new server list for " ~ gameName ~ "...");
 	serverTable.notifyRefreshStarted;
-	
+
 	return &f;
 }
 
@@ -329,8 +352,8 @@ class ServerRetrievalController
 		serverRetriever_.initialize();
 
 		ServerList list = serverTable.serverList;
-		char[] serverName = getGameConfig(list.gameName).masterServer;
-		master_ = new MasterList(serverName);
+		char[] name = getGameConfig(list.gameName).masterServer;
+		master_ = new MasterList(name);
 
 		Display.getDefault.syncExec(new class Runnable {
 			void run() { serverTable.notifyRefreshStarted(&stop); }
@@ -423,11 +446,11 @@ class ServerRetrievalController
 		}
 		else {
 			timedOut_++;
-		}		
+		}
 
 		statusBarUpdater_.text = startMessage ~ Integer.toString(counter_++);
 		Display.getDefault.syncExec(statusBarUpdater_);
-		
+
 		master_.addServer(sd);
 
 		return !threadManager.abort;
@@ -447,7 +470,7 @@ class ServerRetrievalController
 
 			if (store_)
 				master_.save();
-			
+
 			serverTable.fullRefresh(index);
 			statusBar.setDefaultStatus(list.length, list.filteredLength,
 			                                                        timedOut_);

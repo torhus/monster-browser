@@ -2,6 +2,7 @@ module masterlist;
 
 import tango.io.File;
 import tango.io.FileConduit;
+import Path = tango.io.Path;
 debug import tango.io.Stdout;
 import tango.text.Ascii;
 import tango.text.Util;
@@ -27,10 +28,24 @@ class MasterList
 
 
 	///
+	char[] name() { return name_; }
+
+
+	///
 	void addServer(ServerData* sd)
 	{
 
 	}
+
+
+	///
+	ServerData getServerData(ServerHandle sh)
+	{
+		return servers_[sh];
+	}
+
+	/// Total number of servers.
+	size_t length() { return servers_.length; }
 
 
 	/**
@@ -48,13 +63,25 @@ class MasterList
 	}
 
 
-	///
-	void load()
+	/**
+	 * Load the server list from file.
+	 *
+	 * Returns: false if the file didn't exist, true if the contents were
+	 *          successfully read.
+	 *
+	 * Throws: IOException if an error occurred during reading.
+	 */
+	bool load()
 	{
+		char[] fname = replace(name_ ~ ".xml", ':', '_');
+
+		if (!Path.exists(fname))
+			return false;
+
+
+		char[] content = cast(char[])File(fname).read();
 		auto parser = new SaxParser!(char);
 		auto handler = new MySaxHandler!(char);
-		char[] fname = replace(name_ ~ ".xml", ':', '_');
-		auto content = cast(char[])File(fname).read();
 
 		parser.setSaxHandler(handler);
 		parser.setContent(content);
@@ -69,6 +96,8 @@ class MasterList
 
 		delete servers_;
 		servers_ = handler.servers;
+
+		return true;
 	}
 
 
