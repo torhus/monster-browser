@@ -92,12 +92,11 @@ void switchToGame(in char[] name)
 
 		if (needRefresh) {
 			GameConfig game = getGameConfig(gameName);
-			if (arguments.fromfile && Path.exists(game.serverFile))
+			if (arguments.fromfile && Path.exists(master.fileName))
 				threadManager.runSecond(&loadSavedList);
 			else if (common.haveGslist && game.useGslist)
 				threadManager.runSecond(&getNewList);
-			//else if (Path.exists(game.serverFile))
-			else if (master.length > 0)
+			else if (master.length > 0 || master.load())
 				threadManager.runSecond(&refreshList);
 			else
 				threadManager.runSecond(&getNewList);
@@ -122,24 +121,25 @@ void switchToGame(in char[] name)
 void delegate() loadSavedList()
 {
 	ServerList serverList = serverTable.serverList;
+	MasterList master = serverList.master;
 
 	serverTable.clear();
 	serverList.clear();
 	GC.collect();
 
 	GameConfig game = getGameConfig(serverList.gameName);
-	if (Path.exists(game.serverFile)) {
+	//if (Path.exists(master.fileName)) {
 		auto retriever = new FromFileServerRetriever(game.name);
 		auto contr = new ServerRetrievalController(retriever);
 		contr.startMessage = "Loading saved server list...";
 		contr.noReplyMessage = "No servers were found in the file";
 		return &contr.run;
-	}
+	/*}
 	else {
 		statusBar.setLeft(
 		                "Unable to find a file for this game's master server");
 		return null;
-	}
+	}*/
 }
 
 
@@ -294,6 +294,8 @@ void delegate() getNewList()
 
 	serverTable.clear();
 	serverTable.serverList.clear();
+	// FIXME: update master list instead of clearing it
+	serverTable.serverList.master.clear();
 	GC.collect();
 
 	statusBar.setLeft("Getting new server list...");
@@ -351,9 +353,9 @@ class ServerRetrievalController
 
 		serverRetriever_.initialize();
 
-		ServerList list = serverTable.serverList;
-		char[] name = getGameConfig(list.gameName).masterServer;
-		master_ = new MasterList(name);
+		serverList_ = serverTable.serverList;
+		//char[] name = getGameConfig(serverList_.gameName).masterServer;
+		//master_ = new MasterList(name);		
 
 		Display.getDefault.syncExec(new class Runnable {
 			void run() { serverTable.notifyRefreshStarted(&stop); }
@@ -440,18 +442,18 @@ class ServerRetrievalController
 
 	private bool deliver(ServerData* sd, bool replied, bool matched)
 	{
+		ServerHandle sh = serverList_.master.addServer(*sd);
+		
 		if (replied) {
 			if (matched)
-				deliverDg_(sd);
+				deliverDg_(sh);
 		}
 		else {
 			timedOut_++;
 		}
 
 		statusBarUpdater_.text = startMessage ~ Integer.toString(counter_++);
-		Display.getDefault.syncExec(statusBarUpdater_);
-
-		master_.addServer(sd);
+		Display.getDefault.syncExec(statusBarUpdater_);		
 
 		return !threadManager.abort;
 	}
@@ -469,7 +471,7 @@ class ServerRetrievalController
 			}
 
 			if (store_)
-				master_.save();
+				serverList_.master.save();
 
 			serverTable.fullRefresh(index);
 			statusBar.setDefaultStatus(list.length, list.filteredLength,
@@ -490,10 +492,11 @@ class ServerRetrievalController
 		StatusBarUpdater statusBarUpdater_;
 		bool replace_;
 		bool store_;
-		void delegate(ServerData*) deliverDg_;
+		void delegate(ServerHandle) deliverDg_;
 		bool wasStopped_ = false;
 		bool addRemaining_ = true;
-		MasterList master_;
+		//MasterList master_;
+		ServerList serverList_;
 		ServerQueue serverQueue_;
 	}
 }

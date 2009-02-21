@@ -10,6 +10,7 @@ import tango.text.xml.DocPrinter;
 import tango.text.xml.Document;
 import tango.text.xml.SaxParser;
 
+debug import common;
 import serverlist;
 
 
@@ -24,6 +25,7 @@ class MasterList
 	this(char[] name)
 	{
 		name_ = name;
+		fileName_ = replace(name_ ~ ".xml", ':', '_');
 	}
 
 
@@ -32,9 +34,14 @@ class MasterList
 
 
 	///
-	void addServer(ServerData* sd)
-	{
+	char[] fileName() { return fileName_; }
 
+
+	///
+	ServerHandle addServer(ServerData sd)
+	{
+		servers_ ~= sd;
+		return servers_.length - 1;
 	}
 
 
@@ -44,8 +51,20 @@ class MasterList
 		return servers_[sh];
 	}
 
+
+	///
+	void setServerData(ServerHandle sh, ServerData sd)
+	{
+		servers_[sh] = sd;
+	}
+
+
 	/// Total number of servers.
 	size_t length() { return servers_.length; }
+
+
+	///
+	void clear() { delete servers_; }
 
 
 	/**
@@ -73,13 +92,12 @@ class MasterList
 	 */
 	bool load()
 	{
-		char[] fname = replace(name_ ~ ".xml", ':', '_');
-
-		if (!Path.exists(fname))
+		Stdout.formatln("load() called").flush;
+		if (!Path.exists(fileName_))
 			return false;
 
 
-		char[] content = cast(char[])File(fname).read();
+		char[] content = cast(char[])File(fileName_).read();
 		auto parser = new SaxParser!(char);
 		auto handler = new MySaxHandler!(char);
 
@@ -88,8 +106,10 @@ class MasterList
 		parser.parse;
 		delete content;
 
-		Stdout.formatln("Found {} servers.", handler.servers.length);
-		Stdout.formatln("==============================");
+		debug {
+			Stdout.formatln("Found {} servers.", handler.servers.length);
+			Stdout.formatln("==============================");
+		}
 
 		/*foreach (sd; handler.servers)
 			print(&sd);*/
@@ -111,8 +131,7 @@ class MasterList
 		// FIXME: call serverToXml() here
 
 		scope printer = new DocPrinter!(char);
-		char[] fname = replace(name_ ~ ".xml", ':', '_');
-		scope f = new FileConduit(fname, FileConduit.WriteCreate);
+		scope f = new FileConduit(fileName_, FileConduit.WriteCreate);
 
 		void printDg(char[][] str...)
 		{
@@ -166,8 +185,18 @@ class MasterList
 	}
 
 
+	invariant()
+	{
+		//Stdout.formatln("INVARIANT({}): {}", cast(void*)this, servers_.length).flush;
+		foreach (ref sd; servers_) {
+			//assert (isValidIpAddress(sd.server[ServerColumn.ADDRESS]));
+		}
+	}
+
+
 	private {
 		char[] name_;
+		char[] fileName_;
 		ServerData[] servers_;
 	}
 }

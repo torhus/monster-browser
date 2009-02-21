@@ -4,7 +4,7 @@ import dwt.dwthelper.Runnable;
 import dwt.widgets.Display;
 
 import common : arguments;
-import serverlist;
+import masterlist;
 import servertable;
 
 
@@ -12,7 +12,7 @@ import servertable;
 class ServerQueue
 {
 	///
-	this(bool delegate(ServerData*) addDg)
+	this(bool delegate(ServerHandle sh) addDg)
 	{
 		addDg_ = addDg;
 		Display.getDefault.syncExec(new TimerTask);
@@ -27,9 +27,9 @@ class ServerQueue
 
 
 	///
-	void add(ServerData* sd)
+	void add(ServerHandle sd)
 	{
-		synchronized (this) list_ ~= *sd;
+		synchronized (this) list_ ~= sd;
 	}
 
 
@@ -77,8 +77,8 @@ class ServerQueue
 	{
 		bool refresh = false;
 
-		foreach (ref sd; list_) {
-			if (addDg_(&sd))
+		foreach (sh; list_) {
+			if (addDg_(sh))
 				refresh = true;
 		}
 		list_.length = 0;
@@ -88,8 +88,8 @@ class ServerQueue
 
 
 	private {
-		ServerData[] list_;
-		bool delegate(ServerData*) addDg_;
+		ServerHandle[] list_;
+		bool delegate(ServerHandle) addDg_;
 		bool stop_ = false;
 	}
 }
