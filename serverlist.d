@@ -139,8 +139,8 @@ class ServerList
 
 	///
 	char[] gameName() { return gameName_; }
-	
-	
+
+
 	///
 	MasterList master() { return master_; }
 
@@ -151,9 +151,11 @@ class ServerList
 		bool refresh = false;
 
 		synchronized (this) {
-			ServerData sd = master_.getServerData(sh);
-			sd.server[ServerColumn.COUNTRY] = getCountryCode(&sd);
-			master_.setServerData(sh, sd);
+			synchronized (master_) {
+				ServerData sd = master_.getServerData(sh);
+				sd.server[ServerColumn.COUNTRY] = getCountryCode(&sd);
+				master_.setServerData(sh, sd);
+			}
 			list ~= sh;
 			isSorted_ = false;
 			if (!isFilteredOut(sh)) {
@@ -175,7 +177,7 @@ class ServerList
 			assert(i != -1);
 			sd.server[ServerColumn.COUNTRY] =
 			                              list[i].server[ServerColumn.COUNTRY];
-			
+
 			if (list[i].customData)
 				list[i].customData.dispose();
 			list[i] = *sd;
@@ -209,7 +211,9 @@ class ServerList
 	{
 		synchronized (this) {
 			assert(i >= 0 && i < filteredList.length);
-			return master_.getServerData(list[filteredList[i]]);
+			synchronized (master_) {
+				return master_.getServerData(list[filteredList[i]]);
+			}
 		}
 	}
 
@@ -226,7 +230,7 @@ class ServerList
 		if (!ipAndPort.length)
 			return -1;
 
-		synchronized (this)
+		synchronized (this) synchronized (master_)
 		foreach (int i, ServerHandle sh; list) {
 			ServerData sd = master_.getServerData(sh);
 			if (sd.server[ServerColumn.ADDRESS] == ipAndPort)
@@ -431,17 +435,19 @@ private:
 	void _sort()
 	{
 		debug scope timer = new Timer;
-		
+
 		bool lessOrEqual(ServerHandle a, ServerHandle b)
 		{
-			ServerData sda = master_.getServerData(a); 
-			ServerData sdb = master_.getServerData(b); 
-			
+			ServerData sda = master_.getServerData(a);
+			ServerData sdb = master_.getServerData(b);
+
 			return compare(&sda, &sdb) <= 0;
 		}
 
 		if (!isSorted_ || sortColumn_ != oldSortColumn_) {
-			mergeSort(list, &lessOrEqual);
+			synchronized (master_) {
+				mergeSort(list, &lessOrEqual);
+			}
 			isSorted_ = true;
 		}
 
@@ -462,7 +468,10 @@ private:
 			return compare(&sda, &sdb) < 0;
 		}
 
-		auto i = ubound(filteredList, listIndex, &less);
+		size_t i;
+		synchronized (master_) {
+			i = ubound(filteredList, listIndex, &less);
+		}
 		insertInFiltered(i, listIndex);
 	}
 

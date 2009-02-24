@@ -295,7 +295,7 @@ void delegate() getNewList()
 	serverTable.clear();
 	serverTable.serverList.clear();
 	// FIXME: update master list instead of clearing it
-	serverTable.serverList.master.clear();
+	//serverTable.serverList.master.clear();
 	GC.collect();
 
 	statusBar.setLeft("Getting new server list...");
@@ -442,7 +442,8 @@ class ServerRetrievalController
 
 	private bool deliver(ServerData* sd, bool replied, bool matched)
 	{
-		ServerHandle sh = serverList_.master.addServer(*sd);
+		ServerHandle sh = serverList_.master.updateServer(*sd);
+		assert(sh != InvalidServerHandle);
 		
 		if (replied) {
 			if (matched)

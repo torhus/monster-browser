@@ -9,6 +9,7 @@ import tango.text.Util;
 import tango.text.xml.DocPrinter;
 import tango.text.xml.Document;
 import tango.text.xml.SaxParser;
+debug import tango.util.log.Trace;
 
 debug import common;
 import serverlist;
@@ -16,6 +17,9 @@ import serverlist;
 
 ///
 alias size_t ServerHandle;
+
+///
+const ServerHandle InvalidServerHandle = ServerHandle.max;
 
 
 ///
@@ -38,24 +42,59 @@ class MasterList
 
 
 	///
-	ServerHandle addServer(ServerData sd)
+	/*ServerHandle addServer(ServerData sd)
 	{
 		servers_ ~= sd;
 		return servers_.length - 1;
+	}*/
+
+
+	///
+	ServerHandle updateServer(ServerData sd)
+	{
+		synchronized (this) {
+			ServerHandle sh = findServer(sd.server[ServerColumn.ADDRESS]);
+
+			if (sh != InvalidServerHandle)		
+				setServerData(sh, sd);
+
+			return sh;
+		}
+	}
+
+
+	/**
+	 * Given a server address, returns the handle.
+	 *
+	 * Returns InvalidServerHandle in case a server with the given address was
+	 * not found.
+	 */
+	ServerHandle findServer(in char[] address)
+	{
+		synchronized (this) {
+			foreach (sh, sd; servers_) {
+				if (sd.server[ServerColumn.ADDRESS] == address)
+					return sh;
+			}
+			return InvalidServerHandle;
+		}
 	}
 
 
 	///
 	ServerData getServerData(ServerHandle sh)
 	{
-		return servers_[sh];
+		synchronized (this) {
+			assert (sh < servers_.length);
+			return servers_[sh];
+		}
 	}
 
 
 	///
 	void setServerData(ServerHandle sh, ServerData sd)
 	{
-		servers_[sh] = sd;
+		synchronized (this) servers_[sh] = sd;
 	}
 
 
@@ -64,7 +103,7 @@ class MasterList
 
 
 	///
-	void clear() { delete servers_; }
+	//void clear() { delete servers_; }
 
 
 	/**
@@ -75,9 +114,11 @@ class MasterList
 	void filter(bool delegate(in ServerData*) test,
 	                                          void delegate(ServerHandle) emit)
 	{
-		foreach (i, ref sd; servers_) {
-			if (test(&sd))
-				emit(i);
+		synchronized (this) {
+			foreach (i, ref sd; servers_) {
+				if (test(&sd))
+					emit(i);
+			}
 		}
 	}
 
@@ -92,7 +133,7 @@ class MasterList
 	 */
 	bool load()
 	{
-		Stdout.formatln("load() called").flush;
+		debug Trace.formatln("load() called");
 		if (!Path.exists(fileName_))
 			return false;
 
@@ -107,8 +148,8 @@ class MasterList
 		delete content;
 
 		debug {
-			Stdout.formatln("Found {} servers.", handler.servers.length);
-			Stdout.formatln("==============================");
+			Trace.formatln("Found {} servers.", handler.servers.length);
+			Trace.formatln("==============================");
 		}
 
 		/*foreach (sd; handler.servers)
@@ -187,9 +228,13 @@ class MasterList
 
 	invariant()
 	{
-		//Stdout.formatln("INVARIANT({}): {}", cast(void*)this, servers_.length).flush;
-		foreach (ref sd; servers_) {
-			//assert (isValidIpAddress(sd.server[ServerColumn.ADDRESS]));
+		synchronized (this) {
+			Trace.formatln("INVARIANT({}:{}): {}", cast(void*)this, name_, servers_.length);
+			foreach (i, sd; servers_) {
+				//assert (isValidIpAddress(sd.server[ServerColumn.ADDRESS]));
+				if (!isValidIpAddress(sd.server[ServerColumn.ADDRESS]))
+					Trace.formatln("Address: ({}) {}", i, sd.server[ServerColumn.ADDRESS]);
+			}
 		}
 	}
 
