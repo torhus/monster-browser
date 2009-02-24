@@ -395,25 +395,26 @@ private:
 	Filter filters_ = Filter.NONE;
 
 
-	version (Windows)  // DMD bugzilla issue 235
-	synchronized invariant()
+	invariant()
 	{
-		if (filteredList.length > list.length) {
-			log(Format("filteredlist.length == {}\nlist.length == {}",
-			                                filteredList.length, list.length));
-			assert(0, "Details in log file.");
-		}
-		if (!(filters_ || filteredList.length == list.length ||
-		                  filteredList.length == (list.length - 1))) {
-			log(Format("ServerList invariant broken!\n",
-			              "\nfilters_ & Filter.HAS_HUMANS: {}"
-			              "\nfilters_ & Filter.NOT_EMPTY: {}"
-			              "\nlist.length: {}"
-			              "\nfilteredList.length: {}",
-			              filters_ & Filter.HAS_HUMANS,
-			              filters_ & Filter.NOT_EMPTY,
-			              list.length, filteredList.length));
-			assert(0, "Details in log file.");
+		synchronized (this) {
+			if (filteredList.length > list.length) {
+				log(Format("filteredlist.length == {}\nlist.length == {}",
+				                            filteredList.length, list.length));
+				assert(0, "Details in log file.");
+			}
+			if (!(filters_ || filteredList.length == list.length ||
+							  filteredList.length == (list.length - 1))) {
+				log(Format("ServerList invariant broken!\n",
+				           "\nfilters_ & Filter.HAS_HUMANS: {}"
+				           "\nfilters_ & Filter.NOT_EMPTY: {}"
+				           "\nlist.length: {}"
+				           "\nfilteredList.length: {}",
+				           filters_ & Filter.HAS_HUMANS,
+				           filters_ & Filter.NOT_EMPTY,
+				           list.length, filteredList.length));
+				assert(0, "Details in log file.");
+			}
 		}
 	}
 
