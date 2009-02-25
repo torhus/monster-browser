@@ -129,7 +129,7 @@ void delegate() loadSavedList()
 
 	GameConfig game = getGameConfig(serverList.gameName);
 	//if (Path.exists(master.fileName)) {
-		auto retriever = new FromFileServerRetriever(game.name);
+		auto retriever = new MasterListServerRetriever(game, master);
 		auto contr = new ServerRetrievalController(retriever);
 		contr.startMessage = "Loading saved server list...";
 		contr.noReplyMessage = "No servers were found in the file";
@@ -164,7 +164,9 @@ void queryServers(in char[][] addresses, bool replace=false, bool select=false)
 
 	static void delegate() f() {
 		char[] gameName = serverTable.serverList.gameName;
-		auto retriever = new QstatServerRetriever(gameName,
+		MasterList master = serverTable.serverList.master;
+
+		auto retriever = new QstatServerRetriever(gameName, master,
 		                                             Set!(char[])(addresses_));
 		auto contr = new ServerRetrievalController(retriever, replace_);
 		if (select_)
@@ -231,7 +233,7 @@ void delegate() refreshList()
 	GC.collect();
 
 	if (servers.length) {
-		auto retriever = new QstatServerRetriever(game.name, servers);
+		auto retriever = new QstatServerRetriever(game.name, master, servers);
 		auto contr = new ServerRetrievalController(retriever);
 		contr.startMessage =
                             Format("Refreshing {} servers...", servers.length);
@@ -277,8 +279,10 @@ void delegate() getNewList()
 				});
 			}
 			else {
-				auto retriever = new QstatServerRetriever(game.name, addresses,
-				                                                         true);
+				MasterList master = serverTable.serverList.master;
+				
+				auto retriever = new QstatServerRetriever(game.name, master,
+				                                              addresses, true);
 				auto contr = new ServerRetrievalController(retriever);
 				contr.startMessage = Format("Got {} servers, querying...",
 				                                             addresses.length);
@@ -440,9 +444,8 @@ class ServerRetrievalController
 	}
 
 
-	private bool deliver(ServerData* sd, bool replied, bool matched)
+	private bool deliver(ServerHandle sh, bool replied, bool matched)
 	{
-		ServerHandle sh = serverList_.master.updateServer(*sd);
 		assert(sh != InvalidServerHandle);
 		
 		if (replied) {

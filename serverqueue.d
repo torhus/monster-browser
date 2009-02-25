@@ -27,9 +27,9 @@ class ServerQueue
 
 
 	///
-	void add(ServerHandle sd)
+	void add(ServerHandle sh)
 	{
-		synchronized (this) list_ ~= sd;
+		synchronized (this) list_ ~= sh;
 	}
 
 

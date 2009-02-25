@@ -42,21 +42,24 @@ class MasterList
 
 
 	///
-	/*ServerHandle addServer(ServerData sd)
+	private ServerHandle addServer(ServerData sd)
 	{
 		servers_ ~= sd;
 		return servers_.length - 1;
-	}*/
+	}
 
 
 	///
-	ServerHandle updateServer(ServerData sd)
+	ServerHandle updateServer(ServerData sd, bool add=false)
 	{
 		synchronized (this) {
+			assert (isValidIpAddress(sd.server[ServerColumn.ADDRESS]));
 			ServerHandle sh = findServer(sd.server[ServerColumn.ADDRESS]);
 
-			if (sh != InvalidServerHandle)		
+			if (sh != InvalidServerHandle)
 				setServerData(sh, sd);
+			else if (add)
+				sh = addServer(sd);
 
 			return sh;
 		}
@@ -228,11 +231,14 @@ class MasterList
 
 	invariant()
 	{
+		static int counter = 0;
+
 		synchronized (this) {
-			Trace.formatln("INVARIANT({}:{}): {}", cast(void*)this, name_, servers_.length);
+			Trace.formatln("INVARIANT counter = {} ({}): {}", ++counter, name_, servers_.length);
 			foreach (i, sd; servers_) {
 				//assert (isValidIpAddress(sd.server[ServerColumn.ADDRESS]));
 				if (!isValidIpAddress(sd.server[ServerColumn.ADDRESS]))
+					//int x = 1;
 					Trace.formatln("Address: ({}) {}", i, sd.server[ServerColumn.ADDRESS]);
 			}
 		}
@@ -264,18 +270,37 @@ private class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 	}
 
 
+	override void endElement(Ch[] uri, Ch[] localName, Ch[] qName)
+	{
+		if (icompare(localName, "server") == 0) {
+			// Add the player the count string
+			// FIXME: merge this with similar code in qstat.d and put into
+			// ServerData?
+			ServerData sd = servers[$-1];
+			int botCount = sd.players.length - humanPlayers;
+			sd.server[ServerColumn.PLAYERS] = Integer.toString(humanPlayers) ~
+			                                "+" ~ Integer.toString(botCount) ~
+			                                "/" ~ maxPlayers;
+		}
+	}
+
+
 	// Allocate a new server and add server attributes.
 	private void startServer(Attribute!(Ch)[] attributes)
 	{
 		ServerData sd;
 
 		sd.server.length = ServerColumn.max + 1;
+		
+		humanPlayers = 0;
 
 		foreach (ref attr; attributes) {
 			if (icompare(attr.localName, "name") == 0)
 				sd.rawName = attr.value;
 			else if (icompare(attr.localName, "address") == 0)
 				sd.server[ServerColumn.ADDRESS] = attr.value;
+			else if (icompare(attr.localName, "max_players") == 0)
+				maxPlayers = attr.value;
 			else if (icompare(attr.localName, "ping") == 0)
 				sd.server[ServerColumn.PING] = attr.value;
 			else if (icompare(attr.localName, "gametype") == 0)
@@ -314,11 +339,20 @@ private class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 				player[PlayerColumn.RAWNAME] = attr.value;
 			else if (icompare(attr.localName, "score") == 0)
 				player[PlayerColumn.SCORE] = attr.value;
-			else if (icompare(attr.localName, "ping") == 0)
+			else if (icompare(attr.localName, "ping") == 0) {
 				player[PlayerColumn.PING] = attr.value;
+				if (attr.value != "0")
+					humanPlayers++;
+			}
 		}
 
 		servers[$-1].players ~= player;
+	}
+
+	
+	private {
+		char[] maxPlayers;
+		int humanPlayers;
 	}
 
 }
