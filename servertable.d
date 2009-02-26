@@ -36,6 +36,7 @@ import launch;
 import mainwindow;
 import playertable;
 import serveractions;
+import serverdata;
 import serverlist;
 import settings;
 

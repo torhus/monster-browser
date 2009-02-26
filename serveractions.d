@@ -22,6 +22,7 @@ import mainwindow;
 import messageboxes;
 import qstat;
 import runtools;
+import serverdata;
 import serverlist;
 import serverqueue;
 import servertable;

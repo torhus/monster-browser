@@ -20,7 +20,7 @@ import tango.text.stream.LineIterator;
 import colorednames;
 import common;
 import messageboxes;
-import serverlist;
+import serverdata;
 import set;
 import settings;
 

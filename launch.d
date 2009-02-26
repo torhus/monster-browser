@@ -18,7 +18,7 @@ import common;
 import dialogs;
 import mainwindow;
 import messageboxes;
-import serverlist;
+import serverdata;
 import settings;
 
 

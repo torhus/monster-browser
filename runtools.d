@@ -19,7 +19,7 @@ import common;
 import messageboxes;
 import qstat;
 import masterlist;
-import serverlist;
+import serverdata;
 import set;
 import settings;
 

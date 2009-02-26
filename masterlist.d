@@ -12,7 +12,7 @@ import tango.text.xml.SaxParser;
 debug import tango.util.log.Trace;
 
 debug import common;
-import serverlist;
+import serverdata;
 
 
 ///
