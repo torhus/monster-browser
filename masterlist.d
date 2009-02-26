@@ -168,11 +168,15 @@ class MasterList
 	///
 	void save()
 	{
-		auto doc = new Document!(char);
+		scope doc = new Document!(char);
 		doc.header;
-		doc.root.element(null, "masterserver");
 
-		// FIXME: call serverToXml() here
+		synchronized (this) {
+			doc.root.element(null, "masterserver");
+
+			foreach (sd; servers_)
+				serverToXml(doc.root.lastChild, &sd);
+		}
 
 		scope printer = new DocPrinter!(char);
 		scope f = new FileConduit(fileName_, FileConduit.WriteCreate);
@@ -193,11 +197,14 @@ class MasterList
 	                                                         in ServerData* sd)
 	{
 		node.element(null, "server")
-		        .attribute(null, "name", sd.server[ServerColumn.NAME])
-		        .attribute(null, "address", sd.server[ServerColumn.ADDRESS])
-		        .attribute(null, "ping", sd.server[ServerColumn.PING])
-		        .attribute(null, "gametype", sd.server[ServerColumn.GAMETYPE])
-		        .attribute(null, "map", sd.server[ServerColumn.MAP]);
+		     .attribute(null, "name", sd.server[ServerColumn.NAME])
+		     .attribute(null, "country_code", sd.server[ServerColumn.COUNTRY])
+		     .attribute(null, "address", sd.server[ServerColumn.ADDRESS])
+		     .attribute(null, "ping", sd.server[ServerColumn.PING])
+		   //.attribute(null, "passworded", sd.server[ServerColumn.PASSWORDED])
+		     .attribute(null, "player_count", sd.server[ServerColumn.PLAYERS])
+		   //.attribute(null, "gametype", sd.server[ServerColumn.GAMETYPE])
+		     .attribute(null, "map", sd.server[ServerColumn.MAP]);
 
 		node.lastChild.element(null, "cvars");
 		cvarsToXml(node.lastChild.lastChild, sd);
@@ -234,7 +241,7 @@ class MasterList
 		static int counter = 0;
 
 		synchronized (this) {
-			Trace.formatln("INVARIANT counter = {} ({}): {}", ++counter, name_, servers_.length);
+			//Trace.formatln("INVARIANT counter = {} ({}): {}", ++counter, name_, servers_.length);
 			foreach (i, sd; servers_) {
 				//assert (isValidIpAddress(sd.server[ServerColumn.ADDRESS]));
 				if (!isValidIpAddress(sd.server[ServerColumn.ADDRESS]))
@@ -272,16 +279,7 @@ private class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 
 	override void endElement(Ch[] uri, Ch[] localName, Ch[] qName)
 	{
-		if (icompare(localName, "server") == 0) {
-			// Add the player the count string
-			// FIXME: merge this with similar code in qstat.d and put into
-			// ServerData?
-			ServerData sd = servers[$-1];
-			int botCount = sd.players.length - humanPlayers;
-			sd.server[ServerColumn.PLAYERS] = Integer.toString(humanPlayers) ~
-			                                "+" ~ Integer.toString(botCount) ~
-			                                "/" ~ maxPlayers;
-		}
+
 	}
 
 
@@ -291,20 +289,20 @@ private class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 		ServerData sd;
 
 		sd.server.length = ServerColumn.max + 1;
-		
-		humanPlayers = 0;
 
 		foreach (ref attr; attributes) {
 			if (icompare(attr.localName, "name") == 0)
 				sd.rawName = attr.value;
+			else if (icompare(attr.localName, "country_code") == 0)
+				sd.server[ServerColumn.COUNTRY] = attr.value;
 			else if (icompare(attr.localName, "address") == 0)
 				sd.server[ServerColumn.ADDRESS] = attr.value;
-			else if (icompare(attr.localName, "max_players") == 0)
-				maxPlayers = attr.value;
 			else if (icompare(attr.localName, "ping") == 0)
 				sd.server[ServerColumn.PING] = attr.value;
-			else if (icompare(attr.localName, "gametype") == 0)
-				sd.server[ServerColumn.GAMETYPE] = attr.value;
+			else if (icompare(attr.localName, "player_count") == 0)
+				sd.server[ServerColumn.PLAYERS] = attr.value;
+			/*else if (icompare(attr.localName, "gametype") == 0)
+				sd.server[ServerColumn.GAMETYPE] = attr.value;*/
 			else if (icompare(attr.localName, "map") == 0)
 				sd.server[ServerColumn.MAP] = attr.value;
 		}
@@ -323,6 +321,11 @@ private class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 				cvar[0] = attr.value;
 			else if (icompare(attr.localName, "value") == 0)
 				cvar[1] = attr.value;
+
+			if (cvar[0] == "g_gametype")
+				servers[$-1].server[ServerColumn.GAMETYPE] = cvar[1];
+			else if (cvar[0] == "g_needpass")
+				servers[$-1].server[ServerColumn.PASSWORDED] = cvar[1];
 		}
 
 		servers[$-1].cvars ~= cvar;
@@ -339,20 +342,11 @@ private class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 				player[PlayerColumn.RAWNAME] = attr.value;
 			else if (icompare(attr.localName, "score") == 0)
 				player[PlayerColumn.SCORE] = attr.value;
-			else if (icompare(attr.localName, "ping") == 0) {
+			else if (icompare(attr.localName, "ping") == 0)
 				player[PlayerColumn.PING] = attr.value;
-				if (attr.value != "0")
-					humanPlayers++;
-			}
 		}
 
 		servers[$-1].players ~= player;
-	}
-
-	
-	private {
-		char[] maxPlayers;
-		int humanPlayers;
 	}
 
 }
