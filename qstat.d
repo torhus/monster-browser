@@ -97,15 +97,15 @@ each_server:
 			char[][] fields = split(line.dup, FIELDSEP);
 			ServerData sd;
 
-			assert(fields.length == 9 || fields.length == 3);
-			bool timeout = fields.length == 3;
+			assert(fields.length >= 3);
+			bool error = fields.length < Field.max + 1;
 
 			sd.server.length = ServerColumn.max + 1;
 			
 			// still got the address in case of a timeout
 			sd.server[ServerColumn.ADDRESS] = fields[Field.ADDRESS];
 
-			if (!timeout) {
+			if (!error) {
 				/*if (modName != "baseq3" &&
 				             MOD_ONLY &&
 				             icmp(fields[Field.GAME], modName) != 0) {
