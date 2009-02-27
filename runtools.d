@@ -186,14 +186,21 @@ final class MasterListServerRetriever : IServerRetriever
 ///
 final class QstatServerRetriever : IServerRetriever
 {
-	///
+	/**
+	* Params:
+	*    game      = Name of game.
+	*    master    = MasterList object to add servers to.
+	*    addresses = Addresses of servers to query.
+	*    replace   = Replace servers in master, instead of adding.
+	*/
 	this(in char[] game, MasterList master, Set!(char[]) addresses,
-	                                                       bool saveList=false)
+	                                   bool saveList=false, bool replace=false)
 	{
 		game_ = getGameConfig(game);
 		master_ = master;
 		addresses_ = addresses;
 		outputFile_ = saveList ? "servers.tmp" : null;
+		replace_ = replace;
 	}
 
 
@@ -252,12 +259,19 @@ final class QstatServerRetriever : IServerRetriever
 		scope iter = new LineIterator!(char)(proc.stdout);
 		// FIXME: verify that everything is initialized correctly, and that
 		// stdout is valid
-		
+
 		bool _deliver(ServerData* sd, bool replied, bool matched)
 		{
-			return deliver(master_.updateServer(*sd, true), replied, matched);
+			ServerHandle sh;
+
+			if (replace_)
+				sh = master_.updateServer(*sd);
+			else
+				sh = master_.addServer(*sd);
+
+			return deliver(sh, replied, matched);
 		}
-		
+
 		completed_ = qstat.parseOutput(game_.mod, iter, &_deliver,
 		                                                          outputFile_);
 
@@ -295,6 +309,7 @@ final class QstatServerRetriever : IServerRetriever
 		GameConfig game_;
 		MasterList master_;
 		char[] outputFile_;
+		bool replace_;
 		bool completed_;
 	}
 }

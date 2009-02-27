@@ -168,7 +168,7 @@ void queryServers(in char[][] addresses, bool replace=false, bool select=false)
 		MasterList master = serverTable.serverList.master;
 
 		auto retriever = new QstatServerRetriever(gameName, master,
-		                                             Set!(char[])(addresses_));
+		                            Set!(char[])(addresses_), false, replace_);
 		auto contr = new ServerRetrievalController(retriever, replace_);
 		if (select_)
 			contr.autoSelect = addresses_;

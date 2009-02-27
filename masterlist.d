@@ -42,7 +42,7 @@ class MasterList
 
 
 	///
-	private ServerHandle addServer(ServerData sd)
+	ServerHandle addServer(ServerData sd)
 	{
 		servers_ ~= sd;
 		return servers_.length - 1;
@@ -56,10 +56,16 @@ class MasterList
 			assert (isValidIpAddress(sd.server[ServerColumn.ADDRESS]));
 			ServerHandle sh = findServer(sd.server[ServerColumn.ADDRESS]);
 
-			if (sh != InvalidServerHandle)
+			if (sh != InvalidServerHandle) {
+				// country code is calculated locally, so we keep it
+				ServerData old = getServerData(sh);
+				sd.server[ServerColumn.COUNTRY] =
+				                     servers_[sh].server[ServerColumn.COUNTRY];
 				setServerData(sh, sd);
-			else if (add)
+			}
+			else if (add) {
 				sh = addServer(sd);
+			}
 
 			return sh;
 		}
@@ -72,7 +78,7 @@ class MasterList
 	 * Returns InvalidServerHandle in case a server with the given address was
 	 * not found.
 	 */
-	ServerHandle findServer(in char[] address)
+	private ServerHandle findServer(in char[] address)
 	{
 		synchronized (this) {
 			foreach (sh, sd; servers_) {
@@ -244,9 +250,9 @@ class MasterList
 			//Trace.formatln("INVARIANT counter = {} ({}): {}", ++counter, name_, servers_.length);
 			foreach (i, sd; servers_) {
 				//assert (isValidIpAddress(sd.server[ServerColumn.ADDRESS]));
-				if (!isValidIpAddress(sd.server[ServerColumn.ADDRESS]))
+				/*if (!isValidIpAddress(sd.server[ServerColumn.ADDRESS]))
 					//int x = 1;
-					Trace.formatln("Address: ({}) {}", i, sd.server[ServerColumn.ADDRESS]);
+					Trace.formatln("Address: ({}) {}", i, sd.server[ServerColumn.ADDRESS]);*/
 			}
 		}
 	}

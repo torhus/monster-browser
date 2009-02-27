@@ -84,20 +84,21 @@ class ServerList
 	/// Always returns true.
 	bool replace(ServerHandle sh)
 	{
-		/*synchronized (this) {
+		synchronized (this) {
 			isSorted_ = false;
-			int i = getIndex(sd.server[ServerColumn.ADDRESS]);
-			assert(i != -1);
-			sd.server[ServerColumn.COUNTRY] =
-			                              list[i].server[ServerColumn.COUNTRY];
+			synchronized (master_) {
+				ServerData sd = master_.getServerData(sh);
+				if (sd.customData)
+					sd.customData.dispose();
 
-			if (list[i].customData)
-				list[i].customData.dispose();
-			list[i] = *sd;
-			removeFromFiltered(sd);
-			if (!isFilteredOut(sd))
-				insertSorted(i);
-		}*/
+				int i = getIndex(sd.server[ServerColumn.ADDRESS]);
+				assert(i != -1);
+				list[i] = sh;
+				removeFromFiltered(sh);
+				if (!isFilteredOut(sh))
+					insertSorted(i);
+			}
+		}
 
 		return true;
 	}
@@ -444,9 +445,11 @@ private:
 		filteredIpHashValid_ = false;
 	}
 
-	void removeFromFiltered(ServerData* psd)
+	void removeFromFiltered(ServerHandle sh)
 	{
-		int i = getFilteredIndex(psd.server[ServerColumn.ADDRESS]);
+		char[] address =
+		                master_.getServerData(sh).server[ServerColumn.ADDRESS];
+		int i = getFilteredIndex(address);
 		assert(i != -1);
 
 		size_t* ptr = filteredList.ptr + i;
@@ -454,7 +457,7 @@ private:
 		memmove(ptr, ptr + 1, bytes);
 		filteredList.length = filteredList.length - 1;
 
-		filteredIpHash_.removeKey(psd.server[ServerColumn.ADDRESS]);
+		filteredIpHash_.removeKey(address);
 	}
 
 	char[] getCountryCode(in ServerData* sd)
