@@ -3,7 +3,6 @@ module masterlist;
 import tango.io.File;
 import tango.io.FileConduit;
 import Path = tango.io.Path;
-debug import tango.io.Stdout;
 import tango.text.Ascii;
 import tango.text.Util;
 import tango.text.xml.DocPrinter;
@@ -23,7 +22,7 @@ const ServerHandle InvalidServerHandle = ServerHandle.max;
 
 
 ///
-class MasterList
+final class MasterList
 {
 	///
 	this(char[] name)
@@ -44,8 +43,10 @@ class MasterList
 	///
 	ServerHandle addServer(ServerData sd)
 	{
-		servers_ ~= sd;
-		return servers_.length - 1;
+		synchronized (this) {
+			servers_ ~= sd;
+			return servers_.length - 1;
+		}
 	}
 
 
@@ -139,6 +140,9 @@ class MasterList
 	 *          successfully read.
 	 *
 	 * Throws: IOException if an error occurred during reading.
+	 *
+	 * Note: After calling this, all ServerHandles that were obtained before
+	 *       calling it should be be considered invalid.
 	 */
 	bool load()
 	{
@@ -154,18 +158,16 @@ class MasterList
 		parser.setSaxHandler(handler);
 		parser.setContent(content);
 		parser.parse;
-		delete content;
 
 		debug {
 			Trace.formatln("Found {} servers.", handler.servers.length);
 			Trace.formatln("==============================");
 		}
 
-		/*foreach (sd; handler.servers)
-			print(&sd);*/
-
-		delete servers_;
-		servers_ = handler.servers;
+		synchronized (this) {
+			delete servers_;
+			servers_ = handler.servers;
+		}
 
 		return true;
 	}
@@ -355,20 +357,4 @@ private class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 		servers[$-1].players ~= player;
 	}
 
-}
-
-
-debug private void print(in ServerData* sd)
-{
-	Stdout.formatln("rawName: {}", sd.rawName);
-	Stdout.formatln("server ping: {}", sd.server[ServerColumn.PING]);
-	Stdout.formatln("server gametype: {}", sd.server[ServerColumn.GAMETYPE]);
-	Stdout.formatln("server map: {}", sd.server[ServerColumn.MAP]);
-	Stdout.formatln("server address: {}", sd.server[ServerColumn.ADDRESS]);
-	foreach (cvar; sd.cvars)
-		Stdout.formatln("cvar {}: {}", cvar[0], cvar[1]);
-	foreach (player; sd.players)
-		Stdout.formatln("player {}: score: {} ping: {}", player[3], player[1], player[2]);
-
-	Stdout("=============================").newline;
 }

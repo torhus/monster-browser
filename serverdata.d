@@ -1,8 +1,10 @@
 module serverdata;
 
+debug import tango.core.Thread;
 import tango.text.Ascii;
 import tango.text.Util;
 import Integer = tango.text.convert.Integer;
+debug import tango.util.log.Trace;
 
 import dwt.graphics.TextLayout;
 
@@ -95,4 +97,34 @@ static this() {
 	gameTypes["smokinguns"] = split("FFA Duel 2 TDM RTP BR", " ");
 	gameTypes["westernq3"]  = split("FFA Duel 2 TDM RTP BR", " ");
 	gameTypes["wop"] = split("FFA 1v1 2 SyC LPS TDM 6 SyCT BB", " ");
+}
+
+
+/// Print contents of sd to stdout.  Debugging tool.
+void print(ref ServerData sd, char[] file=null, long line=-1)
+{
+	print(null, sd, file, line);
+}
+
+/// ditto
+void print(char[] prefix, ref ServerData sd, char[] file=null, long line=-1)
+{
+	if (file)
+		Trace.format(prefix ~ " ====== {}({}) ======", file, line);
+	else
+		Trace.format(prefix ~ " ====================");
+	Trace.formatln(" thread: {} address: {}", cast(void*)Thread.getThis(), &sd);
+	Trace.formatln("rawName({}): {}", sd.rawName.ptr, sd.rawName);
+	Trace.formatln("server ping({}): {}", sd.server[ServerColumn.PING].ptr, sd.server[ServerColumn.PING]);
+	Trace.formatln("server gametype({}): {}", sd.server[ServerColumn.GAMETYPE].ptr, sd.server[ServerColumn.GAMETYPE]);
+	Trace.formatln("server map({}): {}", sd.server[ServerColumn.MAP].ptr, sd.server[ServerColumn.MAP]);
+	Trace.formatln("server address({}): {}", sd.server[ServerColumn.ADDRESS].ptr, sd.server[ServerColumn.ADDRESS]);
+	foreach (cvar; sd.cvars)
+		Trace.formatln("cvar ({}){}: ({}){}", cvar[0].ptr, cvar[0], cvar[1].ptr, cvar[1]);
+	foreach (player; sd.players)
+		Trace.formatln("player({}) : {} score({}): {} ping({}): {}", player[3].ptr, player[3], player[1].ptr, player[1], player[2].ptr, player[2]);
+
+	Trace.formatln("=============================");
+	Trace.formatln("");
+	Trace.flush();
 }

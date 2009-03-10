@@ -154,7 +154,7 @@ final class MasterListServerRetriever : IServerRetriever
 			                 "press \'Get new list\' to download a new list.");
 		}
 
-		return error ? 0 : -1;
+		return error ? 0 : master_.length;
 	}
 
 
