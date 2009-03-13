@@ -51,7 +51,7 @@ final class MasterList
 
 
 	///
-	ServerHandle updateServer(ServerData sd, bool add=false)
+	ServerHandle updateServer(ServerData sd)
 	{
 		synchronized (this) {
 			assert (isValidIpAddress(sd.server[ServerColumn.ADDRESS]));
@@ -63,9 +63,6 @@ final class MasterList
 				sd.server[ServerColumn.COUNTRY] =
 				                     servers_[sh].server[ServerColumn.COUNTRY];
 				setServerData(sh, sd);
-			}
-			else if (add) {
-				sh = addServer(sd);
 			}
 
 			return sh;
@@ -118,8 +115,6 @@ final class MasterList
 
 	/**
 	 * Get a filtered selection of servers.
-	 *
-	 * FIXME: need to synchronize?
 	 */
 	void filter(bool delegate(in ServerData*) test,
 	                                          void delegate(ServerHandle) emit)

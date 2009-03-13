@@ -234,7 +234,8 @@ void delegate() refreshList()
 	GC.collect();
 
 	if (servers.length) {
-		auto retriever = new QstatServerRetriever(game.name, master, servers);
+		auto retriever = new QstatServerRetriever(game.name, master, servers,
+		                                                          false, true);
 		auto contr = new ServerRetrievalController(retriever);
 		contr.startMessage =
                             Format("Refreshing {} servers...", servers.length);
@@ -359,8 +360,6 @@ class ServerRetrievalController
 		serverRetriever_.initialize();
 
 		serverList_ = serverTable.serverList;
-		//char[] name = getGameConfig(serverList_.gameName).masterServer;
-		//master_ = new MasterList(name);		
 
 		Display.getDefault.syncExec(new class Runnable {
 			void run() { serverTable.notifyRefreshStarted(&stop); }
@@ -500,7 +499,6 @@ class ServerRetrievalController
 		void delegate(ServerHandle) deliverDg_;
 		bool wasStopped_ = false;
 		bool addRemaining_ = true;
-		//MasterList master_;
 		ServerList serverList_;
 		ServerQueue serverQueue_;
 	}
