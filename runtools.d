@@ -194,12 +194,11 @@ final class QstatServerRetriever : IServerRetriever
 	*    replace   = Replace servers in master, instead of adding.
 	*/
 	this(in char[] game, MasterList master, Set!(char[]) addresses,
-	                                   bool saveList=false, bool replace=false)
+	                                                        bool replace=false)
 	{
 		game_ = getGameConfig(game);
 		master_ = master;
 		addresses_ = addresses;
-		outputFile_ = saveList ? "servers.tmp" : null;
 		replace_ = replace;
 	}
 
@@ -272,35 +271,7 @@ final class QstatServerRetriever : IServerRetriever
 			return deliver(sh, replied, matched);
 		}
 
-		completed_ = qstat.parseOutput(game_.mod, iter, &_deliver,
-		                                                          outputFile_);
-
-		if (outputFile_.length)
-			renameOutputFile();
-	}
-
-
-	private void renameOutputFile()
-	{
-		if (completed_ ) {
-			try {
-				char[] serverFile = game_.serverFile;
-				if (Path.exists(serverFile))
-					Path.remove(serverFile);
-				Path.rename(outputFile_, serverFile);
-			}
-			catch (IOException e) {
-				warning("Unable to save the server list to disk.");
-			}
-		}
-		else {
-			try {
-				Path.remove(outputFile_);
-			}
-			catch (IOException e) {
-				warning(e.toString());
-			}
-		}
+		qstat.parseOutput(game_.mod, iter, &_deliver);
 	}
 
 
@@ -308,9 +279,7 @@ final class QstatServerRetriever : IServerRetriever
 		Set!(char[]) addresses_;
 		GameConfig game_;
 		MasterList master_;
-		char[] outputFile_;
 		bool replace_;
-		bool completed_;
 	}
 }
 

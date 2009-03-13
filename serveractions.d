@@ -168,7 +168,7 @@ void queryServers(in char[][] addresses, bool replace=false, bool select=false)
 		MasterList master = serverTable.serverList.master;
 
 		auto retriever = new QstatServerRetriever(gameName, master,
-		                            Set!(char[])(addresses_), false, replace_);
+		                                   Set!(char[])(addresses_), replace_);
 		auto contr = new ServerRetrievalController(retriever, replace_);
 		if (select_)
 			contr.autoSelect = addresses_;
@@ -235,7 +235,7 @@ void delegate() refreshList()
 
 	if (servers.length) {
 		auto retriever = new QstatServerRetriever(game.name, master, servers,
-		                                                          false, true);
+		                                                                 true);
 		auto contr = new ServerRetrievalController(retriever);
 		contr.startMessage =
                             Format("Refreshing {} servers...", servers.length);
@@ -284,7 +284,7 @@ void delegate() getNewList()
 				MasterList master = serverTable.serverList.master;
 				
 				auto retriever = new QstatServerRetriever(game.name, master,
-				                                              addresses, true);
+				                                                    addresses);
 				auto contr = new ServerRetrievalController(retriever);
 				contr.startMessage = Format("Got {} servers, querying...",
 				                                             addresses.length);
