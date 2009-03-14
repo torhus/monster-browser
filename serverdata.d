@@ -35,28 +35,47 @@ struct ServerData {
 	int botCount()
 	{
 		char[] s = server[ServerColumn.PLAYERS];
-		auto r = Integer.convert(s[locate(s, '+')+1 .. $]);
-		assert(r >= 0 && r <= int.max);
-		return r;
+		auto plus = locate(s, '+');
+
+		if (plus != s.length) {
+			auto r = Integer.convert(s[plus+1 .. $]);
+			assert(r >= 0 && r <= int.max);
+			return r;
+		}
+		else {
+			return 0;
+		}
 	}
 
 	/// ditto
 	int maxClients()
 	{
 		char[] s = server[ServerColumn.PLAYERS];
-		auto r = Integer.convert(s[locate(s, '/')+1 .. $]);
-		assert(r >= 0 && r <= int.max);
-		return r;
+		auto slash = locate(s, '/');
+
+		if (slash != s.length) {
+			auto r = Integer.convert(s[slash+1 .. $]);
+			assert(r >= 0 && r <= int.max);
+			return r;
+		}
+		else {
+			return 0;
+		}
 	}
 
 	/// Extract some info about the server.
-	bool hasHumans() { return server[ServerColumn.PLAYERS][0] != '0'; }
+	bool hasHumans()
+	{
+		char[] players = server[ServerColumn.PLAYERS];
+		return  players.length && players[0] != '0';
+	}
 
 	/// ditto
 	bool hasBots()
 	{
 		char[] s = server[ServerColumn.PLAYERS];
-		return (s[locate(s, '+')+1] != '0');
+		auto plus = locate(s, '+');
+		return (plus != s.length) && (s[plus+1] != '0');
 	}
 }
 
