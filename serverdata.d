@@ -23,7 +23,11 @@ struct ServerData {
 
 	TextLayout customData = null;
 
-	/// Extract some info about the server. Always returns >= 0.
+	/*
+	 * Extract some info about the server.
+	 *
+	 * Default to zero when there is no info available.
+	 */
 	int humanCount()
 	{
 		auto r = Integer.convert(server[ServerColumn.PLAYERS]);
@@ -63,7 +67,11 @@ struct ServerData {
 		}
 	}
 
-	/// Extract some info about the server.
+	/*
+	 * Extract some info about the server.
+	 *
+	 * Default to false when there is no info available.
+	 */
 	bool hasHumans()
 	{
 		char[] players = server[ServerColumn.PLAYERS];
@@ -75,7 +83,7 @@ struct ServerData {
 	{
 		char[] s = server[ServerColumn.PLAYERS];
 		auto plus = locate(s, '+');
-		return (plus != s.length) && (s[plus+1] != '0');
+		return ((plus + 1) < s.length) && (s[plus+1] != '0');
 	}
 }
 
