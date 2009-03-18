@@ -5,10 +5,10 @@
 module qstat;
 
 import tango.core.Exception;
-import tango.io.FileConduit;
+import tango.io.device.File;
 import tango.io.model.IConduit : OutputStream;
 import tango.io.stream.Buffered;
-import tango.io.stream.TextFileStream;
+import tango.io.stream.TextFile;
 import tango.stdc.ctype : isdigit;
 import tango.text.Ascii;
 import tango.text.Util;
@@ -57,8 +57,8 @@ bool parseOutput(in char[] modName, Lines!(char) iter,
 
 	if (outputFileName) {
 		try {
-			outfile = new BufferedOutput(new FileConduit(
-			                         outputFileName, FileConduit.WriteCreate));
+			outfile = new BufferedOutput(new File(
+			                                outputFileName, File.WriteCreate));
 		}
 		catch (IOException e) {
 			error("Unable to open \'" ~ outputFileName ~ "\', the\n"
@@ -323,8 +323,8 @@ private void invalidInteger(in char[] serverName, in char[] badValue)
  *
  * Params:
  *     modName  = Name of the mod.
- *     readFrom = File to read from.  The format is taken to be
- *                qstat's raw output.
+ *     readFrom = File to read from.  The format is taken to be qstat's raw
+ *                output.
  *     writeTo  = Optional. File to write to. The format is one IP:PORT combo
  *                per line.
  *
@@ -351,8 +351,7 @@ Set!(char[]) filterServerFile(in char[] modName, in char[] readFrom,
 	}
 
 	if (writeTo)
-		outfile = new BufferedOutput(
-	                        new FileConduit(writeTo, FileConduit.WriteCreate));
+		outfile = new BufferedOutput(new File(writeTo, File.WriteCreate));
 
 	while (infile.next()) {
 		char[] line = infile.get();

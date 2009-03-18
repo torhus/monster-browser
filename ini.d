@@ -20,7 +20,7 @@
 
 /*
 
-This file was modified 4 Feb 2009 by torhu (tango port).
+This file was modified 19 March 2009 by torhu (tango port).
 
 Update:
 The Ini object no longer saves in the destructor because if it is the
@@ -58,7 +58,7 @@ Differences with Windows' profile (INI) functions:
 module ini;
 
 import tango.io.device.File;
-import tango.io.stream.TextFileStream;
+import tango.io.stream.TextFile;
 import tango.stdc.stringz;
 import tango.text.Ascii;
 import tango.text.Util;

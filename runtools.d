@@ -7,13 +7,13 @@ module runtools;
 import tango.core.Exception : IOException, ProcessException;
 debug import tango.io.Console;
 import Path = tango.io.Path;
+import tango.io.device.File;
 import tango.io.model.IConduit : InputStream;
-import tango.io.stream.FileStream;
-import tango.io.stream.TextFileStream;
+import tango.io.stream.Lines;
+import tango.io.stream.TextFile;
 import tango.sys.Process;
 import tango.text.convert.Format;
 import Integer = tango.text.convert.Integer;
-import tango.io.stream.Lines;
 
 import common;
 import messageboxes;
@@ -192,7 +192,7 @@ final class QstatServerRetriever : IServerRetriever
 		try {
 			char[] cmdLine = "qstat -f - -raw,game " ~ FIELDSEP ~ " -P -R" ~
 			                                                   " -default q3s";
-			FileOutput dumpFile;
+			File dumpFile;
 
 			if (getSetting("coloredNames") == "true")
 				cmdLine ~= " -carets";
@@ -207,7 +207,7 @@ final class QstatServerRetriever : IServerRetriever
 			proc.execute();
 
 			if (arguments.dumplist)
-				dumpFile = new FileOutput("refreshlist.tmp");
+				dumpFile = new File("refreshlist.tmp", File.WriteCreate);
 
 			foreach (address; addresses_) {
 				proc.stdin.write(address);

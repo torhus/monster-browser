@@ -2,7 +2,7 @@ module common;
 
 import tango.core.Version;
 import tango.io.Console;
-import tango.io.FileConduit;
+import tango.io.device.File;
 import Path = tango.io.Path;
 import tango.stdc.ctype : isdigit;
 import tango.stdc.stdlib : qsort;
@@ -67,7 +67,7 @@ Timer globalTimer;
 
 private {
 	const int MAX_LOG_SIZE = 100 * 1024;
-	FileConduit logfile;
+	File logfile;
 }
 
 
@@ -83,19 +83,19 @@ void initLogging(char[] name="LOG.TXT")
 {
 	const char[] sep =
 	           "-------------------------------------------------------------";
-	FileConduit.Style mode;
+	File.Style mode;
 	char[] error = null;
 	assert(appDir);
 	char[] path = appDir ~ name;
 
 	if (Path.exists(path) && Path.fileSize(path) < MAX_LOG_SIZE)
-		mode = FileConduit.WriteAppending;
+		mode = File.WriteAppending;
 	else
-		mode = FileConduit.WriteCreate;
+		mode = File.WriteCreate;
 
-	mode.share = FileConduit.Share.Read;
+	mode.share = File.Share.Read;
 
-	logfile = new FileConduit(path, mode);
+	logfile = new File(path, mode);
 
 	time_t t = time(null);
 	char[] timestamp = ctime(&t)[0..24];

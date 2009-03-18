@@ -1,6 +1,6 @@
 module masterlist;
 
-import tango.io.FileConduit;
+import tango.io.device.File;
 debug import tango.io.Stdout;
 import tango.text.xml.DocPrinter;
 import tango.text.xml.Document;
@@ -43,7 +43,7 @@ class MasterList
 	void save()
 	{
 		scope printer = new DocPrinter!(char);
-		scope f = new FileConduit(name_ ~ ".xml", FileConduit.WriteCreate);
+		scope f = new File(name_ ~ ".xml", File.WriteCreate);
 
 		void printDg(char[][] str...)
 		{
