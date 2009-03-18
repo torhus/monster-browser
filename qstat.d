@@ -17,13 +17,10 @@ debug import tango.text.convert.Format;
 import tango.text.convert.Integer;
 import tango.io.stream.Lines;
 
-import dwt.dwthelper.Runnable;
-import dwt.widgets.Display;
-
 import colorednames;
 import common;
 import messageboxes;
-import serverlist;
+import serverdata;
 import set;
 import settings;
 
@@ -44,38 +41,34 @@ private enum Field {
  * Throws: when outputFileName is given: IOException.
  */
 bool parseOutput(in char[] modName, Lines!(char) iter,
-                bool delegate(ServerData*) deliver, char[] outputFileName=null)
+                bool delegate(ServerData*, bool replied, bool matched) deliver)
 {
 	char[][] gtypes;
 	BufferedOutput outfile;
-	debug scope timer = new Timer;
 	debug scope timer2 = new Timer;
-	Display display = Display.getDefault;
 	bool keepGoing = true;
 
 	assert(deliver);
 
-	if (outputFileName) {
+	version (qstatDump) {
 		try {
 			outfile = new BufferedOutput(new File(
-			                                outputFileName, File.WriteCreate));
+			                                   "qstat.out", File.WriteCreate));
 		}
 		catch (IOException e) {
-			error("Unable to open \'" ~ outputFileName ~ "\', the\n"
-			      "server list will not be saved to disk.");
+			error("Unable to create file, qstat output will not be saved"
+			                                                       "to disk.");
 			outfile = null;
 		}
-	}
 
-	scope (exit) {
-		if (outfile) {
-			outfile.flush.close;
-			delete outfile;
+		scope (exit) {
+			if (outfile) {
+				outfile.flush.close;
+				delete outfile;
+			}
 		}
-		debug log("	qstat.parseOutput took " ~
-		                  Float.toString(timer.seconds) ~ " seconds.");
-	}
-	
+	 }
+
 	if (modName in gameTypes) {
 		gtypes = gameTypes[modName];
 	}
@@ -100,14 +93,15 @@ each_server:
 			char[][] fields = split(line.dup, FIELDSEP);
 			ServerData sd;
 
-			assert(fields.length == 9 || fields.length == 3);
+			assert(fields.length >= 3);
+			bool error = fields.length < Field.max + 1;
 
-			if (fields.length >= 9) {
-				bool keep_server = false;
+			sd.server.length = ServerColumn.max + 1;
+			
+			// still got the address in case of a timeout
+			sd.server[ServerColumn.ADDRESS] = fields[Field.ADDRESS];
 
-				if (icompare(fields[Field.GAME], modName) == 0)
-					keep_server = true;
-
+			if (!error) {
 				/*if (modName != "baseq3" &&
 				             MOD_ONLY &&
 				             icmp(fields[Field.GAME], modName) != 0) {
@@ -115,9 +109,7 @@ each_server:
 					debug line = readLine();
 					debug printf("        %.*s\n", line);
 					continue each_server;
-				}*/
-
-				sd.server.length = ServerColumn.max + 1;
+				}*/	
 
 				sd.rawName = fields[Field.NAME];
 				sd.server[ServerColumn.COUNTRY] = "";
@@ -126,17 +118,18 @@ each_server:
 				sd.server[ServerColumn.PLAYERS] = "";
 				sd.server[ServerColumn.GAMETYPE] = "";
 				sd.server[ServerColumn.MAP] = fields[Field.MAP];
-				sd.server[ServerColumn.ADDRESS] = fields[Field.ADDRESS];
 
-				// parse cvars
+				// cvar line
 				line = iter.next();
 				if (outfile) {
 					outfile.write(line);
 					outfile.write(newline);
 				}
-				char[] matchMod = keep_server ? null : modName;
-				if (!parseCvars(line, &sd, matchMod, gtypes))
-					continue each_server;
+				
+				char[] matchMod = (icompare(fields[Field.GAME], modName) == 0)
+				                                              ? null : modName;
+				bool matches = parseCvars(line, &sd, matchMod, gtypes);
+
 				sortStringArray(sd.cvars);
 
 				// parse players
@@ -161,14 +154,14 @@ each_server:
 				sd.server[ServerColumn.NAME] = stripColorCodes(sd.rawName);
 
 				debug checkTime(timer2, "3");
-				keepGoing = deliver(&sd);
+				keepGoing = deliver(&sd, true, matches);
 				debug checkTime(timer2, "4");
 			}
 			else /*if (!MOD_ONLY)*/ { // server didn't respond
 				/*sd.server.length = servertable.serverHeaders.length;
 				sd.server[ServerColumn.ADDRESS] = fields[Field.ADDRESS];*/
 				debug checkTime(timer2, "3x");
-				keepGoing = deliver(null);
+				keepGoing = deliver(&sd, false, false);
 				debug checkTime(timer2, "4x");
 			}
 			if (outfile) {
@@ -227,7 +220,8 @@ body {
 		keepServer = true;
 
 	foreach (char[] s; temp) {
-		char[][] cvar = split(s, "=");
+		char[][] cvar = new char[][2];
+		cvar[0] = head(s, "=", cvar[1]);
 		switch (cvar[0]) {
 			case "gametype":
 				uint ate;
@@ -314,88 +308,4 @@ private void invalidInteger(in char[] serverName, in char[] badValue)
 
 	debug db(msg);
 	else log(msg);
-}
-
-
-/**
- * Parses a server list file to find the addresses of all servers for a mod
- * Optionally outputs the IP and port numbers to a file.
- *
- * Params:
- *     modName  = Name of the mod.
- *     readFrom = File to read from.  The format is taken to be qstat's raw
- *                output.
- *     writeTo  = Optional. File to write to. The format is one IP:PORT combo
- *                per line.
- *
- * Returns: A set of strings containing the IP and port of each server that
- *          was found.
- *
- * Throws: IOException.
- */
-Set!(char[]) filterServerFile(in char[] modName, in char[] readFrom,
-                                                        in char writeTo[]=null)
-{
-	scope infile = new TextFileInput(readFrom);
-	scope OutputStream outfile;
-	Set!(char[]) keptServers;
-
-	void outputServer(in char[] address)
-	{
-		if (outfile) {
-			outfile.write(address);
-			outfile.write(newline);
-		}
-		assert(address.length == 0 || isdigit(address[0]));
-		keptServers.add(address);
-	}
-
-	if (writeTo)
-		outfile = new BufferedOutput(new File(writeTo, File.WriteCreate));
-
-	while (infile.next()) {
-		char[] line = infile.get();
-
-		if (line.length >= 3 && line[0..3] == "Q3S") {
-			char[][] fields = split(line.dup, FIELDSEP);
-
-			assert(fields.length == 9 || fields.length == 3);
-
-			if (fields.length < 9)
-				continue;  // server probably timed out
-
-			if (!MOD_ONLY) {
-				outputServer(fields[Field.ADDRESS]);
-			}
-			else if (/*activeMod.name != "baseq3" &&*/
-			               icompare(fields[Field.GAME], modName) == 0) {
-				outputServer(fields[Field.ADDRESS]);
-			}
-			else { // need to parse cvars to find out which mod this server runs
-				line = infile.next();
-				char[][] temp = split(line, FIELDSEP);
-				foreach (char[] s; temp) {
-					char[][] cvar = split(s, "=");
-					// Not sure if it's right to check 'game' or not.  Might
-					// end up including too many servers.
-					if (cvar[0] == "game" &&
-					                  icompare(cvar[1], modName) == 0) {
-						outputServer(fields[Field.ADDRESS]);
-						break;
-					}
-					if (cvar[0] == "gamename" &&
-					                  icompare(cvar[1], modName) == 0) {
-						outputServer(fields[Field.ADDRESS]);
-						break;
-					}
-				}
-			}
-		}
-	}
-
-	infile.close();
-	if (outfile)
-		outfile.flush().close();
-
-	return keptServers;
 }

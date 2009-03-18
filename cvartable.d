@@ -7,7 +7,6 @@ import dwt.widgets.TableColumn;
 import dwt.widgets.TableItem;
 
 import common;
-import serverlist;
 import settings;
 
 

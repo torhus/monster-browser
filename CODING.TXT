@@ -56,6 +56,7 @@ allservers - For benchmarking: don't filter servers on mod.
 build      - Used by the bud and dsss/rebuild build tools.
 Final      - Use the real version number for release builds
              (common.FINAL_VERSION).
+qstatDump  - Dump qstat's raw output to qstat.out.
 redirect   - Redirect stdout and stderr (Cout and Cerr) to the file DEBUG.OUT.
 
 

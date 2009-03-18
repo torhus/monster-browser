@@ -1,3 +1,5 @@
+- Display the number of human players in the status bar?
+
 - Fix baseq3 server list when using gslist.
 
 - Implement some kind of server monitoring.
