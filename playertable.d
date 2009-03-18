@@ -13,7 +13,7 @@ import dwt.widgets.TableItem;
 
 import colorednames;
 import common;
-import serverlist;
+import serverdata;
 import settings;
 
 

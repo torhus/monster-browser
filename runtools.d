@@ -18,7 +18,8 @@ import tango.text.stream.LineIterator;
 import common;
 import messageboxes;
 import qstat;
-import serverlist;
+import masterlist;
+import serverdata;
 import set;
 import settings;
 
@@ -113,20 +114,21 @@ interface IServerRetriever
 	 *
 	 * If deliver returns false, the server retrieval process is aborted.
 	 */
-	void retrieve(bool delegate(ServerData*, bool replied, bool matched)
+	void retrieve(bool delegate(ServerHandle, bool replied, bool matched)
 	                                                                  deliver);
 
 }
 
 
 ///
-final class FromFileServerRetriever : IServerRetriever
+final class MasterListServerRetriever : IServerRetriever
 {
 
 	///
-	this(in char[] game)
+	this(in GameConfig game, MasterList master)
 	{
-		game_ = getGameConfig(game);
+		game_ = game;
+		master_ = master;
 	}
 
 
@@ -137,31 +139,46 @@ final class FromFileServerRetriever : IServerRetriever
 	///
 	int prepare()
 	{
+		bool error = false;
+
 		try {
-			input_ = new TextFileInput(game_.serverFile);
+			if (master_.length == 0 && !master_.load())
+				error = true;
 		}
 		catch (IOException o) {
-			warning("Unable to load the server list from disk,\n"
-				  "press \'Get new list\' to download a new list.");
-			return 0;
+			error = true;
 		}
-		return -1;
+
+		if (error) {
+			warning("Unable to load the server list from disk,\n"
+			                 "press \'Get new list\' to download a new list.");
+		}
+
+		return error ? 0 : master_.length;
 	}
 
 
 	///
-	void retrieve(bool delegate(ServerData*, bool replied, bool matched)
+	void retrieve(bool delegate(ServerHandle sh, bool replied, bool matched)
 	                                                                   deliver)
 	{
-		scope iter = new LineIterator!(char)(input_);
-		qstat.parseOutput(game_.name, iter, deliver);
-		input_.close();
+		bool test(in ServerData* sd)
+		{
+			return matchMod(sd, game_.mod);
+		}
+
+		void emit(ServerHandle sh)
+		{
+			deliver(sh, true, true);
+		}
+
+		master_.filter(&test, &emit);
 	}
 
 
 	private {
-		InputStream input_;
 		GameConfig game_;
+		MasterList master_;
 	}
 }
 
@@ -169,12 +186,20 @@ final class FromFileServerRetriever : IServerRetriever
 ///
 final class QstatServerRetriever : IServerRetriever
 {
-	///
-	this(in char[] game, Set!(char[]) addresses, bool saveList=false)
+	/**
+	* Params:
+	*    game      = Name of game.
+	*    master    = MasterList object to add servers to.
+	*    addresses = Addresses of servers to query.
+	*    replace   = Replace servers in master, instead of adding.
+	*/
+	this(in char[] game, MasterList master, Set!(char[]) addresses,
+	                                                        bool replace=false)
 	{
 		game_ = getGameConfig(game);
+		master_ = master;
 		addresses_ = addresses;
-		outputFile_ = saveList ? "servers.tmp" : null;
+		replace_ = replace;
 	}
 
 
@@ -199,7 +224,7 @@ final class QstatServerRetriever : IServerRetriever
 			proc.workDir = appDir;
 			log("Executing '" ~ cmdLine ~ "'.");
 			proc.execute();
-			
+
 			if (arguments.dumplist)
 				dumpFile = new FileOutput("refreshlist.tmp");
 
@@ -227,48 +252,34 @@ final class QstatServerRetriever : IServerRetriever
 
 
 	///
-	void retrieve(bool delegate(ServerData*, bool replied, bool deliver)
+	void retrieve(bool delegate(ServerHandle sh, bool replied, bool matched)
 	                                                                   deliver)
 	{
 		scope iter = new LineIterator!(char)(proc.stdout);
 		// FIXME: verify that everything is initialized correctly, and that
 		// stdout is valid
-		completed_ = qstat.parseOutput(game_.mod, iter, deliver, outputFile_);
 
-		if (outputFile_.length)
-			renameOutputFile();
-	}
+		bool _deliver(ServerData* sd, bool replied, bool matched)
+		{
+			ServerHandle sh;
 
+			if (replace_)
+				sh = master_.updateServer(*sd);
+			else
+				sh = master_.addServer(*sd);
 
-	private void renameOutputFile()
-	{
-		if (completed_ ) {
-			try {
-				char[] serverFile = game_.serverFile;
-				if (Path.exists(serverFile))
-					Path.remove(serverFile);
-				Path.rename(outputFile_, serverFile);
-			}
-			catch (IOException e) {
-				warning("Unable to save the server list to disk.");
-			}
+			return deliver(sh, replied, matched);
 		}
-		else {
-			try {
-				Path.remove(outputFile_);
-			}
-			catch (IOException e) {
-				warning(e.toString());
-			}
-		}
+
+		qstat.parseOutput(game_.mod, iter, &_deliver);
 	}
 
 
 	private {
 		Set!(char[]) addresses_;
 		GameConfig game_;
-		char[] outputFile_;
-		bool completed_;
+		MasterList master_;
+		bool replace_;
 	}
 }
 

@@ -18,7 +18,7 @@ import common;
 import dialogs;
 import mainwindow;
 import messageboxes;
-import serverlist;
+import serverdata;
 import settings;
 
 
@@ -33,7 +33,7 @@ version (Windows)
  *
  * Displays an error message if the game executable was not found.
  */
-void joinServer(in char[] gameName, ServerData *sd)
+void joinServer(in char[] gameName, ServerData sd)
 {
 	char[] argv;
 	GameConfig game = getGameConfig(gameName);
