@@ -128,13 +128,13 @@ static this() {
 
 
 /// Print contents of sd to stdout.  Debugging tool.
-void print(ref ServerData sd, char[] file=null, long line=-1)
+debug void print(ref ServerData sd, char[] file=null, long line=-1)
 {
 	print(null, sd, file, line);
 }
 
 /// ditto
-void print(char[] prefix, ref ServerData sd, char[] file=null, long line=-1)
+debug void print(char[] prefix, ref ServerData sd, char[] file=null, long line=-1)
 {
 	if (file)
 		Trace.format(prefix ~ " ====== {}({}) ======", file, line);
