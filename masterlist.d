@@ -54,7 +54,7 @@ final class MasterList
 	ServerHandle updateServer(ServerData sd)
 	{
 		synchronized (this) {
-			assert (isValidIpAddress(sd.server[ServerColumn.ADDRESS]));
+			debug assert(isValidIpAddress(sd.server[ServerColumn.ADDRESS]));
 			ServerHandle sh = findServer(sd.server[ServerColumn.ADDRESS]);
 
 			if (sh != InvalidServerHandle) {
