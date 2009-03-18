@@ -13,7 +13,7 @@ import tango.io.stream.TextFileStream;
 import tango.sys.Process;
 import tango.text.convert.Format;
 import Integer = tango.text.convert.Integer;
-import tango.text.stream.LineIterator;
+import tango.io.stream.Lines;
 
 import common;
 import messageboxes;
@@ -54,6 +54,8 @@ Set!(char[]) browserGetNewList(in GameConfig game)
 	try {
 		proc = new Process(cmdLine);
 		proc.workDir = appDir;
+		proc.copyEnv = true;
+		proc.gui = true;
 		log("Executing '" ~ cmdLine ~ "'.");
 		proc.execute();
 	}
@@ -66,7 +68,7 @@ Set!(char[]) browserGetNewList(in GameConfig game)
 
 	if (proc) {
 		try {
-			auto lineIter= new LineIterator!(char)(proc.stdout);
+			auto lineIter= new Lines!(char)(proc.stdout);
 			size_t start = gslist ? 0 : "q3s ".length;
 			addresses = collectIpAddresses(lineIter, start);
 		}
@@ -155,7 +157,7 @@ final class FromFileServerRetriever : IServerRetriever
 	///
 	void retrieve(bool delegate(ServerData*) deliver)
 	{
-		scope iter = new LineIterator!(char)(input_);
+		scope iter = new Lines!(char)(input_);
 		qstat.parseOutput(game_.name, iter, deliver);
 		input_.close();
 	}
@@ -199,9 +201,11 @@ final class QstatServerRetriever : IServerRetriever
 
 			proc = new Process(cmdLine);
 			proc.workDir = appDir;
+			proc.copyEnv = true;
+			proc.gui = true;
 			log("Executing '" ~ cmdLine ~ "'.");
 			proc.execute();
-			
+
 			if (arguments.dumplist)
 				dumpFile = new FileOutput("refreshlist.tmp");
 
@@ -231,7 +235,7 @@ final class QstatServerRetriever : IServerRetriever
 	///
 	void retrieve(bool delegate(ServerData*) deliver)
 	{
-		scope iter = new LineIterator!(char)(proc.stdout);
+		scope iter = new Lines!(char)(proc.stdout);
 		// FIXME: verify that everything is initialized correctly, and that
 		// stdout is valid
 		completed_ = qstat.parseOutput(game_.mod, iter, deliver, outputFile_);

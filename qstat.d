@@ -7,7 +7,7 @@ module qstat;
 import tango.core.Exception;
 import tango.io.FileConduit;
 import tango.io.model.IConduit : OutputStream;
-import tango.io.stream.BufferStream;
+import tango.io.stream.Buffered;
 import tango.io.stream.TextFileStream;
 import tango.stdc.ctype : isdigit;
 import tango.text.Ascii;
@@ -15,7 +15,7 @@ import tango.text.Util;
 import Float = tango.text.convert.Float;
 debug import tango.text.convert.Format;
 import tango.text.convert.Integer;
-import tango.text.stream.LineIterator;
+import tango.io.stream.Lines;
 
 import dwt.dwthelper.Runnable;
 import dwt.widgets.Display;
@@ -43,11 +43,11 @@ private enum Field {
  *
  * Throws: when outputFileName is given: IOException.
  */
-bool parseOutput(in char[] modName, LineIterator!(char) iter,
+bool parseOutput(in char[] modName, Lines!(char) iter,
                 bool delegate(ServerData*) deliver, char[] outputFileName=null)
 {
 	char[][] gtypes;
-	BufferOutput outfile;
+	BufferedOutput outfile;
 	debug scope timer = new Timer;
 	debug scope timer2 = new Timer;
 	Display display = Display.getDefault;
@@ -57,7 +57,7 @@ bool parseOutput(in char[] modName, LineIterator!(char) iter,
 
 	if (outputFileName) {
 		try {
-			outfile = new BufferOutput(new FileConduit(
+			outfile = new BufferedOutput(new FileConduit(
 			                         outputFileName, FileConduit.WriteCreate));
 		}
 		catch (IOException e) {
@@ -275,7 +275,7 @@ body {
 }
 
 
-private char[][][] parsePlayers(LineIterator!(char) lineIter,
+private char[][][] parsePlayers(Lines!(char) lineIter,
                                 int* humanCount=null, OutputStream output=null)
 {
 	char[][][] players;
@@ -351,7 +351,7 @@ Set!(char[]) filterServerFile(in char[] modName, in char[] readFrom,
 	}
 
 	if (writeTo)
-		outfile = new BufferOutput(
+		outfile = new BufferedOutput(
 	                        new FileConduit(writeTo, FileConduit.WriteCreate));
 
 	while (infile.next()) {

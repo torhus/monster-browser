@@ -12,7 +12,7 @@ import tango.text.Ascii;
 import tango.text.Util;
 import tango.text.convert.Format;
 import Integer = tango.text.convert.Integer;
-import tango.text.stream.StreamIterator;
+import tango.io.stream.Iterator;
 import tango.time.Clock;
 import tango.time.Time;
 
@@ -138,8 +138,9 @@ void log(char[] s)
 void logx(char[] file, int line, Exception e)
 {
 	log(file, line, e.classinfo.name ~ ": " ~ e.toString());
-	if (e.info)
-		log(e.info.toString());
+	// FIXME: update this for Tango 0.99.8.
+	/*if (e.info)
+		log(e.info.toString());*/
 }
 
 
@@ -465,7 +466,7 @@ int[] getColumnWidths(Table table)
  *
  * Throws: Whatever iter's opApply throws.
  */
-Set!(char[]) collectIpAddresses(StreamIterator!(char) iter, uint start=0)
+Set!(char[]) collectIpAddresses(Iterator!(char) iter, uint start=0)
 {
 	Set!(char[]) addresses;
 

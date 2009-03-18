@@ -20,7 +20,7 @@
 
 /*
 
-This file was modified 26 Feb 2008 by torhu (tango port).
+This file was modified 4 Feb 2009 by torhu (tango port).
 
 Update:
 The Ini object no longer saves in the destructor because if it is the
@@ -57,7 +57,7 @@ Differences with Windows' profile (INI) functions:
 /// Module for reading and writing _INI files. _ini.d version 0.5
 module ini;
 
-import tango.io.File;
+import tango.io.device.File;
 import tango.io.stream.TextFileStream;
 import tango.stdc.stringz;
 import tango.text.Ascii;
@@ -331,7 +331,7 @@ protected:
 
 		try
 		{
-			data = cast(char[])File(_file).read();
+			data = cast(char[])File.get(_file);
 			/+
 			File f = new File(_file, FileMode.In);
 			data = f.readString(f.size());

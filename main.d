@@ -2,7 +2,7 @@ module main;
 
 import tango.io.Console;
 import tango.io.Path;
-import tango.io.stream.FileStream;
+import tango.io.device.File;
 import tango.sys.Environment;
 import tango.util.PathUtil;
 
@@ -49,8 +49,7 @@ void main(char[][] args) ///
 
 private void _main(char[][] args)
 {
-	char[] s = replace(args[0].dup, '\\', '/');
-	appDir = normalize(Environment.exePath(s).path);
+	appDir = normalize(Environment.exePath(args[0]).path);
 
 	globalTimer = new Timer;
 
@@ -59,8 +58,8 @@ private void _main(char[][] args)
 
 	if (!consoleOutputOk) {
 		// Avoid getting IOExceptions all over the place.
-		Cout.output = new FileOutput("NUL");
-		Cerr.output = new FileOutput("NUL");
+		Cout.output = new File("NUL", File.WriteExisting);
+		Cerr.output = Cout.output;
 	}
 
 	try
@@ -183,7 +182,7 @@ private void _main(char[][] args)
 private bool redirectOutput(char[] file)
 {
 	try {
-		Cerr.output = new FileOutput(file);
+		Cerr.output = new File(file, File.WriteCreate);
 		Cerr("Cerr is redirected to this file.").newline.flush;
 		Cout.output = Cerr.output;
 		Cout("Cout is redirected to this file.").newline.flush;

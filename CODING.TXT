@@ -36,14 +36,14 @@ Version 0.75 is known to work.
 
 Libraries used
 --------------
-Tango, currently version 0.99.7:
+Tango, currently svn revision 4408:
 http://dsource.org/projects/tango/
 
 ini.d (included in the source download):
 http://www.dprogramming.com/ini.php
 
 DWT GUI library. DWT is a D port of IBM's SWT 3.4.1 for Java.
-Revision used with this project is currently 322.
+Revision used with this project is currently 338.
 http://www.dsource.org/projects/dwt
 http://help.eclipse.org/help32/nftopic/org.eclipse.platform.doc.isv/reference/api/org/eclipse/swt/widgets/package-tree.html
 There's also a DWT news group on news.digitalmars.com, and a #dwt channel on

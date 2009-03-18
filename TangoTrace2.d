@@ -2105,7 +2105,7 @@ private struct Buffer
 	}
 }#line 2 "parts/DbgInfo.di"
 import tango.text.Util;
-import tango.stdc.stdio;
+import tango.stdc.stdio : printf;
 import tango.stdc.stringz;
 import tango.stdc.string : strcpy;
 import tango.sys.win32.CodePage;
