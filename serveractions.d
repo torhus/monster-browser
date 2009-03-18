@@ -22,6 +22,7 @@ import mainwindow;
 import messageboxes;
 import qstat;
 import runtools;
+import serverdata;
 import serverlist;
 import serverqueue;
 import servertable;
@@ -30,10 +31,11 @@ import settings;
 import threadmanager;
 
 
-/// Master server lists indexed by server address.
+/// Master server lists indexed by server domain name and port number.
 MasterList[char[]] masterLists;
 
-/// When switchToGame creates a new ServerList object, it's stored here.
+/// ServerList cache indexed by mod name.
+// FIXME: needs to be index by mod + game name instead.
 ServerList[char[]] serverListCache;
 
 
@@ -49,6 +51,7 @@ void switchToGame(in char[] name)
 	static char[] gameName;
 
 	static void delegate() f() {
+		MasterList master;
 		ServerList serverList;
 		bool needRefresh;
 
@@ -57,7 +60,17 @@ void switchToGame(in char[] name)
 			needRefresh = !serverList.complete;
 		}
 		else {
-			serverList = new ServerList(gameName);
+			char[] masterName = getGameConfig(gameName).masterServer;
+
+			if (auto m = masterName in masterLists) {
+				master = *m;
+			}
+			else {
+				master = new MasterList(masterName);
+				masterLists[masterName] = master;
+			}
+
+			serverList = new ServerList(gameName, master);
 			serverListCache[gameName] = serverList;
 			needRefresh = true;
 
@@ -80,11 +93,11 @@ void switchToGame(in char[] name)
 
 		if (needRefresh) {
 			GameConfig game = getGameConfig(gameName);
-			if (arguments.fromfile && Path.exists(game.serverFile))
+			if (arguments.fromfile && Path.exists(master.fileName))
 				threadManager.runSecond(&loadSavedList);
 			else if (common.haveGslist && game.useGslist)
 				threadManager.runSecond(&getNewList);
-			else if (Path.exists(game.serverFile))
+			else if (master.length > 0 || master.load())
 				threadManager.runSecond(&refreshList);
 			else
 				threadManager.runSecond(&getNewList);
@@ -109,24 +122,25 @@ void switchToGame(in char[] name)
 void delegate() loadSavedList()
 {
 	ServerList serverList = serverTable.serverList;
+	MasterList master = serverList.master;
 
 	serverTable.clear();
 	serverList.clear();
 	GC.collect();
 
 	GameConfig game = getGameConfig(serverList.gameName);
-	if (Path.exists(game.serverFile)) {
-		auto retriever = new FromFileServerRetriever(game.name);
+	//if (Path.exists(master.fileName)) {
+		auto retriever = new MasterListServerRetriever(game, master);
 		auto contr = new ServerRetrievalController(retriever);
 		contr.startMessage = "Loading saved server list...";
 		contr.noReplyMessage = "No servers were found in the file";
 		return &contr.run;
-	}
+	/*}
 	else {
 		statusBar.setLeft(
 		                "Unable to find a file for this game's master server");
 		return null;
-	}
+	}*/
 }
 
 
@@ -151,8 +165,10 @@ void queryServers(in char[][] addresses, bool replace=false, bool select=false)
 
 	static void delegate() f() {
 		char[] gameName = serverTable.serverList.gameName;
-		auto retriever = new QstatServerRetriever(gameName,
-		                                             Set!(char[])(addresses_));
+		MasterList master = serverTable.serverList.master;
+
+		auto retriever = new QstatServerRetriever(gameName, master,
+		                                   Set!(char[])(addresses_), replace_);
 		auto contr = new ServerRetrievalController(retriever, replace_);
 		if (select_)
 			contr.autoSelect = addresses_;
@@ -162,7 +178,7 @@ void queryServers(in char[][] addresses, bool replace=false, bool select=false)
 
 	if (!addresses.length)
 		return;
-	
+
 	addresses_ = addresses;
 	replace_ = replace;
 	select_ = select;
@@ -179,19 +195,29 @@ void queryServers(in char[][] addresses, bool replace=false, bool select=false)
 void delegate() refreshList()
 {
 	ServerList serverList = serverTable.serverList;
+	MasterList master = serverList.master;
 	GameConfig game = getGameConfig(serverList.gameName);
 
-	if (!Path.exists(game.serverFile)) {
+	if (master.length == 0 && !master.load()) {
 		error("No server list found on disk, press\n"
                                    "\'Get new list\' to download a new list.");
 		return null;
 	}
-	Set!(char[]) servers = filterServerFile(game.mod, game.serverFile);
+
+	Set!(char[]) servers;
+
+	bool test(in ServerData* sd) { return matchMod(sd, game.mod); }
+
+	void emit(ServerHandle sh)
+	{
+		servers.add(master.getServerData(sh).server[ServerColumn.ADDRESS]);
+	}
+
+	master.filter(&test, &emit);
 
 	log("Refreshing server list for " ~ game.name ~ "...");
-	char[] tmp;
-	char[] sfile = tail(game.serverFile, "/", tmp);
-	log(Format("Found {} servers in {}.", servers.length, sfile));
+	log(Format("Found {} servers, master is {}.", servers.length,
+	                                                             master.name));
 
 	// merge in the extra servers
 	Set!(char[]) extraServers = serverList.extraServers;
@@ -208,7 +234,8 @@ void delegate() refreshList()
 	GC.collect();
 
 	if (servers.length) {
-		auto retriever = new QstatServerRetriever(game.name, servers);
+		auto retriever = new QstatServerRetriever(game.name, master, servers,
+		                                                                 true);
 		auto contr = new ServerRetrievalController(retriever);
 		contr.startMessage =
                             Format("Refreshing {} servers...", servers.length);
@@ -218,7 +245,7 @@ void delegate() refreshList()
 	else {
 		statusBar.setLeft("No servers were found for this game");
 		return null;
-	}	
+	}
 }
 
 
@@ -254,8 +281,10 @@ void delegate() getNewList()
 				});
 			}
 			else {
-				auto retriever = new QstatServerRetriever(game.name, addresses,
-				                                                         true);
+				MasterList master = serverTable.serverList.master;
+				
+				auto retriever = new QstatServerRetriever(game.name, master,
+				                                                    addresses);
 				auto contr = new ServerRetrievalController(retriever);
 				contr.startMessage = Format("Got {} servers, querying...",
 				                                             addresses.length);
@@ -271,13 +300,15 @@ void delegate() getNewList()
 
 	serverTable.clear();
 	serverTable.serverList.clear();
+	// FIXME: update master list instead of clearing it
+	//serverTable.serverList.master.clear();
 	GC.collect();
 
 	statusBar.setLeft("Getting new server list...");
 	char[] gameName = serverTable.serverList.gameName;
 	log("Getting new server list for " ~ gameName ~ "...");
 	serverTable.notifyRefreshStarted;
-	
+
 	return &f;
 }
 
@@ -328,9 +359,7 @@ class ServerRetrievalController
 
 		serverRetriever_.initialize();
 
-		ServerList list = serverTable.serverList;
-		char[] serverName = getGameConfig(list.gameName).masterServer;
-		master_ = new MasterList(serverName);
+		serverList_ = serverTable.serverList;
 
 		Display.getDefault.syncExec(new class Runnable {
 			void run() { serverTable.notifyRefreshStarted(&stop); }
@@ -415,20 +444,20 @@ class ServerRetrievalController
 	}
 
 
-	private bool deliver(ServerData* sd, bool replied, bool matched)
+	private bool deliver(ServerHandle sh, bool replied, bool matched)
 	{
+		assert(sh != InvalidServerHandle);
+		
 		if (replied) {
 			if (matched)
-				deliverDg_(sd);
+				deliverDg_(sh);
 		}
 		else {
 			timedOut_++;
-		}		
+		}
 
 		statusBarUpdater_.text = startMessage ~ Integer.toString(counter_++);
-		Display.getDefault.syncExec(statusBarUpdater_);
-		
-		master_.addServer(sd);
+		Display.getDefault.syncExec(statusBarUpdater_);		
 
 		return !threadManager.abort;
 	}
@@ -446,8 +475,8 @@ class ServerRetrievalController
 			}
 
 			if (store_)
-				master_.save();
-			
+				serverList_.master.save();
+
 			serverTable.fullRefresh(index);
 			statusBar.setDefaultStatus(list.length, list.filteredLength,
 			                                                        timedOut_);
@@ -467,10 +496,10 @@ class ServerRetrievalController
 		StatusBarUpdater statusBarUpdater_;
 		bool replace_;
 		bool store_;
-		void delegate(ServerData*) deliverDg_;
+		void delegate(ServerHandle) deliverDg_;
 		bool wasStopped_ = false;
 		bool addRemaining_ = true;
-		MasterList master_;
+		ServerList serverList_;
 		ServerQueue serverQueue_;
 	}
 }

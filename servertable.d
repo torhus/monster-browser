@@ -36,6 +36,7 @@ import launch;
 import mainwindow;
 import playertable;
 import serveractions;
+import serverdata;
 import serverlist;
 import settings;
 
@@ -461,7 +462,7 @@ private:
 
 			TableItem item = cast(TableItem) e.item;
 			auto i = table_.indexOf(item);
-			ServerData* sd = serverList_.getFiltered(i);
+			ServerData sd = serverList_.getFiltered(i);
 
 			enum { leftMargin = 2 }
 
@@ -479,6 +480,7 @@ private:
 				case ServerColumn.NAME:
 					auto textX = e.x + leftMargin;
 					if (!(e.detail & DWT.SELECTED)) {
+						// FIXME: this caching is broken now
 						TextLayout tl = sd.customData;
 						if (tl is null) {
 							auto parsed = parseColors(sd.rawName);
@@ -491,6 +493,8 @@ private:
 						}
 
 						tl.draw(e.gc, textX, e.y);
+						// FIXME: don't dispose if caching it
+						tl.dispose();
 					}
 					else {
 						auto name = sd.server[ServerColumn.NAME];
@@ -514,7 +518,7 @@ private:
 			TableItem item = table_.getItem(point);
 			if (item && item.getBounds(ServerColumn.COUNTRY).contains(point)) {
 				int i = table_.indexOf(item);
-				ServerData* sd = serverList_.getFiltered(i);
+				ServerData sd = serverList_.getFiltered(i);
 				char[] ip = sd.server[ServerColumn.ADDRESS];
 				auto colon = locate(ip, ':');
 				text = countryNameByAddr(ip[0..colon]);
