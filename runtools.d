@@ -164,7 +164,10 @@ final class MasterListServerRetriever : IServerRetriever
 	{
 		bool test(in ServerData* sd)
 		{
-			return matchMod(sd, game_.mod);
+			static if (MOD_ONLY)
+				return matchMod(sd, game_.mod);
+			else
+				return true;
 		}
 
 		void emit(ServerHandle sh)

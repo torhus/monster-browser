@@ -93,7 +93,7 @@ void switchToGame(in char[] name)
 
 		if (needRefresh) {
 			GameConfig game = getGameConfig(gameName);
-			if (arguments.fromfile && Path.exists(master.fileName))
+			if (arguments.fromfile)
 				threadManager.runSecond(&loadSavedList);
 			else if (common.haveGslist && game.useGslist)
 				threadManager.runSecond(&getNewList);
@@ -129,18 +129,18 @@ void delegate() loadSavedList()
 	GC.collect();
 
 	GameConfig game = getGameConfig(serverList.gameName);
-	//if (Path.exists(master.fileName)) {
+	if (Path.exists(master.fileName)) {
 		auto retriever = new MasterListServerRetriever(game, master);
 		auto contr = new ServerRetrievalController(retriever);
 		contr.startMessage = "Loading saved server list...";
 		contr.noReplyMessage = "No servers were found in the file";
 		return &contr.run;
-	/*}
+	}
 	else {
 		statusBar.setLeft(
 		                "Unable to find a file for this game's master server");
 		return null;
-	}*/
+	}
 }
 
 
