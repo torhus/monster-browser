@@ -109,8 +109,12 @@ final class MasterList
 	size_t length() { return servers_.length; }
 
 
-	///
-	//void clear() { delete servers_; }
+	/**
+	 * Clear the server list.
+	 *
+	 * Calling this invalidates all ServerHandles.
+	 **/
+	void clear() { delete servers_; }
 
 
 	/**
