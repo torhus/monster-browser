@@ -74,6 +74,7 @@ void switchToGame(in char[] name)
 			serverListCache[gameName] = serverList;
 			needRefresh = true;
 
+			// Add servers from the extra servers file, if found.
 			auto file = getGameConfig(gameName).extraServersFile;
 			try {
 				if (Path.exists(file)) {
@@ -301,8 +302,7 @@ void delegate() getNewList()
 
 	serverTable.clear();
 	serverTable.serverList.clear();
-	// FIXME: update master list instead of clearing it
-	//serverTable.serverList.master.clear();
+	serverTable.serverList.master.clear();
 	GC.collect();
 
 	statusBar.setLeft("Getting new server list...");
