@@ -198,7 +198,7 @@ final class MasterList
 	private static void serverToXml(Document!(char).Node node,
 	                                                         in ServerData* sd)
 	{
-		node.element(null, "server")
+		auto server = node.element(null, "server")
 		     .attribute(null, "name", sd.server[ServerColumn.NAME])
 		     .attribute(null, "country_code", sd.server[ServerColumn.COUNTRY])
 		     .attribute(null, "address", sd.server[ServerColumn.ADDRESS])
@@ -208,10 +208,10 @@ final class MasterList
 		   //.attribute(null, "gametype", sd.server[ServerColumn.GAMETYPE])
 		     .attribute(null, "map", sd.server[ServerColumn.MAP]);
 
-		node.childTail.element(null, "cvars");
-		cvarsToXml(node.childTail.childTail, sd);
-		node.childTail.element(null, "players");
-		playersToXml(node.childTail.childTail, sd);
+		auto cvars = server.element(null, "cvars");
+		cvarsToXml(cvars, sd);
+		auto players = server.element(null, "players");
+		playersToXml(players, sd);
 	}
 
 

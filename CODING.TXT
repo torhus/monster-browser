@@ -36,7 +36,7 @@ Version 0.75 is known to work.
 
 Libraries used
 --------------
-Tango, currently svn revision 4408:
+Tango, currently svn revision 4498:
 http://dsource.org/projects/tango/
 
 ini.d (included in the source download):
