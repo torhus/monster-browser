@@ -125,7 +125,7 @@ void log(char[] file, int line, char[] msg)
 void log(char[] s)
 {
 	version(redirect) {}
-	else debug Cout("LOG: ")(s).newline;
+	else debug Cerr("LOG: ")(s).newline;
 
 	if (logfile) {
 		logfile.write(s);
@@ -138,9 +138,7 @@ void log(char[] s)
 void logx(char[] file, int line, Exception e)
 {
 	log(file, line, e.classinfo.name ~ ": " ~ e.toString());
-	// FIXME: update this for Tango 0.99.8.
-	/*if (e.info)
-		log(e.info.toString());*/
+	e.writeOut((char[] s) { Cerr(s); });
 }
 
 

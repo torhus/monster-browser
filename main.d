@@ -1,5 +1,12 @@
 module main;
 
+// Workaround for a bug in dmd < 1.041.
+// http://d.puremagic.com/issues/show_bug.cgi?id=2673
+static if (__VERSION__ < 1041) {
+	debug import tango.core.stacktrace.StackTrace;
+	debug version = bug2673;
+}
+debug import tango.core.stacktrace.TraceExceptions;
 import tango.io.Console;
 import tango.io.Path;
 import tango.io.device.File;
@@ -32,17 +39,18 @@ import threadmanager;
 
 void main(char[][] args) ///
 {
-	version (redirect) {
-		try	{
-			_main(args);
-		}
-		catch(Exception e) {
-			logx(__FILE__, __LINE__, e);
+	version (bug2673)
+		rt_setTraceHandler(&basicTracer);
+
+	try	{
+		_main(args);
+	}
+	catch(Exception e) {
+		logx(__FILE__, __LINE__, e);
+		version (redirect) { }
+		else {
 			error(e.classinfo.name ~ "\n" ~ e.toString());
 		}
-	}
-	else {
-		_main(args);
 	}
 }
 
