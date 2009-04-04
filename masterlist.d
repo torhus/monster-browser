@@ -253,7 +253,7 @@ final class MasterList
 
 	invariant()
 	{
-		synchronized (this) {
+		debug synchronized (this) {
 			foreach (i, sd; servers_) {
 				char[] address = sd.server[ServerColumn.ADDRESS];
 				if (!isValidIpAddress(address)) {
