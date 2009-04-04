@@ -4,7 +4,7 @@
  */
 
 import tango.io.Stdout;
-import tango.io.stream.TextFileStream;
+import tango.io.stream.TextFile;
 import tango.io.vfs.FileFolder;
 import tango.text.Util : locatePrior;
 

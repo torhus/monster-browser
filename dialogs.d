@@ -2,7 +2,7 @@
 
 module dialogs;
 
-import tango.io.File;
+import tango.io.device.File;
 import tango.text.Util;
 
 import dwt.DWT;
@@ -292,7 +292,7 @@ class SpecifyServerDialog
 									        getGameConfig(serverList.gameName);
 									char[] file = game.extraServersFile;
 									// FIXME: error check here (FileException)
-									File(file).append(address ~ newline);
+									File.append(file, address ~ newline);
 								}
 							}
 							serverList.addExtraServer(address);

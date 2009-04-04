@@ -1,8 +1,15 @@
 module main;
 
+// Workaround for a bug in dmd < 1.041.
+// http://d.puremagic.com/issues/show_bug.cgi?id=2673
+static if (__VERSION__ < 1041) {
+	debug import tango.core.stacktrace.StackTrace;
+	debug version = bug2673;
+}
+debug import tango.core.stacktrace.TraceExceptions;
 import tango.io.Console;
 import tango.io.Path;
-import tango.io.stream.FileStream;
+import tango.io.device.File;
 import tango.sys.Environment;
 import tango.util.PathUtil;
 
@@ -32,25 +39,23 @@ import threadmanager;
 
 void main(char[][] args) ///
 {
-	version (redirect) {
-		try	{
-			_main(args);
-		}
-		catch(Exception e) {
-			logx(__FILE__, __LINE__, e);
-			error(e.classinfo.name ~ "\n" ~ e.toString());
-		}
-	}
-	else {
+	version (bug2673)
+		rt_setTraceHandler(&basicTracer);
+
+	try	{
 		_main(args);
+	}
+	catch(Exception e) {
+		logx(__FILE__, __LINE__, e);
+		version (redirect)
+			error(e.classinfo.name ~ "\n" ~ e.toString());
 	}
 }
 
 
 private void _main(char[][] args)
 {
-	char[] s = replace(args[0].dup, '\\', '/');
-	appDir = normalize(Environment.exePath(s).path);
+	appDir = normalize(Environment.exePath(args[0]).path);
 
 	globalTimer = new Timer;
 
@@ -59,8 +64,8 @@ private void _main(char[][] args)
 
 	if (!consoleOutputOk) {
 		// Avoid getting IOExceptions all over the place.
-		Cout.output = new FileOutput("NUL");
-		Cerr.output = new FileOutput("NUL");
+		Cout.output = new File("NUL", File.WriteExisting);
+		Cerr.output = Cout.output;
 	}
 
 	try
@@ -183,7 +188,7 @@ private void _main(char[][] args)
 private bool redirectOutput(char[] file)
 {
 	try {
-		Cerr.output = new FileOutput(file);
+		Cerr.output = new File(file, File.WriteCreate);
 		Cerr("Cerr is redirected to this file.").newline.flush;
 		Cout.output = Cerr.output;
 		Cout("Cout is redirected to this file.").newline.flush;

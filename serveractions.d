@@ -7,11 +7,10 @@ module serveractions;
 import tango.core.Memory;
 import Path = tango.io.Path;
 import tango.io.Stdout;
-import tango.io.stream.TextFileStream;
+import tango.io.stream.TextFile;
 import tango.text.Util;
 import tango.text.convert.Format;
 import Integer = tango.text.convert.Integer;
-import tango.text.stream.LineIterator;
 
 import dwt.dwthelper.Runnable;
 import dwt.widgets.Display;

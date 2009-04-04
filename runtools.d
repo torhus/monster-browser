@@ -7,13 +7,13 @@ module runtools;
 import tango.core.Exception : IOException, ProcessException;
 debug import tango.io.Console;
 import Path = tango.io.Path;
+import tango.io.device.File;
 import tango.io.model.IConduit : InputStream;
-import tango.io.stream.FileStream;
-import tango.io.stream.TextFileStream;
+import tango.io.stream.Lines;
+import tango.io.stream.TextFile;
 import tango.sys.Process;
 import tango.text.convert.Format;
 import Integer = tango.text.convert.Integer;
-import tango.text.stream.LineIterator;
 
 import common;
 import messageboxes;
@@ -55,6 +55,8 @@ Set!(char[]) browserGetNewList(in GameConfig game)
 	try {
 		proc = new Process(cmdLine);
 		proc.workDir = appDir;
+		proc.copyEnv = true;
+		proc.gui = true;
 		log("Executing '" ~ cmdLine ~ "'.");
 		proc.execute();
 	}
@@ -67,7 +69,7 @@ Set!(char[]) browserGetNewList(in GameConfig game)
 
 	if (proc) {
 		try {
-			auto lineIter= new LineIterator!(char)(proc.stdout);
+			auto lineIter= new Lines!(char)(proc.stdout);
 			size_t start = gslist ? 0 : "q3s ".length;
 			addresses = collectIpAddresses(lineIter, start);
 		}
@@ -216,7 +218,7 @@ final class QstatServerRetriever : IServerRetriever
 		try {
 			char[] cmdLine = "qstat -f - -raw,game " ~ FIELDSEP ~ " -P -R" ~
 			                                                   " -default q3s";
-			FileOutput dumpFile;
+			File dumpFile;
 
 			if (getSetting("coloredNames") == "true")
 				cmdLine ~= " -carets";
@@ -225,11 +227,13 @@ final class QstatServerRetriever : IServerRetriever
 
 			proc = new Process(cmdLine);
 			proc.workDir = appDir;
+			proc.copyEnv = true;
+			proc.gui = true;
 			log("Executing '" ~ cmdLine ~ "'.");
 			proc.execute();
 
 			if (arguments.dumplist)
-				dumpFile = new FileOutput("refreshlist.tmp");
+				dumpFile = new File("refreshlist.tmp", File.WriteCreate);
 
 			foreach (address; addresses_) {
 				proc.stdin.write(address);
@@ -258,7 +262,7 @@ final class QstatServerRetriever : IServerRetriever
 	void retrieve(bool delegate(ServerHandle sh, bool replied, bool matched)
 	                                                                   deliver)
 	{
-		scope iter = new LineIterator!(char)(proc.stdout);
+		scope iter = new Lines!(char)(proc.stdout);
 		// FIXME: verify that everything is initialized correctly, and that
 		// stdout is valid
 
