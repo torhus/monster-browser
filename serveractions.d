@@ -73,6 +73,7 @@ void switchToGame(in char[] name)
 			serverListCache[gameName] = serverList;
 			needRefresh = true;
 
+			// Add servers from the extra servers file, if found.
 			auto file = getGameConfig(gameName).extraServersFile;
 			try {
 				if (Path.exists(file)) {
@@ -131,6 +132,7 @@ void delegate() loadSavedList()
 	if (Path.exists(master.fileName)) {
 		auto retriever = new MasterListServerRetriever(game, master);
 		auto contr = new ServerRetrievalController(retriever);
+		contr.disableQueue();
 		contr.startMessage = "Loading saved server list...";
 		contr.noReplyMessage = "No servers were found in the file";
 		return &contr.run;
@@ -281,7 +283,7 @@ void delegate() getNewList()
 			}
 			else {
 				MasterList master = serverTable.serverList.master;
-				
+
 				auto retriever = new QstatServerRetriever(game.name, master,
 				                                                    addresses);
 				auto contr = new ServerRetrievalController(retriever);
@@ -299,8 +301,7 @@ void delegate() getNewList()
 
 	serverTable.clear();
 	serverTable.serverList.clear();
-	// FIXME: update master list instead of clearing it
-	//serverTable.serverList.master.clear();
+	serverTable.serverList.master.clear();
 	GC.collect();
 
 	statusBar.setLeft("Getting new server list...");
@@ -375,6 +376,15 @@ class ServerRetrievalController
 
 
 	/**
+	 * Calling this will make servers get added into ServerList directly.
+	 *
+	 * Workaround for ServerQueue not working when loading more than a few
+	 * hundred servers from disk using the 'fromfile' argument.
+	 */
+	void disableQueue() { useQueue_ = false; }
+
+
+	/**
 	 * Call this to start the process.
 	 *
 	 * Note: primarily to be called in a secondary thread, not tested when
@@ -393,8 +403,14 @@ class ServerRetrievalController
 				auto serverList = serverTable.serverList;
 				auto dg = replace_ ? &serverList.replace : &serverList.add;
 
-				serverQueue_ = new ServerQueue(dg);
-				deliverDg_ = &serverQueue_.add;
+				if (useQueue_) {
+					serverQueue_ = new ServerQueue(dg);
+					deliverDg_ = &serverQueue_.add;
+				}
+				else {
+					deliverDg2_ = dg;
+					deliverDg_ = &deliverDgWrapper;
+				}
 
 				serverRetriever_.retrieve(&deliver);
 				serverList.complete = !threadManager.abort;
@@ -410,7 +426,8 @@ class ServerRetrievalController
 						}
 					});
 				}
-				serverQueue_.stop(addRemaining_);
+				if (useQueue_)
+					serverQueue_.stop(addRemaining_);
 			}
 
 			Display.getDefault.asyncExec(new class Runnable {
@@ -446,7 +463,7 @@ class ServerRetrievalController
 	private bool deliver(ServerHandle sh, bool replied, bool matched)
 	{
 		assert(sh != InvalidServerHandle);
-		
+
 		if (replied) {
 			if (matched)
 				deliverDg_(sh);
@@ -456,7 +473,7 @@ class ServerRetrievalController
 		}
 
 		statusBarUpdater_.text = startMessage ~ Integer.toString(counter_++);
-		Display.getDefault.syncExec(statusBarUpdater_);		
+		Display.getDefault.syncExec(statusBarUpdater_);
 
 		return !threadManager.abort;
 	}
@@ -487,6 +504,15 @@ class ServerRetrievalController
 	}
 
 
+	// Just a workaround for ServerQueue.add and ServerList.add and replace
+	// not having the same signatures.
+	private final void deliverDgWrapper(ServerHandle sh)
+	{
+		assert(deliverDg2_ !is null);
+		deliverDg2_(sh);
+	}
+
+
 	private {
 		IServerRetriever serverRetriever_;
 		int serverCount_;
@@ -496,8 +522,10 @@ class ServerRetrievalController
 		bool replace_;
 		bool store_;
 		void delegate(ServerHandle) deliverDg_;
+		bool delegate(ServerHandle) deliverDg2_;
 		bool wasStopped_ = false;
 		bool addRemaining_ = true;
+		bool useQueue_ = true;
 		ServerList serverList_;
 		ServerQueue serverQueue_;
 	}

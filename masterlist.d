@@ -31,15 +31,15 @@ final class MasterList
 	}
 
 
-	///
+	/// The URL of the master server.
 	char[] name() { return name_; }
 
 
-	///
+	/// The name of the file this master server's data is stored in.
 	char[] fileName() { return fileName_; }
 
 
-	///
+	/// Add a server, and return its ServerHandle.
 	ServerHandle addServer(ServerData sd)
 	{
 		synchronized (this) {
@@ -49,7 +49,15 @@ final class MasterList
 	}
 
 
-	///
+	/**
+	 * Update the data for a server in the master list.
+	 *
+	 * Will update the first server found whose address matches the one of sd.
+	 * The country code will be kept, since it's not suppposed to change.
+	 *
+	 * Returns: The server's handle if it was found in the list, or
+	 *          InvalidServerHandle if not.
+	 */
 	ServerHandle updateServer(ServerData sd)
 	{
 		synchronized (this) {
@@ -87,7 +95,7 @@ final class MasterList
 	}
 
 
-	///
+	/// Will assert if sh is invalid.
 	ServerData getServerData(ServerHandle sh)
 	{
 		synchronized (this) {
@@ -97,10 +105,13 @@ final class MasterList
 	}
 
 
-	///
+	/// Will assert if sh is invalid.
 	void setServerData(ServerHandle sh, ServerData sd)
 	{
-		synchronized (this) servers_[sh] = sd;
+		synchronized (this) {
+			assert (sh < servers_.length);
+			servers_[sh] = sd;
+		}
 	}
 
 
@@ -108,8 +119,12 @@ final class MasterList
 	size_t length() { return servers_.length; }
 
 
-	///
-	//void clear() { delete servers_; }
+	/**
+	 * Clear the server list.
+	 *
+	 * Calling this invalidates all ServerHandles.
+	 **/
+	void clear() { delete servers_; }
 
 
 	/**
@@ -167,7 +182,7 @@ final class MasterList
 	}
 
 
-	///
+	/// Save all data.
 	void save()
 	{
 		scope doc = new Document!(char);
@@ -199,13 +214,11 @@ final class MasterList
 	                                                         in ServerData* sd)
 	{
 		auto server = node.element(null, "server")
-		     .attribute(null, "name", sd.server[ServerColumn.NAME])
+		     .attribute(null, "name", sd.rawName)
 		     .attribute(null, "country_code", sd.server[ServerColumn.COUNTRY])
 		     .attribute(null, "address", sd.server[ServerColumn.ADDRESS])
 		     .attribute(null, "ping", sd.server[ServerColumn.PING])
-		   //.attribute(null, "passworded", sd.server[ServerColumn.PASSWORDED])
 		     .attribute(null, "player_count", sd.server[ServerColumn.PLAYERS])
-		   //.attribute(null, "gametype", sd.server[ServerColumn.GAMETYPE])
 		     .attribute(null, "map", sd.server[ServerColumn.MAP]);
 
 		auto cvars = server.element(null, "cvars");
@@ -240,15 +253,13 @@ final class MasterList
 
 	invariant()
 	{
-		static int counter = 0;
-
 		synchronized (this) {
-			//Trace.formatln("INVARIANT counter = {} ({}): {}", ++counter, name_, servers_.length);
 			foreach (i, sd; servers_) {
-				//assert (isValidIpAddress(sd.server[ServerColumn.ADDRESS]));
-				/*if (!isValidIpAddress(sd.server[ServerColumn.ADDRESS]))
-					//int x = 1;
-					Trace.formatln("Address: ({}) {}", i, sd.server[ServerColumn.ADDRESS]);*/
+				char[] address = sd.server[ServerColumn.ADDRESS];
+				if (!isValidIpAddress(address)) {
+					Trace.formatln("Address: ({}) {}", i, address);
+					assert(0, "MasterList: invalid address");
+				}
 			}
 		}
 	}
@@ -270,11 +281,11 @@ private class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 	override void startElement(Ch[] uri, Ch[] localName, Ch[] qName,
 	                                               Attribute!(Ch)[] attributes)
 	{
-		if (icompare(localName, "cvar") == 0)
+		if (localName == "cvar")
 			addCvar(attributes);
-		else if (icompare(localName, "player") == 0)
+		else if (localName == "player")
 			addPlayer(attributes);
-		else if (icompare(localName, "server") == 0)
+		else if (localName == "server")
 			startServer(attributes);
 	}
 
@@ -293,19 +304,19 @@ private class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 		sd.server.length = ServerColumn.max + 1;
 
 		foreach (ref attr; attributes) {
-			if (icompare(attr.localName, "name") == 0)
+			if (attr.localName == "name")
 				sd.rawName = attr.value;
-			else if (icompare(attr.localName, "country_code") == 0)
+			else if (attr.localName == "country_code")
 				sd.server[ServerColumn.COUNTRY] = attr.value;
-			else if (icompare(attr.localName, "address") == 0)
+			else if (attr.localName == "address")
 				sd.server[ServerColumn.ADDRESS] = attr.value;
-			else if (icompare(attr.localName, "ping") == 0)
+			else if (attr.localName == "ping")
 				sd.server[ServerColumn.PING] = attr.value;
-			else if (icompare(attr.localName, "player_count") == 0)
+			else if (attr.localName == "player_count")
 				sd.server[ServerColumn.PLAYERS] = attr.value;
-			/*else if (icompare(attr.localName, "gametype") == 0)
+			/*else if (attr.localName == "gametype")
 				sd.server[ServerColumn.GAMETYPE] = attr.value;*/
-			else if (icompare(attr.localName, "map") == 0)
+			else if (attr.localName == "map")
 				sd.server[ServerColumn.MAP] = attr.value;
 		}
 
@@ -319,14 +330,14 @@ private class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 		char[][] cvar = new char[][2];
 
 		foreach (ref attr; attributes) {
-			if (icompare(attr.localName, "key") == 0)
+			if (attr.localName == "key")
 				cvar[0] = attr.value;
-			else if (icompare(attr.localName, "value") == 0)
+			else if (attr.localName == "value")
 				cvar[1] = attr.value;
 
-			if (cvar[0] == "g_gametype")
+			if (icompare(cvar[0], "g_gametype") == 0)
 				servers[$-1].server[ServerColumn.GAMETYPE] = cvar[1];
-			else if (cvar[0] == "g_needpass")
+			else if (icompare(cvar[0], "g_needpass") == 0)
 				servers[$-1].server[ServerColumn.PASSWORDED] = cvar[1];
 		}
 
@@ -340,11 +351,11 @@ private class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 		char[][] player = new char[][PlayerColumn.max + 1];
 
 		foreach (ref attr; attributes) {
-			if (icompare(attr.localName, "name") == 0)
+			if (attr.localName == "name")
 				player[PlayerColumn.RAWNAME] = attr.value;
-			else if (icompare(attr.localName, "score") == 0)
+			else if (attr.localName == "score")
 				player[PlayerColumn.SCORE] = attr.value;
-			else if (icompare(attr.localName, "ping") == 0)
+			else if (attr.localName == "ping")
 				player[PlayerColumn.PING] = attr.value;
 		}
 

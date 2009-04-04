@@ -50,6 +50,27 @@ There's also a DWT news group on news.digitalmars.com, and a #dwt channel on
 freenode (IRC).
 
 
+Building on Windows
+-------------------
+- download the correct revision of dwt-win, see above.
+- in the top level dir, run 'dsss build -release -O'.  That should create
+  DD-dwt.lib.
+- run 'dsss build --debug -g', which creates debug-DD-dwt.lib.
+- Copy those two files into the directory where you checked out Monster
+  Browser.  Also copy the 'dwt' and 'res' directories.
+- Unzip http://monsterbrowser.googlecode.com/files/monsterbrowser_flags.zip
+  into the Monster Browser directory.
+- Run build-release.bat or one of the other batch files.  Requires bud to be
+  installed, see above.
+
+
+Building on Linux
+-----------------
+This hasn't been tested for some time, but the dsss.conf file that is included
+might still work.  It can be used to build Monster Browser without building
+DWT as a library first.  See the instructions for building on Windows.
+
+
 Version IDs
 -----------
 allservers - For benchmarking: don't filter servers on mod.
