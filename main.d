@@ -47,10 +47,8 @@ void main(char[][] args) ///
 	}
 	catch(Exception e) {
 		logx(__FILE__, __LINE__, e);
-		version (redirect) { }
-		else {
+		version (redirect)
 			error(e.classinfo.name ~ "\n" ~ e.toString());
-		}
 	}
 }
 
