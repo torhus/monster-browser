@@ -1,7 +1,6 @@
 module masterlist;
 
-import tango.io.File;
-import tango.io.FileConduit;
+import tango.io.device.File;
 import Path = tango.io.Path;
 import tango.text.Ascii;
 import tango.text.Util;
@@ -161,7 +160,7 @@ final class MasterList
 			return false;
 
 
-		char[] content = cast(char[])File(fileName_).read();
+		char[] content = cast(char[])File.get(fileName_);
 		auto parser = new SaxParser!(char);
 		auto handler = new MySaxHandler!(char);
 
@@ -190,14 +189,14 @@ final class MasterList
 		doc.header;
 
 		synchronized (this) {
-			doc.root.element(null, "masterserver");
+			doc.tree.element(null, "masterserver");
 
 			foreach (sd; servers_)
-				serverToXml(doc.root.lastChild, &sd);
+				serverToXml(doc.elements, &sd);
 		}
 
 		scope printer = new DocPrinter!(char);
-		scope f = new FileConduit(fileName_, FileConduit.WriteCreate);
+		scope f = new File(fileName_, File.WriteCreate);
 
 		void printDg(char[][] str...)
 		{
@@ -205,7 +204,7 @@ final class MasterList
 				f.write(s);
 		}
 
-		printer(doc.root, &printDg);
+		printer(doc.tree, &printDg);
 		f.write("\r\n");
 		f.flush.close;
 	}
@@ -214,7 +213,7 @@ final class MasterList
 	private static void serverToXml(Document!(char).Node node,
 	                                                         in ServerData* sd)
 	{
-		node.element(null, "server")
+		auto server = node.element(null, "server")
 		     .attribute(null, "name", sd.rawName)
 		     .attribute(null, "country_code", sd.server[ServerColumn.COUNTRY])
 		     .attribute(null, "address", sd.server[ServerColumn.ADDRESS])
@@ -222,10 +221,10 @@ final class MasterList
 		     .attribute(null, "player_count", sd.server[ServerColumn.PLAYERS])
 		     .attribute(null, "map", sd.server[ServerColumn.MAP]);
 
-		node.lastChild.element(null, "cvars");
-		cvarsToXml(node.lastChild.lastChild, sd);
-		node.lastChild.element(null, "players");
-		playersToXml(node.lastChild.lastChild, sd);
+		auto cvars = server.element(null, "cvars");
+		cvarsToXml(cvars, sd);
+		auto players = server.element(null, "players");
+		playersToXml(players, sd);
 	}
 
 

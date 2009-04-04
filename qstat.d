@@ -5,17 +5,17 @@
 module qstat;
 
 import tango.core.Exception;
-import tango.io.FileConduit;
+import tango.io.device.File;
 import tango.io.model.IConduit : OutputStream;
-import tango.io.stream.BufferStream;
-import tango.io.stream.TextFileStream;
+import tango.io.stream.Buffered;
+import tango.io.stream.TextFile;
 import tango.stdc.ctype : isdigit;
 import tango.text.Ascii;
 import tango.text.Util;
 import Float = tango.text.convert.Float;
 debug import tango.text.convert.Format;
 import tango.text.convert.Integer;
-import tango.text.stream.LineIterator;
+import tango.io.stream.Lines;
 
 import colorednames;
 import common;
@@ -40,11 +40,11 @@ private enum Field {
  *
  * Throws: when outputFileName is given: IOException.
  */
-bool parseOutput(in char[] modName, LineIterator!(char) iter,
+bool parseOutput(in char[] modName, Lines!(char) iter,
                 bool delegate(ServerData*, bool replied, bool matched) deliver)
 {
 	char[][] gtypes;
-	BufferOutput outfile;
+	BufferedOutput outfile;
 	debug scope timer2 = new Timer;
 	bool keepGoing = true;
 
@@ -52,8 +52,8 @@ bool parseOutput(in char[] modName, LineIterator!(char) iter,
 
 	version (qstatDump) {
 		try {
-			outfile = new BufferOutput(new FileConduit(
-			                            "qstat.out", FileConduit.WriteCreate));
+			outfile = new BufferedOutput(new File(
+			                                   "qstat.out", File.WriteCreate));
 		}
 		catch (IOException e) {
 			error("Unable to create file, qstat output will not be saved"
@@ -269,7 +269,7 @@ body {
 }
 
 
-private char[][][] parsePlayers(LineIterator!(char) lineIter,
+private char[][][] parsePlayers(Lines!(char) lineIter,
                                 int* humanCount=null, OutputStream output=null)
 {
 	char[][][] players;
