@@ -5,7 +5,6 @@
 module runtools;
 
 import tango.core.Exception : IOException, ProcessException;
-debug import tango.io.Console;
 import Path = tango.io.Path;
 import tango.io.device.File;
 import tango.io.model.IConduit : InputStream;
@@ -14,6 +13,7 @@ import tango.io.stream.TextFile;
 import tango.sys.Process;
 import tango.text.convert.Format;
 import Integer = tango.text.convert.Integer;
+debug import tango.util.log.Trace;
 
 import common;
 import messageboxes;
@@ -301,7 +301,7 @@ bool killServerBrowser()
 	log("Killing server browser...");
 
 	if (proc is null) {
-		debug Cout("proc is null").newline;
+		debug Trace.formatln("proc is null");
 		return false;
 	}
 

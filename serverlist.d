@@ -3,13 +3,13 @@ module serverlist;
 import tango.core.Array;
 import tango.core.Exception : IOException;
 import Path = tango.io.Path;
-debug import tango.io.Stdout;
 import tango.text.Ascii;
 import tango.text.Util;
 import tango.text.convert.Format;
 import Integer = tango.text.convert.Integer;
 import tango.stdc.string : memmove;
 import tango.util.container.HashMap;
+debug import tango.util.log.Trace;
 
 import common;
 import geoip;
@@ -538,24 +538,24 @@ private:
 	/// Prints the filtered list and its length to stdout.
 	debug void printFiltered()
 	{
-		Stdout.formatln("printFiltered(): {} elements in filteredList.",
+		Trace.formatln("printFiltered(): {} elements in filteredList.",
 		                filteredList.length);
 		foreach (i, listIndex; filteredList) {
 			ServerData sd = master_.getServerData(list[listIndex]);
-			Stdout(/*i, ": ",*/ sd.server[ServerColumn.NAME]).newline;
+			Trace.formatln(/*i, ": ",*/ sd.server[ServerColumn.NAME]);
 		}
-		Stdout.newline;
+		Trace.formatln("");
 	}
 
 	/// Prints the full list and its length to stdout.
 	debug void printList()
 	{
-		Stdout.formatln("printList(): {} elements in full list.", list.length);
+		Trace.formatln("printList(): {} elements in full list.", list.length);
 		int i = 0;
 		foreach (sh; list) {
 			ServerData sd = master_.getServerData(sh);
-			Stdout(/*i++, ": ",*/ sd.server[ServerColumn.NAME]).newline;
+			Trace.formatln(/*i++, ": ",*/ sd.server[ServerColumn.NAME]);
 		}
-		Stdout.newline;
+		Trace.formatln("");
 	}
 }

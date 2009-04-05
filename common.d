@@ -1,7 +1,6 @@
 module common;
 
 import tango.core.Version;
-import tango.io.Console;
 import tango.io.device.File;
 import Path = tango.io.Path;
 import tango.stdc.ctype : isdigit;
@@ -15,6 +14,7 @@ import Integer = tango.text.convert.Integer;
 import tango.io.stream.Iterator;
 import tango.time.Clock;
 import tango.time.Time;
+import tango.util.log.Trace;
 
 import dwt.DWT;
 import dwt.dnd.Clipboard;
@@ -125,7 +125,7 @@ void log(char[] file, int line, char[] msg)
 void log(char[] s)
 {
 	version(redirect) {}
-	else debug Cerr("LOG: ")(s).newline;
+	else debug Trace.formatln("LOG: {}", s);
 
 	if (logfile) {
 		logfile.write(s);
@@ -138,7 +138,8 @@ void log(char[] s)
 void logx(char[] file, int line, Exception e)
 {
 	log(file, line, e.classinfo.name ~ ": " ~ e.toString());
-	e.writeOut((char[] s) { Cerr(s); });
+	e.writeOut((char[] s) { Trace.format(s); });
+	Trace.flush();
 }
 
 

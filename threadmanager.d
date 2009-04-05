@@ -1,7 +1,6 @@
 module threadmanager;
 
 import tango.core.Thread;
-debug import tango.io.Console;
 
 import runtools : killServerBrowser;
 
