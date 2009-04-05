@@ -6,11 +6,11 @@ module serveractions;
 
 import tango.core.Memory;
 import Path = tango.io.Path;
-import tango.io.Stdout;
 import tango.io.stream.TextFile;
 import tango.text.Util;
 import tango.text.convert.Format;
 import Integer = tango.text.convert.Integer;
+import tango.util.log.Trace;
 
 import dwt.dwthelper.Runnable;
 import dwt.widgets.Display;
@@ -420,7 +420,7 @@ class ServerRetrievalController
 					Display.getDefault.syncExec(new class Runnable {
 						void run()
 						{
-							Stdout.formatln("Time since startup: {} seconds.",
+							Trace.formatln("Time since startup: {} seconds.",
 							                              globalTimer.seconds);
 							mainWindow.close;
 						}
