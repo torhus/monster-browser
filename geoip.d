@@ -8,10 +8,10 @@ import tango.stdc.stringz;
 import tango.sys.SharedLib;
 import tango.text.Ascii;
 
-import dwt.DWTException;
-import dwt.dwthelper.ByteArrayInputStream;
-import dwt.graphics.Image;
-import dwt.widgets.Display;
+import java.io.ByteArrayInputStream;
+import org.eclipse.swt.SWTException;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Display;
 
 import common;
 import flagdata;
@@ -131,7 +131,7 @@ Image getFlagImage(in char[] countryCode)
 				auto stream  = new ByteArrayInputStream(cast(byte[])*data);
 				tmp = new Image(display, stream);
 			}
-			catch (DWTException e) {
+			catch (SWTException e) {
 				log("Error when decoding flag for '" ~ countryCode ~ "', "
 				                                     "possibly corrupt file.");
 			}

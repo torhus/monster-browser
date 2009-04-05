@@ -6,7 +6,7 @@ import tango.text.Util;
 import Integer = tango.text.convert.Integer;
 debug import tango.util.log.Trace;
 
-import dwt.graphics.TextLayout;
+import org.eclipse.swt.graphics.TextLayout;
 
 
 /** Stores all data for a server. */

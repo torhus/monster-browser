@@ -7,9 +7,9 @@ module colorednames;
 import tango.stdc.ctype;
 import tango.stdc.stdio;
 
-import dwt.graphics.Color;
-import dwt.graphics.TextStyle;
-import dwt.widgets.Display;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.TextStyle;
+import org.eclipse.swt.widgets.Display;
 
 
 private TextStyle[8] q3Colors;

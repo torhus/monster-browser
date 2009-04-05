@@ -1,7 +1,7 @@
 module serverqueue;
 
-import dwt.dwthelper.Runnable;
-import dwt.widgets.Display;
+import java.lang.Runnable;
+import org.eclipse.swt.widgets.Display;
 
 import common : arguments;
 import masterlist;

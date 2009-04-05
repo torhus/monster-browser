@@ -5,28 +5,28 @@ module mainwindow;
 import tango.text.Util;
 import Integer = tango.text.convert.Integer;
 
-import dwt.DWT;
-import dwt.custom.SashForm;
-import dwt.dwthelper.ByteArrayInputStream;
-import dwt.dwthelper.Runnable;
-import dwt.events.SelectionAdapter;
-import dwt.events.SelectionEvent;
-import dwt.events.ShellAdapter;
-import dwt.events.ShellEvent;
-import dwt.graphics.Image;
-import dwt.graphics.Point;
-import dwt.layout.FillLayout;
-import dwt.layout.GridData;
-import dwt.layout.GridLayout;
-import dwt.layout.RowLayout;
-import dwt.widgets.Button;
-import dwt.widgets.Combo;
-import dwt.widgets.Composite;
-import dwt.widgets.Display;
-import dwt.widgets.Label;
-import dwt.widgets.Shell;
-import dwt.widgets.ToolBar;
-import dwt.widgets.ToolItem;
+import java.io.ByteArrayInputStream;
+import java.lang.Runnable;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.ShellAdapter;
+import org.eclipse.swt.events.ShellEvent;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
 
 import common;
 import cvartable;
@@ -70,8 +70,8 @@ class MainWindow
 
 
 		// *********** MAIN WINDOW TOP ***************
-		Composite topComposite = new Composite(shell_, DWT.NONE);
-		auto topData = new GridData(DWT.FILL, DWT.CENTER, true, false, 2, 1);
+		Composite topComposite = new Composite(shell_, SWT.NONE);
+		auto topData = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
 		topComposite.setLayoutData(topData);
 		version (none) {
 			// This layout works better when the buttons have images.
@@ -89,21 +89,21 @@ class MainWindow
 		filterBar = new FilterBar(topComposite);
 
 		// ************** SERVER LIST, PLAYER LIST, CVARS LIST ***************
-		middleForm_ = new SashForm(shell_, DWT.HORIZONTAL);
-		auto middleData = new GridData(DWT.FILL, DWT.FILL, true, true);
+		middleForm_ = new SashForm(shell_, SWT.HORIZONTAL);
+		auto middleData = new GridData(SWT.FILL, SWT.FILL, true, true);
 		middleForm_.setLayoutData(middleData);
 
 		// server table widget
 		serverTable = new ServerTable(middleForm_);
-		auto serverTableData = new GridData(DWT.LEFT, DWT.FILL, false, false);
+		auto serverTableData = new GridData(SWT.LEFT, SWT.FILL, false, false);
 		serverTable.getTable().setLayoutData(serverTableData);
 
 		// parent for player and cvar tables
-		rightForm_ = new SashForm(middleForm_, DWT.VERTICAL);
-		auto rightData = new GridData(DWT.FILL, DWT.FILL, true, true);
+		rightForm_ = new SashForm(middleForm_, SWT.VERTICAL);
+		auto rightData = new GridData(SWT.FILL, SWT.FILL, true, true);
 		rightForm_.setLayoutData(rightData);
 
-		rightForm_.setLayout(new FillLayout(DWT.VERTICAL));
+		rightForm_.setLayout(new FillLayout(SWT.VERTICAL));
 
 		int[] weights = parseIntegerSequence(getSessionState("middleWeights"));
 		weights.length = 2;  // FIXME: use defaults instead?
@@ -121,8 +121,8 @@ class MainWindow
 
 
 		// **************** STATUS BAR ******************************
-		Composite statusComposite = new Composite(shell_, DWT.NONE);
-		auto statusData = new GridData(DWT.FILL, DWT.CENTER, true, false);
+		Composite statusComposite = new Composite(shell_, SWT.NONE);
+		auto statusData = new GridData(SWT.FILL, SWT.CENTER, true, false);
 		statusData.horizontalSpan = 2;
 		statusComposite.setLayoutData(statusData);
 		statusComposite.setLayout(new FillLayout);
@@ -191,7 +191,7 @@ class StatusBar
 	///
 	this(Composite parent)
 	{
-		leftLabel_ = new Label(parent, DWT.NONE);
+		leftLabel_ = new Label(parent, SWT.NONE);
 		leftLabel_.setText(APPNAME ~ " is ready.");
 	}
 
@@ -234,8 +234,8 @@ class FilterBar : Composite
 	///
 	this(Composite parent)
 	{
-		super(parent, DWT.NONE);
-		notEmptyButton_ = new Button(this, DWT.CHECK);
+		super(parent, SWT.NONE);
+		notEmptyButton_ = new Button(this, SWT.CHECK);
 		notEmptyButton_.setText("Not empty");
 		notEmptyButton_.addSelectionListener(new class SelectionAdapter {
 			public void widgetSelected(SelectionEvent e)
@@ -257,7 +257,7 @@ class FilterBar : Composite
 			}
 		});
 
-		hasHumansButton_ = new Button(this, DWT.CHECK);
+		hasHumansButton_ = new Button(this, SWT.CHECK);
 		hasHumansButton_.setText("Has humans");
 		hasHumansButton_.addSelectionListener(new class SelectionAdapter {
 			public void widgetSelected(SelectionEvent e)
@@ -284,12 +284,12 @@ class FilterBar : Composite
 			hasHumansButton_.setSelection(true);
 
 		// game type selection
-		/*Combo combo = new Combo(filterComposite_, DWT.READ_ONLY);
+		/*Combo combo = new Combo(filterComposite_, SWT.READ_ONLY);
 		combo.setItems(gametypes);
 		combo.select(0);*/
 
 		// game selection
-		gamesCombo_ = new Combo(this, DWT.DROP_DOWN);
+		gamesCombo_ = new Combo(this, SWT.DROP_DOWN);
 		setGames(settings.gameNames);
 		if (getSetting("startWithLastMod") == "true") {
 			char[] s = getSetting("lastMod");
@@ -434,9 +434,9 @@ private:
 
 ToolBar createToolbar(Composite parent) ///
 {
-	auto toolBar = new ToolBar(parent, DWT.HORIZONTAL);
+	auto toolBar = new ToolBar(parent, SWT.HORIZONTAL);
 
-	auto button1 = new ToolItem(toolBar, DWT.PUSH);
+	auto button1 = new ToolItem(toolBar, SWT.PUSH);
 	button1.setText("Get new list");
 	//button1.setImage(loadImage!("res/32px-Crystal_Clear_action_down.png"));
 	button1.addSelectionListener(new class SelectionAdapter {
@@ -446,9 +446,9 @@ ToolBar createToolbar(Composite parent) ///
 		}
 	});
 
-	new ToolItem(toolBar, DWT.SEPARATOR);
+	new ToolItem(toolBar, SWT.SEPARATOR);
 
-	ToolItem button2 = new ToolItem(toolBar, DWT.PUSH);
+	ToolItem button2 = new ToolItem(toolBar, SWT.PUSH);
 	button2.setText("Refresh list");
 	//button2.setImage(loadImage!("res/32px-Crystal_Clear_action_reload.png"));
 	button2.addSelectionListener(new class SelectionAdapter {
@@ -458,24 +458,24 @@ ToolBar createToolbar(Composite parent) ///
 		}
 	});
 
-	new ToolItem(toolBar, DWT.SEPARATOR);
+	new ToolItem(toolBar, SWT.SEPARATOR);
 
-	auto button3 = new ToolItem(toolBar, DWT.PUSH);
+	auto button3 = new ToolItem(toolBar, SWT.PUSH);
 	button3.setText("Specify...");
 	//button3.setImage(loadImage!("res/32px-Crystal_Clear_action_edit_add.png"));
 	button3.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{
 			auto dialog = new SpecifyServerDialog(mainWindow.handle);
-			if (dialog.open() == DWT.OK) {
+			if (dialog.open() == SWT.OK) {
 				//saveSettings();
 			}
 		}
 	});
 /+
-	new ToolItem(toolBar, DWT.SEPARATOR);
+	new ToolItem(toolBar, SWT.SEPARATOR);
 
-	auto button4 = new ToolItem(toolBar, DWT.PUSH);
+	auto button4 = new ToolItem(toolBar, SWT.PUSH);
 	button4.setText("Monitor...");
 	button4.setEnabled(false);
 	button4.addSelectionListener(new class SelectionAdapter {
@@ -483,21 +483,21 @@ ToolBar createToolbar(Composite parent) ///
 		{
 			startMonitor(mainWindow.handle);
 			//SettingsDialog dialog = new SettingsDialog(mainWindow.handle);
-			/*if (dialog.open() == DWT.OK)
+			/*if (dialog.open() == SWT.OK)
 				saveSettings();*/
 		}
 	});
 +/
-	new ToolItem(toolBar, DWT.SEPARATOR);
+	new ToolItem(toolBar, SWT.SEPARATOR);
 
-	auto button5 = new ToolItem(toolBar, DWT.PUSH);
+	auto button5 = new ToolItem(toolBar, SWT.PUSH);
 	button5.setText("Settings...");
 	//button5.setImage(loadImage!("res/32px-Crystal_Clear_action_configure.png"));
 	button5.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{
 			SettingsDialog dialog = new SettingsDialog(mainWindow.handle);
-			if (dialog.open() == DWT.OK)
+			if (dialog.open() == SWT.OK)
 				saveSettings();
 		}
 	});

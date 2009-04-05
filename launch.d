@@ -11,7 +11,7 @@ version (Windows) {
 import tango.text.Util : replace;
 import Integer = tango.text.convert.Integer;
 
-import dwt.DWT;
+import org.eclipse.swt.SWT;
 
 import colorednames;
 import common;
@@ -79,11 +79,11 @@ void joinServer(in char[] gameName, ServerData sd)
 		dialog.password = getPassword(sd.server[ServerColumn.ADDRESS]);
 
 		int res = dialog.open();
-		if (res == DWT.OK && dialog.password.length) {
+		if (res == SWT.OK && dialog.password.length) {
 			argv ~= " +set password " ~ dialog.password;
 			setPassword(sd.server[ServerColumn.ADDRESS], dialog.password);
 		}
-		if (res != DWT.OK)
+		if (res != SWT.OK)
 			launch = false;
 	}
 

@@ -1,15 +1,15 @@
 module playertable;
 
 
-import dwt.DWT;
-import dwt.graphics.TextLayout;
-import dwt.widgets.Composite;
-import dwt.widgets.Display;
-import dwt.widgets.Event;
-import dwt.widgets.Listener;
-import dwt.widgets.Table;
-import dwt.widgets.TableColumn;
-import dwt.widgets.TableItem;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.TextLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.TableItem;
 
 import colorednames;
 import common;
@@ -30,8 +30,8 @@ class PlayerTable
 	this(Composite parent)
 	{
 		parent_ = parent;
-		table_ = new Table(parent, DWT.VIRTUAL | DWT.BORDER |
-		                           DWT.HIDE_SELECTION);
+		table_ = new Table(parent, SWT.VIRTUAL | SWT.BORDER |
+		                           SWT.HIDE_SELECTION);
 		table_.setHeaderVisible(true);
 		table_.setLinesVisible(true);
 
@@ -42,12 +42,12 @@ class PlayerTable
 
 		// add columns
 		foreach (int i, header; playerHeaders) {
-			TableColumn column = new TableColumn(table_, DWT.NONE);
+			TableColumn column = new TableColumn(table_, SWT.NONE);
 			column.setText(header);
 			column.setWidth(widths[i]);
 		}
 
-		table_.addListener(DWT.SetData, new class Listener {
+		table_.addListener(SWT.SetData, new class Listener {
 			public void handleEvent(Event e)
 			{
 				TableItem item = cast(TableItem) e.item;
@@ -57,14 +57,14 @@ class PlayerTable
 		});
 
 		if (getSetting("coloredNames") == "true") {
-			table_.addListener(DWT.EraseItem, new class Listener {
+			table_.addListener(SWT.EraseItem, new class Listener {
 				void handleEvent(Event e) {
 					if (e.index == PlayerColumn.NAME)
-						e.detail &= ~DWT.FOREGROUND;
+						e.detail &= ~SWT.FOREGROUND;
 				}
 			});
 
-			table_.addListener(DWT.PaintItem, new class Listener {
+			table_.addListener(SWT.PaintItem, new class Listener {
 				void handleEvent(Event e) {
 					if (e.index != PlayerColumn.NAME)
 						return;
@@ -78,7 +78,7 @@ class PlayerTable
 					foreach (r; parsed.ranges)
 						tl.setStyle(r.style, r.start, r.end);
 
-					if (e.detail & DWT.SELECTED)
+					if (e.detail & SWT.SELECTED)
 						e.gc.drawString(tl.getText, e.x+2, e.y);
 					else
 						tl.draw(e.gc, e.x+2, e.y);
@@ -95,10 +95,10 @@ class PlayerTable
 				int dir = table_.getSortDirection();
 
 				if (newColumn is oldColumn) {
-					dir = (dir == DWT.UP) ? DWT.DOWN : DWT.UP;
+					dir = (dir == SWT.UP) ? SWT.DOWN : SWT.UP;
 				} else {
 					table_.setSortColumn(newColumn);
-					dir = DWT.UP;
+					dir = SWT.UP;
 				}
 
 				table_.setSortDirection(dir);
@@ -109,7 +109,7 @@ class PlayerTable
 
 		for (int i = 0; i < table_.getColumnCount(); i++) {
 			TableColumn c = table_.getColumn(i);
-			c.addListener(DWT.Selection, sortListener);
+			c.addListener(SWT.Selection, sortListener);
 		}
 
 		// restore sort order from previous session
@@ -120,14 +120,14 @@ class PlayerTable
 		if (sortCol >= playerHeaders.length)
 			sortCol = 0;
 		table_.setSortColumn(table_.getColumn(sortCol));
-		table_.setSortDirection(reversed ? DWT.DOWN : DWT.UP);
+		table_.setSortDirection(reversed ? SWT.DOWN : SWT.UP);
 	}
 
 	/// The index of the currently active sort column.
 	int sortColumn() { return table_.indexOf(table_.getSortColumn()); }
 
 	/// Is the sort order reversed?
-	bool sortReversed() { return (table_.getSortDirection() == DWT.DOWN); }
+	bool sortReversed() { return (table_.getSortDirection() == SWT.DOWN); }
 
 	/// Returns the player list's Table widget object.
 	Table getTable() { return table_; };
@@ -171,15 +171,15 @@ private:
 		switch (sortCol) {
 			case PlayerColumn.NAME:
 				sortStringArrayStable(players_, sortCol,
-		                              ((dir == DWT.UP) ? false : true));
+		                              ((dir == SWT.UP) ? false : true));
 				break;
 			case PlayerColumn.SCORE:
 				sortStringArrayStable(players_, sortCol,
-		                          ((dir == DWT.DOWN) ? false : true), true);
+		                          ((dir == SWT.DOWN) ? false : true), true);
 				break;
 			case PlayerColumn.PING:
 				sortStringArrayStable(players_, sortCol,
-		                          ((dir == DWT.UP) ? false : true), true);
+		                          ((dir == SWT.UP) ? false : true), true);
 				break;
 			default:
 				assert(0);

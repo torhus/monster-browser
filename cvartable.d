@@ -1,10 +1,10 @@
 module cvartable;
 
-import dwt.DWT;
-import dwt.widgets.Composite;
-import dwt.widgets.Table;
-import dwt.widgets.TableColumn;
-import dwt.widgets.TableItem;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.TableItem;
 
 import common;
 import settings;
@@ -20,13 +20,13 @@ class CvarTable
 	this(Composite parent)
 	{
 		parent_ = parent;
-		table_ = new Table(parent_, DWT.BORDER);
+		table_ = new Table(parent_, SWT.BORDER);
 		table_.setHeaderVisible(true);
 		table_.setLinesVisible(true);
 
-		TableColumn column = new TableColumn(table_, DWT.HIDE_SELECTION);
+		TableColumn column = new TableColumn(table_, SWT.HIDE_SELECTION);
 		column.setText("Key");
-		column = new TableColumn(table_, DWT.NONE);
+		column = new TableColumn(table_, SWT.NONE);
 		column.setText("Value");
 
 		int[] widths = parseIntegerSequence(
@@ -46,7 +46,7 @@ class CvarTable
 		table_.setRedraw(false);
 		table_.setItemCount(0);
 		foreach (v; items) {
-			TableItem item = new TableItem(table_, DWT.NONE);
+			TableItem item = new TableItem(table_, SWT.NONE);
       		item.setText(v);
       	}
 		table_.setRedraw(true);
