@@ -5,26 +5,26 @@ module dialogs;
 import tango.io.device.File;
 import tango.text.Util;
 
-import dwt.DWT;
-import dwt.events.SelectionAdapter;
-import dwt.events.SelectionEvent;
-import dwt.graphics.Point;
-import dwt.graphics.Rectangle;
-import dwt.layout.GridData;
-import dwt.layout.GridLayout;
-import dwt.layout.RowData;
-import dwt.layout.RowLayout;
-import dwt.program.Program;
-import dwt.widgets.Button;
-import dwt.widgets.Composite;
-import dwt.widgets.Control;
-import dwt.widgets.Display;
-import dwt.widgets.Event;
-import dwt.widgets.Group;
-import dwt.widgets.Label;
-import dwt.widgets.Listener;
-import dwt.widgets.Shell;
-import dwt.widgets.Text;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.RowData;
+import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.program.Program;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 
 import common;
 import mainwindow;
@@ -52,7 +52,7 @@ class MonitorNotify
 	this(Shell parent, char[] message)
 	{
 		parent_ = parent;
-		shell_ = new Shell(parent_, DWT.DIALOG_TRIM | DWT.APPLICATION_MODAL/* | DWT.ON_TOP*/);
+		shell_ = new Shell(parent_, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL/* | SWT.ON_TOP*/);
 		shell_.setLayout(new GridLayout);
 		shell_.setText("Join Server");
 
@@ -66,48 +66,48 @@ class MonitorNotify
 		}
 
 		/*// command line
-		Label labelA = new Label(shell_, DWT.NONE);
+		Label labelA = new Label(shell_, SWT.NONE);
 		labelA.setText("Join \"" ~ serverName ~ "\"\n\n" ~ message ~ "\n");
 
 		// password input
-		Composite pwdComposite = new Composite(shell_, DWT.NONE);
+		Composite pwdComposite = new Composite(shell_, SWT.NONE);
 		GridData pwdData = new GridData();
-		pwdData.horizontalAlignment = DWT.CENTER;
+		pwdData.horizontalAlignment = SWT.CENTER;
 		pwdComposite.setLayoutData(pwdData);
 
 		RowLayout pwdLayout = new RowLayout();
 		pwdComposite.setLayout(pwdLayout);
-		Label labelB = new Label(pwdComposite, DWT.NONE);
+		Label labelB = new Label(pwdComposite, SWT.NONE);
 		labelB.setText("Password:");
-		pwdText_ = new Text(pwdComposite, DWT.SINGLE | DWT.BORDER);
+		pwdText_ = new Text(pwdComposite, SWT.SINGLE | SWT.BORDER);
 
 		// main buttons
-		Composite buttonComposite = new Composite(shell_, DWT.NONE);
+		Composite buttonComposite = new Composite(shell_, SWT.NONE);
 		GridData buttonData = new GridData();
-		buttonData.horizontalAlignment = DWT.CENTER;
+		buttonData.horizontalAlignment = SWT.CENTER;
 		buttonComposite.setLayoutData(buttonData);
 
 		RowLayout buttonLayout = new RowLayout();
 		buttonComposite.setLayout(buttonLayout);
 
-		okButton_ = new Button (buttonComposite, DWT.PUSH);
+		okButton_ = new Button (buttonComposite, SWT.PUSH);
 		okButton_.setText ("OK");
-		cancelButton_ = new Button (buttonComposite, DWT.PUSH);
+		cancelButton_ = new Button (buttonComposite, SWT.PUSH);
 		cancelButton_.setText ("Cancel");
 
 		Listener listener = new class Listener {
 			public void handleEvent (Event event)
 			{
 				if (event.widget == okButton_) {
-					result_ = DWT.OK;
+					result_ = SWT.OK;
 					password = pwdText_.getText;
 				}
 				shell_.close();
 			}
 		};
 
-		okButton_.addListener(DWT.Selection, listener);
-		cancelButton_.addListener(DWT.Selection, listener);
+		okButton_.addListener(SWT.Selection, listener);
+		cancelButton_.addListener(SWT.Selection, listener);
 		shell_.setDefaultButton(okButton_);
 		shell_.pack();
 		shell_.setLocation(center(parent_, shell_));
@@ -142,39 +142,39 @@ class JoinDialog
 	this(Shell parent, char[] serverName, char[] message)
 	{
 		parent_ = parent;
-		shell_ = new Shell(parent_, DWT.DIALOG_TRIM | DWT.APPLICATION_MODAL);
+		shell_ = new Shell(parent_, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
 		shell_.setLayout(new GridLayout);
 		shell_.setText("Join Server");
 
 		// command line
-		Label labelA = new Label(shell_, DWT.NONE);
+		Label labelA = new Label(shell_, SWT.NONE);
 		labelA.setText("Join \"" ~ serverName ~ "\"\n\n" ~ message ~ "\n");
 
 		// password input
-		Composite pwdComposite = new Composite(shell_, DWT.NONE);
+		Composite pwdComposite = new Composite(shell_, SWT.NONE);
 		GridData pwdData = new GridData();
-		pwdData.horizontalAlignment = DWT.CENTER;
+		pwdData.horizontalAlignment = SWT.CENTER;
 		pwdComposite.setLayoutData(pwdData);
 
 		pwdComposite.setLayout(new RowLayout);
-		Label labelB = new Label(pwdComposite, DWT.NONE);
+		Label labelB = new Label(pwdComposite, SWT.NONE);
 		labelB.setText("Password:");
-		pwdText_ = new Text(pwdComposite, DWT.SINGLE | DWT.BORDER);
+		pwdText_ = new Text(pwdComposite, SWT.SINGLE | SWT.BORDER);
 
 		// main buttons
-		Composite buttonComposite = new Composite(shell_, DWT.NONE);
+		Composite buttonComposite = new Composite(shell_, SWT.NONE);
 		GridData buttonData = new GridData();
-		buttonData.horizontalAlignment = DWT.CENTER;
+		buttonData.horizontalAlignment = SWT.CENTER;
 		buttonComposite.setLayoutData(buttonData);
 
 		RowLayout buttonLayout = new RowLayout();
 		buttonLayout.spacing = BUTTON_SPACING;
 		buttonComposite.setLayout(buttonLayout);
 
-		okButton_ = new Button (buttonComposite, DWT.PUSH);
+		okButton_ = new Button (buttonComposite, SWT.PUSH);
 		okButton_.setText ("OK");
 		okButton_.setLayoutData(new RowData(BUTTON_SIZE));
-		cancelButton_ = new Button (buttonComposite, DWT.PUSH);
+		cancelButton_ = new Button (buttonComposite, SWT.PUSH);
 		cancelButton_.setText ("Cancel");
 		cancelButton_.setLayoutData(new RowData(BUTTON_SIZE));
 
@@ -182,15 +182,15 @@ class JoinDialog
 			public void handleEvent (Event event)
 			{
 				if (event.widget == okButton_) {
-					result_ = DWT.OK;
+					result_ = SWT.OK;
 					password = pwdText_.getText;
 				}
 				shell_.close();
 			}
 		};
 
-		okButton_.addListener(DWT.Selection, listener);
-		cancelButton_.addListener(DWT.Selection, listener);
+		okButton_.addListener(SWT.Selection, listener);
+		cancelButton_.addListener(SWT.Selection, listener);
 		shell_.setDefaultButton(okButton_);
 		shell_.pack();
 		shell_.setLocation(center(parent_, shell_));
@@ -214,7 +214,7 @@ private:
 	Shell parent_, shell_;
 	Button okButton_, cancelButton_;
 	Text pwdText_;
-	int result_ = DWT.CANCEL;
+	int result_ = SWT.CANCEL;
 }
 
 
@@ -225,46 +225,46 @@ class SpecifyServerDialog
 	this(Shell parent)
 	{
 		parent_ = parent;
-		shell_ = new Shell(parent_, DWT.DIALOG_TRIM | DWT.APPLICATION_MODAL);
+		shell_ = new Shell(parent_, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
 		shell_.setLayout(new GridLayout);
 		shell_.setText("Specify Server");
 
 		// address input
-		Composite addressComposite = new Composite(shell_, DWT.NONE);
+		Composite addressComposite = new Composite(shell_, SWT.NONE);
 		GridData addressData = new GridData();
-		addressData.horizontalAlignment = DWT.CENTER;
+		addressData.horizontalAlignment = SWT.CENTER;
 		addressComposite.setLayoutData(addressData);
 
 		addressComposite.setLayout(new GridLayout);
-		Label labelB = new Label(addressComposite, DWT.NONE);
+		Label labelB = new Label(addressComposite, SWT.NONE);
 		labelB.setText("Address (123.123.123.123 or 123.123.123.123:12345):");
-		addressText_ = new Text(addressComposite, DWT.SINGLE | DWT.BORDER);
+		addressText_ = new Text(addressComposite, SWT.SINGLE | SWT.BORDER);
 		auto addressTextData = new GridData();
-		addressTextData.horizontalAlignment = DWT.CENTER;
+		addressTextData.horizontalAlignment = SWT.CENTER;
 		addressTextData.widthHint = 140;
 		addressText_.setLayoutData(addressTextData);
 
-		saveButton_ = new Button (shell_, DWT.CHECK);
+		saveButton_ = new Button (shell_, SWT.CHECK);
 		char[] file = getGameConfig(filterBar.selectedGame).extraServersFile;
 		saveButton_.setText("Save server on file ('" ~ file ~ "')");
 		auto saveButtonData = new GridData;
-		saveButtonData.horizontalAlignment = DWT.CENTER;
+		saveButtonData.horizontalAlignment = SWT.CENTER;
 		saveButton_.setLayoutData(saveButtonData);
 
 		// main buttons
-		Composite buttonComposite = new Composite(shell_, DWT.NONE);
+		Composite buttonComposite = new Composite(shell_, SWT.NONE);
 		GridData buttonData = new GridData();
-		buttonData.horizontalAlignment = DWT.CENTER;
+		buttonData.horizontalAlignment = SWT.CENTER;
 		buttonComposite.setLayoutData(buttonData);
 
 		RowLayout buttonLayout = new RowLayout();
 		buttonLayout.spacing = BUTTON_SPACING;
 		buttonComposite.setLayout(buttonLayout);
 
-		okButton_ = new Button (buttonComposite, DWT.PUSH);
+		okButton_ = new Button (buttonComposite, SWT.PUSH);
 		okButton_.setText ("OK");
 		okButton_.setLayoutData(new RowData(BUTTON_SIZE));
-		cancelButton_ = new Button (buttonComposite, DWT.PUSH);
+		cancelButton_ = new Button (buttonComposite, SWT.PUSH);
 		cancelButton_.setText ("Cancel");
 		cancelButton_.setLayoutData(new RowData(BUTTON_SIZE));
 
@@ -274,7 +274,7 @@ class SpecifyServerDialog
 				bool closeDialog = true;
 
 				if (event.widget == okButton_) {
-					result_ = DWT.OK;
+					result_ = SWT.OK;
 					address = trim(addressText_.getText);
 
 					if (!isValidIpAddress(address)) {
@@ -313,8 +313,8 @@ class SpecifyServerDialog
 			}
 		};
 
-		okButton_.addListener(DWT.Selection, listener);
-		cancelButton_.addListener(DWT.Selection, listener);
+		okButton_.addListener(SWT.Selection, listener);
+		cancelButton_.addListener(SWT.Selection, listener);
 		shell_.setDefaultButton(okButton_);
 		shell_.pack();
 		shell_.setLocation(center(parent_, shell_));
@@ -339,7 +339,7 @@ private:
 	Button okButton_, cancelButton_, saveButton_;
 	char[] address = "";
 	Text addressText_;
-	int result_ = DWT.CANCEL;
+	int result_ = SWT.CANCEL;
 }
 
 
@@ -350,32 +350,32 @@ class SettingsDialog
 	this(Shell parent)
 	{
 		parent_ = parent;
-		shell_ = new Shell(parent_, DWT.DIALOG_TRIM | DWT.APPLICATION_MODAL);
+		shell_ = new Shell(parent_, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
 		shell_.setLayout(new GridLayout());
 		shell_.setText("Settings");
 
-		Composite mainComposite = new Composite(shell_, DWT.NONE);
+		Composite mainComposite = new Composite(shell_, SWT.NONE);
 		GridData gridData = new GridData();
-		gridData.horizontalAlignment = DWT.CENTER;
+		gridData.horizontalAlignment = SWT.CENTER;
 		mainComposite.setLayoutData(gridData);
 		mainComposite.setLayout(new GridLayout);
 
 		// executable path
-		Label labelB = new Label(mainComposite, DWT.NONE);
+		Label labelB = new Label(mainComposite, SWT.NONE);
 		labelB.setText("Location of your Quake 3 executable:");
-		pathText_ = new Text(mainComposite, DWT.SINGLE | DWT.BORDER);
+		pathText_ = new Text(mainComposite, SWT.SINGLE | SWT.BORDER);
 		pathText_.setText(getSetting("gamePath"));
 		gridData = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
 		pathText_.setLayoutData(gridData);
 
 		// startup game
-		Group startupGroup = new Group(mainComposite, DWT.SHADOW_ETCHED_IN);
+		Group startupGroup = new Group(mainComposite, SWT.SHADOW_ETCHED_IN);
 		startupGroup.setText("Start with");
 		auto startupLayout = new GridLayout();
 		startupGroup.setLayout(startupLayout);
-		startupDefaultButton_ = new Button(startupGroup, DWT.RADIO);
+		startupDefaultButton_ = new Button(startupGroup, SWT.RADIO);
 		startupDefaultButton_.setText("Default game");
-		startupLastButton_ = new Button(startupGroup, DWT.RADIO);
+		startupLastButton_ = new Button(startupGroup, SWT.RADIO);
 		startupLastButton_.setText("Last used game");
 
 		if (getSetting("startWithLastMod") == "true")
@@ -384,7 +384,7 @@ class SettingsDialog
 			startupDefaultButton_.setSelection(true);
 
 		// games button
-		Button gamesButton = new Button(mainComposite, DWT.PUSH);
+		Button gamesButton = new Button(mainComposite, SWT.PUSH);
 		gamesButton.setText("Games...");
 		gamesButton.setLayoutData(new GridData(BUTTON_SIZE));
 		gamesButton.addSelectionListener(new class SelectionAdapter {
@@ -395,20 +395,20 @@ class SettingsDialog
 		});
 
 		// main buttons
-		Composite buttonComposite = new Composite(shell_, DWT.NONE);
+		Composite buttonComposite = new Composite(shell_, SWT.NONE);
 		GridData buttonData = new GridData();
-		buttonData.horizontalAlignment = DWT.CENTER;
+		buttonData.horizontalAlignment = SWT.CENTER;
 		buttonComposite.setLayoutData(buttonData);
 
 		auto buttonLayout = new RowLayout;
 		buttonLayout.spacing = BUTTON_SPACING;
 		buttonComposite.setLayout(buttonLayout);
 
-		okButton_ = new Button (buttonComposite, DWT.PUSH);
+		okButton_ = new Button (buttonComposite, SWT.PUSH);
 		okButton_.setText ("OK");
 		okButton_.setLayoutData(new RowData(BUTTON_SIZE));
 
-		cancelButton_ = new Button (buttonComposite, DWT.PUSH);
+		cancelButton_ = new Button (buttonComposite, SWT.PUSH);
 		cancelButton_.setText ("Cancel");
 		cancelButton_.setLayoutData(new RowData(BUTTON_SIZE));
 
@@ -417,7 +417,7 @@ class SettingsDialog
 			{
 				if (event.widget == okButton_) {
 					char s[];
-					result_ = DWT.OK;
+					result_ = SWT.OK;
 					setSetting("gamePath", pathText_.getText);
 
 					s = (startupLastButton_.getSelection()) ? "true" : "false";
@@ -431,8 +431,8 @@ class SettingsDialog
 			}
 		};
 
-		okButton_.addListener(DWT.Selection, listener);
-		cancelButton_.addListener(DWT.Selection, listener);
+		okButton_.addListener(SWT.Selection, listener);
+		cancelButton_.addListener(SWT.Selection, listener);
 		shell_.setDefaultButton(okButton_);
 		shell_.pack();
 		shell_.setLocation(center(parent_, shell_));
@@ -455,7 +455,7 @@ private:
 	Button okButton_, cancelButton_;
 	Button startupDefaultButton_, startupLastButton_;
 	Text pathText_;
-	int result_ = DWT.CANCEL;
+	int result_ = SWT.CANCEL;
 }
 
 

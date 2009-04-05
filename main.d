@@ -13,16 +13,16 @@ import tango.io.device.File;
 import tango.sys.Environment;
 import tango.util.PathUtil;
 
-import dwt.DWT;
-import dwt.dnd.Clipboard;
-import dwt.dwthelper.ByteArrayInputStream;
-import dwt.events.KeyAdapter;
-import dwt.events.KeyEvent;
-import dwt.graphics.Image;
-import dwt.widgets.Control;
-import dwt.widgets.Display;
-import dwt.widgets.Event;
-import dwt.widgets.Listener;
+import java.io.ByteArrayInputStream;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
 
 import colorednames : disposeNameColors;
 import common;
@@ -116,26 +116,26 @@ private void _main(char[][] args)
 	mainWindow.handle.setImages(appIcons);
 
 	// Handle global keyboard shortcuts.
-	Display.getDefault().addFilter(DWT.KeyDown, new class Listener {
+	Display.getDefault().addFilter(SWT.KeyDown, new class Listener {
 		void handleEvent(Event e)
 		{
 			if ((cast(Control)e.widget).getShell() !is mainWindow.handle)
 				return;
 
 			switch (e.keyCode) {
-				case DWT.ESC:
-					if ((e.stateMask & DWT.MODIFIER_MASK) == 0) {
+				case SWT.ESC:
+					if ((e.stateMask & SWT.MODIFIER_MASK) == 0) {
 						serverTable.stopRefresh(true);
-						e.type = DWT.None;
+						e.type = SWT.None;
 					}
 					break;
-				case DWT.F4:
+				case SWT.F4:
 					threadManager.run(&getNewList);
-					e.type = DWT.None;
+					e.type = SWT.None;
 					break;
-				case DWT.F5:
+				case SWT.F5:
 					threadManager.run(&refreshList);
-					e.type = DWT.None;
+					e.type = SWT.None;
 					break;
 				default:
 					break;

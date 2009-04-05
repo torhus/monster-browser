@@ -12,8 +12,8 @@ import tango.text.convert.Format;
 import Integer = tango.text.convert.Integer;
 import tango.util.log.Trace;
 
-import dwt.dwthelper.Runnable;
-import dwt.widgets.Display;
+import java.lang.Runnable;
+import org.eclipse.swt.widgets.Display;
 
 import common;
 import masterlist;

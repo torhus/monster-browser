@@ -7,10 +7,10 @@ module messageboxes;
 import tango.text.Util;
 import tango.text.convert.Format;
 
-import dwt.DWT;
-import dwt.dwthelper.Runnable;
-import dwt.widgets.Display;
-import dwt.widgets.MessageBox;
+import java.lang.Runnable;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.MessageBox;
 
 import common;
 import mainwindow;
@@ -46,9 +46,9 @@ void _messageBox(char[] title, int style)(char[] fmt, ...)
  * Displays message boxes with preset titles and icons.
  * Does formatting, the argument list is: (char[] fmt, ...)
  */
-alias _messageBox!(APPNAME, DWT.ICON_INFORMATION) info;
-alias _messageBox!("Warning", DWT.ICON_WARNING) warning;  /// ditto
-alias _messageBox!("Error", DWT.ICON_ERROR) error;        /// ditto
+alias _messageBox!(APPNAME, SWT.ICON_INFORMATION) info;
+alias _messageBox!("Warning", SWT.ICON_WARNING) warning;  /// ditto
+alias _messageBox!("Error", SWT.ICON_ERROR) error;        /// ditto
 
 
 /// Display a debug message in a dialog box.
@@ -56,7 +56,7 @@ void db(in char[] fmt, ...)
 {
 	debug {
 		char[] msg = Format.convert(_arguments, _argptr, fmt);
-		messageBox(msg, "Debug", DWT.NONE);
+		messageBox(msg, "Debug", SWT.NONE);
 	}
 }
 

@@ -5,28 +5,28 @@ import tango.text.Util;
 import Integer = tango.text.convert.Integer;
 import tango.util.container.HashMap;
 
-import dwt.DWT;
-import dwt.dwthelper.ByteArrayInputStream;
-import dwt.events.KeyAdapter;
-import dwt.events.KeyEvent;
-import dwt.events.MenuDetectEvent;
-import dwt.events.MenuDetectListener;
-import dwt.events.SelectionAdapter;
-import dwt.events.SelectionListener;
-import dwt.events.SelectionEvent;
-import dwt.graphics.Image;
-import dwt.graphics.ImageData;
-import dwt.graphics.Rectangle;
-import dwt.graphics.TextLayout;
-import dwt.widgets.Composite;
-import dwt.widgets.Display;
-import dwt.widgets.Event;
-import dwt.widgets.Listener;
-import dwt.widgets.Menu;
-import dwt.widgets.MenuItem;
-import dwt.widgets.Table;
-import dwt.widgets.TableColumn;
-import dwt.widgets.TableItem;
+import java.io.ByteArrayInputStream;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.MenuDetectEvent;
+import org.eclipse.swt.events.MenuDetectListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.TextLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.TableItem;
 
 import colorednames;
 import common;
@@ -58,8 +58,8 @@ class ServerTable
 	this(Composite parent)
 	{
 		parent_ = parent;
-		table_ = new Table(parent, DWT.VIRTUAL | DWT.FULL_SELECTION |
-		                           DWT.MULTI | DWT.BORDER);
+		table_ = new Table(parent, SWT.VIRTUAL | SWT.FULL_SELECTION |
+		                           SWT.MULTI | SWT.BORDER);
 		table_.setHeaderVisible(true);
 		table_.setLinesVisible(true);
 
@@ -70,14 +70,14 @@ class ServerTable
 
 		// add columns
 		foreach (int i, header; serverHeaders) {
-			TableColumn column = new TableColumn(table_, DWT.NONE);
+			TableColumn column = new TableColumn(table_, SWT.NONE);
 			column.setText(header);
 			column.setWidth(widths[i]);
 		}
 
-		table_.getColumn(ServerColumn.PASSWORDED).setAlignment(DWT.CENTER);
+		table_.getColumn(ServerColumn.PASSWORDED).setAlignment(SWT.CENTER);
 
-		table_.addListener(DWT.SetData, new SetDataListener);
+		table_.addListener(SWT.SetData, new SetDataListener);
 		table_.addSelectionListener(new MySelectionListener);
 		table_.addKeyListener(new MyKeyListener);
 
@@ -85,18 +85,18 @@ class ServerTable
 		showFlags_ = (getSetting("showFlags") == "true") && initGeoIp();
 
 		if (showFlags_ || coloredNames_) {
-			table_.addListener(DWT.EraseItem, new EraseItemListener);
-			table_.addListener(DWT.PaintItem, new PaintItemListener);
+			table_.addListener(SWT.EraseItem, new EraseItemListener);
+			table_.addListener(SWT.PaintItem, new PaintItemListener);
 		}
 
 		if (showFlags_)
-			table_.addListener(DWT.MouseMove, new MouseMoveListener);
+			table_.addListener(SWT.MouseMove, new MouseMoveListener);
 
 		Listener sortListener = new SortListener;
 
 		for (int i = 0; i < table_.getColumnCount(); i++) {
 			TableColumn c = table_.getColumn(i);
-			c.addListener(DWT.Selection, sortListener);
+			c.addListener(SWT.Selection, sortListener);
 		}
 
 		// restore sort order from previous session
@@ -107,7 +107,7 @@ class ServerTable
 		if (sortCol >= serverHeaders.length)
 			sortCol = 0;
 		table_.setSortColumn(table_.getColumn(sortCol));
-		table_.setSortDirection(reversed ? DWT.DOWN : DWT.UP);
+		table_.setSortDirection(reversed ? SWT.DOWN : SWT.UP);
 
 		// right-click menu for servers
 		table_.setMenu(createContextMenu);
@@ -172,7 +172,7 @@ class ServerTable
 		synchronized (serverList_) {
 			serverList_.setFilters(filterBar.filterState, false);
 			serverList_.sort(sortCol,
-			                 (table_.getSortDirection() == DWT.DOWN), false);
+			                 (table_.getSortDirection() == SWT.DOWN), false);
 		}
 	}
 
@@ -183,7 +183,7 @@ class ServerTable
 	int sortColumn() { return table_.indexOf(table_.getSortColumn()); }
 
 	/// Is the sort order reversed?
-	bool sortReversed() { return (table_.getSortDirection() == DWT.DOWN); }
+	bool sortReversed() { return (table_.getSortDirection() == SWT.DOWN); }
 
 	/// Returns the server list's Table widget object.
 	Table getTable() { return table_; };
@@ -424,13 +424,13 @@ private:
 			int dir = table_.getSortDirection;
 
 			if (sortColumn is newColumn) {
-				dir = (dir == DWT.UP) ? DWT.DOWN : DWT.UP;
+				dir = (dir == SWT.UP) ? SWT.DOWN : SWT.UP;
 			} else {
-				dir = DWT.UP;
+				dir = SWT.UP;
 				table_.setSortColumn(newColumn);
 			}
 
-			serverList_.sort(table_.indexOf(newColumn), (dir == DWT.DOWN));
+			serverList_.sort(table_.indexOf(newColumn), (dir == SWT.DOWN));
 
 			table_.setSortDirection(dir);
 			synchronized (serverList_) {
@@ -449,7 +449,7 @@ private:
 			if (e.index == ServerColumn.NAME && coloredNames_ ||
 			                   e.index == ServerColumn.COUNTRY && showFlags_ ||
 			                   e.index == ServerColumn.PASSWORDED)
-				e.detail &= ~DWT.FOREGROUND;
+				e.detail &= ~SWT.FOREGROUND;
 		}
 	}
 
@@ -479,7 +479,7 @@ private:
 					break;
 				case ServerColumn.NAME:
 					auto textX = e.x + leftMargin;
-					if (!(e.detail & DWT.SELECTED)) {
+					if (!(e.detail & SWT.SELECTED)) {
 						// FIXME: this caching is broken now
 						TextLayout tl = sd.customData;
 						if (tl is null) {
@@ -533,8 +533,8 @@ private:
 		{
 			switch (e.keyCode) {
 				case 'a':
-					if (e.stateMask == DWT.MOD1) {
-						// DWT bug? CTRL+A works by default in SWT.
+					if (e.stateMask == SWT.MOD1) {
+						// SWT bug? CTRL+A works by default in SWT.
 						// In SWT, it marks all items, and fires the
 						// widgetSelected event, neither of which happens
 						// here.
@@ -544,13 +544,13 @@ private:
 					}
 					break;
 				case 'c':
-					if (e.stateMask == DWT.MOD1) {
+					if (e.stateMask == SWT.MOD1) {
 						onCopyAddresses();
 						e.doit = false;
 					}
 					break;
 				case 'r':
-					if (e.stateMask == DWT.MOD1) {
+					if (e.stateMask == SWT.MOD1) {
 						if (refreshSelected_.getEnabled)
 							onRefreshSelected();
 						e.doit = false;
@@ -566,7 +566,7 @@ private:
 	{
 		Menu menu = new Menu(table_);
 
-		MenuItem item = new MenuItem(menu, DWT.PUSH);
+		MenuItem item = new MenuItem(menu, SWT.PUSH);
 		item.setText("Join\tEnter");
 		menu.setDefaultItem(item);
 		item.addSelectionListener(new class SelectionAdapter {
@@ -576,14 +576,14 @@ private:
 			}
 		});
 
-		item = new MenuItem(menu, DWT.PUSH);
+		item = new MenuItem(menu, SWT.PUSH);
 		item.setText("Refresh selected\tCtrl+R");
 		item.addSelectionListener(new class SelectionAdapter {
 			void widgetSelected(SelectionEvent e) { onRefreshSelected(); }
 		});
 		refreshSelected_ = item;
 
-		item = new MenuItem(menu, DWT.PUSH);
+		item = new MenuItem(menu, SWT.PUSH);
 		item.setText("Copy addresses\tCtrl+C");
 		item.addSelectionListener(new class SelectionAdapter {
 			void widgetSelected(SelectionEvent e) { onCopyAddresses(); }

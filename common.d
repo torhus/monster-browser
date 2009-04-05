@@ -16,11 +16,11 @@ import tango.time.Clock;
 import tango.time.Time;
 import tango.util.log.Trace;
 
-import dwt.DWT;
-import dwt.dnd.Clipboard;
-import dwt.dnd.TextTransfer;
-import dwt.dwthelper.utils;
-import dwt.widgets.Table;
+import java.lang.wrappers;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.widgets.Table;
 
 import set;
 
@@ -440,7 +440,7 @@ char[] toCsv(T)(T[] a)
 
 
 /**
- * Get the widths of all columns in a DWT Table object.
+ * Get the widths of all columns in an SWT Table object.
  */
 int[] getColumnWidths(Table table)
 {
