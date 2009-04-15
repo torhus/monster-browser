@@ -67,7 +67,6 @@ class ServerList
 			synchronized (master_) {
 				ServerData sd = master_.getServerData(sh);
 				sd.server[ServerColumn.COUNTRY] = getCountryCode(&sd);
-				master_.setServerData(sh, sd);
 			}
 			list ~= sh;
 			isSorted_ = false;

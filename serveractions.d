@@ -207,7 +207,13 @@ void delegate() refreshList()
 
 	Set!(char[]) servers;
 
-	bool test(in ServerData* sd) { return matchMod(sd, game.mod); }
+	bool test(in ServerData* sd)
+	{
+		bool ok = matchMod(sd, game.mod);
+		if (!ok)
+			ok = !canMatchMod(sd) && timedOut(sd);
+		return ok && sd.failCount < 3;
+	}
 
 	void emit(ServerHandle sh)
 	{

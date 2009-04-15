@@ -1,6 +1,7 @@
 module serverdata;
 
 debug import tango.core.Thread;
+import tango.stdc.ctype;
 import tango.text.Ascii;
 import tango.text.Util;
 import Integer = tango.text.convert.Integer;
@@ -22,6 +23,8 @@ struct ServerData {
 	char[][][] cvars;
 
 	TextLayout customData = null;
+
+	int failCount = 0;
 
 	/*
 	 * Extract some info about the server.
@@ -96,7 +99,11 @@ enum ServerColumn {
 };
 
 
-/// Returns true if this server runs the correct mod.
+/**
+ * Does this server run the given mod?
+ *
+ * Also returns false if there is no data to match against.
+ */
 bool matchMod(in ServerData* sd, in char[] mod)
 {
 	foreach (cvar; sd.cvars) {
@@ -105,6 +112,23 @@ bool matchMod(in ServerData* sd, in char[] mod)
 			return true;
 	}
 	return false;
+}
+
+
+/**
+ * Is the data needed to be able to match against a mod name available?
+ */
+bool canMatchMod(in ServerData* sd)
+{
+	return sd.cvars.length != 0;
+}
+
+
+/// Did this server time out when last queried?
+bool timedOut(in ServerData* sd)
+{
+	char[] ping = sd.server[ServerColumn.PING];
+	return ping.length == 0 || !isdigit(ping[0]);
 }
 
 
