@@ -43,6 +43,8 @@ final class MasterList
 	ServerHandle addServer(ServerData sd)
 	{
 		synchronized (this) {
+			if (timedOut(&sd))
+				sd.failCount = 1;
 			servers_ ~= sd;
 			return servers_.length - 1;
 		}
@@ -61,15 +63,23 @@ final class MasterList
 	ServerHandle updateServer(ServerData sd)
 	{
 		synchronized (this) {
-			debug assert(isValidIpAddress(sd.server[ServerColumn.ADDRESS]));
-			ServerHandle sh = findServer(sd.server[ServerColumn.ADDRESS]);
+			char[] address = sd.server[ServerColumn.ADDRESS];
+			debug assert(isValidIpAddress(address));
+			ServerHandle sh = findServer(address);
 
 			if (sh != InvalidServerHandle) {
+				ServerData* old = &servers_[sh];
 				// country code is calculated locally, so we keep it
-				ServerData old = getServerData(sh);
 				sd.server[ServerColumn.COUNTRY] =
-				                     servers_[sh].server[ServerColumn.COUNTRY];
-				setServerData(sh, sd);
+				                              old.server[ServerColumn.COUNTRY];
+				if (timedOut(&sd)) {
+					old.server[ServerColumn.PING] =
+					                              sd.server[ServerColumn.PING];
+					old.failCount++;
+				}
+				else {
+					setServerData(sh, sd);
+				}
 			}
 
 			return sh;
@@ -106,7 +116,7 @@ final class MasterList
 
 
 	/// Will assert if sh is invalid.
-	void setServerData(ServerHandle sh, ServerData sd)
+	private void setServerData(ServerHandle sh, ServerData sd)
 	{
 		synchronized (this) {
 			assert (sh < servers_.length);

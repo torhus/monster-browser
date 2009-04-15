@@ -449,7 +449,7 @@ ToolBar createToolbar(Composite parent) ///
 	new ToolItem(toolBar, DWT.SEPARATOR);
 
 	ToolItem button2 = new ToolItem(toolBar, DWT.PUSH);
-	button2.setText("Refresh list");
+	button2.setText("Refresh all");
 	//button2.setImage(loadImage!("res/32px-Crystal_Clear_action_reload.png"));
 	button2.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
