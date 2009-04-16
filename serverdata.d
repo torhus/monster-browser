@@ -135,9 +135,12 @@ bool matchMod(in ServerData* sd, in char[] mod, bool* hasMatchData=null)
 bool timedOut(in ServerData* sd)
 {
 	char[] ping = sd.server[ServerColumn.PING];
-	return ping.length == 0 || !isdigit(ping[0]);
+	return ping == TIMEOUT;
 }
 
+
+///
+const char[] TIMEOUT = "999999";
 
 ///
 const char[][] defaultGameTypes = ["FFA", "1v1", "SP", "TDM", "CTF",
