@@ -9,6 +9,8 @@ debug import tango.util.log.Trace;
 
 import dwt.graphics.TextLayout;
 
+import common;
+
 
 /** Stores all data for a server. */
 struct ServerData {
@@ -104,23 +106,28 @@ enum ServerColumn {
  *
  * Also returns false if there is no data to match against.
  */
-bool matchMod(in ServerData* sd, in char[] mod)
+bool matchMod(in ServerData* sd, in char[] mod, bool* hasMatchData=null)
 {
+	bool hasData = false;
+	bool matched = false;
+
 	foreach (cvar; sd.cvars) {
-		if ((cvar[0] == "game" || cvar[0] == "gamename") &&
-		                                           icompare(cvar[1], mod) == 0)
-			return true;
+		if (cvar[0] == "game" || cvar[0] == "gamename") {
+			hasData = true;
+			if (icompare(cvar[1], mod) == 0)
+				matched = true;
+		}
 	}
-	return false;
-}
 
+	static if (!MOD_ONLY) {
+		hasData = true;
+		matched = true;
+	}
 
-/**
- * Is the data needed to be able to match against a mod name available?
- */
-bool canMatchMod(in ServerData* sd)
-{
-	return sd.cvars.length != 0;
+	if (hasMatchData)
+		*hasMatchData = hasData;
+
+	return matched;
 }
 
 

@@ -4,12 +4,13 @@ import tango.io.device.File;
 import Path = tango.io.Path;
 import tango.text.Ascii;
 import tango.text.Util;
+import tango.text.convert.Format;
 import tango.text.xml.DocPrinter;
 import tango.text.xml.Document;
 import tango.text.xml.SaxParser;
 debug import tango.util.log.Trace;
 
-debug import common;
+import common;
 import serverdata;
 
 
@@ -165,11 +166,12 @@ final class MasterList
 	 */
 	bool load()
 	{
-		debug Trace.formatln("load() called");
 		if (!Path.exists(fileName_))
 			return false;
 
+		log(Format("Opening '{}'...", fileName_));
 
+		scope timer = new Timer;
 		char[] content = cast(char[])File.get(fileName_);
 		auto parser = new SaxParser!(char);
 		auto handler = new MySaxHandler!(char);
@@ -178,10 +180,8 @@ final class MasterList
 		parser.setContent(content);
 		parser.parse;
 
-		debug {
-			Trace.formatln("Found {} servers.", handler.servers.length);
-			Trace.formatln("==============================");
-		}
+		log(Format("Loaded {} servers in {} seconds.", handler.servers.length,
+		                                                       timer.seconds));
 
 		synchronized (this) {
 			delete servers_;

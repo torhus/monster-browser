@@ -209,9 +209,12 @@ void delegate() refreshList()
 
 	bool test(in ServerData* sd)
 	{
-		bool ok = matchMod(sd, game.mod);
+		bool hasMatchData;
+		bool ok = matchMod(sd, game.mod, &hasMatchData);
+
 		if (!ok)
-			ok = !canMatchMod(sd) && timedOut(sd);
+			ok = !hasMatchData && timedOut(sd);
+
 		return ok && sd.failCount < 3;
 	}
 
