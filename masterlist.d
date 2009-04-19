@@ -139,17 +139,19 @@ final class MasterList
 
 
 	/**
-	 * Get a filtered selection of servers.
-	 */
-	void filter(bool delegate(in ServerData*) test,
-	                                          void delegate(ServerHandle) emit)
+	* Foreach support.
+	*/
+	int opApply(int delegate(ref ServerHandle) dg)
 	{
-		synchronized (this) {
-			foreach (i, ref sd; servers_) {
-				if (test(&sd))
-					emit(i);
-			}
+		int result = 0;
+
+		foreach (sh, sd; servers_)
+		{
+			result = dg(sh);
+			if (result)
+				break;
 		}
+		return result;
 	}
 
 

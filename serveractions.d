@@ -207,23 +207,17 @@ void delegate() refreshList()
 
 	Set!(char[]) servers;
 
-	bool test(in ServerData* sd)
-	{
+	foreach (sh; master) {
+		ServerData sd = master.getServerData(sh);
 		bool hasMatchData;
-		bool ok = matchMod(sd, game.mod, &hasMatchData);
+		bool ok = matchMod(&sd, game.mod, &hasMatchData);
 
 		if (!ok)
-			ok = !hasMatchData && timedOut(sd);
+			ok = !hasMatchData && timedOut(&sd);
 
-		return ok && sd.failCount < 3;
+		if (ok && sd.failCount < 3)
+			servers.add(sd.server[ServerColumn.ADDRESS]);
 	}
-
-	void emit(ServerHandle sh)
-	{
-		servers.add(master.getServerData(sh).server[ServerColumn.ADDRESS]);
-	}
-
-	master.filter(&test, &emit);
 
 	log("Refreshing server list for " ~ game.name ~ "...");
 	log(Format("Found {} servers, master is {}.", servers.length,

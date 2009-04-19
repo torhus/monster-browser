@@ -164,20 +164,14 @@ final class MasterListServerRetriever : IServerRetriever
 	void retrieve(bool delegate(ServerHandle sh, bool replied, bool matched)
 	                                                                   deliver)
 	{
-		bool test(in ServerData* sd)
-		{
-			static if (MOD_ONLY)
-				return matchMod(sd, game_.mod);
-			else
-				return true;
+		foreach (sh; master_) {
+			ServerData sd = master_.getServerData(sh);
+			bool keep = matchMod(&sd, game_.mod);
+			static if (!MOD_ONLY)
+				keep = true;
+			if (keep)
+				deliver(sh, true, true);
 		}
-
-		void emit(ServerHandle sh)
-		{
-			deliver(sh, true, true);
-		}
-
-		master_.filter(&test, &emit);
 	}
 
 
