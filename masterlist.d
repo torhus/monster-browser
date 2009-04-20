@@ -145,8 +145,7 @@ final class MasterList
 	{
 		int result = 0;
 
-		foreach (sh, sd; servers_)
-		{
+		foreach (sh, sd; servers_) {
 			result = dg(sh);
 			if (result)
 				break;

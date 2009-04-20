@@ -437,7 +437,7 @@ ToolBar createToolbar(Composite parent) ///
 	auto toolBar = new ToolBar(parent, DWT.HORIZONTAL);
 
 	auto button1 = new ToolItem(toolBar, DWT.PUSH);
-	button1.setText("Get new list");
+	button1.setText("Check for new servers");
 	//button1.setImage(loadImage!("res/32px-Crystal_Clear_action_down.png"));
 	button1.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
