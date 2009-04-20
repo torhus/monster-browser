@@ -263,16 +263,33 @@ void delegate() getNewList()
 	void f()
 	{
 		try {
+			MasterList master = serverTable.serverList.master;
 			ServerList serverList = serverTable.serverList;
 			GameConfig game = getGameConfig(serverList.gameName);
-			auto addresses = browserGetNewList(game);
-			log(Format("Got {} servers from {}.", addresses.length,
-			                                               game.masterServer));
+			Set!(char[]) addresses = browserGetNewList(game);
+
+			size_t total = addresses.length;
+
+			// exclude servers that are already known
+			foreach (sh; master) {
+				ServerData sd = master.getServerData(sh);
+				char[] address = sd.server[ServerColumn.ADDRESS];
+				if (address in addresses)
+					addresses.remove(address);
+			}
+
+			log(Format("Got {} servers from {}, including {} new.",
+			                      total, game.masterServer, addresses.length));
 
 			auto extraServers = serverList.extraServers;
+			size_t oldLength = addresses.length;
 			foreach (s; extraServers)
-					addresses.add(s);
-			log(Format("Added {} extra servers.", extraServers.length));
+				addresses.add(s);
+
+			auto delta = addresses.length - oldLength;
+			log(Format("Added {} extra servers, skipping {} duplicates.",
+	                                      delta, extraServers.length - delta));
+
 
 			if (addresses.length == 0) {
 				// FIXME: what to do when there are no servers?
@@ -281,14 +298,13 @@ void delegate() getNewList()
 					{
 						serverTable.fullRefresh;
 						serverTable.notifyRefreshEnded;
+						statusBar.setLeft("There were no new servers.");
 					}
 				});
 			}
 			else {
-				MasterList master = serverTable.serverList.master;
-
 				auto retriever = new QstatServerRetriever(game.name, master,
-				                                                    addresses);
+				                                              addresses, true);
 				auto contr = new ServerRetrievalController(retriever);
 				contr.startMessage = Format("Got {} servers, querying...",
 				                                             addresses.length);
@@ -302,12 +318,7 @@ void delegate() getNewList()
 
 	}
 
-	serverTable.clear();
-	serverTable.serverList.clear();
-	serverTable.serverList.master.clear();
-	GC.collect();
-
-	statusBar.setLeft("Getting new server list...");
+	statusBar.setLeft("Checking for new servers...");
 	char[] gameName = serverTable.serverList.gameName;
 	log("Getting new server list for " ~ gameName ~ "...");
 	serverTable.notifyRefreshStarted;
@@ -453,7 +464,7 @@ class ServerRetrievalController
 	 * Stops the whole process.
 	 *
 	 * If addRemaining is true, any servers already received will be added to
-	 * to the server list.
+	 * the server list.
 	 */
 	void stop(bool addRemaining)
 	{
