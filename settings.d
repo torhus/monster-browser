@@ -174,6 +174,7 @@ useGslist=false
 	                      {"lastMod", "smokinguns"},
 	                      {"minimizeOnGameLaunch", "true"},
 	                      {"showFlags", "true"},
+	                      {"simultaneousQueries", "20"},
 	                      {"startWithLastMod", "true"},
 	                      {"windowMaximized", "false"},
 	                      {"windowSize", "800x568"},

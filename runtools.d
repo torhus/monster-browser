@@ -220,6 +220,8 @@ final class QstatServerRetriever : IServerRetriever
 			version (linux)
 				cmdLine = "./" ~ cmdLine;
 
+			cmdLine ~= " -maxsim " ~ getSetting("simultaneousQueries");
+
 			proc = new Process(cmdLine);
 			proc.workDir = appDir;
 			proc.copyEnv = true;
