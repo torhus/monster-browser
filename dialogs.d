@@ -3,6 +3,7 @@
 module dialogs;
 
 import tango.io.device.File;
+import Integer = tango.text.convert.Integer;
 import tango.text.Util;
 
 import dwt.DWT;
@@ -24,6 +25,7 @@ import dwt.widgets.Group;
 import dwt.widgets.Label;
 import dwt.widgets.Listener;
 import dwt.widgets.Shell;
+import dwt.widgets.Spinner;
 import dwt.widgets.Text;
 
 import common;
@@ -383,6 +385,16 @@ class SettingsDialog
 		else
 			startupDefaultButton_.setSelection(true);
 
+		// simultaneousQueries
+		Label sqLabel = new Label(mainComposite, DWT.WRAP);
+		sqLabel.setText("Number of servers to query simultaneously, " ~
+		                                                      "default is 20");
+		sqSpinner_ = new Spinner(mainComposite, DWT.NONE);
+		sqSpinner_.setMinimum(1);
+		sqSpinner_.setMaximum(99);
+		int startValue = Integer.toInt(getSetting("simultaneousQueries"));
+		sqSpinner_.setSelection(startValue);
+
 		// games button
 		Button gamesButton = new Button(mainComposite, DWT.PUSH);
 		gamesButton.setText("Games...");
@@ -422,6 +434,9 @@ class SettingsDialog
 
 					s = (startupLastButton_.getSelection()) ? "true" : "false";
 					setSetting("startWithLastMod", s);
+
+					int sq = sqSpinner_.getSelection();
+					setSetting("simultaneousQueries", Integer.toString(sq));
 				}
 				// in case the game list was edited
 				settings.loadGamesFile();
@@ -456,6 +471,7 @@ private:
 	Button startupDefaultButton_, startupLastButton_;
 	Text pathText_;
 	int result_ = DWT.CANCEL;
+	Spinner sqSpinner_;
 }
 
 
