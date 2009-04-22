@@ -386,10 +386,12 @@ class SettingsDialog
 			startupDefaultButton_.setSelection(true);
 
 		// simultaneousQueries
-		Label sqLabel = new Label(mainComposite, DWT.WRAP);
-		sqLabel.setText("Number of servers to query simultaneously, " ~
-		                                                      "default is 20");
-		sqSpinner_ = new Spinner(mainComposite, DWT.NONE);
+		auto sqComposite = new Composite(mainComposite, DWT.NONE);
+		sqComposite.setLayout(new RowLayout);
+		Label sqLabel = new Label(sqComposite, DWT.WRAP);
+		sqLabel.setText("Number of servers to query\n"
+		                "simultaneously, default is 20:");
+		sqSpinner_ = new Spinner(sqComposite, DWT.BORDER);
 		sqSpinner_.setMinimum(1);
 		sqSpinner_.setMaximum(99);
 		int startValue = Integer.toInt(getSetting("simultaneousQueries"));
