@@ -216,7 +216,7 @@ void delegate() refreshList()
 		if (!ok)
 			ok = !hasMatchData && timedOut(&sd);
 
-		if (ok && sd.failCount < 3)
+		if (ok && sd.failCount < MAX_FAIL_COUNT)
 			servers.add(sd.server[ServerColumn.ADDRESS]);
 	}
 

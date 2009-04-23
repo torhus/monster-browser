@@ -5,6 +5,7 @@ import Path = tango.io.Path;
 import tango.text.Ascii;
 import tango.text.Util;
 import tango.text.convert.Format;
+import Integer = tango.text.convert.Integer;
 import tango.text.xml.DocPrinter;
 import tango.text.xml.Document;
 import tango.text.xml.SaxParser;
@@ -204,8 +205,10 @@ final class MasterList
 		synchronized (this) {
 			doc.tree.element(null, "masterserver");
 
-			foreach (sd; servers_)
-				serverToXml(doc.elements, &sd);
+			foreach (sd; servers_) {
+				if (sd.failCount < MAX_FAIL_COUNT)
+					serverToXml(doc.elements, &sd);
+			}
 		}
 
 		scope printer = new DocPrinter!(char);
@@ -232,7 +235,8 @@ final class MasterList
 		     .attribute(null, "address", sd.server[ServerColumn.ADDRESS])
 		     .attribute(null, "ping", sd.server[ServerColumn.PING])
 		     .attribute(null, "player_count", sd.server[ServerColumn.PLAYERS])
-		     .attribute(null, "map", sd.server[ServerColumn.MAP]);
+		     .attribute(null, "map", sd.server[ServerColumn.MAP])
+		     .attribute(null, "fail_count", Integer.toString(sd.failCount));
 
 		auto cvars = server.element(null, "cvars");
 		cvarsToXml(cvars, sd);
@@ -334,10 +338,10 @@ private class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 				sd.server[ServerColumn.PING] = attr.value;
 			else if (attr.localName == "player_count")
 				sd.server[ServerColumn.PLAYERS] = attr.value;
-			/*else if (attr.localName == "gametype")
-				sd.server[ServerColumn.GAMETYPE] = attr.value;*/
 			else if (attr.localName == "map")
 				sd.server[ServerColumn.MAP] = attr.value;
+			else if (attr.localName == "fail_count")
+				sd.failCount = Integer.convert(attr.value);
 		}
 
 		servers ~= sd;

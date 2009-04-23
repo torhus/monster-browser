@@ -140,7 +140,10 @@ bool timedOut(in ServerData* sd)
 
 
 ///
-const char[] TIMEOUT = "999999";
+const MAX_FAIL_COUNT = 3;
+
+///
+const char[] TIMEOUT = "9999";
 
 ///
 const char[][] defaultGameTypes = ["FFA", "1v1", "SP", "TDM", "CTF",
