@@ -90,6 +90,7 @@ void switchToGame(in char[] name)
 		}
 
 		serverTable.setServerList(serverList);
+		serverTable.clear();
 
 		if (needRefresh) {
 			GameConfig game = getGameConfig(gameName);
