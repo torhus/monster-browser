@@ -8,7 +8,6 @@ import tango.text.convert.Format;
 import tango.text.xml.DocPrinter;
 import tango.text.xml.Document;
 import tango.text.xml.SaxParser;
-debug import tango.util.log.Trace;
 
 import common;
 import serverdata;
@@ -44,6 +43,7 @@ final class MasterList
 	ServerHandle addServer(ServerData sd)
 	{
 		synchronized (this) {
+			assert(isValid(&sd));
 			if (timedOut(&sd))
 				sd.failCount = 1;
 			servers_ ~= sd;
@@ -65,7 +65,7 @@ final class MasterList
 	{
 		synchronized (this) {
 			char[] address = sd.server[ServerColumn.ADDRESS];
-			debug assert(isValidIpAddress(address));
+			assert(isValid(&sd));
 			ServerHandle sh = findServer(address);
 
 			if (sh != InvalidServerHandle) {
@@ -110,7 +110,8 @@ final class MasterList
 	ServerData getServerData(ServerHandle sh)
 	{
 		synchronized (this) {
-			assert (sh < servers_.length);
+			assert(sh < servers_.length);
+			assert(isValid(&servers_[sh]));
 			return servers_[sh];
 		}
 	}
@@ -120,7 +121,8 @@ final class MasterList
 	private void setServerData(ServerHandle sh, ServerData sd)
 	{
 		synchronized (this) {
-			assert (sh < servers_.length);
+			assert(sh < servers_.length);
+			assert(isValid(&servers_[sh]));
 			servers_[sh] = sd;
 		}
 	}
@@ -262,9 +264,16 @@ final class MasterList
 	}
 
 
-	invariant()
+	///
+	private bool isValid(in ServerData* sd)
 	{
-		debug synchronized (this) {
+		return isValidIpAddress(sd.server[ServerColumn.ADDRESS]);
+	}
+
+
+	/*invariant()
+	{
+		synchronized (this) {
 			foreach (i, sd; servers_) {
 				char[] address = sd.server[ServerColumn.ADDRESS];
 				if (!isValidIpAddress(address)) {
@@ -273,7 +282,7 @@ final class MasterList
 				}
 			}
 		}
-	}
+	}*/
 
 
 	private {
