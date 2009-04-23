@@ -199,6 +199,7 @@ final class MasterList
 	/// Save all data.
 	void save()
 	{
+		scope timer = new Timer;
 		scope doc = new Document!(char);
 		doc.header;
 
@@ -223,6 +224,8 @@ final class MasterList
 		printer(doc.tree, &printDg);
 		f.write("\r\n");
 		f.flush.close;
+
+		log(Format("Saved {} in {} seconds.", fileName_, timer.seconds));
 	}
 
 
