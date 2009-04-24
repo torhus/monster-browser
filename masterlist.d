@@ -1,5 +1,6 @@
 module masterlist;
 
+import tango.core.Memory;
 import tango.io.device.File;
 import Path = tango.io.Path;
 import tango.text.Ascii;
@@ -177,6 +178,7 @@ final class MasterList
 
 		scope timer = new Timer;
 		char[] content = cast(char[])File.get(fileName_);
+		GC.setAttr(content.ptr, GC.BlkAttr.NO_SCAN);
 		auto parser = new SaxParser!(char);
 		auto handler = new MySaxHandler!(char);
 
