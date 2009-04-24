@@ -1,14 +1,14 @@
 module masterlist;
 
 import tango.core.Memory;
-import tango.io.device.File;
 import Path = tango.io.Path;
+import tango.io.device.File;
+import tango.io.stream.Buffered;
+import tango.io.stream.Format;
 import tango.text.Ascii;
 import tango.text.Util;
 import tango.text.convert.Format;
 import Integer = tango.text.convert.Integer;
-import tango.text.xml.DocPrinter;
-import tango.text.xml.Document;
 import tango.text.xml.SaxParser;
 
 import common;
@@ -202,74 +202,17 @@ final class MasterList
 	void save()
 	{
 		scope timer = new Timer;
-		scope doc = new Document!(char);
-		doc.header;
+		scope dumper = new XmlDumper(fileName_);
 
 		synchronized (this) {
-			doc.tree.element(null, "masterserver");
-
 			foreach (sd; servers_) {
 				if (sd.failCount < MAX_FAIL_COUNT)
-					serverToXml(doc.elements, &sd);
+					dumper.serverToXml(&sd);
 			}
 		}
 
-		scope printer = new DocPrinter!(char);
-		scope f = new File(fileName_, File.WriteCreate);
-
-		void printDg(char[][] str...)
-		{
-			foreach (s; str)
-				f.write(s);
-		}
-
-		printer(doc.tree, &printDg);
-		f.write("\r\n");
-		f.flush.close;
-
+		dumper.close();
 		log(Format("Saved {} in {} seconds.", fileName_, timer.seconds));
-	}
-
-
-	private static void serverToXml(Document!(char).Node node,
-	                                                         in ServerData* sd)
-	{
-		auto server = node.element(null, "server")
-		     .attribute(null, "name", sd.rawName)
-		     .attribute(null, "country_code", sd.server[ServerColumn.COUNTRY])
-		     .attribute(null, "address", sd.server[ServerColumn.ADDRESS])
-		     .attribute(null, "ping", sd.server[ServerColumn.PING])
-		     .attribute(null, "player_count", sd.server[ServerColumn.PLAYERS])
-		     .attribute(null, "map", sd.server[ServerColumn.MAP])
-		     .attribute(null, "fail_count", Integer.toString(sd.failCount));
-
-		auto cvars = server.element(null, "cvars");
-		cvarsToXml(cvars, sd);
-		auto players = server.element(null, "players");
-		playersToXml(players, sd);
-	}
-
-
-	private static void cvarsToXml(Document!(char).Node node,
-	                                                         in ServerData* sd)
-	{
-		foreach (cvar; sd.cvars) {
-			node.element(null, "cvar")
-			    .attribute(null, "key", cvar[0])
-			    .attribute(null, "value", cvar[1]);
-		}
-	}
-
-
-	private static void playersToXml(Document!(char).Node node,
-	                                                         in ServerData* sd)
-	{
-		foreach (player; sd.players) {
-			node.element(null, "player")
-			    .attribute(null, "name", player[PlayerColumn.RAWNAME])
-			    .attribute(null, "score", player[PlayerColumn.SCORE])
-			    .attribute(null, "ping", player[PlayerColumn.PING]);
-		}
 	}
 
 
@@ -302,7 +245,84 @@ final class MasterList
 }
 
 
-private class MySaxHandler(Ch=char) : SaxHandler!(Ch)
+///
+private class XmlDumper
+{
+
+	///
+	this(in char[] fileName)
+	{
+		auto file = new BufferedOutput(new File(fileName, File.WriteCreate));
+		output_ = new FormatOutput!(char)(file);
+		// FIXME: create reusable buffer for layout
+		output_.formatln(`<?xml version="1.0" encoding="UTF-8"?>`);
+		output_.formatln("<masterserver>");
+	}
+
+
+	///
+	void close()
+	{
+		output_.formatln("</masterserver>");
+		output_.flush().close();
+	}
+
+
+	///
+	void serverToXml(in ServerData* sd)
+	{
+		output_.format(`  <server name="{}"`, sd.rawName)
+		       .format(` country_code="{}"`,  sd.server[ServerColumn.COUNTRY])
+		       .format(` address="{}"`,       sd.server[ServerColumn.ADDRESS])
+		       .format(` ping="{}"`,          sd.server[ServerColumn.PING])
+		       .format(` player_count="{}"`,  sd.server[ServerColumn.PLAYERS])
+		       .format(` map="{}"`,           sd.server[ServerColumn.MAP])
+		       .format(` fail_count="{}"`,     sd.failCount)
+			   .formatln(">");
+
+		if (sd.cvars.length) {
+			output_.formatln("    <cvars>");
+			cvarsToXml(sd);
+			output_.formatln("    </cvars>");
+		}
+
+		if (sd.players.length) {
+			output_.formatln("    <players>");
+			playersToXml(sd);
+			output_.formatln("    </players>");
+		}
+
+		output_.formatln("  </server>");
+	}
+
+
+	private void cvarsToXml(in ServerData* sd)
+	{
+		foreach (cvar; sd.cvars)
+			output_.format(`      <cvar key="{}" value="{}"/>`,
+			                                         cvar[0], cvar[1]).newline;
+	}
+
+
+	private void playersToXml(in ServerData* sd)
+	{
+		foreach (player; sd.players) {
+			output_.format(`      <player name="{}" score="{}" ping="{}"/>`,
+                                               player[PlayerColumn.RAWNAME],
+											   player[PlayerColumn.SCORE],
+											   player[PlayerColumn.PING]);
+			output_.newline;
+		}
+	}
+
+
+	private {
+		FormatOutput!(char) output_;
+	}
+}
+
+
+private final class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 {
 	ServerData[] servers;
 
