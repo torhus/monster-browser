@@ -246,7 +246,7 @@ final class MasterList
 
 
 ///
-private class XmlDumper
+private final class XmlDumper
 {
 
 	///
@@ -254,7 +254,6 @@ private class XmlDumper
 	{
 		auto file = new BufferedOutput(new File(fileName, File.WriteCreate));
 		output_ = new FormatOutput!(char)(file);
-		// FIXME: create reusable buffer for layout
 		output_.formatln(`<?xml version="1.0" encoding="UTF-8"?>`);
 		output_.formatln("<masterserver>");
 	}
@@ -277,7 +276,7 @@ private class XmlDumper
 		       .format(` ping="{}"`,          sd.server[ServerColumn.PING])
 		       .format(` player_count="{}"`,  sd.server[ServerColumn.PLAYERS])
 		       .format(` map="{}"`,           sd.server[ServerColumn.MAP])
-		       .format(` fail_count="{}"`,     sd.failCount)
+		       .format(` fail_count="{}"`,    sd.failCount)
 			   .formatln(">");
 
 		if (sd.cvars.length) {
