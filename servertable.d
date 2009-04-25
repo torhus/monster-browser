@@ -368,9 +368,8 @@ private:
 			for (int i = ServerColumn.COUNTRY + 1; i <= ServerColumn.max; i++)
 				item.setText(i, sd.server[i]);
 
-			if (timedOut(&sd)) {
-				item.setText(ServerColumn.PING, "~~~");
-			}
+			if (timedOut(&sd))
+				item.setText(ServerColumn.PING, "\&infin;");
 		}
 	}
 
