@@ -93,15 +93,8 @@ private void _main(char[][] args)
 
 	common.haveGslist = exists(gslistExe);
 
-	if (common.haveGslist) {
-		log("'" ~ gslistExe ~
-			"' found, using it for faster server list retrieval.");
-	}
-	else {
-		log("'" ~ gslistExe ~
-			"' not found, falling back to qstat for retrieving the "
-			"server list.");
-	}
+	if (common.haveGslist)
+		log("Found gslist, using it for faster server list retrieval.");
 
 	mainWindow = new MainWindow;
 
