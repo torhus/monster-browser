@@ -1,8 +1,12 @@
+- Add a menu with Specify, Settings, etc?  And some icons.
+
 - Check out qstat's option to use Gamespy masters.
 
 - Check out more qstat parameters, like sendinterval, timeout and interval.
 
 - Display the number of human players in the status bar?
+
+- Save window position between sessions.
 
 - Fix baseq3 server list when using gslist.
 
