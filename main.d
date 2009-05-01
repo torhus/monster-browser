@@ -181,7 +181,7 @@ private void _main(char[][] args)
 private bool redirectOutput(char[] file)
 {
 	try {
-		Cerr.output = new File(file, File.WriteCreate);
+		Cerr.output = new File(file, WriteCreateShared);
 		Cerr("Cerr is redirected to this file.").newline.flush;
 		Cout.output = Cerr.output;
 		Cout("Cout is redirected to this file.").newline.flush;
