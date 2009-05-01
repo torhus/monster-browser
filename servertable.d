@@ -514,9 +514,11 @@ private:
 			if (item && item.getBounds(ServerColumn.COUNTRY).contains(point)) {
 				int i = table_.indexOf(item);
 				ServerData sd = serverList_.getFiltered(i);
-				char[] ip = sd.server[ServerColumn.ADDRESS];
-				auto colon = locate(ip, ':');
-				text = countryNameByAddr(ip[0..colon]);
+				if (sd.server[ServerColumn.COUNTRY].length) {
+					char[] ip = sd.server[ServerColumn.ADDRESS];
+					auto colon = locate(ip, ':');
+					text = countryNameByAddr(ip[0..colon]);
+				}
 			}
 			if (table_.getToolTipText() != text)
 				table_.setToolTipText(text);
