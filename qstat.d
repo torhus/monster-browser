@@ -53,7 +53,7 @@ bool parseOutput(in char[] modName, Lines!(char) iter,
 	if (arguments.dumpqstat) {
 		try {
 			outfile = new BufferedOutput(new File(
-			                                   "qstat.out", File.WriteCreate));
+			                                   "qstat.out", WriteCreateShared));
 		}
 		catch (IOException e) {
 			error("Unable to create file, qstat output will not be saved"
