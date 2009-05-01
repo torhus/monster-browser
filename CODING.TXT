@@ -77,13 +77,13 @@ allservers - For benchmarking: don't filter servers on mod.
 build      - Used by the bud and dsss/rebuild build tools.
 Final      - Use the real version number for release builds
              (common.FINAL_VERSION).
-qstatDump  - Dump qstat's raw output to qstat.out.
 redirect   - Redirect stdout and stderr (Cout and Cerr) to the file DEBUG.OUT.
 
 
 Command line arguments (for testing/benchmarking)
 -------------------------------------------------
-dumplist  - Dump the list of servers to be refreshed to a file.
+dumplist  - Dump the list of addresses given to qstat to refreshlist.tmp.
+dumpqstat - Dump qstat's raw output to qstat.out.
 fromfile  - Get servers from disk instead of through the network.
 norefresh - Don't refresh the server table GUI while receiving servers.
 quit      - Print time since startup and then quit, after loading the server
