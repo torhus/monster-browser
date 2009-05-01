@@ -478,13 +478,17 @@ class ServerRetrievalController
 	{
 		assert(sh != InvalidServerHandle);
 
-		if (replied) {
-			if (matched)
-				deliverDg_(sh);
-		}
-		else {
+		if (!replied) {
 			timedOut_++;
+			// Try to match using the old data, since we still want to
+			// display the server if we know it runs the right mod.
+			assert(!matched);  // assure we don't do this needlessly
+			ServerData sd = serverList_.master.getServerData(sh);
+			matched = matchMod(&sd, serverList_.gameName);
 		}
+
+		if (matched)
+			deliverDg_(sh);
 
 		statusBarUpdater_.text = startMessage ~ Integer.toString(counter_++);
 		Display.getDefault.syncExec(statusBarUpdater_);
