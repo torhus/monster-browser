@@ -415,8 +415,7 @@ class ServerRetrievalController
 			serverCount_ = serverRetriever_.prepare();
 
 			if (serverCount_ != 0) {
-				auto serverList = serverTable.serverList;
-				auto dg = replace_ ? &serverList.replace : &serverList.add;
+				auto dg = replace_ ? &serverList_.replace : &serverList_.add;
 
 				if (useQueue_) {
 					serverQueue_ = new ServerQueue(dg);
@@ -428,7 +427,7 @@ class ServerRetrievalController
 				}
 
 				serverRetriever_.retrieve(&deliver);
-				serverList.complete = !threadManager.abort;
+				serverList_.complete = !threadManager.abort;
 
 				// a benchmarking tool
 				if (arguments.quit) {
@@ -496,21 +495,20 @@ class ServerRetrievalController
 
 	private void done()
 	{
-		ServerList list = serverTable.serverList;
-
-		if (list.length > 0) {
+		if (serverList_.length > 0) {
 			int index = -1;
 			if (autoSelect.length) {
 				// FIXME: select them all, not just the first one
-				index = list.getFilteredIndex(autoSelect[0]);
+				index = serverList_.getFilteredIndex(autoSelect[0]);
 			}
 
 			if (store_)
 				serverList_.master.save();
 
 			serverTable.fullRefresh(index);
-			statusBar.setDefaultStatus(list.length, list.filteredLength,
-			                                                        timedOut_);
+			statusBar.setDefaultStatus(serverList_.length,
+			                           serverList_.filteredLength,
+			                           timedOut_);
 		}
 		else {
 			statusBar.setLeft(noReplyMessage);
