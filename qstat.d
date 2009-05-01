@@ -44,13 +44,13 @@ bool parseOutput(in char[] modName, Lines!(char) iter,
                 bool delegate(ServerData*, bool replied, bool matched) deliver)
 {
 	char[][] gtypes;
-	BufferedOutput outfile;
+	scope BufferedOutput outfile = null;
 	debug scope timer2 = new Timer;
 	bool keepGoing = true;
 
 	assert(deliver);
 
-	version (qstatDump) {
+	if (arguments.dumpqstat) {
 		try {
 			outfile = new BufferedOutput(new File(
 			                                   "qstat.out", File.WriteCreate));
@@ -60,14 +60,12 @@ bool parseOutput(in char[] modName, Lines!(char) iter,
 			                                                       "to disk.");
 			outfile = null;
 		}
+	}
 
-		scope (exit) {
-			if (outfile) {
-				outfile.flush.close;
-				delete outfile;
-			}
-		}
-	 }
+	scope (exit) {
+		if (outfile)
+			outfile.flush.close;
+	}
 
 	if (modName in gameTypes) {
 		gtypes = gameTypes[modName];

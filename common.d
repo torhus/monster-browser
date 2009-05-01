@@ -33,6 +33,7 @@ else
 struct arguments {  ///
 static:
 	bool dumplist  = false;  ///
+	bool dumpqstat = false;  ///
 	bool fromfile  = false;  ///
 	bool norefresh = false;  ///
 	bool quit      = false;  ///
@@ -127,6 +128,7 @@ void log(char[] s)
 	version(redirect) {}
 	else debug Trace.formatln("LOG: {}", s);
 
+	assert(logfile !is null);
 	if (logfile) {
 		logfile.write(s);
 		logfile.write(newline);
@@ -490,6 +492,9 @@ void parseCmdLine(char[][] args)
 			case "dumplist":
 				arguments.dumplist = true;
 				break;
+			case "dumpqstat":
+				arguments.dumpqstat = true;
+				break;
 			case "fromfile":
 				arguments.fromfile = true;
 				break;
@@ -500,6 +505,7 @@ void parseCmdLine(char[][] args)
 				arguments.quit = true;
 				break;
 			default:
+				log("UNRECOGNIZED ARGUMENT: " ~ arg);
 				break;
 		}
 	}
