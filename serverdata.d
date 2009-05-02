@@ -101,6 +101,16 @@ enum ServerColumn {
 };
 
 
+const char[] PASSWORD_YES = "X";  ///
+const char[] PASSWORD_NO  = "";  ///
+
+///
+const char[] TIMEOUT = "9999";
+
+///
+const MAX_FAIL_COUNT = 2;
+
+
 /**
  * Does this server run the given mod?
  *
@@ -138,12 +148,6 @@ bool timedOut(in ServerData* sd)
 	return ping == TIMEOUT;
 }
 
-
-///
-const MAX_FAIL_COUNT = 2;
-
-///
-const char[] TIMEOUT = "9999";
 
 ///
 const char[][] defaultGameTypes = ["FFA", "1v1", "SP", "TDM", "CTF",

@@ -240,8 +240,10 @@ body {
 					return false;
 				break;
 			case "g_needpass":
-				if (cvar[1] == "1")
-					sd.server[ServerColumn.PASSWORDED] = "X";
+				if (cvar[1] == "0")
+					sd.server[ServerColumn.PASSWORDED] = PASSWORD_NO;
+				else
+					sd.server[ServerColumn.PASSWORDED] = PASSWORD_YES;
 				break;
 			default:
 				break;

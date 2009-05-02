@@ -497,7 +497,7 @@ private:
 					}
 					break;
 				case ServerColumn.PASSWORDED:
-					if (sd.server[ServerColumn.PASSWORDED].length)
+					if (sd.server[ServerColumn.PASSWORDED] == PASSWORD_YES)
 						e.gc.drawImage(padlockImage_, e.x+4, e.y+1);
 					break;
 				default:

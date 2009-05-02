@@ -11,6 +11,7 @@ import tango.text.convert.Format;
 import Integer = tango.text.convert.Integer;
 import tango.text.xml.SaxParser;
 
+import colorednames;
 import common;
 import serverdata;
 
@@ -352,8 +353,10 @@ private final class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 		sd.server.length = ServerColumn.max + 1;
 
 		foreach (ref attr; attributes) {
-			if (attr.localName == "name")
+			if (attr.localName == "name") {
 				sd.rawName = attr.value;
+				sd.server[ServerColumn.NAME] = stripColorCodes(sd.rawName);
+			}
 			else if (attr.localName == "country_code")
 				sd.server[ServerColumn.COUNTRY] = attr.value;
 			else if (attr.localName == "address")
@@ -385,8 +388,10 @@ private final class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 
 			if (icompare(cvar[0], "g_gametype") == 0)
 				servers[$-1].server[ServerColumn.GAMETYPE] = cvar[1];
-			else if (icompare(cvar[0], "g_needpass") == 0)
-				servers[$-1].server[ServerColumn.PASSWORDED] = cvar[1];
+			else if (icompare(cvar[0], "g_needpass") == 0) {
+				char[] s = cvar[1] == "0" ? PASSWORD_NO : PASSWORD_YES;
+				servers[$-1].server[ServerColumn.PASSWORDED] = s;
+			}
 		}
 
 		servers[$-1].cvars ~= cvar;
