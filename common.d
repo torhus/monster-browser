@@ -128,7 +128,7 @@ void log(char[] file, int line, char[] msg)
 void log(char[] s)
 {
 	version(redirect) {}
-	else debug Trace.formatln("LOG: {}", s);
+	else Trace.formatln("LOG: {}", s);
 
 	assert(logfile !is null);
 	if (logfile) {
