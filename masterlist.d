@@ -29,6 +29,7 @@ final class MasterList
 	///
 	this(char[] name)
 	{
+		assert(name.length > 0);
 		name_ = name;
 		fileName_ = replace(name_ ~ ".xml", ':', '_');
 	}
@@ -166,6 +167,7 @@ final class MasterList
 	 *          successfully read.
 	 *
 	 * Throws: IOException if an error occurred during reading.
+	 *         XmlException for XML syntax errors.
 	 *
 	 * Note: After calling this, all ServerHandles that were obtained before
 	 *       calling it should be be considered invalid.
@@ -199,7 +201,11 @@ final class MasterList
 	}
 
 
-	/// Save all data.
+	/**
+	 * Save all data.
+	 *
+	 * Throws: IOException.
+	 */
 	void save()
 	{
 		scope timer = new Timer;

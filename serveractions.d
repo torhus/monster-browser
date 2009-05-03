@@ -4,6 +4,7 @@
 
 module serveractions;
 
+import tango.core.Exception;
 import tango.core.Memory;
 import Path = tango.io.Path;
 import tango.io.stream.TextFile;
@@ -44,23 +45,27 @@ ServerList[char[]] serverListCache;
  * Takes care of everything, updating the GUI as necessary, querying servers or
  * a master server if there's no pre-existing data for the game, etc.  Most of
  * the work is done in a new thread.
+ *
+ * FIXME: simplify this messy function
  */
 void switchToGame(in char[] name)
 {
 	static char[] gameName;
 
 	static void delegate() f() {
-		MasterList master;
 		ServerList serverList;
 		bool needRefresh;
 
+		// make sure we have a ServerList object
 		if (ServerList* list = gameName in serverListCache) {
 			serverList = *list;
 			needRefresh = !serverList.complete;
 		}
 		else {
 			char[] masterName = getGameConfig(gameName).masterServer;
+			MasterList master;
 
+			// make sure we have a MasterList object
 			if (auto m = masterName in masterLists) {
 				master = *m;
 			}
@@ -98,10 +103,29 @@ void switchToGame(in char[] name)
 				threadManager.runSecond(&loadSavedList);
 			else if (common.haveGslist && game.useGslist)
 				threadManager.runSecond(&getNewList);
-			else if (master.length > 0 || master.load())
-				threadManager.runSecond(&refreshList);
-			else
-				threadManager.runSecond(&getNewList);
+			else {
+				// try to refresh if we can, otherwise get a new list
+				MasterList master = serverList.master;
+				bool canRefresh = master.length > 0;
+				if (!canRefresh) {
+					try {
+						canRefresh = master.load();
+					}
+					catch (IOException e) {
+						error("There was an error reading " ~ master.fileName
+						                    ~ "\nPress OK to get a new list.");
+					}
+					catch (XmlException e) {
+						error("Syntax error in " ~ master.fileName
+						                    ~ "\nPress OK to get a new list.");
+					}
+				}
+
+				if (canRefresh)
+					threadManager.runSecond(&refreshList);
+				else
+					threadManager.runSecond(&getNewList);
+			}
 		}
 		else {
 			serverTable.serverList.sort();
@@ -200,11 +224,7 @@ void delegate() refreshList()
 	MasterList master = serverList.master;
 	GameConfig game = getGameConfig(serverList.gameName);
 
-	if (master.length == 0 && !master.load()) {
-		error("No server list found on disk, press\n"
-                                   "\'Get new list\' to download a new list.");
-		return null;
-	}
+	assert(master.length > 0);
 
 	Set!(char[]) servers;
 
