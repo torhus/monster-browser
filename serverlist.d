@@ -43,7 +43,11 @@ class ServerList
 
 	///
 	this(in char[] gameName, MasterList master)
-	{
+	in {
+		assert(gameName.length > 0);
+		assert(master !is null);
+	}
+	body {
 		gameName_ = gameName;
 		master_ = master;
 		filteredIpHash_ = new HashMap!(char[], int);
