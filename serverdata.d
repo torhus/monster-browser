@@ -17,6 +17,8 @@ struct ServerData {
 	/// server name, with any color codes intact
 	char[] rawName;
 	/// name (without color codes), ping, playercount, map, etc.
+	/// Note: If this is a zero-length array, this object is considered to be
+	/// empty, and can be deleted.
 	char[][] server;
 	/// list of players, with country, name, score, ping, and raw name (with color
 	/// codes) for each.
@@ -111,10 +113,30 @@ const char[] TIMEOUT = "9999";
 const MAX_FAIL_COUNT = 2;
 
 
+/// Set sd to the empty state.
+void setEmpty(ServerData* sd)
+{
+	sd.rawName = null;
+	sd.server  = null;
+	sd.players = null;
+	sd.cvars   = null;
+}
+
+
+/// Is sd empty?
+bool isEmpty(in ServerData* sd)
+{
+	return sd.server.length == 0;
+}
+
+
 /**
  * Does this server run the given mod?
  *
  * Also returns false if there is no data to match against.
+ *
+ * If not null, hasMatchData will be true or false depending on whether there
+ * was any data to match the mod name against.
  */
 bool matchMod(in ServerData* sd, in char[] mod, bool* hasMatchData=null)
 {
