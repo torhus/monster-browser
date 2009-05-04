@@ -44,30 +44,28 @@ bool parseOutput(in char[] modName, Lines!(char) iter,
                 bool delegate(ServerData*, bool replied, bool matched) deliver)
 {
 	char[][] gtypes;
-	BufferedOutput outfile;
+	scope BufferedOutput outfile = null;
 	debug scope timer2 = new Timer;
 	bool keepGoing = true;
 
 	assert(deliver);
 
-	version (qstatDump) {
+	if (arguments.dumpqstat) {
 		try {
 			outfile = new BufferedOutput(new File(
-			                                   "qstat.out", File.WriteCreate));
+			                                   "qstat.out", WriteCreateShared));
 		}
 		catch (IOException e) {
 			error("Unable to create file, qstat output will not be saved"
 			                                                       "to disk.");
 			outfile = null;
 		}
+	}
 
-		scope (exit) {
-			if (outfile) {
-				outfile.flush.close;
-				delete outfile;
-			}
-		}
-	 }
+	scope (exit) {
+		if (outfile)
+			outfile.flush.close;
+	}
 
 	if (modName in gameTypes) {
 		gtypes = gameTypes[modName];
@@ -81,7 +79,7 @@ each_server:
 		debug checkTime(timer2, "1");
 		char[] line = iter.next();
 		debug checkTime(timer2, "2");
-		if (line is null)
+		if (!line)
 			break;
 
 		if (outfile) {
@@ -97,26 +95,13 @@ each_server:
 			bool error = fields.length < Field.max + 1;
 
 			sd.server.length = ServerColumn.max + 1;
-			
+
 			// still got the address in case of a timeout
 			sd.server[ServerColumn.ADDRESS] = fields[Field.ADDRESS];
 
 			if (!error) {
-				/*if (modName != "baseq3" &&
-				             MOD_ONLY &&
-				             icmp(fields[Field.GAME], modName) != 0) {
-					debug printf("skipped %.*s\n", line);
-					debug line = readLine();
-					debug printf("        %.*s\n", line);
-					continue each_server;
-				}*/	
-
 				sd.rawName = fields[Field.NAME];
-				sd.server[ServerColumn.COUNTRY] = "";
-				sd.server[ServerColumn.PASSWORDED] = "";
 				sd.server[ServerColumn.PING] = fields[Field.PING];
-				sd.server[ServerColumn.PLAYERS] = "";
-				sd.server[ServerColumn.GAMETYPE] = "";
 				sd.server[ServerColumn.MAP] = fields[Field.MAP];
 
 				// cvar line
@@ -125,7 +110,7 @@ each_server:
 					outfile.write(line);
 					outfile.write(newline);
 				}
-				
+
 				char[] matchMod = (icompare(fields[Field.GAME], modName) == 0)
 				                                              ? null : modName;
 				bool matches = parseCvars(line, &sd, matchMod, gtypes);
@@ -148,8 +133,8 @@ each_server:
 					bots = 0;
 
 				sd.server[ServerColumn.PLAYERS] = toString(humans) ~
-				                  "+" ~ toString(bots) ~
-				                  "/" ~ fields[Field.MAX_PLAYERS];
+				                               "+" ~ toString(bots) ~
+				                               "/" ~ fields[Field.MAX_PLAYERS];
 
 				sd.server[ServerColumn.NAME] = stripColorCodes(sd.rawName);
 
@@ -157,10 +142,9 @@ each_server:
 				keepGoing = deliver(&sd, true, matches);
 				debug checkTime(timer2, "4");
 			}
-			else /*if (!MOD_ONLY)*/ { // server didn't respond
-				/*sd.server.length = servertable.serverHeaders.length;
-				sd.server[ServerColumn.ADDRESS] = fields[Field.ADDRESS];*/
+			else { // server didn't respond
 				debug checkTime(timer2, "3x");
+				sd.server[ServerColumn.PING] = TIMEOUT;
 				keepGoing = deliver(&sd, false, false);
 				debug checkTime(timer2, "4x");
 			}
@@ -256,8 +240,10 @@ body {
 					return false;
 				break;
 			case "g_needpass":
-				if (cvar[1] == "1")
-					sd.server[ServerColumn.PASSWORDED] = "X";
+				if (cvar[1] == "0")
+					sd.server[ServerColumn.PASSWORDED] = PASSWORD_NO;
+				else
+					sd.server[ServerColumn.PASSWORDED] = PASSWORD_YES;
 				break;
 			default:
 				break;

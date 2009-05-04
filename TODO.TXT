@@ -1,4 +1,12 @@
+- Add a menu with Specify, Settings, etc?  And some icons.
+
+- Check out qstat's option to use Gamespy masters.
+
+- Check out more qstat parameters, like sendinterval, timeout and interval.
+
 - Display the number of human players in the status bar?
+
+- Save window position between sessions.
 
 - Fix baseq3 server list when using gslist.
 
@@ -12,9 +20,5 @@
 - Use Integer.parse instead of toInt to avoid exceptions?  parse will just
   return 0 if there's garbage in the string, which is usually better than
   stopping the app with an exception.  Might also speed up sorting.
-
-- Avoid reallocation when serverList.list gets filled.  Either by
-  pre-allocating, or by switching to a linked list.  This could also reduce
-  memory use.  Could also have a look at GC.minimize().
 
 - Don't select (mark) a server twice (Specify server).

@@ -164,20 +164,14 @@ final class MasterListServerRetriever : IServerRetriever
 	void retrieve(bool delegate(ServerHandle sh, bool replied, bool matched)
 	                                                                   deliver)
 	{
-		bool test(in ServerData* sd)
-		{
-			static if (MOD_ONLY)
-				return matchMod(sd, game_.mod);
-			else
-				return true;
+		foreach (sh; master_) {
+			ServerData sd = master_.getServerData(sh);
+			bool keep = matchMod(&sd, game_.mod);
+			static if (!MOD_ONLY)
+				keep = true;
+			if (keep)
+				deliver(sh, true, true);
 		}
-
-		void emit(ServerHandle sh)
-		{
-			deliver(sh, true, true);
-		}
-
-		master_.filter(&test, &emit);
 	}
 
 
@@ -196,7 +190,8 @@ final class QstatServerRetriever : IServerRetriever
 	*    game      = Name of game.
 	*    master    = MasterList object to add servers to.
 	*    addresses = Addresses of servers to query.
-	*    replace   = Replace servers in master, instead of adding.
+	*    replace   = Try to replace servers in the master, instead of adding.
+	*                Servers that are not present in the master will be added.
 	*/
 	this(in char[] game, MasterList master, Set!(char[]) addresses,
 	                                                        bool replace=false)
@@ -224,6 +219,8 @@ final class QstatServerRetriever : IServerRetriever
 				cmdLine ~= " -carets";
 			version (linux)
 				cmdLine = "./" ~ cmdLine;
+
+			cmdLine ~= " -maxsim " ~ getSetting("simultaneousQueries");
 
 			proc = new Process(cmdLine);
 			proc.workDir = appDir;
@@ -270,10 +267,14 @@ final class QstatServerRetriever : IServerRetriever
 		{
 			ServerHandle sh;
 
-			if (replace_)
+			if (replace_) {
 				sh = master_.updateServer(*sd);
-			else
+				if (sh == InvalidServerHandle)
+					sh = master_.addServer(*sd);
+			}
+			else {
 				sh = master_.addServer(*sd);
+			}
 
 			return deliver(sh, replied, matched);
 		}
