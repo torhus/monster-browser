@@ -115,8 +115,9 @@ final class MasterList
 	{
 		synchronized (this) {
 			assert(sh < servers_.length);
-			assert(isValid(&servers_[sh]));
-			return servers_[sh];
+			ServerData* sd = &servers_[sh];
+			assert(!isEmpty(sd) && isValid(sd));
+			return *sd;
 		}
 	}
 
@@ -126,8 +127,9 @@ final class MasterList
 	{
 		synchronized (this) {
 			assert(sh < servers_.length);
-			assert(isValid(&servers_[sh]));
-			servers_[sh] = sd;
+			ServerData* old = &servers_[sh];
+			assert(!isEmpty(old) && isValid(old));
+			*old = sd;
 		}
 	}
 
@@ -145,13 +147,15 @@ final class MasterList
 
 
 	/**
-	* Foreach support.
+	* Foreach support.  Skips servers for which isEmpty(sd) returns true.
 	*/
 	int opApply(int delegate(ref ServerHandle) dg)
 	{
 		int result = 0;
 
 		foreach (sh, sd; servers_) {
+			if (isEmpty(&sd))
+				continue;
 			result = dg(sh);
 			if (result)
 				break;
@@ -213,7 +217,7 @@ final class MasterList
 
 		synchronized (this) {
 			foreach (sd; servers_) {
-				if (sd.failCount < MAX_FAIL_COUNT)
+				if (sd.failCount < MAX_FAIL_COUNT && !isEmpty(&sd))
 					dumper.serverToXml(&sd);
 			}
 		}

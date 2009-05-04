@@ -291,12 +291,19 @@ void delegate() getNewList()
 
 			size_t total = addresses.length;
 
-			// exclude servers that are already known
+			// Exclude servers that are already known to run the right mod, and
+			// delete servers from the master list that's missing from the
+			// master server.
 			foreach (sh; master) {
 				ServerData sd = master.getServerData(sh);
 				char[] address = sd.server[ServerColumn.ADDRESS];
-				if (address in addresses)
-					addresses.remove(address);
+				if (address in addresses) {
+					if (matchMod(&sd, serverList.gameName))
+						addresses.remove(address);
+				}
+				else {
+					setEmpty(&sd);
+				}
 			}
 
 			log(Format("Got {} servers from {}, including {} new.",
@@ -341,7 +348,7 @@ void delegate() getNewList()
 
 	statusBar.setLeft("Checking for new servers...");
 	char[] gameName = serverTable.serverList.gameName;
-	log("Getting new server list for " ~ gameName ~ "...");
+	log("Checking for new servers for " ~ gameName ~ "...");
 	serverTable.notifyRefreshStarted;
 
 	return &f;
