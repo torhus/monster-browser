@@ -22,10 +22,6 @@ import serverdata;
 import settings;
 
 
-version (Windows)
-	private PROCESS_INFORMATION *info = null;
-
-
 /**
  * Launch the game, connecting to a server.
  *
@@ -87,25 +83,21 @@ void joinServer(in char[] gameName, ServerData sd)
 			launch = false;
 	}
 
-	if (launch) {
-		version (Posix) {
-			// Need a platform specific way of launching the game.
-			error("Not implemented on Unix.");
-		}
-		else {
+	if (launch) {		
+		version (Windows) {
+			PROCESS_INFORMATION info;
 			STARTUPINFO startup;
 
 			GetStartupInfoA(&startup);
 			startup.dwFlags = STARTF_USESTDHANDLES;
-			info = new PROCESS_INFORMATION();
 
-			char buf[MAX_PATH * 2];
+			char buf[MAX_PATH];
 			char[] ansiDir = CodePage.into(path.path, buf);
 			char[] ansiPath = ansiDir ~ path.file;
 
 			int r = CreateProcessA(null, toStringz(ansiPath ~ " " ~ argv),
-			                     null, null, true, 0/*DETACHED_PROCESS*/, null,
-			                               toStringz(ansiDir), &startup, info);
+			                     null, null, true, 0, null, toStringz(ansiDir),
+			                                                  &startup, &info);
 			if (!r) {
 				int e = GetLastError();
 				db("CreatProcessA returned " ~ Integer.toString(r));
@@ -114,6 +106,9 @@ void joinServer(in char[] gameName, ServerData sd)
 			else if (getSetting("minimizeOnGameLaunch") == "true") {
 				mainWindow.minimized = true;
 			}
+		}
+		else {
+			error("joinServer() not implemented on this platform.");
 		}
 	}
 }

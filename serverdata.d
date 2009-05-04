@@ -1,12 +1,15 @@
 module serverdata;
 
 debug import tango.core.Thread;
+import tango.stdc.ctype;
 import tango.text.Ascii;
 import tango.text.Util;
 import Integer = tango.text.convert.Integer;
 debug import tango.util.log.Trace;
 
 import org.eclipse.swt.graphics.TextLayout;
+
+import common;
 
 
 /** Stores all data for a server. */
@@ -22,6 +25,8 @@ struct ServerData {
 	char[][][] cvars;
 
 	TextLayout customData = null;
+
+	int failCount = 0;
 
 	/*
 	 * Extract some info about the server.
@@ -96,15 +101,51 @@ enum ServerColumn {
 };
 
 
-/// Returns true if this server runs the correct mod.
-bool matchMod(in ServerData* sd, in char[] mod)
+const char[] PASSWORD_YES = "X";  ///
+const char[] PASSWORD_NO  = "";  ///
+
+///
+const char[] TIMEOUT = "9999";
+
+///
+const MAX_FAIL_COUNT = 2;
+
+
+/**
+ * Does this server run the given mod?
+ *
+ * Also returns false if there is no data to match against.
+ */
+bool matchMod(in ServerData* sd, in char[] mod, bool* hasMatchData=null)
 {
+	bool hasData = false;
+	bool matched = false;
+
 	foreach (cvar; sd.cvars) {
-		if ((cvar[0] == "game" || cvar[0] == "gamename") &&
-		                                           icompare(cvar[1], mod) == 0)
-			return true;
+		if (cvar[0] == "game" || cvar[0] == "gamename") {
+			hasData = true;
+			if (icompare(cvar[1], mod) == 0)
+				matched = true;
+		}
 	}
-	return false;
+
+	static if (!MOD_ONLY) {
+		hasData = true;
+		matched = true;
+	}
+
+	if (hasMatchData)
+		*hasMatchData = hasData;
+
+	return matched;
+}
+
+
+/// Did this server time out when last queried?
+bool timedOut(in ServerData* sd)
+{
+	char[] ping = sd.server[ServerColumn.PING];
+	return ping == TIMEOUT;
 }
 
 

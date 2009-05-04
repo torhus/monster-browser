@@ -4,6 +4,7 @@
 
 module serveractions;
 
+import tango.core.Exception;
 import tango.core.Memory;
 import Path = tango.io.Path;
 import tango.io.stream.TextFile;
@@ -44,23 +45,27 @@ ServerList[char[]] serverListCache;
  * Takes care of everything, updating the GUI as necessary, querying servers or
  * a master server if there's no pre-existing data for the game, etc.  Most of
  * the work is done in a new thread.
+ *
+ * FIXME: simplify this messy function
  */
 void switchToGame(in char[] name)
 {
 	static char[] gameName;
 
 	static void delegate() f() {
-		MasterList master;
 		ServerList serverList;
 		bool needRefresh;
 
+		// make sure we have a ServerList object
 		if (ServerList* list = gameName in serverListCache) {
 			serverList = *list;
 			needRefresh = !serverList.complete;
 		}
 		else {
 			char[] masterName = getGameConfig(gameName).masterServer;
+			MasterList master;
 
+			// make sure we have a MasterList object
 			if (auto m = masterName in masterLists) {
 				master = *m;
 			}
@@ -90,6 +95,7 @@ void switchToGame(in char[] name)
 		}
 
 		serverTable.setServerList(serverList);
+		serverTable.clear();
 
 		if (needRefresh) {
 			GameConfig game = getGameConfig(gameName);
@@ -97,10 +103,29 @@ void switchToGame(in char[] name)
 				threadManager.runSecond(&loadSavedList);
 			else if (common.haveGslist && game.useGslist)
 				threadManager.runSecond(&getNewList);
-			else if (master.length > 0 || master.load())
-				threadManager.runSecond(&refreshList);
-			else
-				threadManager.runSecond(&getNewList);
+			else {
+				// try to refresh if we can, otherwise get a new list
+				MasterList master = serverList.master;
+				bool canRefresh = master.length > 0;
+				if (!canRefresh) {
+					try {
+						canRefresh = master.load();
+					}
+					catch (IOException e) {
+						error("There was an error reading " ~ master.fileName
+						                    ~ "\nPress OK to get a new list.");
+					}
+					catch (XmlException e) {
+						error("Syntax error in " ~ master.fileName
+						                    ~ "\nPress OK to get a new list.");
+					}
+				}
+
+				if (canRefresh)
+					threadManager.runSecond(&refreshList);
+				else
+					threadManager.runSecond(&getNewList);
+			}
 		}
 		else {
 			serverTable.serverList.sort();
@@ -199,22 +224,21 @@ void delegate() refreshList()
 	MasterList master = serverList.master;
 	GameConfig game = getGameConfig(serverList.gameName);
 
-	if (master.length == 0 && !master.load()) {
-		error("No server list found on disk, press\n"
-                                   "\'Get new list\' to download a new list.");
-		return null;
-	}
+	assert(master.length > 0);
 
 	Set!(char[]) servers;
 
-	bool test(in ServerData* sd) { return matchMod(sd, game.mod); }
+	foreach (sh; master) {
+		ServerData sd = master.getServerData(sh);
+		bool hasMatchData;
+		bool ok = matchMod(&sd, game.mod, &hasMatchData);
 
-	void emit(ServerHandle sh)
-	{
-		servers.add(master.getServerData(sh).server[ServerColumn.ADDRESS]);
+		if (!ok)
+			ok = !hasMatchData && timedOut(&sd);
+
+		if (ok && sd.failCount < MAX_FAIL_COUNT)
+			servers.add(sd.server[ServerColumn.ADDRESS]);
 	}
-
-	master.filter(&test, &emit);
 
 	log("Refreshing server list for " ~ game.name ~ "...");
 	log(Format("Found {} servers, master is {}.", servers.length,
@@ -260,16 +284,33 @@ void delegate() getNewList()
 	void f()
 	{
 		try {
+			MasterList master = serverTable.serverList.master;
 			ServerList serverList = serverTable.serverList;
 			GameConfig game = getGameConfig(serverList.gameName);
-			auto addresses = browserGetNewList(game);
-			log(Format("Got {} servers from {}.", addresses.length,
-			                                               game.masterServer));
+			Set!(char[]) addresses = browserGetNewList(game);
+
+			size_t total = addresses.length;
+
+			// exclude servers that are already known
+			foreach (sh; master) {
+				ServerData sd = master.getServerData(sh);
+				char[] address = sd.server[ServerColumn.ADDRESS];
+				if (address in addresses)
+					addresses.remove(address);
+			}
+
+			log(Format("Got {} servers from {}, including {} new.",
+			                      total, game.masterServer, addresses.length));
 
 			auto extraServers = serverList.extraServers;
+			size_t oldLength = addresses.length;
 			foreach (s; extraServers)
-					addresses.add(s);
-			log(Format("Added {} extra servers.", extraServers.length));
+				addresses.add(s);
+
+			auto delta = addresses.length - oldLength;
+			log(Format("Added {} extra servers, skipping {} duplicates.",
+	                                      delta, extraServers.length - delta));
+
 
 			if (addresses.length == 0) {
 				// FIXME: what to do when there are no servers?
@@ -278,14 +319,13 @@ void delegate() getNewList()
 					{
 						serverTable.fullRefresh;
 						serverTable.notifyRefreshEnded;
+						statusBar.setLeft("There were no new servers.");
 					}
 				});
 			}
 			else {
-				MasterList master = serverTable.serverList.master;
-
 				auto retriever = new QstatServerRetriever(game.name, master,
-				                                                    addresses);
+				                                              addresses, true);
 				auto contr = new ServerRetrievalController(retriever);
 				contr.startMessage = Format("Got {} servers, querying...",
 				                                             addresses.length);
@@ -299,12 +339,7 @@ void delegate() getNewList()
 
 	}
 
-	serverTable.clear();
-	serverTable.serverList.clear();
-	serverTable.serverList.master.clear();
-	GC.collect();
-
-	statusBar.setLeft("Getting new server list...");
+	statusBar.setLeft("Checking for new servers...");
 	char[] gameName = serverTable.serverList.gameName;
 	log("Getting new server list for " ~ gameName ~ "...");
 	serverTable.notifyRefreshStarted;
@@ -400,8 +435,7 @@ class ServerRetrievalController
 			serverCount_ = serverRetriever_.prepare();
 
 			if (serverCount_ != 0) {
-				auto serverList = serverTable.serverList;
-				auto dg = replace_ ? &serverList.replace : &serverList.add;
+				auto dg = replace_ ? &serverList_.replace : &serverList_.add;
 
 				if (useQueue_) {
 					serverQueue_ = new ServerQueue(dg);
@@ -413,7 +447,7 @@ class ServerRetrievalController
 				}
 
 				serverRetriever_.retrieve(&deliver);
-				serverList.complete = !threadManager.abort;
+				serverList_.complete = !threadManager.abort;
 
 				// a benchmarking tool
 				if (arguments.quit) {
@@ -450,7 +484,7 @@ class ServerRetrievalController
 	 * Stops the whole process.
 	 *
 	 * If addRemaining is true, any servers already received will be added to
-	 * to the server list.
+	 * the server list.
 	 */
 	void stop(bool addRemaining)
 	{
@@ -464,13 +498,17 @@ class ServerRetrievalController
 	{
 		assert(sh != InvalidServerHandle);
 
-		if (replied) {
-			if (matched)
-				deliverDg_(sh);
-		}
-		else {
+		if (!replied) {
 			timedOut_++;
+			// Try to match using the old data, since we still want to
+			// display the server if we know it runs the right mod.
+			assert(!matched);  // assure we don't do this needlessly
+			ServerData sd = serverList_.master.getServerData(sh);
+			matched = matchMod(&sd, serverList_.gameName);
 		}
+
+		if (matched)
+			deliverDg_(sh);
 
 		statusBarUpdater_.text = startMessage ~ Integer.toString(counter_++);
 		Display.getDefault.syncExec(statusBarUpdater_);
@@ -481,21 +519,20 @@ class ServerRetrievalController
 
 	private void done()
 	{
-		ServerList list = serverTable.serverList;
-
-		if (list.length > 0) {
+		if (serverList_.length > 0) {
 			int index = -1;
 			if (autoSelect.length) {
 				// FIXME: select them all, not just the first one
-				index = list.getFilteredIndex(autoSelect[0]);
+				index = serverList_.getFilteredIndex(autoSelect[0]);
 			}
 
 			if (store_)
 				serverList_.master.save();
 
 			serverTable.fullRefresh(index);
-			statusBar.setDefaultStatus(list.length, list.filteredLength,
-			                                                        timedOut_);
+			statusBar.setDefaultStatus(serverList_.length,
+			                           serverList_.filteredLength,
+			                           timedOut_);
 		}
 		else {
 			statusBar.setLeft(noReplyMessage);

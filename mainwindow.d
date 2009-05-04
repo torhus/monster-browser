@@ -437,7 +437,7 @@ ToolBar createToolbar(Composite parent) ///
 	auto toolBar = new ToolBar(parent, SWT.HORIZONTAL);
 
 	auto button1 = new ToolItem(toolBar, SWT.PUSH);
-	button1.setText("Get new list");
+	button1.setText("Check for new servers");
 	//button1.setImage(loadImage!("res/32px-Crystal_Clear_action_down.png"));
 	button1.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
@@ -449,7 +449,7 @@ ToolBar createToolbar(Composite parent) ///
 	new ToolItem(toolBar, SWT.SEPARATOR);
 
 	ToolItem button2 = new ToolItem(toolBar, SWT.PUSH);
-	button2.setText("Refresh list");
+	button2.setText("Refresh all");
 	//button2.setImage(loadImage!("res/32px-Crystal_Clear_action_reload.png"));
 	button2.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)

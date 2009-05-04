@@ -93,15 +93,8 @@ private void _main(char[][] args)
 
 	common.haveGslist = exists(gslistExe);
 
-	if (common.haveGslist) {
-		log("'" ~ gslistExe ~
-			"' found, using it for faster server list retrieval.");
-	}
-	else {
-		log("'" ~ gslistExe ~
-			"' not found, falling back to qstat for retrieving the "
-			"server list.");
-	}
+	if (common.haveGslist)
+		log("Found gslist, using it for faster server list retrieval.");
 
 	mainWindow = new MainWindow;
 
@@ -188,7 +181,7 @@ private void _main(char[][] args)
 private bool redirectOutput(char[] file)
 {
 	try {
-		Cerr.output = new File(file, File.WriteCreate);
+		Cerr.output = new File(file, WriteCreateShared);
 		Cerr("Cerr is redirected to this file.").newline.flush;
 		Cout.output = Cerr.output;
 		Cout("Cout is redirected to this file.").newline.flush;

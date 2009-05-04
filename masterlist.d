@@ -1,15 +1,18 @@
 module masterlist;
 
-import tango.io.device.File;
+import tango.core.Memory;
 import Path = tango.io.Path;
+import tango.io.device.File;
+import tango.io.stream.Buffered;
+import tango.io.stream.Format;
 import tango.text.Ascii;
 import tango.text.Util;
-import tango.text.xml.DocPrinter;
-import tango.text.xml.Document;
+import tango.text.convert.Format;
+import Integer = tango.text.convert.Integer;
 import tango.text.xml.SaxParser;
-debug import tango.util.log.Trace;
 
-debug import common;
+import colorednames;
+import common;
 import serverdata;
 
 
@@ -26,6 +29,7 @@ final class MasterList
 	///
 	this(char[] name)
 	{
+		assert(name.length > 0);
 		name_ = name;
 		fileName_ = replace(name_ ~ ".xml", ':', '_');
 	}
@@ -43,6 +47,9 @@ final class MasterList
 	ServerHandle addServer(ServerData sd)
 	{
 		synchronized (this) {
+			assert(isValid(&sd));
+			if (timedOut(&sd))
+				sd.failCount = 1;
 			servers_ ~= sd;
 			return servers_.length - 1;
 		}
@@ -61,15 +68,23 @@ final class MasterList
 	ServerHandle updateServer(ServerData sd)
 	{
 		synchronized (this) {
-			debug assert(isValidIpAddress(sd.server[ServerColumn.ADDRESS]));
-			ServerHandle sh = findServer(sd.server[ServerColumn.ADDRESS]);
+			char[] address = sd.server[ServerColumn.ADDRESS];
+			assert(isValid(&sd));
+			ServerHandle sh = findServer(address);
 
 			if (sh != InvalidServerHandle) {
+				ServerData* old = &servers_[sh];
 				// country code is calculated locally, so we keep it
-				ServerData old = getServerData(sh);
 				sd.server[ServerColumn.COUNTRY] =
-				                     servers_[sh].server[ServerColumn.COUNTRY];
-				setServerData(sh, sd);
+				                              old.server[ServerColumn.COUNTRY];
+				if (timedOut(&sd)) {
+					old.server[ServerColumn.PING] =
+					                              sd.server[ServerColumn.PING];
+					old.failCount++;
+				}
+				else {
+					setServerData(sh, sd);
+				}
 			}
 
 			return sh;
@@ -99,17 +114,19 @@ final class MasterList
 	ServerData getServerData(ServerHandle sh)
 	{
 		synchronized (this) {
-			assert (sh < servers_.length);
+			assert(sh < servers_.length);
+			assert(isValid(&servers_[sh]));
 			return servers_[sh];
 		}
 	}
 
 
 	/// Will assert if sh is invalid.
-	void setServerData(ServerHandle sh, ServerData sd)
+	private void setServerData(ServerHandle sh, ServerData sd)
 	{
 		synchronized (this) {
-			assert (sh < servers_.length);
+			assert(sh < servers_.length);
+			assert(isValid(&servers_[sh]));
 			servers_[sh] = sd;
 		}
 	}
@@ -128,17 +145,18 @@ final class MasterList
 
 
 	/**
-	 * Get a filtered selection of servers.
-	 */
-	void filter(bool delegate(in ServerData*) test,
-	                                          void delegate(ServerHandle) emit)
+	* Foreach support.
+	*/
+	int opApply(int delegate(ref ServerHandle) dg)
 	{
-		synchronized (this) {
-			foreach (i, ref sd; servers_) {
-				if (test(&sd))
-					emit(i);
-			}
+		int result = 0;
+
+		foreach (sh, sd; servers_) {
+			result = dg(sh);
+			if (result)
+				break;
 		}
+		return result;
 	}
 
 
@@ -149,18 +167,21 @@ final class MasterList
 	 *          successfully read.
 	 *
 	 * Throws: IOException if an error occurred during reading.
+	 *         XmlException for XML syntax errors.
 	 *
 	 * Note: After calling this, all ServerHandles that were obtained before
 	 *       calling it should be be considered invalid.
 	 */
 	bool load()
 	{
-		debug Trace.formatln("load() called");
 		if (!Path.exists(fileName_))
 			return false;
 
+		log(Format("Opening '{}'...", fileName_));
 
+		scope timer = new Timer;
 		char[] content = cast(char[])File.get(fileName_);
+		GC.setAttr(content.ptr, GC.BlkAttr.NO_SCAN);
 		auto parser = new SaxParser!(char);
 		auto handler = new MySaxHandler!(char);
 
@@ -168,10 +189,8 @@ final class MasterList
 		parser.setContent(content);
 		parser.parse;
 
-		debug {
-			Trace.formatln("Found {} servers.", handler.servers.length);
-			Trace.formatln("==============================");
-		}
+		log(Format("Loaded {} servers in {} seconds.", handler.servers.length,
+		                                                       timer.seconds));
 
 		synchronized (this) {
 			delete servers_;
@@ -182,78 +201,38 @@ final class MasterList
 	}
 
 
-	/// Save all data.
+	/**
+	 * Save all data.
+	 *
+	 * Throws: IOException.
+	 */
 	void save()
 	{
-		scope doc = new Document!(char);
-		doc.header;
+		scope timer = new Timer;
+		scope dumper = new XmlDumper(fileName_);
 
 		synchronized (this) {
-			doc.tree.element(null, "masterserver");
-
-			foreach (sd; servers_)
-				serverToXml(doc.elements, &sd);
+			foreach (sd; servers_) {
+				if (sd.failCount < MAX_FAIL_COUNT)
+					dumper.serverToXml(&sd);
+			}
 		}
 
-		scope printer = new DocPrinter!(char);
-		scope f = new File(fileName_, File.WriteCreate);
-
-		void printDg(char[][] str...)
-		{
-			foreach (s; str)
-				f.write(s);
-		}
-
-		printer(doc.tree, &printDg);
-		f.write("\r\n");
-		f.flush.close;
+		dumper.close();
+		log(Format("Saved {} in {} seconds.", fileName_, timer.seconds));
 	}
 
 
-	private static void serverToXml(Document!(char).Node node,
-	                                                         in ServerData* sd)
+	///
+	private bool isValid(in ServerData* sd)
 	{
-		auto server = node.element(null, "server")
-		     .attribute(null, "name", sd.rawName)
-		     .attribute(null, "country_code", sd.server[ServerColumn.COUNTRY])
-		     .attribute(null, "address", sd.server[ServerColumn.ADDRESS])
-		     .attribute(null, "ping", sd.server[ServerColumn.PING])
-		     .attribute(null, "player_count", sd.server[ServerColumn.PLAYERS])
-		     .attribute(null, "map", sd.server[ServerColumn.MAP]);
-
-		auto cvars = server.element(null, "cvars");
-		cvarsToXml(cvars, sd);
-		auto players = server.element(null, "players");
-		playersToXml(players, sd);
+		return isValidIpAddress(sd.server[ServerColumn.ADDRESS]);
 	}
 
 
-	private static void cvarsToXml(Document!(char).Node node,
-	                                                         in ServerData* sd)
+	/*invariant()
 	{
-		foreach (cvar; sd.cvars) {
-			node.element(null, "cvar")
-			    .attribute(null, "key", cvar[0])
-			    .attribute(null, "value", cvar[1]);
-		}
-	}
-
-
-	private static void playersToXml(Document!(char).Node node,
-	                                                         in ServerData* sd)
-	{
-		foreach (player; sd.players) {
-			node.element(null, "player")
-			    .attribute(null, "name", player[PlayerColumn.RAWNAME])
-			    .attribute(null, "score", player[PlayerColumn.SCORE])
-			    .attribute(null, "ping", player[PlayerColumn.PING]);
-		}
-	}
-
-
-	invariant()
-	{
-		debug synchronized (this) {
+		synchronized (this) {
 			foreach (i, sd; servers_) {
 				char[] address = sd.server[ServerColumn.ADDRESS];
 				if (!isValidIpAddress(address)) {
@@ -262,7 +241,7 @@ final class MasterList
 				}
 			}
 		}
-	}
+	}*/
 
 
 	private {
@@ -273,7 +252,83 @@ final class MasterList
 }
 
 
-private class MySaxHandler(Ch=char) : SaxHandler!(Ch)
+///
+private final class XmlDumper
+{
+
+	///
+	this(in char[] fileName)
+	{
+		auto file = new BufferedOutput(new File(fileName, File.WriteCreate));
+		output_ = new FormatOutput!(char)(file);
+		output_.formatln(`<?xml version="1.0" encoding="UTF-8"?>`);
+		output_.formatln("<masterserver>");
+	}
+
+
+	///
+	void close()
+	{
+		output_.formatln("</masterserver>");
+		output_.flush().close();
+	}
+
+
+	///
+	void serverToXml(in ServerData* sd)
+	{
+		output_.format(`  <server name="{}"`, sd.rawName)
+		       .format(` country_code="{}"`,  sd.server[ServerColumn.COUNTRY])
+		       .format(` address="{}"`,       sd.server[ServerColumn.ADDRESS])
+		       .format(` ping="{}"`,          sd.server[ServerColumn.PING])
+		       .format(` player_count="{}"`,  sd.server[ServerColumn.PLAYERS])
+		       .format(` map="{}"`,           sd.server[ServerColumn.MAP])
+		       .format(` fail_count="{}"`,    sd.failCount)
+			   .formatln(">");
+
+		if (sd.cvars.length) {
+			output_.formatln("    <cvars>");
+			cvarsToXml(sd);
+			output_.formatln("    </cvars>");
+		}
+
+		if (sd.players.length) {
+			output_.formatln("    <players>");
+			playersToXml(sd);
+			output_.formatln("    </players>");
+		}
+
+		output_.formatln("  </server>");
+	}
+
+
+	private void cvarsToXml(in ServerData* sd)
+	{
+		foreach (cvar; sd.cvars)
+			output_.format(`      <cvar key="{}" value="{}"/>`,
+			                                         cvar[0], cvar[1]).newline;
+	}
+
+
+	private void playersToXml(in ServerData* sd)
+	{
+		foreach (player; sd.players) {
+			output_.format(`      <player name="{}" score="{}" ping="{}"/>`,
+                                               player[PlayerColumn.RAWNAME],
+											   player[PlayerColumn.SCORE],
+											   player[PlayerColumn.PING]);
+			output_.newline;
+		}
+	}
+
+
+	private {
+		FormatOutput!(char) output_;
+	}
+}
+
+
+private final class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 {
 	ServerData[] servers;
 
@@ -304,8 +359,10 @@ private class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 		sd.server.length = ServerColumn.max + 1;
 
 		foreach (ref attr; attributes) {
-			if (attr.localName == "name")
+			if (attr.localName == "name") {
 				sd.rawName = attr.value;
+				sd.server[ServerColumn.NAME] = stripColorCodes(sd.rawName);
+			}
 			else if (attr.localName == "country_code")
 				sd.server[ServerColumn.COUNTRY] = attr.value;
 			else if (attr.localName == "address")
@@ -314,10 +371,10 @@ private class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 				sd.server[ServerColumn.PING] = attr.value;
 			else if (attr.localName == "player_count")
 				sd.server[ServerColumn.PLAYERS] = attr.value;
-			/*else if (attr.localName == "gametype")
-				sd.server[ServerColumn.GAMETYPE] = attr.value;*/
 			else if (attr.localName == "map")
 				sd.server[ServerColumn.MAP] = attr.value;
+			else if (attr.localName == "fail_count")
+				sd.failCount = Integer.convert(attr.value);
 		}
 
 		servers ~= sd;
@@ -337,8 +394,10 @@ private class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 
 			if (icompare(cvar[0], "g_gametype") == 0)
 				servers[$-1].server[ServerColumn.GAMETYPE] = cvar[1];
-			else if (icompare(cvar[0], "g_needpass") == 0)
-				servers[$-1].server[ServerColumn.PASSWORDED] = cvar[1];
+			else if (icompare(cvar[0], "g_needpass") == 0) {
+				char[] s = cvar[1] == "0" ? PASSWORD_NO : PASSWORD_YES;
+				servers[$-1].server[ServerColumn.PASSWORDED] = s;
+			}
 		}
 
 		servers[$-1].cvars ~= cvar;

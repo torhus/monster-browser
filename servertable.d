@@ -168,7 +168,7 @@ class ServerTable
 		int sortCol = table_.indexOf(table_.getSortColumn());
 
 		serverList_ = newList;
-		
+
 		synchronized (serverList_) {
 			serverList_.setFilters(filterBar.filterState, false);
 			serverList_.sort(sortCol,
@@ -302,7 +302,7 @@ class ServerTable
 
 		if (indices.length) {
 			table_.setSelection(indices);
-			
+
 			char[][][] allPlayers;
 			foreach (i; indices) {
 				if (i < serverList_.filteredLength)
@@ -340,7 +340,7 @@ class ServerTable
 	{
 		selectedIps_.reset();
 	}
-	
+
 
 	/************************************************
 	            PRIVATE MEMBERS
@@ -363,18 +363,13 @@ private:
 			int index = table_.indexOf(item);
 			assert(index < serverList_.filteredLength);
 			auto sd = serverList_.getFiltered(index);
-			
-			// Find and store country code.
-			/*if (sd.server[ServerColumn.COUNTRY].length == 0) {
-				char[] ip = sd.server[ServerColumn.ADDRESS];
-				auto colon = locate(ip, ':');
-				char[] country = countryCodeByAddr(ip[0..colon]);
-				sd.server[ServerColumn.COUNTRY] = country;
-			}*/
 
 			// add text
 			for (int i = ServerColumn.COUNTRY + 1; i <= ServerColumn.max; i++)
 				item.setText(i, sd.server[i]);
+
+			if (timedOut(&sd))
+				item.setText(ServerColumn.PING, "\&infin;");
 		}
 	}
 
@@ -502,7 +497,7 @@ private:
 					}
 					break;
 				case ServerColumn.PASSWORDED:
-					if (sd.server[ServerColumn.PASSWORDED].length)
+					if (sd.server[ServerColumn.PASSWORDED] == PASSWORD_YES)
 						e.gc.drawImage(padlockImage_, e.x+4, e.y+1);
 					break;
 				default:
@@ -519,9 +514,11 @@ private:
 			if (item && item.getBounds(ServerColumn.COUNTRY).contains(point)) {
 				int i = table_.indexOf(item);
 				ServerData sd = serverList_.getFiltered(i);
-				char[] ip = sd.server[ServerColumn.ADDRESS];
-				auto colon = locate(ip, ':');
-				text = countryNameByAddr(ip[0..colon]);
+				if (sd.server[ServerColumn.COUNTRY].length) {
+					char[] ip = sd.server[ServerColumn.ADDRESS];
+					auto colon = locate(ip, ':');
+					text = countryNameByAddr(ip[0..colon]);
+				}
 			}
 			if (table_.getToolTipText() != text)
 				table_.setToolTipText(text);
@@ -593,7 +590,7 @@ private:
 	}
 
 	void onCopyAddresses()
-	{		
+	{
 		char[][] addresses;
 		foreach (ip, v; selectedIps_)
 			addresses ~= ip;
@@ -615,7 +612,7 @@ private:
 			addresses ~= ip;
 		queryServers(addresses, true);
 	}
-	
+
 	void onSelectAll()
 	{
 		selectedIps_.clear();

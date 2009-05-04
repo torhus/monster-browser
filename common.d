@@ -33,6 +33,7 @@ else
 struct arguments {  ///
 static:
 	bool dumplist  = false;  ///
+	bool dumpqstat = false;  ///
 	bool fromfile  = false;  ///
 	bool norefresh = false;  ///
 	bool quit      = false;  ///
@@ -65,6 +66,13 @@ Clipboard clipboard;
 Timer globalTimer;
 
 
+// Custom file open modes, since Tango doesn't have sharing enabled by default
+const File.Style WriteCreateShared =
+                      { File.Access.Write, File.Open.Create, File.Share.Read };
+const File.Style WriteAppendingShared =
+                      { File.Access.Write, File.Open.Append, File.Share.Read };
+
+
 private {
 	const int MAX_LOG_SIZE = 100 * 1024;
 	File logfile;
@@ -83,19 +91,14 @@ void initLogging(char[] name="LOG.TXT")
 {
 	const char[] sep =
 	           "-------------------------------------------------------------";
-	File.Style mode;
 	char[] error = null;
 	assert(appDir);
 	char[] path = appDir ~ name;
 
 	if (Path.exists(path) && Path.fileSize(path) < MAX_LOG_SIZE)
-		mode = File.WriteAppending;
+		logfile = new File(path, WriteAppendingShared);
 	else
-		mode = File.WriteCreate;
-
-	mode.share = File.Share.Read;
-
-	logfile = new File(path, mode);
+		logfile = new File(path, WriteCreateShared);
 
 	time_t t = time(null);
 	char[] timestamp = ctime(&t)[0..24];
@@ -125,8 +128,9 @@ void log(char[] file, int line, char[] msg)
 void log(char[] s)
 {
 	version(redirect) {}
-	else debug Trace.formatln("LOG: {}", s);
+	else Trace.formatln("LOG: {}", s);
 
+	assert(logfile !is null);
 	if (logfile) {
 		logfile.write(s);
 		logfile.write(newline);
@@ -153,7 +157,7 @@ else
  * Transfer a string to the system clipboard.
  */
 void copyToClipboard(char[] s)
-{	
+{
 	Object obj = new ArrayWrapperString(s);
 	TextTransfer textTransfer = TextTransfer.getInstance();
 	clipboard.setContents([obj], [textTransfer]);
@@ -490,6 +494,9 @@ void parseCmdLine(char[][] args)
 			case "dumplist":
 				arguments.dumplist = true;
 				break;
+			case "dumpqstat":
+				arguments.dumpqstat = true;
+				break;
 			case "fromfile":
 				arguments.fromfile = true;
 				break;
@@ -500,6 +507,7 @@ void parseCmdLine(char[][] args)
 				arguments.quit = true;
 				break;
 			default:
+				log("UNRECOGNIZED ARGUMENT: " ~ arg);
 				break;
 		}
 	}
