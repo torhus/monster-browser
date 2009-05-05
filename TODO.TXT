@@ -6,8 +6,6 @@
 
 - Display the number of human players in the status bar?
 
-- Save window position between sessions.
-
 - Fix baseq3 server list when using gslist.
 
 - Implement some kind of server monitoring.

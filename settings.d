@@ -182,6 +182,7 @@ useGslist=false
 
 	Setting[] defaultSessionState = [{"filterState", "0"},
 	                                 {"playerSortOrder", "0"},
+	                                 {"resolution", "0, 0"},
 	                                 {"serverSortOrder", "1"},
 	                                 {"middleWeights", "16,5"},
 	                                 {"rightWeights", "1,1"},
@@ -189,6 +190,7 @@ useGslist=false
 	                                 {"playerColumnWidths", "100,40,40"},
 	                                 {"serverColumnWidths",
 	                                              "27,250,21,32,50,40,90,130"},
+	                                 {"windowPosition", "150, 150"},
 	                                ];
 }
 
@@ -310,7 +312,7 @@ void loadSettings()
 			char[] path = autodetectQuake3Path();
 			sec.setValue("gamePath", path);
 			log("Set gamePath to '" ~ path ~ "'.");
-		}			
+		}
 	}
 
 	loadSessionState();
@@ -452,7 +454,7 @@ private char[] autodetectQuake3Path()
 /**
  * Get the default program files directory, or an educated guess if not
  * found.
- * 
+ *
  * Sample return: "C:\Program Files".
  */
 private char[] getProgramFilesDirectory()
@@ -500,15 +502,15 @@ private char[] getRegistryStringValue(in char[] key)
 			status = RegQueryValueExA(hKey, toStringz(name), NULL, &dwType,
 			                                                  lpData, &dwSize);
 		}
-		
+
 		if (status == ERROR_SUCCESS) {
 			retval.length = dwSize * 2;
 			retval = CodePage.from(fromStringz(cast(char*)lpData), retval);
 		}
-		
+
 		if (dwSize > buf.length)
 			delete lpData;
-		
+
 		RegCloseKey(hKey);
 	}
 
@@ -525,6 +527,6 @@ private HKEY hkeyFromString(in char[] s)
 		return HKEY_CURRENT_USER;
 	if (icompare(s, "HKEY_LOCAL_MACHINE") == 0)
 		return HKEY_LOCAL_MACHINE;
-		
+
 	throw new IllegalArgumentException("Invalid HKEY: " ~ s);
 }
