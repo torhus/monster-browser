@@ -15,6 +15,7 @@ import dwt.events.ShellAdapter;
 import dwt.events.ShellEvent;
 import dwt.graphics.Image;
 import dwt.graphics.Point;
+import dwt.graphics.Rectangle;
 import dwt.layout.FillLayout;
 import dwt.layout.GridData;
 import dwt.layout.GridLayout;
@@ -57,14 +58,25 @@ class MainWindow
 		shell_.setText(APPNAME ~ " " ~ VERSION);
 		shell_.addShellListener(new MyShellListener);
 
-		// restore saved size and state
+		// restore window size and state
 		char[] size = getSetting("windowSize");
-		int pos = locate(size, 'x');
+		int x = locate(size, 'x');
 		// FIXME: handle the case of 'x' not being found
-		shell_.setSize(Integer.convert(size[0..pos]),
-		        Integer.convert(size[pos+1..length]));
+		shell_.setSize(Integer.convert(size[0..x]),
+		        Integer.convert(size[x+1..length]));
 		if (getSetting("windowMaximized") == "true")
 			shell_.setMaximized(true);
+
+		// restore window position
+		int[] oldres = parseIntegerSequence(getSessionState("resolution"));
+		oldres.length = 2;
+		Rectangle res = Display.getDefault().getBounds();
+		if (oldres[0] == res.width && oldres[1] == res.height) {
+			int[] pos =
+			           parseIntegerSequence(getSessionState("windowPosition"));
+			pos.length = 2;
+			shell_.setLocation(pos[0], pos[1]);
+		}
 
 		shell_.setLayout(new GridLayout(2, false));
 
@@ -151,7 +163,12 @@ class MainWindow
 	private void saveState()
 	{
 		serverTable.saveState();
-		
+
+		Rectangle res = Display.getDefault().getBounds();
+		setSessionState("resolution", toCsv([res.width, res.height]));
+		Point pos = shell_.getLocation();
+		setSessionState("windowPosition", toCsv([pos.x, pos.y]));
+
 		if (!shell_.getMaximized()) {
 			char[] width  = Integer.toString(shell_.getSize().x);
 			char[] height = Integer.toString(shell_.getSize().y);
@@ -354,7 +371,7 @@ class FilterBar : Composite
 	Filter filterState()
 	{
 		Filter f;
-		
+
 		if(notEmptyButton_.getSelection())
 			f |= Filter.NOT_EMPTY;
 		if (hasHumansButton_.getSelection())
@@ -398,7 +415,7 @@ class FilterBar : Composite
 		}
 	}
 
-	
+
 	///  Saves the session state.
 	private void saveState()
 	{
