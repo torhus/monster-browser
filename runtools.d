@@ -299,14 +299,7 @@ final class QstatServerRetriever : IServerRetriever
  */
 bool killServerBrowser()
 {
-	log("Killing server browser...");
-
-	if (proc is null) {
-		debug Trace.formatln("proc is null");
-		return false;
-	}
-
-	if (!proc.isRunning)
+	if (proc is null || !proc.isRunning)
 		return false;
 
 	try {
