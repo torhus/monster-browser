@@ -192,6 +192,7 @@ final class MasterList
 		parser.setSaxHandler(handler);
 		parser.setContent(content);
 		parser.parse;
+		delete content;
 
 		log(Format("Loaded {} servers in {} seconds.", handler.servers.length,
 		                                                       timer.seconds));
@@ -364,19 +365,19 @@ private final class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 
 		foreach (ref attr; attributes) {
 			if (attr.localName == "name") {
-				sd.rawName = attr.value;
-				sd.server[ServerColumn.NAME] = stripColorCodes(sd.rawName);
+				sd.rawName = attr.value.dup;
+				sd.server[ServerColumn.NAME] = stripColorCodes(attr.value);
 			}
 			else if (attr.localName == "country_code")
-				sd.server[ServerColumn.COUNTRY] = attr.value;
+				sd.server[ServerColumn.COUNTRY] = attr.value.dup;
 			else if (attr.localName == "address")
-				sd.server[ServerColumn.ADDRESS] = attr.value;
+				sd.server[ServerColumn.ADDRESS] = attr.value.dup;
 			else if (attr.localName == "ping")
-				sd.server[ServerColumn.PING] = attr.value;
+				sd.server[ServerColumn.PING] = attr.value.dup;
 			else if (attr.localName == "player_count")
-				sd.server[ServerColumn.PLAYERS] = attr.value;
+				sd.server[ServerColumn.PLAYERS] = attr.value.dup;
 			else if (attr.localName == "map")
-				sd.server[ServerColumn.MAP] = attr.value;
+				sd.server[ServerColumn.MAP] = attr.value.dup;
 			else if (attr.localName == "fail_count")
 				sd.failCount = Integer.convert(attr.value);
 		}
@@ -392,9 +393,9 @@ private final class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 
 		foreach (ref attr; attributes) {
 			if (attr.localName == "key")
-				cvar[0] = attr.value;
+				cvar[0] = attr.value.dup;
 			else if (attr.localName == "value")
-				cvar[1] = attr.value;
+				cvar[1] = attr.value.dup;
 
 			if (icompare(cvar[0], "g_gametype") == 0)
 				servers[$-1].server[ServerColumn.GAMETYPE] = cvar[1];
@@ -415,11 +416,11 @@ private final class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 
 		foreach (ref attr; attributes) {
 			if (attr.localName == "name")
-				player[PlayerColumn.RAWNAME] = attr.value;
+				player[PlayerColumn.RAWNAME] = attr.value.dup;
 			else if (attr.localName == "score")
-				player[PlayerColumn.SCORE] = attr.value;
+				player[PlayerColumn.SCORE] = attr.value.dup;
 			else if (attr.localName == "ping")
-				player[PlayerColumn.PING] = attr.value;
+				player[PlayerColumn.PING] = attr.value.dup;
 		}
 
 		servers[$-1].players ~= player;
