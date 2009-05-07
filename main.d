@@ -9,6 +9,7 @@ static if (__VERSION__ < 1041) {
 debug import tango.core.stacktrace.TraceExceptions;
 import tango.io.Console;
 import tango.io.Path;
+import tango.io.device.BitBucket;
 import tango.io.device.File;
 import tango.sys.Environment;
 import tango.util.PathUtil;
@@ -62,9 +63,9 @@ private void _main(char[][] args)
 	version (redirect)
 		redirectOutput(appDir ~ "CONSOLE.OUT");
 
-	if (!consoleOutputOk) {
+	if (!consoleOutputOk()) {
 		// Avoid getting IOExceptions all over the place.
-		Cout.output = new File("NUL", File.WriteExisting);
+		Cout.output = new BitBucket;
 		Cerr.output = Cout.output;
 	}
 
@@ -197,9 +198,9 @@ private bool redirectOutput(char[] file)
 private bool consoleOutputOk()
 {
 	try {
-		Cout.flush;
+		Cout(APPNAME ~ " " ~ VERSION).newline.flush;
 	}
-	catch {
+	catch (IOException e) {
 		return false;
 	}
 	return true;
