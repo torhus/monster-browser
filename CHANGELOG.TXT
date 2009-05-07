@@ -1,3 +1,7 @@
+Work in progress - 2009-05-05
+-----------------------------
+- New: Restore previous window position.
+
 v0.4b - 2009-02-01
 ------------------
 - New: Added default settings and game type names for Smokin' Guns.

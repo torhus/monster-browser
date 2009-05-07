@@ -217,7 +217,7 @@ final class MasterList
 
 		synchronized (this) {
 			foreach (sd; servers_) {
-				if (sd.failCount < MAX_FAIL_COUNT && !isEmpty(&sd))
+				if (!isEmpty(&sd))
 					dumper.serverToXml(&sd);
 			}
 		}
