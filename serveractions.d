@@ -242,7 +242,7 @@ void delegate() refreshList()
 
 	log("Refreshing server list for " ~ game.name ~ "...");
 	log(Format("Found {} servers, master is {}.", servers.length,
-	                                                             master.name));
+	                                                          master.address));
 
 	// merge in the extra servers
 	Set!(char[]) extraServers = serverList.extraServers;
