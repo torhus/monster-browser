@@ -17,8 +17,6 @@ import tango.util.PathUtil;
 import dwt.DWT;
 import dwt.dnd.Clipboard;
 import dwt.dwthelper.ByteArrayInputStream;
-import dwt.events.KeyAdapter;
-import dwt.events.KeyEvent;
 import dwt.graphics.Image;
 import dwt.widgets.Control;
 import dwt.widgets.Display;
@@ -197,11 +195,9 @@ private bool redirectOutput(char[] file)
 
 private bool consoleOutputOk()
 {
-	try {
+	try
 		Cout(APPNAME ~ " " ~ VERSION).newline.flush;
-	}
-	catch (IOException e) {
+	catch (IOException e)
 		return false;
-	}
 	return true;
 }
