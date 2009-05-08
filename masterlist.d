@@ -27,16 +27,19 @@ const ServerHandle InvalidServerHandle = ServerHandle.max;
 final class MasterList
 {
 	///
-	this(char[] name)
+	this(char[] address)
 	{
-		assert(name.length > 0);
-		name_ = name;
-		fileName_ = replace(name_ ~ ".xml", ':', '_');
+		assert(address.length > 0);
+		address_ = address;
+		fileName_ = replace(address ~ ".xml", ':', '_');
 	}
 
 
-	/// The URL of the master server.
-	char[] name() { return name_; }
+	/**
+	 * The host name or IP address, plus optionally a port number for the
+	 * master server.
+	 */
+	char[] address() { return address_; }
 
 
 	/// The name of the file this master server's data is stored in.
@@ -250,7 +253,7 @@ final class MasterList
 
 
 	private {
-		char[] name_;
+		char[] address_;
 		char[] fileName_;
 		ServerData[] servers_;
 	}
