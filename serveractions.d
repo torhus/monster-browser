@@ -314,7 +314,7 @@ void delegate() getNewList()
 			if (removed > 0)
 				log(Format("Deleted {} servers that were missing from master.",
 			                                                         removed));
-			
+
 			auto extraServers = serverList.extraServers;
 			size_t oldLength = addresses.length;
 			foreach (s; extraServers)
@@ -374,8 +374,7 @@ void delegate() getNewList()
  * querying servers.
  *
  * The process is mostly configured through the IServerRetriever object given
- * to the constructor.  This object does the actual querying, parsing, saving
- * of server lists to disk, etc.
+ * to the constructor.  This object does the actual querying and parsing.
  */
 class ServerRetrievalController
 {
@@ -405,11 +404,10 @@ class ServerRetrievalController
 	 *     store   = Add or update this server in the MasterList object
 	 *               associated with this game/mod.
 	 */
-	this(IServerRetriever retriever, bool replace=false, bool store=true)
+	this(IServerRetriever retriever, bool replace=false)
 	{
 		serverRetriever_= retriever;
 		replace_ = replace;
-		store_ = store;
 
 		serverRetriever_.initialize();
 
@@ -418,14 +416,6 @@ class ServerRetrievalController
 		Display.getDefault.syncExec(new class Runnable {
 			void run() { serverTable.notifyRefreshStarted(&stop); }
 		});
-	}
-
-
-	~this()
-	{
-		if (statusBarUpdater_)
-			delete statusBarUpdater_;
-
 	}
 
 
@@ -545,9 +535,6 @@ class ServerRetrievalController
 				index = serverList_.getFilteredIndex(autoSelect[0]);
 			}
 
-			if (store_)
-				serverList_.master.save();
-
 			serverTable.fullRefresh(index);
 			statusBar.setDefaultStatus(serverList_.length,
 			                           serverList_.filteredLength,
@@ -576,7 +563,6 @@ class ServerRetrievalController
 		uint timedOut_ = 0;
 		StatusBarUpdater statusBarUpdater_;
 		bool replace_;
-		bool store_;
 		void delegate(ServerHandle) deliverDg_;
 		bool delegate(ServerHandle) deliverDg2_;
 		bool wasStopped_ = false;

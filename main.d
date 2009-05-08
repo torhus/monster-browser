@@ -167,6 +167,11 @@ private void _main(char[][] args)
 	log("Saving settings...");
 	saveSettings();
 
+	log("Saving server lists...");
+	foreach (master; masterLists)
+		master.save();
+
+	log("Exit.");
 	shutDownLogging;
 }
 
