@@ -189,7 +189,7 @@ class MainWindow
 		{
 			serverTable.stopRefresh(false);
 			statusBar.setLeft("Exiting...");
-			log("Exiting...");
+			log("Shutting down...");
 			runtools.killServerBrowser();
 			saveState();
 		}
