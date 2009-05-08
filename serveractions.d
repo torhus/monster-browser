@@ -290,6 +290,7 @@ void delegate() getNewList()
 			Set!(char[]) addresses = browserGetNewList(game);
 
 			size_t total = addresses.length;
+			int removed = 0;
 
 			// Exclude servers that are already known to run the right mod, and
 			// delete servers from the master list that's missing from the
@@ -298,8 +299,10 @@ void delegate() getNewList()
 				ServerData sd = master.getServerData(sh);
 				char[] address = sd.server[ServerColumn.ADDRESS];
 				if (address in addresses) {
-					if (matchMod(&sd, serverList.gameName))
+					if (matchMod(&sd, serverList.gameName)) {
 						addresses.remove(address);
+						removed++;
+					}
 				}
 				else {
 					setEmpty(&sd);
@@ -308,7 +311,10 @@ void delegate() getNewList()
 
 			log(Format("Got {} servers from {}, including {} new.",
 			                      total, game.masterServer, addresses.length));
-
+			if (removed > 0)
+				log(Format("Deleted {} servers that were missing from master.",
+			                                                         removed));
+			
 			auto extraServers = serverList.extraServers;
 			size_t oldLength = addresses.length;
 			foreach (s; extraServers)
