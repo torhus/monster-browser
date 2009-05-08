@@ -284,8 +284,8 @@ void delegate() getNewList()
 	void f()
 	{
 		try {
-			MasterList master = serverTable.serverList.master;
 			ServerList serverList = serverTable.serverList;
+			MasterList master = serverList.master;
 			GameConfig game = getGameConfig(serverList.gameName);
 			Set!(char[]) addresses = browserGetNewList(game);
 
@@ -346,9 +346,15 @@ void delegate() getNewList()
 
 	}
 
-	statusBar.setLeft("Checking for new servers...");
-	char[] gameName = serverTable.serverList.gameName;
-	log("Checking for new servers for " ~ gameName ~ "...");
+	ServerList serverList = serverTable.serverList;
+	if (serverList.master.length > 0) {
+		statusBar.setLeft("Checking for new servers...");
+		log("Checking for new servers for " ~ serverList.gameName ~ "...");
+	}
+	else {
+		statusBar.setLeft("Getting new server list...");
+		log("Getting new server list for " ~ serverList.gameName ~ "...");
+	}
 	serverTable.notifyRefreshStarted;
 
 	return &f;
