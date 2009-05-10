@@ -230,13 +230,9 @@ void delegate() refreshList()
 
 	foreach (sh; master) {
 		ServerData sd = master.getServerData(sh);
-		bool hasMatchData;
-		bool ok = matchMod(&sd, game.mod, &hasMatchData);
+		bool matched = matchMod(&sd, game.mod);
 
-		if (!ok)
-			ok = !hasMatchData && timedOut(&sd);
-
-		if (ok && sd.failCount < MAX_FAIL_COUNT)
+		if (matched || timedOut(&sd) && sd.failCount < 2)
 			servers.add(sd.server[ServerColumn.ADDRESS]);
 	}
 
@@ -299,21 +295,32 @@ void delegate() getNewList()
 				ServerData sd = master.getServerData(sh);
 				char[] address = sd.server[ServerColumn.ADDRESS];
 				if (address in addresses) {
-					if (matchMod(&sd, serverList.gameName)) {
+					if (matchMod(&sd, game.mod)) {
 						addresses.remove(address);
-						removed++;
 					}
 				}
 				else {
 					setEmpty(&sd);
+					master.setServerData(sh, sd);
+					removed++;
 				}
 			}
 
 			log(Format("Got {} servers from {}, including {} new.",
 			                      total, game.masterServer, addresses.length));
-			if (removed > 0)
-				log(Format("Deleted {} servers that were missing from master.",
-			                                                         removed));
+
+			if (removed > 0) {
+				Display.getDefault().syncExec(new class Runnable {
+					void run()
+					{
+						serverList.refillFromMaster();
+						serverTable.fullRefresh();
+					}
+				});
+
+				log(Format("Removed {} servers that were missing from master.",
+				                                                     removed));
+			}
 
 			auto extraServers = serverList.extraServers;
 			size_t oldLength = addresses.length;

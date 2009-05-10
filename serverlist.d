@@ -107,6 +107,18 @@ class ServerList
 	}
 
 
+	///
+	synchronized void refillFromMaster()
+	{
+		clear();
+		foreach (sh; master_) {
+			ServerData sd = master_.getServerData(sh);
+			if (matchMod(&sd, getGameConfig(gameName_).mod))
+				add(sh);
+		}
+	}
+
+
 	 /// Iterate over the full list.
 	/*int opApply(int delegate(ref ServerData) dg)
 	{
