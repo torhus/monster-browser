@@ -105,7 +105,8 @@ final class MasterList
 	{
 		synchronized (this) {
 			foreach (sh, sd; servers_) {
-				if (sd.server[ServerColumn.ADDRESS] == address)
+				if (sd.server.length > 0 &&
+				                    sd.server[ServerColumn.ADDRESS] == address)
 					return sh;
 			}
 			return InvalidServerHandle;
@@ -126,7 +127,7 @@ final class MasterList
 
 
 	/// Will assert if sh is invalid.
-	private void setServerData(ServerHandle sh, ServerData sd)
+	void setServerData(ServerHandle sh, ServerData sd)
 	{
 		synchronized (this) {
 			assert(sh < servers_.length);
@@ -152,7 +153,7 @@ final class MasterList
 	/**
 	* Foreach support.  Skips servers for which isEmpty(sd) returns true.
 	*/
-	int opApply(int delegate(ref ServerHandle) dg)
+	synchronized int opApply(int delegate(ref ServerHandle) dg)
 	{
 		int result = 0;
 

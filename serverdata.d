@@ -109,9 +109,6 @@ const char[] PASSWORD_NO  = "";  ///
 ///
 const char[] TIMEOUT = "9999";
 
-///
-const MAX_FAIL_COUNT = 2;
-
 
 /// Set sd to the empty state.
 void setEmpty(ServerData* sd)
