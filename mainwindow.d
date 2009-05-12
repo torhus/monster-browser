@@ -13,7 +13,8 @@ import dwt.events.SelectionAdapter;
 import dwt.events.SelectionEvent;
 import dwt.events.ShellAdapter;
 import dwt.events.ShellEvent;
-import dwt.graphics.Image;
+version (icons)
+	import dwt.graphics.Image;
 import dwt.graphics.Point;
 import dwt.graphics.Rectangle;
 import dwt.layout.FillLayout;
@@ -24,6 +25,8 @@ import dwt.widgets.Button;
 import dwt.widgets.Combo;
 import dwt.widgets.Composite;
 import dwt.widgets.Display;
+version (icons)
+	import dwt.widgets.Group;
 import dwt.widgets.Label;
 import dwt.widgets.Shell;
 import dwt.widgets.ToolBar;
@@ -44,6 +47,10 @@ import threadmanager;
 StatusBar statusBar;  ///
 FilterBar filterBar;  ///
 MainWindow mainWindow;  ///
+
+// Image objects that needs to be disposed of before shut down.
+version (icons)
+	private Image[] imageList;
 
 
 ///
@@ -85,7 +92,7 @@ class MainWindow
 		Composite topComposite = new Composite(shell_, DWT.NONE);
 		auto topData = new GridData(DWT.FILL, DWT.CENTER, true, false, 2, 1);
 		topComposite.setLayoutData(topData);
-		version (none) {
+		version (icons) {
 			// This layout works better when the buttons have images.
 			auto topLayout = new GridLayout(2, false);
 			topLayout.horizontalSpacing = 50;
@@ -156,6 +163,9 @@ class MainWindow
 	void disposeAll()
 	{
 		serverTable.disposeAll();
+		version (icons)
+			foreach (img; imageList)
+				img.dispose();
 	}
 
 
@@ -245,13 +255,28 @@ private:
 }
 
 
+version (icons)
+	alias Group FilterSuper;
+else
+	alias Composite FilterSuper;
+
 ///
-class FilterBar : Composite
+class FilterBar : FilterSuper
 {
 	///
 	this(Composite parent)
 	{
-		super(parent, DWT.NONE);
+		version (icons) {
+			super(parent, DWT.SHADOW_NONE);
+			setText("Filters and game selection");
+			auto data = new GridData;
+			//data.verticalAlignment = DWT.FILL;
+			setLayoutData(data);
+		}
+		else {
+			super(parent, DWT.NONE);
+		}
+
 		notEmptyButton_ = new Button(this, DWT.CHECK);
 		notEmptyButton_.setText("Not empty");
 		notEmptyButton_.addSelectionListener(new class SelectionAdapter {
@@ -356,7 +381,16 @@ class FilterBar : Composite
 			}
 		});
 
-		setLayout(new RowLayout);
+		version (icons) {
+			auto layout = new RowLayout;
+			layout.fill = true;
+			layout.marginHeight = 2;
+			layout.marginWidth = 2;
+			setLayout(layout);
+		}
+		else {
+			setLayout(new RowLayout);
+		}
 	}
 
 
@@ -454,8 +488,9 @@ ToolBar createToolbar(Composite parent) ///
 	auto toolBar = new ToolBar(parent, DWT.HORIZONTAL);
 
 	auto button1 = new ToolItem(toolBar, DWT.PUSH);
-	button1.setText("Check for new servers");
-	//button1.setImage(loadImage!("res/32px-Crystal_Clear_action_down.png"));
+	button1.setText("Check for new");
+	version (icons)
+		button1.setImage(loadImage!("icons/32px-Crystal_Clear_action_down.png"));
 	button1.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{
@@ -467,7 +502,8 @@ ToolBar createToolbar(Composite parent) ///
 
 	ToolItem button2 = new ToolItem(toolBar, DWT.PUSH);
 	button2.setText("Refresh all");
-	//button2.setImage(loadImage!("res/32px-Crystal_Clear_action_reload.png"));
+	version (icons)
+		button2.setImage(loadImage!("icons/32px-Crystal_Clear_action_reload.png"));
 	button2.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{
@@ -478,8 +514,9 @@ ToolBar createToolbar(Composite parent) ///
 	new ToolItem(toolBar, DWT.SEPARATOR);
 
 	auto button3 = new ToolItem(toolBar, DWT.PUSH);
-	button3.setText("Specify...");
-	//button3.setImage(loadImage!("res/32px-Crystal_Clear_action_edit_add.png"));
+	button3.setText("Add...");
+	version (icons)
+		button3.setImage(loadImage!("icons/32px-Crystal_Clear_action_edit_add.png"));
 	button3.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{
@@ -509,7 +546,8 @@ ToolBar createToolbar(Composite parent) ///
 
 	auto button5 = new ToolItem(toolBar, DWT.PUSH);
 	button5.setText("Settings...");
-	//button5.setImage(loadImage!("res/32px-Crystal_Clear_action_configure.png"));
+	version (icons)
+		button5.setImage(loadImage!("icons/32px-Crystal_Clear_action_configure.png"));
 	button5.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{
@@ -523,13 +561,16 @@ ToolBar createToolbar(Composite parent) ///
 }
 
 
-private Image loadImage(char[] name)()
-{
-	return _loadImage(cast(byte[])import(name));
-}
+version (icons) {
+	private Image loadImage(char[] name)()
+	{
+		return _loadImage(cast(byte[])import(name));
+	}
 
-
-private Image _loadImage(byte[] data)
-{
-	return new Image(Display.getDefault, new ByteArrayInputStream(data));
+	private Image _loadImage(byte[] data)
+	{
+		Image img = new Image(Display.getDefault, new ByteArrayInputStream(data));
+		imageList ~= img;
+		return img;
+	}
 }
