@@ -205,6 +205,9 @@ void queryServers(in char[][] addresses, bool replace=false, bool select=false)
 	if (!addresses.length)
 		return;
 
+	if (addresses.length > 100)
+		GC.collect();
+
 	addresses_ = addresses;
 	replace_ = replace;
 	select_ = select;
@@ -369,6 +372,8 @@ void delegate() getNewList()
 		log("Getting new server list for " ~ serverList.gameName ~ "...");
 	}
 	serverTable.notifyRefreshStarted;
+
+	GC.collect();
 
 	return &f;
 }
