@@ -206,7 +206,7 @@ GameConfig getGameConfig(in char[] name)
 	IniSection section = gamesIni[name];
 
 	if (section is null)
-		throw new Exception("getGameConfig: non-existant game");
+		throw new Exception("getGameConfig: non-existant game '" ~ name ~ "'");
 
 	return GameConfig(name, section);
 }
