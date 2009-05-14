@@ -485,7 +485,7 @@ class ServerRetrievalController
 					serverQueue_.stop(addRemaining_);
 			}
 
-			Display.getDefault.asyncExec(new class Runnable {
+			Display.getDefault.syncExec(new class Runnable {
 				void run()
 				{
 					if (!threadManager.abort || wasStopped_)
