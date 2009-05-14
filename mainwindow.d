@@ -36,7 +36,7 @@ import common;
 import cvartable;
 import dialogs;
 import playertable;
-import runtools;
+import runtools : killServerBrowser;
 import serveractions;
 import serverlist;
 import servertable;
@@ -200,7 +200,7 @@ class MainWindow
 			serverTable.stopRefresh(false);
 			statusBar.setLeft("Exiting...");
 			log("Shutting down...");
-			runtools.killServerBrowser();
+			killServerBrowser();
 			saveState();
 		}
 	}

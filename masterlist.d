@@ -120,7 +120,8 @@ final class MasterList
 		synchronized (this) {
 			assert(sh < servers_.length);
 			ServerData* sd = &servers_[sh];
-			assert(!isEmpty(sd) && isValid(sd));
+			assert(!isEmpty(sd));
+			assert(isValid(sd));
 			return *sd;
 		}
 	}
@@ -132,7 +133,8 @@ final class MasterList
 		synchronized (this) {
 			assert(sh < servers_.length);
 			ServerData* old = &servers_[sh];
-			assert(!isEmpty(old) && isValid(old));
+			assert(!isEmpty(old));
+			assert(isValid(old));
 			*old = sd;
 		}
 	}
