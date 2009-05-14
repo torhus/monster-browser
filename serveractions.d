@@ -109,7 +109,7 @@ void switchToGame(in char[] name)
 				bool canRefresh = master.length > 0;
 				if (!canRefresh) {
 					try {
-						canRefresh = master.load();
+						canRefresh = master.load() && master.length > 0;
 					}
 					catch (IOException e) {
 						error("There was an error reading " ~ master.fileName
