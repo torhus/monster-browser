@@ -1,4 +1,11 @@
-- Add a menu with Specify, Settings, etc?  And some icons.
+- Display better message when aborting Check for new servers.
+
+- Don't save xml files when using gslist?
+
+- Fix the name of extra servers files, use or game or mod name?
+
+- Number of removed servers printed by getNewList() is wrong when extra servers
+  are being used.
 
 - Check out qstat's option to use Gamespy masters.
 
