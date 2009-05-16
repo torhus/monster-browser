@@ -49,11 +49,6 @@ struct GameConfig
 		return section.getValue("protocolVersion", "68");
 	}
 
-	char[] serverFile() /// Like "master3.idsoftware.com.lst".
-	{
-		return appDir ~ replace(masterServer.dup, ':', '_') ~ ".lst";
-	}
-
 	char[] extraServersFile() /// Like "baseq3.extra".
 	{
 		return appDir ~ name ~ ".extra";
@@ -174,7 +169,7 @@ useGslist=false
 		char[] value;
 	}
 	Setting[] defaults = [{"coloredNames", "true"},
-	                      {"lastMod", "smokinguns"},
+	                      {"lastMod", "Smokin' Guns"},
 	                      {"minimizeOnGameLaunch", "true"},
 	                      {"showFlags", "true"},
 	                      {"simultaneousQueries", "20"},
