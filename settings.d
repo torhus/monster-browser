@@ -51,7 +51,7 @@ struct GameConfig
 
 	char[] extraServersFile() /// Like "baseq3.extra".
 	{
-		return appDir ~ name ~ ".extra";
+		return appDir ~ mod ~ ".extra";
 	}
 
 	/**
