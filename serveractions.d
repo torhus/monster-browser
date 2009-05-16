@@ -288,6 +288,11 @@ void delegate() getNewList()
 			GameConfig game = getGameConfig(serverList.gameName);
 			Set!(char[]) addresses = browserGetNewList(game);
 
+			// Make sure we don't start removing servers based on an incomplete
+			// address list.
+			if (threadManager.abort)
+				return;
+
 			size_t total = addresses.length;
 			int removed = 0;
 
@@ -371,7 +376,7 @@ void delegate() getNewList()
 		statusBar.setLeft("Getting new server list...");
 		log("Getting new server list for " ~ serverList.gameName ~ "...");
 	}
-	serverTable.notifyRefreshStarted;
+	serverTable.notifyRefreshStarted((bool) { threadManager.abort = true; });
 
 	GC.collect();
 
