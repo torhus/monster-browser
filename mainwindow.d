@@ -2,6 +2,8 @@
 
 module mainwindow;
 
+version = icons;
+
 import tango.text.Util;
 import Integer = tango.text.convert.Integer;
 
@@ -95,6 +97,7 @@ class MainWindow
 		version (icons) {
 			// This layout works better when the buttons have images.
 			auto topLayout = new GridLayout(2, false);
+			topLayout.marginHeight = 0;
 			topLayout.horizontalSpacing = 50;
 			topComposite.setLayout(topLayout);
 		}
@@ -492,7 +495,7 @@ ToolBar createToolbar(Composite parent) ///
 	auto button1 = new ToolItem(toolBar, DWT.PUSH);
 	button1.setText("Check for new");
 	version (icons)
-		button1.setImage(loadImage!("icons/32px-Crystal_Clear_action_down.png"));
+		button1.setImage(loadImage!("icons/box_download_32.png"));
 	button1.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{
@@ -501,11 +504,10 @@ ToolBar createToolbar(Composite parent) ///
 	});
 
 	new ToolItem(toolBar, DWT.SEPARATOR);
-
 	ToolItem button2 = new ToolItem(toolBar, DWT.PUSH);
 	button2.setText("Refresh all");
 	version (icons)
-		button2.setImage(loadImage!("icons/32px-Crystal_Clear_action_reload.png"));
+		button2.setImage(loadImage!("icons/refresh_32.png"));
 	button2.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{
@@ -516,9 +518,9 @@ ToolBar createToolbar(Composite parent) ///
 	new ToolItem(toolBar, DWT.SEPARATOR);
 
 	auto button3 = new ToolItem(toolBar, DWT.PUSH);
-	button3.setText("Add...");
+	button3.setText("    Add...  ");
 	version (icons)
-		button3.setImage(loadImage!("icons/32px-Crystal_Clear_action_edit_add.png"));
+		button3.setImage(loadImage!("icons/add_32.png"));
 	button3.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{
@@ -549,7 +551,7 @@ ToolBar createToolbar(Composite parent) ///
 	auto button5 = new ToolItem(toolBar, DWT.PUSH);
 	button5.setText("Settings...");
 	version (icons)
-		button5.setImage(loadImage!("icons/32px-Crystal_Clear_action_configure.png"));
+		button5.setImage(loadImage!("icons/spanner_32.png"));
 	button5.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{
