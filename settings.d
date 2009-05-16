@@ -130,22 +130,25 @@ private {
 ;
 ; Lines beginning with a ";" are comments.
 
-[smokinguns]
+[Smokin' Guns]
+mod=smokinguns
 regKey=HKEY_LOCAL_MACHINE\SOFTWARE\Smokin' Guns Productions\Smokin' Guns\InstallPath
 exeName=smokinguns.exe
 exePath=%ProgramFiles%\Smokin' Guns\smokinguns.exe
 
-[wop]
+[World of Padman]
+mod=wop
 regKey=HKEY_LOCAL_MACHINE\SOFTWARE\World of Padman\Path
 exeName=wop.exe
 exePath=%ProgramFiles%\World of Padman\wop.exe
 useGslist=false
 masterServer=wopmaster.kickchat.com:27955
 
-[q3ut4]
+[Urban Terror]
+mod=q3ut4
 masterServer=master.urbanterror.net
 
-[tremulous]
+[Tremulous]
 mod=base
 regKey=HKEY_LOCAL_MACHINE\SOFTWARE\Tremulous\InstallDir
 exeName=tremulous.exe
