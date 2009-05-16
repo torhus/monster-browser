@@ -330,16 +330,6 @@ void delegate() getNewList()
 				                                                     removed));
 			}
 
-			auto extraServers = serverList.extraServers;
-			size_t oldLength = addresses.length;
-			foreach (s; extraServers)
-				addresses.add(s);
-
-			auto delta = addresses.length - oldLength;
-			log(Format("Added {} extra servers, skipping {} duplicates.",
-	                                      delta, extraServers.length - delta));
-
-
 			if (addresses.length == 0) {
 				// FIXME: what to do when there are no servers?
 				Display.getDefault.asyncExec(new class Runnable {
