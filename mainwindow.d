@@ -389,7 +389,9 @@ class FilterBar : FilterSuper
 			setLayout(layout);
 		}
 		else {
-			setLayout(new RowLayout);
+			auto layout = new RowLayout;
+			layout.fill = true;
+			setLayout(layout);
 		}
 	}
 
