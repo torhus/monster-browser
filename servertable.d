@@ -130,7 +130,11 @@ class ServerTable
 
 
 	///
-	void disposeAll() { padlockImage_.dispose; }
+	void disposeAll()
+	{
+		padlockImage_.dispose();
+		disposeFlagImages();
+	}
 
 
 	///  Saves the session state.

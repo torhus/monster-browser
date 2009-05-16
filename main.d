@@ -25,7 +25,6 @@ import dwt.widgets.Listener;
 
 import colorednames : disposeNameColors;
 import common;
-import geoip : disposeFlagImages;
 version (Windows)
 	import link;
 import mainwindow;
@@ -158,7 +157,6 @@ private void _main(char[][] args)
 		slist.disposeCustomData();
 	mainWindow.disposeAll();
 	colorednames.disposeNameColors();
-	geoip.disposeFlagImages();
 	foreach (icon; appIcons)
 		icon.dispose;
 	clipboard.dispose;
