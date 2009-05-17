@@ -1,3 +1,27 @@
+v0.5 - 2009-05-16
+-----------------
+The "Get new list" button was renamed to "Check for new".  It does no longer
+cause Monster Browser to dump the servers it already knows about and start from
+scratch.  Instead it makes MB synchronize itself with the master server,
+removing servers that are gone, and adding new ones.  The servers that were
+already known to run the right game/mod are not requeried, but all the rest
+are.
+
+The "Refresh list" button was renamed to "Refresh all".  It works like before,
+except for one thing.  The first time you press it after doing a "Check for
+new", it will retry any servers that timed out during that operation.  This
+should increase the chance of getting all relevant servers.
+
+Other changes:
+
+- New: Button icons.
+- New: Restore previous window position.
+- New: A setting for how many servers to query simultaneously.  You can lower
+       this if you get too many timeouts, to see if it helps.
+- Change: Display servers that timed out, showing an infinity sign in the ping
+          column.
+
+
 v0.4b - 2009-02-01
 ------------------
 - New: Added default settings and game type names for Smokin' Guns.

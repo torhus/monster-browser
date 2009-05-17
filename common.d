@@ -49,7 +49,7 @@ const char[] APPNAME = "Monster Browser";
 
 const char[] SVN = import("svnversion.txt");
 
-const char[] FINAL_VERSION = "0.4b";
+const char[] FINAL_VERSION = "0.5";
 
 debug {
 	const char[] VERSION = __DATE__ ~
@@ -142,8 +142,24 @@ void log(char[] s)
 void logx(char[] file, int line, Exception e)
 {
 	log(file, line, e.classinfo.name ~ ": " ~ e.toString());
-	e.writeOut((char[] s) { Trace.format(s); });
-	Trace.flush();
+	e.writeOut((char[] s) { logString(s); });
+
+	version(redirect) {}
+	else Trace.flush();
+	if (logfile)
+		logfile.flush();
+}
+
+
+// same as log(), but doesn't print newline
+private void logString(char[] s)
+{
+	version(redirect) {}
+	else Trace.format(s);
+
+	assert(logfile !is null);
+	if (logfile)
+		logfile.write(s);
 }
 
 

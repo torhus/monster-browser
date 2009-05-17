@@ -59,6 +59,7 @@ class ThreadManager
 		if (fp_ is null && fp2_ is null)
 			return;
 
+		killServerBrowser();
 		if (thread_ !is null && thread_.isRunning) {
 			// If we have fp2_, let fp_ run to completion first, otherwise
 			// interrupt it.
@@ -68,7 +69,7 @@ class ThreadManager
 		else {
 			void delegate() function() fp;
 
-			killServerBrowser();
+			//killServerBrowser();
 
 			if (fp_ !is null) {
 				fp = fp_;
@@ -81,7 +82,7 @@ class ThreadManager
 			}
 
 			abort = false;
-			
+
 			void delegate() startIt = fp();
 			if (startIt !is null) {
 				thread_ = new Thread(startIt);

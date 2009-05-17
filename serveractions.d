@@ -109,7 +109,7 @@ void switchToGame(in char[] name)
 				bool canRefresh = master.length > 0;
 				if (!canRefresh) {
 					try {
-						canRefresh = master.load();
+						canRefresh = master.load() && master.length > 0;
 					}
 					catch (IOException e) {
 						error("There was an error reading " ~ master.fileName
@@ -154,7 +154,7 @@ void delegate() loadSavedList()
 	GC.collect();
 
 	GameConfig game = getGameConfig(serverList.gameName);
-	if (Path.exists(master.fileName)) {
+	if (Path.exists(appDir ~ master.fileName)) {
 		auto retriever = new MasterListServerRetriever(game, master);
 		auto contr = new ServerRetrievalController(retriever);
 		contr.disableQueue();
@@ -205,6 +205,9 @@ void queryServers(in char[][] addresses, bool replace=false, bool select=false)
 	if (!addresses.length)
 		return;
 
+	if (addresses.length > 100)
+		GC.collect();
+
 	addresses_ = addresses;
 	replace_ = replace;
 	select_ = select;
@@ -230,19 +233,15 @@ void delegate() refreshList()
 
 	foreach (sh; master) {
 		ServerData sd = master.getServerData(sh);
-		bool hasMatchData;
-		bool ok = matchMod(&sd, game.mod, &hasMatchData);
+		bool matched = matchMod(&sd, game.mod);
 
-		if (!ok)
-			ok = !hasMatchData && timedOut(&sd);
-
-		if (ok && sd.failCount < MAX_FAIL_COUNT)
+		if (matched || timedOut(&sd) && sd.failCount < 2)
 			servers.add(sd.server[ServerColumn.ADDRESS]);
 	}
 
 	log("Refreshing server list for " ~ game.name ~ "...");
 	log(Format("Found {} servers, master is {}.", servers.length,
-	                                                             master.name));
+	                                                          master.address));
 
 	// merge in the extra servers
 	Set!(char[]) extraServers = serverList.extraServers;
@@ -284,33 +283,52 @@ void delegate() getNewList()
 	void f()
 	{
 		try {
-			MasterList master = serverTable.serverList.master;
 			ServerList serverList = serverTable.serverList;
+			MasterList master = serverList.master;
 			GameConfig game = getGameConfig(serverList.gameName);
 			Set!(char[]) addresses = browserGetNewList(game);
 
-			size_t total = addresses.length;
+			// Make sure we don't start removing servers based on an incomplete
+			// address list.
+			if (threadManager.abort)
+				return;
 
-			// exclude servers that are already known
+			size_t total = addresses.length;
+			int removed = 0;
+
+			// Exclude servers that are already known to run the right mod, and
+			// delete servers from the master list that's missing from the
+			// master server.
 			foreach (sh; master) {
 				ServerData sd = master.getServerData(sh);
 				char[] address = sd.server[ServerColumn.ADDRESS];
-				if (address in addresses)
-					addresses.remove(address);
+				if (address in addresses) {
+					if (matchMod(&sd, game.mod)) {
+						addresses.remove(address);
+					}
+				}
+				else {
+					setEmpty(&sd);
+					master.setServerData(sh, sd);
+					removed++;
+				}
 			}
 
 			log(Format("Got {} servers from {}, including {} new.",
 			                      total, game.masterServer, addresses.length));
 
-			auto extraServers = serverList.extraServers;
-			size_t oldLength = addresses.length;
-			foreach (s; extraServers)
-				addresses.add(s);
+			if (removed > 0) {
+				Display.getDefault().syncExec(new class Runnable {
+					void run()
+					{
+						serverList.refillFromMaster();
+						serverTable.fullRefresh();
+					}
+				});
 
-			auto delta = addresses.length - oldLength;
-			log(Format("Added {} extra servers, skipping {} duplicates.",
-	                                      delta, extraServers.length - delta));
-
+				log(Format("Removed {} servers that were missing from master.",
+				                                                     removed));
+			}
 
 			if (addresses.length == 0) {
 				// FIXME: what to do when there are no servers?
@@ -339,10 +357,18 @@ void delegate() getNewList()
 
 	}
 
-	statusBar.setLeft("Checking for new servers...");
-	char[] gameName = serverTable.serverList.gameName;
-	log("Getting new server list for " ~ gameName ~ "...");
-	serverTable.notifyRefreshStarted;
+	ServerList serverList = serverTable.serverList;
+	if (serverList.master.length > 0) {
+		statusBar.setLeft("Checking for new servers...");
+		log("Checking for new servers for " ~ serverList.gameName ~ "...");
+	}
+	else {
+		statusBar.setLeft("Getting new server list...");
+		log("Getting new server list for " ~ serverList.gameName ~ "...");
+	}
+	serverTable.notifyRefreshStarted((bool) { threadManager.abort = true; });
+
+	GC.collect();
 
 	return &f;
 }
@@ -355,8 +381,7 @@ void delegate() getNewList()
  * querying servers.
  *
  * The process is mostly configured through the IServerRetriever object given
- * to the constructor.  This object does the actual querying, parsing, saving
- * of server lists to disk, etc.
+ * to the constructor.  This object does the actual querying and parsing.
  */
 class ServerRetrievalController
 {
@@ -386,11 +411,10 @@ class ServerRetrievalController
 	 *     store   = Add or update this server in the MasterList object
 	 *               associated with this game/mod.
 	 */
-	this(IServerRetriever retriever, bool replace=false, bool store=true)
+	this(IServerRetriever retriever, bool replace=false)
 	{
 		serverRetriever_= retriever;
 		replace_ = replace;
-		store_ = store;
 
 		serverRetriever_.initialize();
 
@@ -399,14 +423,6 @@ class ServerRetrievalController
 		Display.getDefault.syncExec(new class Runnable {
 			void run() { serverTable.notifyRefreshStarted(&stop); }
 		});
-	}
-
-
-	~this()
-	{
-		if (statusBarUpdater_)
-			delete statusBarUpdater_;
-
 	}
 
 
@@ -464,7 +480,7 @@ class ServerRetrievalController
 					serverQueue_.stop(addRemaining_);
 			}
 
-			Display.getDefault.asyncExec(new class Runnable {
+			Display.getDefault.syncExec(new class Runnable {
 				void run()
 				{
 					if (!threadManager.abort || wasStopped_)
@@ -526,9 +542,6 @@ class ServerRetrievalController
 				index = serverList_.getFilteredIndex(autoSelect[0]);
 			}
 
-			if (store_)
-				serverList_.master.save();
-
 			serverTable.fullRefresh(index);
 			statusBar.setDefaultStatus(serverList_.length,
 			                           serverList_.filteredLength,
@@ -557,7 +570,6 @@ class ServerRetrievalController
 		uint timedOut_ = 0;
 		StatusBarUpdater statusBarUpdater_;
 		bool replace_;
-		bool store_;
 		void delegate(ServerHandle) deliverDg_;
 		bool delegate(ServerHandle) deliverDg2_;
 		bool wasStopped_ = false;

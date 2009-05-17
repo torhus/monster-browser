@@ -9,6 +9,7 @@ static if (__VERSION__ < 1041) {
 debug import tango.core.stacktrace.TraceExceptions;
 import tango.io.Console;
 import tango.io.Path;
+import tango.io.device.BitBucket;
 import tango.io.device.File;
 import tango.sys.Environment;
 import tango.util.PathUtil;
@@ -16,8 +17,6 @@ import tango.util.PathUtil;
 import java.io.ByteArrayInputStream;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Clipboard;
-import org.eclipse.swt.events.KeyAdapter;
-import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
@@ -26,7 +25,6 @@ import org.eclipse.swt.widgets.Listener;
 
 import colorednames : disposeNameColors;
 import common;
-import geoip : disposeFlagImages;
 version (Windows)
 	import link;
 import mainwindow;
@@ -62,9 +60,9 @@ private void _main(char[][] args)
 	version (redirect)
 		redirectOutput(appDir ~ "CONSOLE.OUT");
 
-	if (!consoleOutputOk) {
+	if (!consoleOutputOk()) {
 		// Avoid getting IOExceptions all over the place.
-		Cout.output = new File("NUL", File.WriteExisting);
+		Cout.output = new BitBucket;
 		Cerr.output = Cout.output;
 	}
 
@@ -159,7 +157,6 @@ private void _main(char[][] args)
 		slist.disposeCustomData();
 	mainWindow.disposeAll();
 	colorednames.disposeNameColors();
-	geoip.disposeFlagImages();
 	foreach (icon; appIcons)
 		icon.dispose;
 	clipboard.dispose;
@@ -168,6 +165,11 @@ private void _main(char[][] args)
 	log("Saving settings...");
 	saveSettings();
 
+	log("Saving server lists...");
+	foreach (master; masterLists)
+		master.save();
+
+	log("Exit.");
 	shutDownLogging;
 }
 
@@ -196,11 +198,9 @@ private bool redirectOutput(char[] file)
 
 private bool consoleOutputOk()
 {
-	try {
-		Cout.flush;
-	}
-	catch {
+	try
+		Cout(APPNAME ~ " " ~ VERSION).newline.flush;
+	catch (IOException e)
 		return false;
-	}
 	return true;
 }

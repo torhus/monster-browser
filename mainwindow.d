@@ -2,6 +2,8 @@
 
 module mainwindow;
 
+version = icons;
+
 import tango.text.Util;
 import Integer = tango.text.convert.Integer;
 
@@ -13,8 +15,10 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.ShellAdapter;
 import org.eclipse.swt.events.ShellEvent;
-import org.eclipse.swt.graphics.Image;
+version (icons)
+	import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -23,6 +27,8 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+version (icons)
+	import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolBar;
@@ -32,7 +38,7 @@ import common;
 import cvartable;
 import dialogs;
 import playertable;
-import runtools;
+import runtools : killServerBrowser;
 import serveractions;
 import serverlist;
 import servertable;
@@ -43,6 +49,10 @@ import threadmanager;
 StatusBar statusBar;  ///
 FilterBar filterBar;  ///
 MainWindow mainWindow;  ///
+
+// Image objects that needs to be disposed of before shut down.
+version (icons)
+	private Image[] imageList;
 
 
 ///
@@ -57,14 +67,25 @@ class MainWindow
 		shell_.setText(APPNAME ~ " " ~ VERSION);
 		shell_.addShellListener(new MyShellListener);
 
-		// restore saved size and state
+		// restore window size and state
 		char[] size = getSetting("windowSize");
-		int pos = locate(size, 'x');
+		int x = locate(size, 'x');
 		// FIXME: handle the case of 'x' not being found
-		shell_.setSize(Integer.convert(size[0..pos]),
-		        Integer.convert(size[pos+1..length]));
+		shell_.setSize(Integer.convert(size[0..x]),
+		        Integer.convert(size[x+1..length]));
 		if (getSetting("windowMaximized") == "true")
 			shell_.setMaximized(true);
+
+		// restore window position
+		int[] oldres = parseIntegerSequence(getSessionState("resolution"));
+		oldres.length = 2;
+		Rectangle res = Display.getDefault().getBounds();
+		if (oldres[0] == res.width && oldres[1] == res.height) {
+			int[] pos =
+			           parseIntegerSequence(getSessionState("windowPosition"));
+			pos.length = 2;
+			shell_.setLocation(pos[0], pos[1]);
+		}
 
 		shell_.setLayout(new GridLayout(2, false));
 
@@ -73,9 +94,10 @@ class MainWindow
 		Composite topComposite = new Composite(shell_, SWT.NONE);
 		auto topData = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
 		topComposite.setLayoutData(topData);
-		version (none) {
+		version (icons) {
 			// This layout works better when the buttons have images.
 			auto topLayout = new GridLayout(2, false);
+			topLayout.marginHeight = 0;
 			topLayout.horizontalSpacing = 50;
 			topComposite.setLayout(topLayout);
 		}
@@ -144,6 +166,9 @@ class MainWindow
 	void disposeAll()
 	{
 		serverTable.disposeAll();
+		version (icons)
+			foreach (img; imageList)
+				img.dispose();
 	}
 
 
@@ -151,7 +176,12 @@ class MainWindow
 	private void saveState()
 	{
 		serverTable.saveState();
-		
+
+		Rectangle res = Display.getDefault().getBounds();
+		setSessionState("resolution", toCsv([res.width, res.height]));
+		Point pos = shell_.getLocation();
+		setSessionState("windowPosition", toCsv([pos.x, pos.y]));
+
 		if (!shell_.getMaximized()) {
 			char[] width  = Integer.toString(shell_.getSize().x);
 			char[] height = Integer.toString(shell_.getSize().y);
@@ -172,8 +202,8 @@ class MainWindow
 		{
 			serverTable.stopRefresh(false);
 			statusBar.setLeft("Exiting...");
-			log("Exiting...");
-			runtools.killServerBrowser();
+			log("Shutting down...");
+			killServerBrowser();
 			saveState();
 		}
 	}
@@ -228,13 +258,28 @@ private:
 }
 
 
+version (icons)
+	alias Group FilterSuper;
+else
+	alias Composite FilterSuper;
+
 ///
-class FilterBar : Composite
+class FilterBar : FilterSuper
 {
 	///
 	this(Composite parent)
 	{
-		super(parent, SWT.NONE);
+		version (icons) {
+			super(parent, SWT.SHADOW_NONE);
+			setText("Filters and game selection");
+			auto data = new GridData;
+			//data.verticalAlignment = SWT.FILL;
+			setLayoutData(data);
+		}
+		else {
+			super(parent, SWT.NONE);
+		}
+
 		notEmptyButton_ = new Button(this, SWT.CHECK);
 		notEmptyButton_.setText("Not empty");
 		notEmptyButton_.addSelectionListener(new class SelectionAdapter {
@@ -339,7 +384,18 @@ class FilterBar : Composite
 			}
 		});
 
-		setLayout(new RowLayout);
+		version (icons) {
+			auto layout = new RowLayout;
+			layout.fill = true;
+			layout.marginHeight = 2;
+			layout.marginWidth = 2;
+			setLayout(layout);
+		}
+		else {
+			auto layout = new RowLayout;
+			layout.fill = true;
+			setLayout(layout);
+		}
 	}
 
 
@@ -354,7 +410,7 @@ class FilterBar : Composite
 	Filter filterState()
 	{
 		Filter f;
-		
+
 		if(notEmptyButton_.getSelection())
 			f |= Filter.NOT_EMPTY;
 		if (hasHumansButton_.getSelection())
@@ -398,7 +454,7 @@ class FilterBar : Composite
 		}
 	}
 
-	
+
 	///  Saves the session state.
 	private void saveState()
 	{
@@ -437,8 +493,9 @@ ToolBar createToolbar(Composite parent) ///
 	auto toolBar = new ToolBar(parent, SWT.HORIZONTAL);
 
 	auto button1 = new ToolItem(toolBar, SWT.PUSH);
-	button1.setText("Check for new servers");
-	//button1.setImage(loadImage!("res/32px-Crystal_Clear_action_down.png"));
+	button1.setText("Check for new");
+	version (icons)
+		button1.setImage(loadImage!("icons/box_download_32.png"));
 	button1.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{
@@ -447,10 +504,10 @@ ToolBar createToolbar(Composite parent) ///
 	});
 
 	new ToolItem(toolBar, SWT.SEPARATOR);
-
 	ToolItem button2 = new ToolItem(toolBar, SWT.PUSH);
 	button2.setText("Refresh all");
-	//button2.setImage(loadImage!("res/32px-Crystal_Clear_action_reload.png"));
+	version (icons)
+		button2.setImage(loadImage!("icons/refresh_32.png"));
 	button2.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{
@@ -461,8 +518,9 @@ ToolBar createToolbar(Composite parent) ///
 	new ToolItem(toolBar, SWT.SEPARATOR);
 
 	auto button3 = new ToolItem(toolBar, SWT.PUSH);
-	button3.setText("Specify...");
-	//button3.setImage(loadImage!("res/32px-Crystal_Clear_action_edit_add.png"));
+	button3.setText("    Add...  ");
+	version (icons)
+		button3.setImage(loadImage!("icons/add_32.png"));
 	button3.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{
@@ -492,7 +550,8 @@ ToolBar createToolbar(Composite parent) ///
 
 	auto button5 = new ToolItem(toolBar, SWT.PUSH);
 	button5.setText("Settings...");
-	//button5.setImage(loadImage!("res/32px-Crystal_Clear_action_configure.png"));
+	version (icons)
+		button5.setImage(loadImage!("icons/spanner_32.png"));
 	button5.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{
@@ -506,13 +565,16 @@ ToolBar createToolbar(Composite parent) ///
 }
 
 
-private Image loadImage(char[] name)()
-{
-	return _loadImage(cast(byte[])import(name));
-}
+version (icons) {
+	private Image loadImage(char[] name)()
+	{
+		return _loadImage(cast(byte[])import(name));
+	}
 
-
-private Image _loadImage(byte[] data)
-{
-	return new Image(Display.getDefault, new ByteArrayInputStream(data));
+	private Image _loadImage(byte[] data)
+	{
+		Image img = new Image(Display.getDefault, new ByteArrayInputStream(data));
+		imageList ~= img;
+		return img;
+	}
 }
