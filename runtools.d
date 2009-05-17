@@ -53,9 +53,8 @@ Set!(char[]) browserGetNewList(in GameConfig game)
 		cmdLine ~= " -f \"(gametype = \'" ~ game.mod ~ "\'\")";
 
 	try {
-		proc = new Process(cmdLine);
+		proc = new Process(true, cmdLine);
 		proc.workDir = appDir;
-		proc.copyEnv = true;
 		proc.gui = true;
 		log("Executing '" ~ cmdLine ~ "'.");
 		proc.execute();
@@ -222,9 +221,8 @@ final class QstatServerRetriever : IServerRetriever
 
 			cmdLine ~= " -maxsim " ~ getSetting("simultaneousQueries");
 
-			proc = new Process(cmdLine);
+			proc = new Process(true, cmdLine);
 			proc.workDir = appDir;
-			proc.copyEnv = true;
 			proc.gui = true;
 			log("Executing '" ~ cmdLine ~ "'.");
 			proc.execute();
@@ -299,14 +297,7 @@ final class QstatServerRetriever : IServerRetriever
  */
 bool killServerBrowser()
 {
-	log("Killing server browser...");
-
-	if (proc is null) {
-		debug Trace.formatln("proc is null");
-		return false;
-	}
-
-	if (!proc.isRunning)
+	if (proc is null || !proc.isRunning)
 		return false;
 
 	try {

@@ -53,7 +53,7 @@ bool initGeoIp()
 
 	gi = GeoIP_open(toStringz(appDir ~ "GeoIP.dat"), GEOIP_MEMORY_CACHE);
 	if (gi is null) {
-		log("GeoIP.dat was not found, flags will not be shown.\n");
+		log("GeoIP.dat was not found, flags will not be shown.");
 		geoIpLib.unload;
 	}
 	else {
@@ -148,15 +148,6 @@ Image getFlagImage(in char[] countryCode)
 }
 
 
-/*static ~this()
-{
-	if (gi) {
-		GeoIP_delete(gi);
-		gi = null;
-	}
-}*/
-
-
 /// To be called before program exit.
 void disposeFlagImages()
 {
@@ -164,9 +155,6 @@ void disposeFlagImages()
 		if (val)
 			val.dispose;
 
-	// Replaces the module destructor, because of a circular dependency error
-	// caused by r529.  Can probably fix by not importing the messageboxes
-	// module.
 	if (gi) {
 		GeoIP_delete(gi);
 		gi = null;

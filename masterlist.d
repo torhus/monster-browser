@@ -27,16 +27,19 @@ const ServerHandle InvalidServerHandle = ServerHandle.max;
 final class MasterList
 {
 	///
-	this(char[] name)
+	this(char[] address)
 	{
-		assert(name.length > 0);
-		name_ = name;
-		fileName_ = replace(name_ ~ ".xml", ':', '_');
+		assert(address.length > 0);
+		address_ = address;
+		fileName_ = replace(address ~ ".xml", ':', '_');
 	}
 
 
-	/// The URL of the master server.
-	char[] name() { return name_; }
+	/**
+	 * The host name or IP address, plus optionally a port number for the
+	 * master server.
+	 */
+	char[] address() { return address_; }
 
 
 	/// The name of the file this master server's data is stored in.
@@ -102,7 +105,8 @@ final class MasterList
 	{
 		synchronized (this) {
 			foreach (sh, sd; servers_) {
-				if (sd.server[ServerColumn.ADDRESS] == address)
+				if (sd.server.length > 0 &&
+				                    sd.server[ServerColumn.ADDRESS] == address)
 					return sh;
 			}
 			return InvalidServerHandle;
@@ -115,19 +119,23 @@ final class MasterList
 	{
 		synchronized (this) {
 			assert(sh < servers_.length);
-			assert(isValid(&servers_[sh]));
-			return servers_[sh];
+			ServerData* sd = &servers_[sh];
+			assert(!isEmpty(sd));
+			assert(isValid(sd));
+			return *sd;
 		}
 	}
 
 
 	/// Will assert if sh is invalid.
-	private void setServerData(ServerHandle sh, ServerData sd)
+	void setServerData(ServerHandle sh, ServerData sd)
 	{
 		synchronized (this) {
 			assert(sh < servers_.length);
-			assert(isValid(&servers_[sh]));
-			servers_[sh] = sd;
+			ServerData* old = &servers_[sh];
+			assert(!isEmpty(old));
+			assert(isValid(old));
+			*old = sd;
 		}
 	}
 
@@ -145,13 +153,15 @@ final class MasterList
 
 
 	/**
-	* Foreach support.
+	* Foreach support.  Skips servers for which isEmpty(sd) returns true.
 	*/
-	int opApply(int delegate(ref ServerHandle) dg)
+	synchronized int opApply(int delegate(ref ServerHandle) dg)
 	{
 		int result = 0;
 
 		foreach (sh, sd; servers_) {
+			if (isEmpty(&sd))
+				continue;
 			result = dg(sh);
 			if (result)
 				break;
@@ -174,13 +184,13 @@ final class MasterList
 	 */
 	bool load()
 	{
-		if (!Path.exists(fileName_))
+		if (!Path.exists(appDir ~ fileName_))
 			return false;
 
 		log(Format("Opening '{}'...", fileName_));
 
 		scope timer = new Timer;
-		char[] content = cast(char[])File.get(fileName_);
+		char[] content = cast(char[])File.get(appDir ~ fileName_);
 		GC.setAttr(content.ptr, GC.BlkAttr.NO_SCAN);
 		auto parser = new SaxParser!(char);
 		auto handler = new MySaxHandler!(char);
@@ -188,6 +198,7 @@ final class MasterList
 		parser.setSaxHandler(handler);
 		parser.setContent(content);
 		parser.parse;
+		delete content;
 
 		log(Format("Loaded {} servers in {} seconds.", handler.servers.length,
 		                                                       timer.seconds));
@@ -209,11 +220,11 @@ final class MasterList
 	void save()
 	{
 		scope timer = new Timer;
-		scope dumper = new XmlDumper(fileName_);
+		scope dumper = new XmlDumper(appDir ~ fileName_);
 
 		synchronized (this) {
 			foreach (sd; servers_) {
-				if (sd.failCount < MAX_FAIL_COUNT)
+				if (!isEmpty(&sd))
 					dumper.serverToXml(&sd);
 			}
 		}
@@ -245,7 +256,7 @@ final class MasterList
 
 
 	private {
-		char[] name_;
+		char[] address_;
 		char[] fileName_;
 		ServerData[] servers_;
 	}
@@ -360,19 +371,19 @@ private final class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 
 		foreach (ref attr; attributes) {
 			if (attr.localName == "name") {
-				sd.rawName = attr.value;
-				sd.server[ServerColumn.NAME] = stripColorCodes(sd.rawName);
+				sd.rawName = attr.value.dup;
+				sd.server[ServerColumn.NAME] = stripColorCodes(attr.value);
 			}
 			else if (attr.localName == "country_code")
-				sd.server[ServerColumn.COUNTRY] = attr.value;
+				sd.server[ServerColumn.COUNTRY] = attr.value.dup;
 			else if (attr.localName == "address")
-				sd.server[ServerColumn.ADDRESS] = attr.value;
+				sd.server[ServerColumn.ADDRESS] = attr.value.dup;
 			else if (attr.localName == "ping")
-				sd.server[ServerColumn.PING] = attr.value;
+				sd.server[ServerColumn.PING] = attr.value.dup;
 			else if (attr.localName == "player_count")
-				sd.server[ServerColumn.PLAYERS] = attr.value;
+				sd.server[ServerColumn.PLAYERS] = attr.value.dup;
 			else if (attr.localName == "map")
-				sd.server[ServerColumn.MAP] = attr.value;
+				sd.server[ServerColumn.MAP] = attr.value.dup;
 			else if (attr.localName == "fail_count")
 				sd.failCount = Integer.convert(attr.value);
 		}
@@ -388,9 +399,9 @@ private final class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 
 		foreach (ref attr; attributes) {
 			if (attr.localName == "key")
-				cvar[0] = attr.value;
+				cvar[0] = attr.value.dup;
 			else if (attr.localName == "value")
-				cvar[1] = attr.value;
+				cvar[1] = attr.value.dup;
 
 			if (icompare(cvar[0], "g_gametype") == 0)
 				servers[$-1].server[ServerColumn.GAMETYPE] = cvar[1];
@@ -411,11 +422,11 @@ private final class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 
 		foreach (ref attr; attributes) {
 			if (attr.localName == "name")
-				player[PlayerColumn.RAWNAME] = attr.value;
+				player[PlayerColumn.RAWNAME] = attr.value.dup;
 			else if (attr.localName == "score")
-				player[PlayerColumn.SCORE] = attr.value;
+				player[PlayerColumn.SCORE] = attr.value.dup;
 			else if (attr.localName == "ping")
-				player[PlayerColumn.PING] = attr.value;
+				player[PlayerColumn.PING] = attr.value.dup;
 		}
 
 		servers[$-1].players ~= player;
