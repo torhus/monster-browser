@@ -334,7 +334,7 @@ private:
 			}
 			if (!(filters_ || filteredList.length == list.length ||
 							  filteredList.length == (list.length - 1))) {
-				log(Format("ServerList invariant broken!\n",
+				log(Format("ServerList invariant broken!\n"
 				           "\nfilters_ & Filter.HAS_HUMANS: {}"
 				           "\nfilters_ & Filter.NOT_EMPTY: {}"
 				           "\nlist.length: {}"
