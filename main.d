@@ -6,6 +6,7 @@ static if (__VERSION__ < 1041) {
 	debug import tango.core.stacktrace.StackTrace;
 	debug version = bug2673;
 }
+import tango.core.Thread;
 debug import tango.core.stacktrace.TraceExceptions;
 import tango.io.Console;
 import tango.io.Path;
@@ -37,6 +38,8 @@ import threadmanager;
 
 void main(char[][] args) ///
 {
+	Thread.getThis().name = "main";
+
 	version (bug2673)
 		rt_setTraceHandler(&basicTracer);
 
