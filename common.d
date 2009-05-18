@@ -1,5 +1,6 @@
 module common;
 
+import tango.core.Thread;
 import tango.core.Version;
 import tango.io.device.File;
 import Path = tango.io.Path;
@@ -142,6 +143,10 @@ void log(char[] s)
 void logx(char[] file, int line, Exception e)
 {
 	log(file, line, e.classinfo.name ~ ": " ~ e.toString());
+	log(Format("{} threads, currently in '{}'.", Thread.getAll().length,
+	                                                   Thread.getThis().name));
+
+	// output stack trace
 	e.writeOut((char[] s) { logString(s); });
 
 	version(redirect) {}
