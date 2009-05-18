@@ -50,7 +50,7 @@ final class MasterList
 	ServerHandle addServer(ServerData sd)
 	{
 		synchronized (this) {
-			assert(isValid(&sd));
+			debug isValid(&sd);
 			if (timedOut(&sd))
 				sd.failCount = 1;
 			servers_ ~= sd;
@@ -72,7 +72,7 @@ final class MasterList
 	{
 		synchronized (this) {
 			char[] address = sd.server[ServerColumn.ADDRESS];
-			assert(isValid(&sd));
+			debug isValid(&sd);
 			ServerHandle sh = findServer(address);
 
 			if (sh != InvalidServerHandle) {
@@ -121,7 +121,7 @@ final class MasterList
 			assert(sh < servers_.length);
 			ServerData* sd = &servers_[sh];
 			assert(!isEmpty(sd));
-			assert(isValid(sd));
+			debug isValid(sd);
 			return *sd;
 		}
 	}
@@ -134,7 +134,7 @@ final class MasterList
 			assert(sh < servers_.length);
 			ServerData* old = &servers_[sh];
 			assert(!isEmpty(old));
-			assert(isValid(old));
+			debug isValid(old);
 			*old = sd;
 		}
 	}
@@ -237,7 +237,11 @@ final class MasterList
 	///
 	private bool isValid(in ServerData* sd)
 	{
-		return isValidIpAddress(sd.server[ServerColumn.ADDRESS]);
+		if (!isValidIpAddress(sd.server[ServerColumn.ADDRESS])) {
+			debug print("MasterList.isValid()" , *sd);
+			return false;
+		}
+		return true;
 	}
 
 
