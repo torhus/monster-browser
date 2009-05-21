@@ -382,27 +382,25 @@ void mergeSort(T)(T[] a, bool delegate(T a, T b) lessOrEqual)
 
 
 /**
- * Parse a sequence of comma-separated integers, skipping all whitespace.
- *
- * Signs (+ or -) are not allowed.
+ * Parse a sequence of integers, separated by any combination of commas,
+ * spaces, or tabs.
  */
-int[] parseIntegerSequence(in char[] seq)
+int[] parseIntList(in char[] str, size_t forcedLength=0, int defaultVal=0)
 {
-	uint ate;
 	int[] r = null;
 
-	while (seq.length) {
-		seq = triml(seq);
-		int val = Integer.convert(seq, 10, &ate);
-		if (ate)
+	foreach (s; delimiters(str, ", \t")) {
+		if (s.length > 0) {
+			int val = Integer.toInt(s);
 			r ~= val;
-		else
-			break;
+		}
+	}
 
-		seq = seq[ate..$];
-		seq = triml(seq);
-		if (seq.length && seq[0] == ',')
-			seq = seq[1..$];
+	if (forcedLength != 0 && r.length != forcedLength) {
+		size_t oldLen = r.length;
+		r.length = forcedLength;
+		if (forcedLength > oldLen)
+			r[oldLen .. $] = defaultVal;
 	}
 
 	return r;

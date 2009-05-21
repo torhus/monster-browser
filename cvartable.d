@@ -29,10 +29,7 @@ class CvarTable
 		column = new TableColumn(table_, DWT.NONE);
 		column.setText("Value");
 
-		int[] widths = parseIntegerSequence(
-		                                  getSessionState("cvarColumnWidths"));
-		// FIXME use defaults if wrong length?
-		widths.length = 2;
+		int[] widths = parseIntList(getSessionState("cvarColumnWidths"), 2, 90);
 
 		// add columns
 		table_.getColumn(0).setWidth(widths[0]);

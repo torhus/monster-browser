@@ -63,10 +63,8 @@ class ServerTable
 		table_.setHeaderVisible(true);
 		table_.setLinesVisible(true);
 
-		int[] widths = parseIntegerSequence(
-		                                getSessionState("serverColumnWidths"));
-		// FIXME use defaults if wrong length?
-		widths.length = serverHeaders.length;
+		int[] widths = parseIntList(getSessionState("serverColumnWidths"),
+		                                             serverHeaders.length, 50);
 
 		// add columns
 		foreach (int i, header; serverHeaders) {

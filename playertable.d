@@ -38,10 +38,8 @@ class PlayerTable
 		table_.setHeaderVisible(true);
 		table_.setLinesVisible(true);
 
-		int[] widths = parseIntegerSequence(
-		                                getSessionState("playerColumnWidths"));
-		// FIXME use defaults if wrong length?
-		widths.length = playerHeaders.length;
+		int[] widths = parseIntList(getSessionState("playerColumnWidths"),
+		                                             playerHeaders.length, 50);
 
 		// add columns
 		foreach (int i, header; playerHeaders) {
@@ -147,7 +145,7 @@ class PlayerTable
 	void setItems(int[] serverIndices, ServerList serverList)
 	{
 		assert(serverIndices.length > 0 && serverList !is null);
-		
+
 		moreThanOneServer_ = serverIndices.length > 1;
 
 		players_.length = 0;
