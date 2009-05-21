@@ -69,10 +69,10 @@ class MainWindow
 
 		// restore window size and state
 		char[] size = getSetting("windowSize");
-		int x = locate(size, 'x');
-		// FIXME: handle the case of 'x' not being found
-		shell_.setSize(Integer.convert(size[0..x]),
-		        Integer.convert(size[x+1..length]));
+		uint x = locate(size, 'x');
+		if (x < size.length)
+			shell_.setSize(Integer.convert(size[0..x]),
+			               Integer.convert(size[x+1..length]));
 		if (getSetting("windowMaximized") == "true")
 			shell_.setMaximized(true);
 
