@@ -315,42 +315,6 @@ void sortStringArray(char[][][] arr, int sortColumn=0, bool reverse=false,
 }
 
 
-/**
- * Sort a 2-dimensional string array.  This is a stable sort.
- *
- * Params:
- *     sortColumn = Column to sort on (the second dimension of arr).
- *     reverse    = Reversed order.
- *     numeric    = Set to true to get a numerical sort instead of an
- *                  alphabetical one.  The string in the column given by
- *                  sortColumn will be converted to an integer before
- *                  comparing.
- *
- * Throws: IllegalArgumentException if numeric is true, and the strings in
- *         sortColumn contains anything that doesn't parse as integers.
- */
-void sortStringArrayStable(char[][][] arr, int sortColumn=0,
-                           bool reverse=false, bool numeric=false)
-{
-
-	bool lessOrEqual(char[][] a, char[][] b)
-	{
-		int result;
-
-		if (numeric) {
-			result = Integer.toInt(a[sortColumn]) -
-			         Integer.toInt(b[sortColumn]);
-		}
-		else {
-			result = icompare(a[sortColumn], b[sortColumn]);
-		}
-		return (reverse ? -result <= 0 : result <= 0);
-	}
-
-	mergeSort(arr, &lessOrEqual);
-}
-
-
 /// A timer.
 class Timer
 {
