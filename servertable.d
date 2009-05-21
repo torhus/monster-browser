@@ -299,20 +299,17 @@ class ServerTable
 			indices ~= index;
 		}
 		else {
-			foreach (ip, v; selectedIps_)
-				selectedIps_[ip] = serverList_.getFilteredIndex(ip);
-			indices = selectedIps_.toArray();
+			foreach (ip, v; selectedIps_) {
+				auto i = serverList_.getFilteredIndex(ip);
+					selectedIps_[ip] = serverList_.getFilteredIndex(ip);
+				if (i != -1)
+					indices ~= i;
+			}
 		}
 
 		if (indices.length) {
 			table_.setSelection(indices);
-
-			char[][][] allPlayers;
-			foreach (i; indices) {
-				if (i < serverList_.filteredLength)
-					allPlayers ~= serverList_.getFiltered(i).players;
-			}
-			playerTable.setItems(allPlayers);
+			playerTable.setItems(indices, serverList_);
 
 			cvarTable.clear();
 			int i = table_.getSelectionIndex();
@@ -384,18 +381,16 @@ private:
 
 			synchronized (serverList_) {
 				int[] indices = table_.getSelectionIndices;
-				char[][][] allPlayers;
 				if (indices.length) {
 					foreach (i; indices) {
 						auto sd = serverList_.getFiltered(i);
 						selectedIps_[sd.server[ServerColumn.ADDRESS]] = i;
-						allPlayers ~= sd.players;
 					}
 
 					auto sd =
 					         serverList_.getFiltered(table_.getSelectionIndex);
 					cvarTable.setItems(sd.cvars);
-					playerTable.setItems(allPlayers);
+					playerTable.setItems(indices, serverList_);
 				}
 				else {
 					cvarTable.clear;
@@ -622,17 +617,17 @@ private:
 		selectedIps_.clear();
 
 		synchronized (serverList_) {
-			char[][][] allPlayers;
+			int[] indices;
 
 			for (size_t i=0; i < serverList_.filteredLength; i++) {
 				auto sd = serverList_.getFiltered(i);
 				selectedIps_[sd.server[ServerColumn.ADDRESS]] = i;
-				allPlayers ~= sd.players;
+				indices ~= i;
 			}
 
 			auto sd = serverList_.getFiltered(table_.getSelectionIndex);
 			cvarTable.setItems(sd.cvars);
-			playerTable.setItems(allPlayers);
+			playerTable.setItems(indices, serverList_);
 		}
 	}
 
