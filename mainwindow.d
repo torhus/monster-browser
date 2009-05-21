@@ -77,13 +77,10 @@ class MainWindow
 			shell_.setMaximized(true);
 
 		// restore window position
-		int[] oldres = parseIntegerSequence(getSessionState("resolution"));
-		oldres.length = 2;
+		int[] oldres = parseIntList(getSessionState("resolution"), 2);
 		Rectangle res = Display.getDefault().getBounds();
 		if (oldres[0] == res.width && oldres[1] == res.height) {
-			int[] pos =
-			           parseIntegerSequence(getSessionState("windowPosition"));
-			pos.length = 2;
+			int[] pos = parseIntList(getSessionState("windowPosition"), 2);
 			shell_.setLocation(pos[0], pos[1]);
 		}
 
@@ -127,9 +124,8 @@ class MainWindow
 
 		rightForm_.setLayout(new FillLayout(DWT.VERTICAL));
 
-		int[] weights = parseIntegerSequence(getSessionState("middleWeights"));
-		weights.length = 2;  // FIXME: use defaults instead?
-		middleForm_.setWeights(weights);;
+		int[] weights = parseIntList(getSessionState("middleWeights"), 2);
+		middleForm_.setWeights(weights);
 
 		// player list
 		playerTable = new PlayerTable(rightForm_);
@@ -137,8 +133,7 @@ class MainWindow
 		// Server info, cvars, etc
 		cvarTable = new CvarTable(rightForm_);
 
-		weights = parseIntegerSequence(getSessionState("rightWeights"));
-		weights.length = 2;  // FIXME: use defaults instead?
+		weights = parseIntList(getSessionState("rightWeights"), 2);
 		rightForm_.setWeights(weights);
 
 
