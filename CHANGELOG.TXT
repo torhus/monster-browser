@@ -1,3 +1,14 @@
+Latest changes
+--------------
+- New: When multiple servers are selected, you can place the mouse pointer over
+       a player name to get a tool tip showing the server name.
+- Fix: More responsive in some cases, due to switching to a customized qstat.
+       Also makes the status bar counter keep getting updated even when lots of
+       servers time out.
+- Fix: More robust against errors in settings.ini, in the XML files, and in
+       data received from servers.
+
+
 v0.5 - 2009-05-16
 -----------------
 The "Get new list" button was renamed to "Check for new".  It does no longer

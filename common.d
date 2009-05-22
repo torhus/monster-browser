@@ -384,6 +384,8 @@ void mergeSort(T)(T[] a, bool delegate(T a, T b) lessOrEqual)
 /**
  * Parse a sequence of integers, separated by any combination of commas,
  * spaces, or tabs.
+ *
+ * When an integer is not found, a zero is used instead.
  */
 int[] parseIntList(in char[] str, size_t forcedLength=0, int defaultVal=0)
 {
@@ -391,7 +393,7 @@ int[] parseIntList(in char[] str, size_t forcedLength=0, int defaultVal=0)
 
 	foreach (s; delimiters(str, ", \t")) {
 		if (s.length > 0) {
-			int val = Integer.toInt(s);
+			int val = Integer.parse(s);
 			r ~= val;
 		}
 	}
