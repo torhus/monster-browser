@@ -431,8 +431,8 @@ private:
 				break;
 
 			case ServerColumn.PING:
-				result = Integer.toInt(a.server[ServerColumn.PING]) -
-				         Integer.toInt(b.server[ServerColumn.PING]);
+				result = Integer.parse(a.server[ServerColumn.PING]) -
+				         Integer.parse(b.server[ServerColumn.PING]);
 				break;
 
 			default:

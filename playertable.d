@@ -214,8 +214,8 @@ private:
 			int result;
 
 			if (numerical) {
-				result = Integer.toInt(a.data[sortCol]) -
-				         Integer.toInt(b.data[sortCol]);
+				result = Integer.parse(a.data[sortCol]) -
+				         Integer.parse(b.data[sortCol]);
 			}
 			else {
 				result = icompare(a.data[sortCol], b.data[sortCol]);
