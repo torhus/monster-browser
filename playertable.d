@@ -183,8 +183,10 @@ private:
 
 	class MouseMoveListener : Listener {
 		void handleEvent(Event event) {
-			if (!moreThanOneServer_)
+			if (!moreThanOneServer_) {
+				table_.setToolTipText(null);
 				return;
+			}
 
 			char[] text = null;
 			scope point = new Point(event.x, event.y);
