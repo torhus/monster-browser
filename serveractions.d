@@ -520,7 +520,7 @@ class ServerRetrievalController
 			// display the server if we know it runs the right mod.
 			assert(!matched);  // assure we don't do this needlessly
 			ServerData sd = serverList_.master.getServerData(sh);
-			matched = matchMod(&sd, serverList_.gameName);
+			matched = matchMod(&sd, getGameConfig(serverList_.gameName).mod);
 		}
 
 		if (matched)
