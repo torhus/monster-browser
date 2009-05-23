@@ -5,6 +5,10 @@ Latest changes
 - Fix: More responsive in some cases, due to switching to a customized qstat.
        Also makes the status bar counter keep getting updated even when lots of
        servers time out.
+- Fix: Servers that timed out were not displayed if their game and mod names
+       differed.
+- Fix: Would sometimes crash when switching to another game after changing
+       filters.
 - Fix: More robust against errors in settings.ini, in the XML files, and in
        data received from servers.
 

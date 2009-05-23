@@ -1,8 +1,17 @@
+- Change taskbar text when working, to keep user informed?
+
+- Show server name tooltips for players, and have a context menu with
+  'select server'?  Double click player to go to server?
+
 - Display better message when aborting Check for new servers.
+
+- When interrupting a check for new servers, the press of Refresh all won't
+  query the servers the were not tried already.
 
 - Don't save xml files when using gslist?
 
-- Fix the name of extra servers files, use or game or mod name?
+- Fix the name of extra servers files, use game or mod name, maybe a
+  customizable name?
 
 - Number of removed servers printed by getNewList() is wrong when extra servers
   are being used.
@@ -21,9 +30,5 @@
 
 - If loading servers without refreshing the GUI, there is no point in calling
   _insertSorted, or to get country codes.
-
-- Use Integer.parse instead of toInt to avoid exceptions?  parse will just
-  return 0 if there's garbage in the string, which is usually better than
-  stopping the app with an exception.  Might also speed up sorting.
 
 - Don't select (mark) a server twice (Specify server).
