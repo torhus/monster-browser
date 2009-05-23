@@ -172,9 +172,9 @@ class ServerTable
 		serverList_ = newList;
 
 		synchronized (serverList_) {
-			serverList_.setFilters(filterBar.filterState, false);
-			serverList_.sort(sortCol,
-			                 (table_.getSortDirection() == DWT.DOWN), false);
+			bool reversed = table_.getSortDirection() == DWT.DOWN;
+			serverList_.sort(sortCol, reversed, false);
+			serverList_.setFilters(filterBar.filterState);
 		}
 	}
 

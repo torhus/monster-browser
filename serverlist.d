@@ -265,19 +265,15 @@ class ServerList
 
 	/**
 	 * Sets filters and updates the list accordingly.
-	 *
-	 * Set update to false if you don't want the filters to be applied
-	 * immediately.
 	 */
-	void setFilters(Filter newFilters, bool update=true)
+	void setFilters(Filter newFilters)
 	{
 		if (newFilters == filters_)
 			return;
 
 		synchronized (this) {
 			filters_ = newFilters;
-			if (update)
-				updateFilteredList();
+			updateFilteredList();
 		}
 	}
 
@@ -333,8 +329,8 @@ private:
 				assert(0, "Details in log file.");
 			}
 			if (!(filters_ || filteredList.length == list.length ||
-							  filteredList.length == (list.length - 1))) {
-				log(Format("ServerList invariant broken!\n"
+			                       filteredList.length == (list.length - 1))) {
+				log(Format("ServerList invariant broken!"
 				           "\nfilters_ & Filter.HAS_HUMANS: {}"
 				           "\nfilters_ & Filter.NOT_EMPTY: {}"
 				           "\nlist.length: {}"
