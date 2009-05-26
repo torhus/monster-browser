@@ -132,7 +132,7 @@ void switchToGame(in char[] name)
 			serverTable.forgetSelection();
 			serverTable.fullRefresh();
 			statusBar.setDefaultStatus(serverList.length,
-			                                        serverList.filteredLength);
+			      serverList.filteredLength, 0, countHumanPlayers(serverList));
 		}
 
 		return null;
@@ -545,7 +545,8 @@ class ServerRetrievalController
 			serverTable.fullRefresh(index);
 			statusBar.setDefaultStatus(serverList_.length,
 			                           serverList_.filteredLength,
-			                           timedOut_);
+			                           timedOut_,
+			                           countHumanPlayers(serverList_));
 		}
 		else {
 			statusBar.setLeft(noReplyMessage);

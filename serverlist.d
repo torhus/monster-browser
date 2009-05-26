@@ -570,3 +570,16 @@ private:
 		Trace.formatln("");
 	}
 }
+
+
+/// Returns the total number of humans players in the filtered list of servers.
+int countHumanPlayers(in ServerList serverList)
+{
+	int players = 0;
+	synchronized (serverList) {		
+		int max = serverList.filteredLength;
+		for (int i=0; i < max; i++)
+			players += serverList.getFiltered(i).humanCount;
+	}
+	return players;
+}
