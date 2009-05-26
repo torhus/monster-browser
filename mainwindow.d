@@ -228,22 +228,15 @@ class StatusBar
 	}
 
 	void setDefaultStatus(uint totalServers, uint shownServers,
-	                      uint noReply=0)  ///
+	                                        uint noReply=0, uint humans=0)  ///
 	{
-		char[] msg;
-		char[] total = Integer.toString(totalServers);
+		char[] msg = Integer.toString(shownServers) ~ " servers";
 
-		if (shownServers != totalServers) {
-			msg = "Showing " ~ Integer.toString(shownServers) ~ " of " ~
-			                                                total ~ " servers";
-		}
-		else {
-			msg = "Showing " ~ total ~ " servers";
-		}
-		if (noReply > 0) {
-			char[] n = Integer.toString(noReply);
-			msg ~= " (" ~ n ~ " did not reply)";
-		}
+		if (noReply > 0)
+			msg ~= " (" ~ Integer.toString(noReply) ~ " did not reply)";
+
+		if (humans > 0)
+			msg ~= ", "  ~ Integer.toString(humans) ~ " people are playing";
 
 		setLeft(msg);
 	}
@@ -469,7 +462,7 @@ class FilterBar : FilterSuper
 				synchronized (list)
 				if (!serverTable.refreshInProgress) {
 					statusBar.setDefaultStatus(list.length,
-			                                   list.filteredLength);
+					          list.filteredLength, 0, countHumanPlayers(list));
 				}
 			}
 		});
