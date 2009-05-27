@@ -12,6 +12,8 @@ Latest changes
        filters.
 - Fix: More robust against errors in settings.ini, in the XML files, and in
        data received from servers.
+- Fix: Would crash if you typed a game name into the combo box that was the
+       last game selected before shutdown, but didn't exist in mods.ini.
 
 
 v0.5 - 2009-05-16

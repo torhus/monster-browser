@@ -318,11 +318,6 @@ class FilterBar : FilterSuper
 		if (state & Filter.HAS_HUMANS)
 			hasHumansButton_.setSelection(true);
 
-		// game type selection
-		/*Combo combo = new Combo(filterComposite_, DWT.READ_ONLY);
-		combo.setItems(gametypes);
-		combo.select(0);*/
-
 		// game selection
 		gamesCombo_ = new Combo(this, DWT.DROP_DOWN);
 		setGames(settings.gameNames);
@@ -353,12 +348,11 @@ class FilterBar : FilterSuper
 			public void widgetDefaultSelected(SelectionEvent e)
 			{
 				char[] s = trim((cast(Combo)e.widget).getText());
-				if (s.length == 0) {
+				if (s.length == 0)
 					return;
-				}
 
-				int i = findString(gameNames, s);
-				Combo combo = (cast(Combo) e.widget);
+				Combo combo = cast(Combo)e.widget;
+				int i = findString(combo.getItems(), s);
 				if (i == -1) {
 					combo.add(s);
 					combo.select(combo.getItemCount() - 1);
