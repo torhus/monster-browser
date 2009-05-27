@@ -228,7 +228,7 @@ class StatusBar
 	}
 
 	void setDefaultStatus(uint totalServers, uint shownServers,
-	                                        uint noReply=0, uint humans=0)  ///
+	                                            uint noReply, uint humans)  ///
 	{
 		char[] msg = Integer.toString(shownServers) ~ " servers";
 
@@ -237,6 +237,8 @@ class StatusBar
 
 		if (humans > 0)
 			msg ~= ", "  ~ Integer.toString(humans) ~ " people are playing";
+		else if (humans == 0)
+			msg ~= ", no human players";
 
 		setLeft(msg);
 	}
