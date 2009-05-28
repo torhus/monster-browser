@@ -495,12 +495,10 @@ private:
 
 		ServerData sd = master_.getServerData(sh);
 
-		if (filters_ & Filter.HAS_HUMANS && !sd.hasHumans)
-			return true;
-		if (filters_ & Filter.NOT_EMPTY && !(sd.hasHumans || sd.hasBots))
-			return true;
-
-		return false;
+		if (sd.hasHumans)
+			return timedOut(&sd);
+		else
+			return filters_ & Filter.HAS_HUMANS || !sd.hasBots || timedOut(&sd);
 	}
 
 	/**
@@ -514,25 +512,16 @@ private:
 		if (!isSorted_)
 			_sort();
 
-		filteredList.length = 0;
-		if (filters_ & Filter.HAS_HUMANS) {
-			foreach (i, sh; list) {
-				ServerData sd = master_.getServerData(sh);
-				if (sd.hasHumans)
-					filteredList ~= i;
-			}
-			filteredIpHashValid_ = false;
-		}
-		else if (filters_ & Filter.NOT_EMPTY) {
-			foreach (i, sh; list) {
-				ServerData sd = master_.getServerData(sh);
-				if (sd.hasBots || sd.hasHumans)
-					filteredList ~= i;
-			}
-			filteredIpHashValid_ = false;
+		if (filters_ == 0) {
+			copyListToFilteredList();
 		}
 		else {
-			copyListToFilteredList();
+			filteredList.length = 0;
+			foreach (i, sh; list) {
+				if (!isFilteredOut(sh))
+					filteredList ~= i;
+			}
+			filteredIpHashValid_ = false;
 		}
 	}
 
@@ -576,7 +565,7 @@ private:
 int countHumanPlayers(in ServerList serverList)
 {
 	int players = 0;
-	synchronized (serverList) {		
+	synchronized (serverList) {
 		int max = serverList.filteredLength;
 		for (int i=0; i < max; i++)
 			players += serverList.getFiltered(i).humanCount;
