@@ -83,6 +83,10 @@ final class MasterList
 				if (timedOut(&sd)) {
 					old.server[ServerColumn.PING] =
 					                              sd.server[ServerColumn.PING];
+					// clear player count
+					old.setPlayerColumn(0, 0, old.maxClients);
+					old.players = null;
+
 					old.failCount++;
 				}
 				else {
