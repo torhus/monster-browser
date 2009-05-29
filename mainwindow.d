@@ -457,8 +457,8 @@ class FilterBar : FilterSuper
 				auto list = serverTable.serverList;
 				synchronized (list)
 				if (!serverTable.refreshInProgress) {
-					statusBar.setDefaultStatus(list.length,
-					          list.filteredLength, 0, countHumanPlayers(list));
+					statusBar.setDefaultStatus(0, list.filteredLength, 0,
+					                                  countHumanPlayers(list));
 				}
 			}
 		});

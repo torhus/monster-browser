@@ -17,7 +17,7 @@ import serverdata;
 
 
 ///
-alias size_t ServerHandle;
+typedef size_t ServerHandle;
 
 ///
 const ServerHandle InvalidServerHandle = ServerHandle.max;
@@ -54,7 +54,7 @@ final class MasterList
 			if (timedOut(&sd))
 				sd.failCount = 1;
 			servers_ ~= sd;
-			return servers_.length - 1;
+			return cast(ServerHandle)(servers_.length - 1);
 		}
 	}
 
@@ -111,7 +111,7 @@ final class MasterList
 			foreach (sh, sd; servers_) {
 				if (sd.server.length > 0 &&
 				                    sd.server[ServerColumn.ADDRESS] == address)
-					return sh;
+					return cast(ServerHandle)sh;
 			}
 			return InvalidServerHandle;
 		}
@@ -166,7 +166,7 @@ final class MasterList
 		foreach (sh, sd; servers_) {
 			if (isEmpty(&sd))
 				continue;
-			result = dg(sh);
+			result = dg(cast(ServerHandle)sh);
 			if (result)
 				break;
 		}

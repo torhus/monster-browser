@@ -68,14 +68,14 @@ class ServerList
 		bool refresh = false;
 
 		synchronized (this) {
+			ServerData sd;
 			synchronized (master_) {
-				ServerData sd = master_.getServerData(sh);
+				sd = master_.getServerData(sh);
 				sd.server[ServerColumn.COUNTRY] = getCountryCode(&sd);
 			}
-			list ~= sh;
 			isSorted_ = false;
-			if (!isFilteredOut(sh)) {
-				insertSorted(list.length -1);
+			if (!isFilteredOut(&sd)) {
+				insertSorted(sh);
 				refresh = true;
 			}
 		}
@@ -89,20 +89,9 @@ class ServerList
 	{
 		synchronized (this) {
 			isSorted_ = false;
-			synchronized (master_) {
-				ServerData sd = master_.getServerData(sh);
-				if (sd.customData)
-					sd.customData.dispose();
-
-				int i = getIndex(sd.server[ServerColumn.ADDRESS]);
-				assert(i != -1);
-				list[i] = sh;
+			if (isFilteredOut(sh))
 				removeFromFiltered(sh);
-				if (!isFilteredOut(sh))
-					insertSorted(i);
-			}
 		}
-
 		return true;
 	}
 
@@ -110,29 +99,16 @@ class ServerList
 	///
 	synchronized void refillFromMaster()
 	{
-		clear();
-		foreach (sh; master_) {
+		char[] mod = getGameConfig(gameName_).mod;
+
+		filteredList.length = 0;
+		synchronized (master_) foreach (sh; master_) {
 			ServerData sd = master_.getServerData(sh);
-			if (matchMod(&sd, getGameConfig(gameName_).mod))
-				add(sh);
+			if (matchMod(&sd, mod) && !isFilteredOut(&sd))
+				filteredList ~= sh;
 		}
+		isSorted_ = false;
 	}
-
-
-	 /// Iterate over the full list.
-	/*int opApply(int delegate(ref ServerData) dg)
-	{
-		int result = 0;
-
-		synchronized (this)
-			foreach(ServerData sd; list) {
-				result = dg(sd);
-				if (result) {
-					break;
-				}
-			}
-		return result;
-	}*/
 
 
 	/// Return a server from the filtered list
@@ -141,7 +117,7 @@ class ServerList
 		synchronized (this) {
 			assert(i >= 0 && i < filteredList.length);
 			synchronized (master_) {
-				return master_.getServerData(list[filteredList[i]]);
+				return master_.getServerData(filteredList[i]);
 			}
 		}
 	}
@@ -159,12 +135,13 @@ class ServerList
 		if (!ipAndPort.length)
 			return -1;
 
-		synchronized (this) synchronized (master_)
+		// FIXME: make this work again
+		/*synchronized (this) synchronized (master_)
 		foreach (int i, ServerHandle sh; list) {
 			ServerData sd = master_.getServerData(sh);
 			if (sd.server[ServerColumn.ADDRESS] == ipAndPort)
 				return i;
-		}
+		}*/
 		return -1;
 	}
 
@@ -190,7 +167,6 @@ class ServerList
 
 	///
 	size_t filteredLength() { synchronized (this) return filteredList.length; }
-	size_t length() { synchronized (this) return list.length; } /// ditto
 
 
 	/**
@@ -200,11 +176,7 @@ class ServerList
 	{
 		synchronized (this) {
 			disposeCustomData();
-
-			//filteredList.length = 0;
-			//list.length = 0;
-			delete filteredList;
-			delete list;
+			filteredList.length = 0;
 			filteredIpHash_.reset();
 			complete = false;
 		}
@@ -238,7 +210,6 @@ class ServerList
 	void sort()
 	{
 		synchronized (this) {
-			_sort();
 			updateFilteredList();
 		}
 	}
@@ -256,7 +227,6 @@ class ServerList
 		synchronized (this) {
 			setSort(column, reversed);
 			if (update) {
-				_sort();
 				updateFilteredList();
 			}
 		}
@@ -303,8 +273,7 @@ class ServerList
  *                                                                     *
  ***********************************************************************/
 private:
-	ServerHandle[] list;
-	size_t[] filteredList;
+	ServerHandle[] filteredList;
 	// maps addresses to indices into the filtered list
 	HashMap!(char[], int) filteredIpHash_;
 	bool filteredIpHashValid_ = false;
@@ -323,12 +292,12 @@ private:
 	invariant()
 	{
 		synchronized (this) {
-			if (filteredList.length > list.length) {
+			/*if (filteredList.length > list.length) {
 				log(Format("filteredlist.length == {}\nlist.length == {}",
 				                            filteredList.length, list.length));
 				assert(0, "Details in log file.");
-			}
-			if (!(filters_ || filteredList.length == list.length ||
+			}*/
+			/*if (!(filters_ || filteredList.length == list.length ||
 			                       filteredList.length == (list.length - 1))) {
 				log(Format("ServerList invariant broken!"
 				           "\nfilters_ & Filter.HAS_HUMANS: {}"
@@ -339,7 +308,7 @@ private:
 				           filters_ & Filter.NOT_EMPTY,
 				           list.length, filteredList.length));
 				assert(0, "Details in log file.");
-			}
+			}*/
 		}
 	}
 
@@ -372,7 +341,7 @@ private:
 
 		if (!isSorted_ || sortColumn_ != oldSortColumn_) {
 			synchronized (master_) {
-				mergeSort(list, &lessOrEqual);
+				mergeSort(filteredList, &lessOrEqual);
 			}
 			isSorted_ = true;
 		}
@@ -384,21 +353,21 @@ private:
 	/**
 	 * Insert a server in sorted order in the filtered list.
 	 */
-	void insertSorted(size_t listIndex)
+	void insertSorted(ServerHandle sh)
 	{
-		bool less(size_t a, size_t b)
+		bool less(ServerHandle a, ServerHandle b)
 		{
-			ServerData sda = master_.getServerData(list[a]);
-			ServerData sdb = master_.getServerData(list[b]);
+			ServerData sda = master_.getServerData(a);
+			ServerData sdb = master_.getServerData(b);
 
 			return compare(&sda, &sdb) < 0;
 		}
 
 		size_t i;
 		synchronized (master_) {
-			i = ubound(filteredList, listIndex, &less);
+			i = ubound(filteredList, sh, &less);
 		}
-		insertInFiltered(i, listIndex);
+		insertInFiltered(i, sh);
 	}
 
 	/**
@@ -439,7 +408,7 @@ private:
 		return (reversed_ ? -result : result);
 	}
 
-	void insertInFiltered(size_t index, size_t listIndex)
+	void insertInFiltered(size_t index, ServerHandle sh)
 	{
 		assert(index <= filteredList.length);
 
@@ -447,11 +416,11 @@ private:
 		filteredList.length = filteredList.length + 1;
 
 		if (index < oldLength) {
-			size_t* ptr = filteredList.ptr + index;
+			ServerHandle* ptr = filteredList.ptr + index;
 			size_t bytes = (oldLength - index) * filteredList[0].sizeof;
 			memmove(ptr + 1, ptr, bytes);
 		}
-		filteredList[index] = listIndex;
+		filteredList[index] = sh;
 
 		filteredIpHashValid_ = false;
 	}
@@ -463,7 +432,7 @@ private:
 		int i = getFilteredIndex(address);
 		assert(i != -1);
 
-		size_t* ptr = filteredList.ptr + i;
+		ServerHandle* ptr = filteredList.ptr + i;
 		size_t bytes = (filteredList.length - 1 - i) * filteredList[0].sizeof;
 		memmove(ptr, ptr + 1, bytes);
 		filteredList.length = filteredList.length - 1;
@@ -479,21 +448,19 @@ private:
 		return code;
 	}
 
-	void copyListToFilteredList()
-	{
-		filteredList.length = list.length;
-		for (size_t i=0; i < list.length; i++)
-			filteredList[i] = i;
-
-		filteredIpHashValid_ = false;
-	}
-
 	bool isFilteredOut(ServerHandle sh)
 	{
 		if (filters_ == 0)
 			return false;
 
 		ServerData sd = master_.getServerData(sh);
+		return isFilteredOut(&sd);
+	}
+
+	bool isFilteredOut(in ServerData* sd)
+	{
+		if (filters_ == 0)
+			return false;
 
 		if (sd.hasHumans)
 			return false;
@@ -504,32 +471,31 @@ private:
 	/**
 	 * Clear the filtered list and refill it with the contents of the full
 	 * list, except servers that are filtered out.
-	 *
-	 * Will if necessary sort the full list before using it.
 	 */
 	void updateFilteredList()
 	{
-		if (!isSorted_)
-			_sort();
-
 		if (filters_ == 0) {
-			copyListToFilteredList();
+			refillFromMaster();
 		}
 		else {
+			char[] mod = getGameConfig(gameName_).mod;
 			filteredList.length = 0;
-			foreach (i, sh; list) {
-				if (!isFilteredOut(sh))
-					filteredList ~= i;
+			foreach (sh; master_) {
+				ServerData sd = master_.getServerData(sh);
+				if (matchMod(&sd, mod) && !isFilteredOut(&sd))
+					filteredList ~= sh;
 			}
-			filteredIpHashValid_ = false;
 		}
+		isSorted_ = false;
+		_sort();
+		filteredIpHashValid_ = false;
 	}
 
 	void createFilteredIpHash()
 	{
 		filteredIpHash_.clear();
-		foreach (int i, listIndex; filteredList) {
-			ServerData sd = master_.getServerData(list[listIndex]);
+		foreach (int i, sh; filteredList) {
+			ServerData sd = master_.getServerData(sh);
 			filteredIpHash_[sd.server[ServerColumn.ADDRESS]] = i;
 		}
 		filteredIpHashValid_ = true;
@@ -540,21 +506,9 @@ private:
 	{
 		Trace.formatln("printFiltered(): {} elements in filteredList.",
 		                filteredList.length);
-		foreach (i, listIndex; filteredList) {
-			ServerData sd = master_.getServerData(list[listIndex]);
-			Trace.formatln(/*i, ": ",*/ sd.server[ServerColumn.NAME]);
-		}
-		Trace.formatln("");
-	}
-
-	/// Prints the full list and its length to stdout.
-	debug void printList()
-	{
-		Trace.formatln("printList(): {} elements in full list.", list.length);
-		int i = 0;
-		foreach (sh; list) {
+		foreach (i, sh; filteredList) {
 			ServerData sd = master_.getServerData(sh);
-			Trace.formatln(/*i++, ": ",*/ sd.server[ServerColumn.NAME]);
+			Trace.formatln(/*i, ": ",*/ sd.server[ServerColumn.NAME]);
 		}
 		Trace.formatln("");
 	}
