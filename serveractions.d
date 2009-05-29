@@ -131,8 +131,8 @@ void switchToGame(in char[] name)
 			serverTable.serverList.sort();
 			serverTable.forgetSelection();
 			serverTable.fullRefresh();
-			statusBar.setDefaultStatus(serverList.length,
-			      serverList.filteredLength, 0, countHumanPlayers(serverList));
+			statusBar.setDefaultStatus(0, serverList.filteredLength, 0,
+			                                    countHumanPlayers(serverList));
 		}
 
 		return null;
@@ -535,7 +535,8 @@ class ServerRetrievalController
 
 	private void done()
 	{
-		if (serverList_.length > 0) {
+		//if (serverList_.length > 0) {
+		if (true) {  // FIXME
 			int index = -1;
 			if (autoSelect.length) {
 				// FIXME: select them all, not just the first one
@@ -543,7 +544,7 @@ class ServerRetrievalController
 			}
 
 			serverTable.fullRefresh(index);
-			statusBar.setDefaultStatus(serverList_.length,
+			statusBar.setDefaultStatus(0,
 			                           serverList_.filteredLength,
 			                           timedOut_,
 			                           countHumanPlayers(serverList_));
