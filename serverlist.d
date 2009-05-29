@@ -496,9 +496,9 @@ private:
 		ServerData sd = master_.getServerData(sh);
 
 		if (sd.hasHumans)
-			return timedOut(&sd);
+			return false;
 		else
-			return filters_ & Filter.HAS_HUMANS || !sd.hasBots || timedOut(&sd);
+			return filters_ & Filter.HAS_HUMANS || !sd.hasBots;
 	}
 
 	/**

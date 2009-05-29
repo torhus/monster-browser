@@ -30,6 +30,15 @@ struct ServerData {
 
 	int failCount = 0;
 
+
+	///
+	void setPlayerColumn(int humans, int bots, int maxClients)
+	{
+		server[ServerColumn.PLAYERS] = Integer.toString(humans) ~ "+" ~
+		                               Integer.toString(bots) ~ "/" ~
+		                               Integer.toString(maxClients);
+	}
+
 	/*
 	 * Extract some info about the server.
 	 *

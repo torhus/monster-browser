@@ -132,9 +132,8 @@ each_server:
 				if (bots < 0)
 					bots = 0;
 
-				sd.server[ServerColumn.PLAYERS] = toString(humans) ~
-				                               "+" ~ toString(bots) ~
-				                               "/" ~ fields[Field.MAX_PLAYERS];
+				sd.setPlayerColumn(humans, bots,
+				                           convert(fields[Field.MAX_PLAYERS]));
 
 				sd.server[ServerColumn.NAME] = stripColorCodes(sd.rawName);
 
