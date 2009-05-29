@@ -32,7 +32,7 @@ struct ServerData {
 
 
 	///
-	void setPlayerColumn(int humans, int bots, int maxClients)
+	void setPlayersColumn(int humans, int bots, int maxClients)
 	{
 		server[ServerColumn.PLAYERS] = Integer.toString(humans) ~ "+" ~
 		                               Integer.toString(bots) ~ "/" ~
