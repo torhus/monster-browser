@@ -207,9 +207,10 @@ private:
 	void sort()
 	{
 		int sortCol = table_.indexOf(table_.getSortColumn());
-		bool numerical =
-		         sortCol == PlayerColumn.SCORE || sortCol == PlayerColumn.PING;
-		bool reverse = table_.getSortDirection() == DWT.DOWN;
+		bool isScore = sortCol == PlayerColumn.SCORE;
+		bool isPing = sortCol == PlayerColumn.PING;
+		bool numerical = isScore || isPing;
+		bool reverse = (table_.getSortDirection() == DWT.DOWN) ^ isScore;
 
 		bool lessOrEqual(Player a, Player b)
 		{
