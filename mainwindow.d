@@ -509,9 +509,7 @@ ToolBar createToolbar(Composite parent) ///
 		public void widgetSelected(SelectionEvent e)
 		{
 			auto dialog = new SpecifyServerDialog(mainWindow.handle);
-			if (dialog.open() == DWT.OK) {
-				//saveSettings();
-			}
+			dialog.open();
 		}
 	});
 /+
@@ -524,9 +522,6 @@ ToolBar createToolbar(Composite parent) ///
 		public void widgetSelected(SelectionEvent e)
 		{
 			startMonitor(mainWindow.handle);
-			//SettingsDialog dialog = new SettingsDialog(mainWindow.handle);
-			/*if (dialog.open() == DWT.OK)
-				saveSettings();*/
 		}
 	});
 +/
@@ -540,7 +535,7 @@ ToolBar createToolbar(Composite parent) ///
 		public void widgetSelected(SelectionEvent e)
 		{
 			SettingsDialog dialog = new SettingsDialog(mainWindow.handle);
-			if (dialog.open() == DWT.OK)
+			if (dialog.open())
 				saveSettings();
 		}
 	});
