@@ -30,8 +30,10 @@ import dwt.widgets.Text;
 
 import common;
 import mainwindow;
+import masterlist;
 import messageboxes;
 import serveractions;
+import serverdata;
 import serverlist;
 import servertable;
 import settings;
@@ -198,7 +200,7 @@ class JoinDialog
 		shell_.setLocation(center(parent_, shell_));
 	}
 
-	int open() ///
+	bool open() ///
 	{
 		pwdText_.setText(password);
 		pwdText_.selectAll();
@@ -209,7 +211,7 @@ class JoinDialog
 				display.sleep ();
 			}
 		}
-		return result_;
+		return result_ == DWT.OK;
 	}
 
 private:
@@ -270,59 +272,21 @@ class SpecifyServerDialog
 		cancelButton_.setText ("Cancel");
 		cancelButton_.setLayoutData(new RowData(BUTTON_SIZE));
 
-		Listener listener = new class Listener {
-			public void handleEvent (Event event)
+		okButton_.addListener(DWT.Selection, new OkButtonListener);
+		cancelButton_.addListener(DWT.Selection, new class Listener {
+			void handleEvent(Event event)
 			{
-				bool closeDialog = true;
-
-				if (event.widget == okButton_) {
-					result_ = DWT.OK;
-					address = trim(addressText_.getText);
-
-					if (!isValidIpAddress(address)) {
-						error("Invalid address");
-						addressText_.setFocus();
-						addressText_.selectAll();
-						closeDialog = false;
-					}
-					else {
-						auto serverList = serverTable.serverList;
-						if (serverList.getIndex(address) == -1) {
-							if (saveButton_.getSelection()) {
-								if (!(address in serverList.extraServers)) {
-									GameConfig game =
-									        getGameConfig(serverList.gameName);
-									char[] file = game.extraServersFile;
-									// FIXME: error check here (FileException)
-									File.append(file, address ~ newline);
-								}
-							}
-							serverList.addExtraServer(address);
-							queryServers([address], false, true);
-						}
-						else {
-							info("That server is already on the list.  If you can't see it, "
-							        "try turning off the filters.");
-							int i = serverList.getFilteredIndex(address);
-							if (i != -1)
-								serverTable.fullRefresh(i);
-						}
-					}
-				}
-
-				if (closeDialog)
-					shell_.close();
+				shell_.close();
 			}
-		};
-
-		okButton_.addListener(DWT.Selection, listener);
-		cancelButton_.addListener(DWT.Selection, listener);
+		});
 		shell_.setDefaultButton(okButton_);
+
 		shell_.pack();
 		shell_.setLocation(center(parent_, shell_));
 	}
 
-	int open()
+
+	bool open()
 	{
 		addressText_.setText(address);
 		addressText_.selectAll();
@@ -333,15 +297,68 @@ class SpecifyServerDialog
 				display.sleep ();
 			}
 		}
-		return result_;
+		return result_ == DWT.OK;
 	}
 
-private:
-	Shell parent_, shell_;
-	Button okButton_, cancelButton_, saveButton_;
-	char[] address = "";
-	Text addressText_;
-	int result_ = DWT.CANCEL;
+
+	private class OkButtonListener : Listener {
+		void handleEvent (Event event)
+		{
+			result_ = DWT.OK;
+			address = trim(addressText_.getText);
+
+			if (!isValidIpAddress(address)) {
+				error("Invalid address");
+				addressText_.setFocus();
+				addressText_.selectAll();
+			}
+			else {
+				ServerList serverList = serverTable.serverList;
+				MasterList master = serverList.master;
+				ServerHandle sh = master.findServer(address);
+
+				if (sh == InvalidServerHandle) {
+					if (saveButton_.getSelection()) {
+						if (!(address in serverList.extraServers)) {
+							GameConfig game =
+							                getGameConfig(serverList.gameName);
+							char[] file = game.extraServersFile;
+							// FIXME: error check here (IOException)
+							File.append(file, address ~ newline);
+						}
+					}
+					serverList.addExtraServer(address);
+					queryServers([address], false, true);
+				}
+				else {
+					ServerData sd = master.getServerData(sh);
+					GameConfig game = getGameConfig(serverList.gameName);
+
+					if (matchMod(&sd, game.mod)) {
+						info("That server is already on the list.  If you "
+						         "can't see it, try turning off the filters.");
+						int i = serverList.getFilteredIndex(address);
+						if (i != -1)
+							serverTable.fullRefresh(i);
+					}
+					else {
+						info("That server is already known, but belongs to a "
+						                             "different game or mod.");
+					}
+				}
+				shell_.close();
+			}
+		}
+	}
+
+
+	private {
+		Shell parent_, shell_;
+		Button okButton_, cancelButton_, saveButton_;
+		char[] address = "";
+		Text addressText_;
+		int result_ = DWT.CANCEL;
+	}
 }
 
 
@@ -456,7 +473,7 @@ class SettingsDialog
 		shell_.setLocation(center(parent_, shell_));
 	}
 
-	int open() ///
+	bool open() ///
 	{
 		shell_.open();
 		Display display = Display.getDefault;
@@ -465,7 +482,7 @@ class SettingsDialog
 				display.sleep();
 			}
 		}
-		return result_;
+		return result_ == DWT.OK;
 	}
 
 private:

@@ -105,7 +105,7 @@ final class MasterList
 	 * Returns InvalidServerHandle in case a server with the given address was
 	 * not found.
 	 */
-	private ServerHandle findServer(in char[] address)
+	ServerHandle findServer(in char[] address)
 	{
 		synchronized (this) {
 			foreach (sh, sd; servers_) {

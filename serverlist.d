@@ -97,7 +97,8 @@ class ServerList
 
 
 	///
-	synchronized void refillFromMaster()
+	synchronized
+	void refillFromMaster()
 	{
 		char[] mod = getGameConfig(gameName_).mod;
 
@@ -120,29 +121,6 @@ class ServerList
 				return master_.getServerData(filteredList[i]);
 			}
 		}
-	}
-
-
-	/**
-	 * Given the IP and port number, find a server in the full list.
-	 *
-	 * Does a linear search.
-	 *
-	 * Returns: the server's index, or -1 if not found.
-	 */
-	int getIndex(char[] ipAndPort)
-	{
-		if (!ipAndPort.length)
-			return -1;
-
-		// FIXME: make this work again
-		/*synchronized (this) synchronized (master_)
-		foreach (int i, ServerHandle sh; list) {
-			ServerData sd = master_.getServerData(sh);
-			if (sd.server[ServerColumn.ADDRESS] == ipAndPort)
-				return i;
-		}*/
-		return -1;
 	}
 
 

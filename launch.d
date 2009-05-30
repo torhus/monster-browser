@@ -74,16 +74,16 @@ void joinServer(in char[] gameName, ServerData sd)
 
 		dialog.password = getPassword(sd.server[ServerColumn.ADDRESS]);
 
-		int res = dialog.open();
-		if (res == DWT.OK && dialog.password.length) {
+		if (dialog.open() && dialog.password.length) {
 			argv ~= " +set password " ~ dialog.password;
 			setPassword(sd.server[ServerColumn.ADDRESS], dialog.password);
 		}
-		if (res != DWT.OK)
+		else {
 			launch = false;
+		}
 	}
 
-	if (launch) {		
+	if (launch) {
 		version (Windows) {
 			PROCESS_INFORMATION info;
 			STARTUPINFO startup;
@@ -108,7 +108,7 @@ void joinServer(in char[] gameName, ServerData sd)
 			}
 		}
 		else {
-			error("joinServer() not implemented on this platform.");
+			error("Launching a game is not implemented on this platform.");
 		}
 	}
 }
