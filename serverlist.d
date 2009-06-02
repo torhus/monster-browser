@@ -98,7 +98,10 @@ class ServerList
 	}
 
 
-	///
+	/**
+	 * Clear the filtered list and refill it with the contents of the full
+	 * list, except servers that are filtered out.
+	 */
 	synchronized
 	void refillFromMaster()
 	{
@@ -113,6 +116,7 @@ class ServerList
 				filteredList ~= sh;
 		}
 		isSorted_ = false;
+		IpHashValid_ = false;
 	}
 
 
@@ -199,7 +203,7 @@ class ServerList
 	void sort()
 	{
 		synchronized (this) {
-			updateFilteredList();
+			_sort();
 		}
 	}
 
@@ -216,7 +220,7 @@ class ServerList
 		synchronized (this) {
 			setSort(column, reversed);
 			if (update) {
-				updateFilteredList();
+				_sort();
 			}
 		}
 	}
@@ -232,7 +236,8 @@ class ServerList
 
 		synchronized (this) {
 			filters_ = newFilters;
-			updateFilteredList();
+			refillFromMaster();
+			_sort();
 		}
 	}
 
@@ -457,29 +462,6 @@ private:
 			return false;
 		else
 			return filters_ & Filter.HAS_HUMANS || !sd.hasBots;
-	}
-
-	/**
-	 * Clear the filtered list and refill it with the contents of the full
-	 * list, except servers that are filtered out.
-	 */
-	void updateFilteredList()
-	{
-		if (filters_ == 0) {
-			refillFromMaster();
-		}
-		else {
-			char[] mod = getGameConfig(gameName_).mod;
-			filteredList.length = 0;
-			foreach (sh; master_) {
-				ServerData sd = master_.getServerData(sh);
-				if (matchMod(&sd, mod) && !isFilteredOut(&sd))
-					filteredList ~= sh;
-			}
-		}
-		isSorted_ = false;
-		_sort();
-		IpHashValid_ = false;
 	}
 
 	void updateIpHash(bool reset=true)
