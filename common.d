@@ -1,11 +1,11 @@
 module common;
 
+import tango.core.Array;
 import tango.core.Thread;
 import tango.core.Version;
 import tango.io.device.File;
 import Path = tango.io.Path;
 import tango.stdc.ctype : isdigit;
-import tango.stdc.stdlib : qsort;
 import tango.stdc.string;
 import tango.stdc.time;
 import tango.text.Ascii;
@@ -276,42 +276,27 @@ int findString(char[][][] array, char[] str, int column)
  * Sort a 2-dimensional string array.  Not a stable sort.
  *
  * Params:
- *     sortColumn = Column to sort on (the second dimension of arr).
+ *     column     = Column to sort on (the second dimension of arr).
  *     reverse    = Reversed order.
- *     numeric    = Set to true to get a numerical sort instead of an
- *                  alphabetical one.  The string in the column given by
- *                  sortColumn will be converted to an integer before
- *                  comparing.
- *
- * Throws: IllegalArgumentException if numeric is true, and the strings in
- *         sortColumn contains anything that doesn't parse as integers.
+ *     numerical  = Set to true to get a numerical sort instead of an
+ *                  alphabetical one.
  */
-void sortStringArray(char[][][] arr, int sortColumn=0, bool reverse=false,
-                     bool numeric=false)
+void sortStringArray(char[][][] arr, int column=0, bool reverse=false,
+                                                          bool numerical=false)
 {
-	static int _sortColumn;
-	static bool _reverse, _numeric;
-
-	static extern(C) int cmp(void* a, void* b)
+	bool less(char[][] a, char[][] b)
 	{
-		char[] first = (*(cast(char[][]*) a))[_sortColumn];
-		char[] second = (*(cast(char[][]*) b))[_sortColumn];
 		int result;
 
-		if (_numeric) {
-			result = Integer.toInt(first) - Integer.toInt(second);
-		}
-		else {
-			result = icompare(first, second);
-		}
-		return (_reverse ? -result : result);
+		if (numerical)
+			result = Integer.parse(a[column]) - Integer.parse(b[column]);
+		else
+			result = icompare(a[column], b[column]);
+
+		return reverse ? result >= 0 : result < 0;
 	}
 
-	_sortColumn = sortColumn;
-	_reverse = reverse;
-	_numeric = numeric;
-
-	qsort(arr.ptr, arr.length, arr[0].sizeof, &cmp);
+	sort(arr, &less);
 }
 
 
