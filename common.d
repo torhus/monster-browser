@@ -249,9 +249,8 @@ bool isValidIpAddress(in char[] address)
 int findString(char[][] array, char[] str)
 {
 	foreach (int i, char[] s; array) {
-		if (toLower(str.dup) == toLower(s.dup)) {
+		if (icompare(str, s) == 0)
 			return i;
-		}
 	}
 	return -1;
 }
@@ -264,9 +263,8 @@ int findString(char[][] array, char[] str)
 int findString(char[][][] array, char[] str, int column)
 {
 	foreach (int i, char[][] s; array) {
-		if (toLower(str.dup) == toLower(s[column].dup)) {
+		if (icompare(str, s[column]) == 0)
 			return i;
-		}
 	}
 	return -1;
 }
