@@ -74,7 +74,6 @@ bool parseOutput(in char[] modName, Lines!(char) iter,
 		gtypes = defaultGameTypes;
 	}
 
-each_server:
 	while (keepGoing) {
 		debug checkTime(timer2, "1");
 		char[] line = iter.next();
