@@ -67,12 +67,9 @@ class ServerList
 	{
 		bool refresh = false;
 
-		synchronized (this) {
-			ServerData sd;
-			synchronized (master_) {
-				sd = master_.getServerData(sh);
-				sd.server[ServerColumn.COUNTRY] = getCountryCode(&sd);
-			}
+		synchronized (this) synchronized (master_) {
+			ServerData sd = master_.getServerData(sh);
+			sd.server[ServerColumn.COUNTRY] = getCountryCode(&sd);
 			IpHash_[sd.server[ServerColumn.ADDRESS]] = -1;
 			if (!isFilteredOut(&sd)) {
 				insertSorted(sh);
@@ -87,9 +84,13 @@ class ServerList
 	/// Always returns true.
 	bool replace(ServerHandle sh)
 	{
-		synchronized (this) {
-			if (isFilteredOut(sh))
-				removeFromFiltered(sh);
+		synchronized (this) synchronized (master_) {
+			ServerData sd = master_.getServerData(sh);
+			if (sd.customData)
+				sd.customData.dispose();
+			removeFromFiltered(sd.server[ServerColumn.ADDRESS]);
+			if (!isFilteredOut(&sd))
+				insertSorted(sh);
 		}
 		return true;
 	}
@@ -422,10 +423,8 @@ private:
 		IpHashValid_ = false;
 	}
 
-	void removeFromFiltered(ServerHandle sh)
+	void removeFromFiltered(in char[] address)
 	{
-		char[] address =
-		                master_.getServerData(sh).server[ServerColumn.ADDRESS];
 		bool found;
 		int i = getFilteredIndex(address, &found);
 		assert(found);
@@ -435,7 +434,6 @@ private:
 		memmove(ptr, ptr + 1, bytes);
 		filteredList.length = filteredList.length - 1;
 
-		//IpHash_.removeKey(address);
 		IpHashValid_ = false;
 	}
 
