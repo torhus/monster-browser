@@ -1,4 +1,12 @@
+- Avoid extra servers being saved to master files?
+
+- Add option to remove servers, both manually added and those coming from the
+  master?
+
 - Change taskbar text when working, to keep user informed?
+
+- See if ServerData.customData really is needed, cache TextLayouts in
+  ServerTable instead if there is a noticable speedup?
 
 - Show server name tooltips for players, and have a context menu with
   'select server'?  Double click player to go to server?
@@ -19,8 +27,6 @@
 - Check out qstat's option to use Gamespy masters.
 
 - Check out more qstat parameters, like sendinterval, timeout and interval.
-
-- Display the number of human players in the status bar?
 
 - Fix baseq3 server list when using gslist.
 
