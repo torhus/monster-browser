@@ -73,12 +73,11 @@ class ServerList
 				sd = master_.getServerData(sh);
 				sd.server[ServerColumn.COUNTRY] = getCountryCode(&sd);
 			}
+			IpHash_[sd.server[ServerColumn.ADDRESS]] = -1;
 			if (!isFilteredOut(&sd)) {
 				insertSorted(sh);
 				refresh = true;
 			}
-			IpHash_[sd.server[ServerColumn.ADDRESS]] = -1;
-			IpHashValid_ = false;
 		}
 
 		return refresh;
@@ -113,9 +112,9 @@ class ServerList
 			                                               !isFilteredOut(&sd))
 				filteredList ~= sh;
 		}
+		IpHashValid_ = false;
 		isSorted_ = false;
 		_sort();
-		IpHashValid_ = false;
 	}
 
 
@@ -321,7 +320,7 @@ private:
 	}
 
 
-	/// Sorts the main list, doesn't touch the filtered list.
+	/// Sorts the list.
 	void _sort()
 	{
 		debug scope timer = new Timer;
@@ -339,6 +338,7 @@ private:
 				mergeSort(filteredList, &lessOrEqual);
 			}
 			isSorted_ = true;
+			IpHashValid_ = false;
 		}
 
 		debug log("ServerList._sort() took " ~
