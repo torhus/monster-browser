@@ -57,15 +57,18 @@ void joinServer(in char[] gameName, ServerData sd)
 	}
 	argv ~= " +connect " ~ sd.server[ServerColumn.ADDRESS];
 
-	if (sd.cvars[findString(sd.cvars, "g_needpass", 0)][1] == "1") {
+	int i = findString(sd.cvars, "g_needpass", 0);
+	if (i != -1 && sd.cvars[i][1] == "1") {
 		showDialog = true;
 		msg = "You need a password to join this server.";
 	}
-	else if (Integer.convert(
-	          sd.cvars[findString(sd.cvars, "sv_privateClients", 0)][1]) > 0) {
-		showDialog = true;
-		msg = "This server has got private slots, so type your\n"
-		      "password if you have one.  Otherwise just click OK.";
+	else {
+		int j = findString(sd.cvars, "sv_privateClients", 0);
+		if (j != -1 && Integer.convert(sd.cvars[j][1]) > 0) {
+			showDialog = true;
+			msg = "This server has got private slots, so type your\n"
+		          "password if you have one.  Otherwise just click OK.";
+		}
 	}
 
 	if (showDialog) {
