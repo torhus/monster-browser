@@ -255,12 +255,12 @@ class ServerTable
 				needRefresh = true;
 		}
 
+		table_.setItemCount(serverList_.filteredLength);
+
 		// Only refill the Table if visible items, or items further up have
-		// moved.  Refilling every time is very, very slow.
-		if (needRefresh || itemCount <= bottom) {
-			table_.setItemCount(serverList_.filteredLength);
+		// moved.  Refilling every time is very slow.
+		if (needRefresh || itemCount <= bottom)
 			table_.clearAll();
-		}
 
 		// Keep the same servers selected.
 		table_.deselectAll();
