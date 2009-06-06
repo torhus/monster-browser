@@ -299,7 +299,7 @@ class ServerTable
 		else {
 			foreach (ip, v; selectedIps_) {
 				auto i = serverList_.getFilteredIndex(ip);
-					selectedIps_[ip] = serverList_.getFilteredIndex(ip);
+				selectedIps_[ip] = i;
 				if (i != -1)
 					indices ~= i;
 			}
@@ -627,18 +627,6 @@ private:
 			cvarTable.setItems(sd.cvars);
 			playerTable.setItems(indices, serverList_);
 		}
-	}
-
-	int[] getIndicesFromAddresses(char[][] addresses)
-	{
-		int[] indices;
-
-		foreach (char[] a; addresses) {
-			int i = serverList_.getFilteredIndex(a);
-			if (i != -1)
-				indices ~= i;
-		}
-		return indices;
 	}
 
 	int getBottomIndex()
