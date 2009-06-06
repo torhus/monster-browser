@@ -73,7 +73,6 @@ class ServerList
 				sd = master_.getServerData(sh);
 				sd.server[ServerColumn.COUNTRY] = getCountryCode(&sd);
 			}
-			isSorted_ = false;
 			if (!isFilteredOut(&sd)) {
 				insertSorted(sh);
 				refresh = true;
@@ -90,7 +89,6 @@ class ServerList
 	bool replace(ServerHandle sh)
 	{
 		synchronized (this) {
-			isSorted_ = false;
 			if (isFilteredOut(sh))
 				removeFromFiltered(sh);
 		}
@@ -116,6 +114,7 @@ class ServerList
 				filteredList ~= sh;
 		}
 		isSorted_ = false;
+		_sort();
 		IpHashValid_ = false;
 	}
 
@@ -165,12 +164,13 @@ class ServerList
 	/**
 	 * Clears the list and the filtered list.  Sets complete to false.
 	 */
-	ServerList clear()
+	void clear()
 	{
 		synchronized (this) {
 			disposeCustomData();
 			filteredList.length = 0;
 			IpHash_.clear();
+			isSorted_ = true;
 			complete = false;
 		}
 
@@ -237,7 +237,6 @@ class ServerList
 		synchronized (this) {
 			filters_ = newFilters;
 			refillFromMaster();
-			_sort();
 		}
 	}
 
@@ -276,9 +275,8 @@ private:
 	MasterList master_;
 
 	int sortColumn_ = ServerColumn.NAME;
-	int oldSortColumn_ = -1;
 	bool reversed_ = false;
-	bool isSorted_= false;
+	bool isSorted_= true;
 
 	Filter filters_ = Filter.NONE;
 
@@ -311,8 +309,11 @@ private:
 	void setSort(int column, bool reversed=false)
 	{
 		assert(column >= 0 && column <= ServerColumn.max);
-		oldSortColumn_ = sortColumn_;
-		sortColumn_ = column;
+
+		if (column != sortColumn_) {
+			sortColumn_ = column;
+			isSorted_ = false;
+		}
 		if (reversed != reversed_) {
 			reversed_ = reversed;
 			isSorted_ = false;
@@ -333,7 +334,7 @@ private:
 			return compare(&sda, &sdb) <= 0;
 		}
 
-		if (!isSorted_ || sortColumn_ != oldSortColumn_) {
+		if (!isSorted_) {
 			synchronized (master_) {
 				mergeSort(filteredList, &lessOrEqual);
 			}
@@ -349,6 +350,8 @@ private:
 	 */
 	void insertSorted(ServerHandle sh)
 	{
+		assert(isSorted_);
+
 		bool less(ServerHandle a, ServerHandle b)
 		{
 			ServerData sda = master_.getServerData(a);
