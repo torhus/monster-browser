@@ -535,15 +535,17 @@ class ServerRetrievalController
 
 	private void done()
 	{
-		//if (serverList_.length > 0) {
-		if (true) {  // FIXME
+		if (serverCount_ != timedOut_) {
 			int index = -1;
 			if (autoSelect.length) {
 				// FIXME: select them all, not just the first one
 				index = serverList_.getFilteredIndex(autoSelect[0]);
+				serverTable.setSelection([index]);
 			}
 
-			serverTable.fullRefresh(index);
+			// FIXME: only doing this so that players will be shown
+			serverTable.fullRefresh();
+
 			statusBar.setDefaultStatus(0,
 			                           serverList_.filteredLength,
 			                           timedOut_,

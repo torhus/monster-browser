@@ -225,13 +225,6 @@ class ServerTable
 	///
 	bool refreshInProgress() { return refreshInProgress_ ; }
 
-	/*void update(Object dummy = null)
-	{
-		if (!table_.isDisposed)
-			table_.setItemCount(serverList_.filteredLength);
-	}*/
-
-
 	/**
 	 * If necessary clears the table and refills it with updated data.
 	 *
@@ -274,17 +267,11 @@ class ServerTable
 	/**
 	 * In addition to clearing the table and refilling it with updated data
 	 * without losing the selection (like quickRefresh(), only
-	 * unconditionally), it also:
-	 *
-	 * 1. Updates the cvar and player tables to show information for the
-	 *    selected server, or clears them if there is no server selected.
-	 * 2. Optionally sets the selection to the server specified by index.
-	 *
-	 * Params:
-	 *     index = If not equal to -1, the server with the given index is
-	 *             selected.
+	 * unconditionally), it also updates the cvar and player tables to show
+	 * information for the selected servers, or clears them if there are no
+	 * servers selected.
 	 */
-	void fullRefresh(int index=-1)
+	void fullRefresh()
 	{
 		if(table_.isDisposed())
 			return;
@@ -293,32 +280,42 @@ class ServerTable
 		table_.setItemCount(serverList_.filteredLength);
 
 		int[] indices;
-		if (index != -1) {
-			indices ~= index;
-		}
-		else {
-			foreach (ip, v; selectedIps_) {
-				auto i = serverList_.getFilteredIndex(ip);
-				selectedIps_[ip] = i;
-				if (i != -1)
-					indices ~= i;
-			}
+		foreach (ip, v; selectedIps_) {
+			auto i = serverList_.getFilteredIndex(ip);
+			selectedIps_[ip] = i;
+			if (i != -1)
+				indices ~= i;
 		}
 
 		if (indices.length) {
 			table_.setSelection(indices);
 			playerTable.setItems(indices, serverList_);
-
-			cvarTable.clear();
-			int i = table_.getSelectionIndex();
-			if (i >= 0 && i < serverList_.filteredLength)
-				cvarTable.setItems(serverList_.getFiltered(i).cvars);
+			int cvarIndex = table_.getSelectionIndex();
+			cvarTable.setItems(serverList_.getFiltered(cvarIndex).cvars);
 		}
 		else {
 			table_.deselectAll();
 			playerTable.clear();
 			cvarTable.clear();
 		}
+	}
+
+	/// Select one or more servers, replacing the current selection.
+	void setSelection(int[] indices)
+	{
+		assert(indices.length);
+
+		selectedIps_.clear();
+		foreach (ip, v; selectedIps_) {
+			int i = serverList_.getFilteredIndex(ip);
+			selectedIps_[ip] = i;
+			if (i != -1)
+				indices ~= i;
+		}
+		table_.setSelection(indices);
+		playerTable.setItems(indices, serverList_);
+		int cvarIndex = table_.getSelectionIndex();
+		cvarTable.setItems(serverList_.getFiltered(cvarIndex).cvars);
 	}
 
 	/// Empty the server, player, and cvar tables.

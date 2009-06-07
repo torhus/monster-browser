@@ -100,8 +100,7 @@ class ServerList
 	 * Clear the filtered list and refill it with the contents of the full
 	 * list, except servers that are filtered out.
 	 */
-	synchronized
-	void refillFromMaster()
+	synchronized void refillFromMaster()
 	{
 		char[] mod = getGameConfig(gameName_).mod;
 
@@ -269,7 +268,7 @@ private:
 	ServerHandle[] filteredList;
 	// maps addresses to indices into the filtered list
 	HashMap!(char[], int) IpHash_;
-	bool IpHashValid_ = false;
+	bool IpHashValid_ = false;  // true if the values (indices) are up to date
 	Set!(char[]) extraServers_;
 	char[] gameName_;
 	MasterList master_;

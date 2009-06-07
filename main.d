@@ -80,6 +80,7 @@ private void _main(char[][] args)
 
 	loadSettings;
 
+	// FIXME: make function for this
 	// check for presence of Gslist
 	char[] gslistExe;
 	version (Windows) {
