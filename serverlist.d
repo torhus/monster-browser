@@ -97,8 +97,7 @@ class ServerList
 
 
 	/**
-	 * Clear the filtered list and refill it with the contents of the full
-	 * list, except servers that are filtered out.
+	 * Clear the filtered list and refill it from the master list.
 	 */
 	synchronized void refillFromMaster()
 	{
@@ -194,7 +193,7 @@ class ServerList
 
 
 	/**
-	 * Sort the full list, then update the filtered list.
+	 * Sorts the filtered list.
 	 *
 	 * Uses the previously selected _sort order, or the default
 	 * if there is none.
@@ -226,7 +225,7 @@ class ServerList
 
 
 	/**
-	 * Sets filters and updates the list accordingly.
+	 * Sets filters and updates the filtered list accordingly.
 	 */
 	void setFilters(Filter newFilters)
 	{
@@ -304,7 +303,7 @@ private:
 	}
 
 
-	/// Updates sort column and order for the main list.
+	/// Updates sort column and order for the filtered list.
 	void setSort(int column, bool reversed=false)
 	{
 		assert(column >= 0 && column <= ServerColumn.max);
@@ -320,7 +319,7 @@ private:
 	}
 
 
-	/// Sorts the list.
+	/// Sorts the filtered list.
 	void _sort()
 	{
 		debug scope timer = new Timer;
