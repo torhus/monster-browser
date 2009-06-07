@@ -339,7 +339,7 @@ class SpecifyServerDialog
 						         "can't see it, try turning off the filters.");
 						int i = serverList.getFilteredIndex(address);
 						if (i != -1)
-							serverTable.fullRefresh(i);
+							serverTable.setSelection([i]);
 					}
 					else {
 						info("That server is already known, but belongs to a "
