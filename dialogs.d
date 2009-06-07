@@ -143,7 +143,7 @@ class JoinDialog
 	char[] password = ""; ///
 
 	///
-	this(Shell parent, char[] serverName, char[] message)
+	this(Shell parent, char[] serverName, char[] message, bool pwdMandatory)
 	{
 		parent_ = parent;
 		shell_ = new Shell(parent_, DWT.DIALOG_TRIM | DWT.APPLICATION_MODAL);
@@ -182,19 +182,13 @@ class JoinDialog
 		cancelButton_.setText ("Cancel");
 		cancelButton_.setLayoutData(new RowData(BUTTON_SIZE));
 
-		Listener listener = new class Listener {
-			public void handleEvent (Event event)
-			{
-				if (event.widget == okButton_) {
-					result_ = DWT.OK;
-					password = pwdText_.getText;
-				}
-				shell_.close();
-			}
-		};
+		Listener listener = new MyListener;
 
 		okButton_.addListener(DWT.Selection, listener);
 		cancelButton_.addListener(DWT.Selection, listener);
+		if (pwdMandatory)
+			pwdText_.addListener(DWT.Modify, listener);
+
 		shell_.setDefaultButton(okButton_);
 		shell_.pack();
 		shell_.setLocation(center(parent_, shell_));
@@ -219,6 +213,27 @@ private:
 	Button okButton_, cancelButton_;
 	Text pwdText_;
 	int result_ = DWT.CANCEL;
+
+	class MyListener : Listener {
+		void handleEvent (Event event)
+		{
+			switch (event.type) {
+				case DWT.Selection:
+					if (event.widget == okButton_) {
+						result_ = DWT.OK;
+						password = pwdText_.getText;
+					}
+					shell_.close();
+					break;
+				case DWT.Modify:
+					if (pwdText_.getText().length > 0)
+						okButton_.setEnabled(true);
+					else
+						okButton_.setEnabled(false);
+					break;
+			}
+		}
+	};
 }
 
 

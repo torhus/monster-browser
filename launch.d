@@ -37,6 +37,7 @@ void joinServer(in char[] gameName, ServerData sd)
 	FilePath path;
 	bool launch = true;
 	bool showDialog = false;
+	bool mandatoryPwd;
 	char[] msg;
 
 	if (!pathString) {
@@ -61,6 +62,7 @@ void joinServer(in char[] gameName, ServerData sd)
 	if (i != -1 && sd.cvars[i][1] == "1") {
 		showDialog = true;
 		msg = "You need a password to join this server.";
+		mandatoryPwd = true;
 	}
 	else {
 		int j = findString(sd.cvars, "sv_privateClients", 0);
@@ -68,18 +70,21 @@ void joinServer(in char[] gameName, ServerData sd)
 			showDialog = true;
 			msg = "This server has got private slots, so type your\n"
 		          "password if you have one.  Otherwise just click OK.";
+			mandatoryPwd = false;
 		}
 	}
 
 	if (showDialog) {
 		scope JoinDialog dialog = new JoinDialog(mainWindow.handle,
-		                                    sd.server[ServerColumn.NAME], msg);
+		                      sd.server[ServerColumn.NAME], msg, mandatoryPwd);
 
 		dialog.password = getPassword(sd.server[ServerColumn.ADDRESS]);
 
-		if (dialog.open() && dialog.password.length) {
-			argv ~= " +set password " ~ dialog.password;
-			setPassword(sd.server[ServerColumn.ADDRESS], dialog.password);
+		if (dialog.open()) {
+			if (dialog.password.length) {
+				argv ~= " +set password " ~ dialog.password;
+				setPassword(sd.server[ServerColumn.ADDRESS], dialog.password);
+			}
 		}
 		else {
 			launch = false;
