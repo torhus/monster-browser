@@ -117,7 +117,11 @@ class ServerList
 	}
 
 
-	/// Return a server from the filtered list
+	/**
+	 * Return a server from the filtered list.
+	 *
+	 * Complexity is O(1).
+	 */
 	ServerData getFiltered(int i)
 	{
 		synchronized (this) {
@@ -154,6 +158,20 @@ class ServerList
 		return result;
 	}
 
+
+	/**
+	 * Returns the server handle for a server in the filtered list.
+	 *
+	 * Complexity is O(1).
+	 */
+	ServerHandle getServerHandle(int i)
+	{
+		synchronized (this) {
+			assert(i >= 0 && i < filteredList.length);
+			return filteredList[i];
+		}
+	}
+	
 
 	///
 	size_t filteredLength() { synchronized (this) return filteredList.length; }
