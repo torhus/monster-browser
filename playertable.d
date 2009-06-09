@@ -3,6 +3,8 @@ module playertable;
 import tango.text.Ascii;
 
 import dwt.DWT;
+import dwt.events.SelectionAdapter;
+import dwt.events.SelectionEvent;
 import dwt.graphics.Point;
 import dwt.graphics.TextLayout;
 import dwt.widgets.Composite;
@@ -17,6 +19,7 @@ import colorednames;
 import common;
 import serverdata;
 import serverlist;
+import servertable;
 import settings;
 
 
@@ -124,6 +127,15 @@ class PlayerTable
 		table_.setSortDirection(reversed ? DWT.DOWN : DWT.UP);
 
 		table_.addListener(DWT.MouseMove, new MouseMoveListener);
+
+		table_.addSelectionListener(new class SelectionAdapter {
+			void widgetDefaultSelected(SelectionEvent e)
+			{
+				TableItem item = cast(TableItem)e.item;
+				int serverIndex = players_[table_.indexOf(item)].serverIndex;
+				serverTable.setSelection([serverIndex], true);
+			}
+		});
 	}
 
 	/// The index of the currently active sort column.
@@ -202,7 +214,6 @@ private:
 				table_.setToolTipText(text);
 		}
 	}
-
 
 	void sort()
 	{
