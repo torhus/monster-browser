@@ -303,7 +303,7 @@ class ServerTable
 	}
 
 	/// Select one or more servers, replacing the current selection.
-	void setSelection(int[] indices)
+	void setSelection(int[] indices, bool takeFocus=false)
 	{
 		assert(indices.length);
 
@@ -318,6 +318,8 @@ class ServerTable
 		playerTable.setItems(indices, serverList_);
 		int cvarIndex = table_.getSelectionIndex();
 		cvarTable.setItems(serverList_.getFiltered(cvarIndex).cvars);
+		if (takeFocus)
+			table_.setFocus();
 	}
 
 	/// Empty the server, player, and cvar tables.

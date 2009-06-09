@@ -540,7 +540,7 @@ class ServerRetrievalController
 			if (autoSelect.length) {
 				// FIXME: select them all, not just the first one
 				index = serverList_.getFilteredIndex(autoSelect[0]);
-				serverTable.setSelection([index]);
+				serverTable.setSelection([index], true);
 			}
 
 			// FIXME: only doing this so that players will be shown
