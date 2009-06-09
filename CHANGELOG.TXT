@@ -1,7 +1,8 @@
 Latest changes
 --------------
 - New: When multiple servers are selected, you can place the mouse pointer over
-       a player name to get a tool tip showing the server name.
+       a player name to get a tool tip showing the server name.  Double click a
+       player to select the server he's on.
 - New: Show the total number of human players for the current game.
 - New: Ability to remove servers from the list.
 - Change: Set player count to zero for servers that timed out, so they don't
