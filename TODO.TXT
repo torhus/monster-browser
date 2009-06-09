@@ -1,7 +1,8 @@
-- Avoid extra servers being saved to master files?
+- Reconcile ServerTable.quickRefresh and fullRefresh?
 
-- Add option to remove servers, both manually added and those coming from the
-  master?
+- Ability to remove the extra servers too?
+
+- Avoid extra servers being saved to master files?
 
 - Change taskbar text when working, to keep user informed?
 
