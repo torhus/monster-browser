@@ -24,6 +24,7 @@ import dwt.widgets.Event;
 import dwt.widgets.Listener;
 import dwt.widgets.Menu;
 import dwt.widgets.MenuItem;
+import dwt.widgets.MessageBox;
 import dwt.widgets.Table;
 import dwt.widgets.TableColumn;
 import dwt.widgets.TableItem;
@@ -34,6 +35,7 @@ import cvartable;
 import geoip;
 import launch;
 import mainwindow;
+import masterlist;
 import playertable;
 import serveractions;
 import serverdata;
@@ -523,6 +525,10 @@ private:
 		public void keyPressed (KeyEvent e)
 		{
 			switch (e.keyCode) {
+				case DWT.DEL:
+					if ((e.stateMask & DWT.MODIFIER_MASK) == 0)
+						onRemoveSelected();
+					break;
 				case 'a':
 					if (e.stateMask == DWT.MOD1) {
 						// DWT bug? CTRL+A works by default in SWT.
@@ -580,6 +586,14 @@ private:
 			void widgetSelected(SelectionEvent e) { onCopyAddresses(); }
 		});
 
+		item = new MenuItem(menu, DWT.SEPARATOR);
+
+		item = new MenuItem(menu, DWT.PUSH);
+		item.setText("Remove selected\tDel");
+		item.addSelectionListener(new class SelectionAdapter {
+			void widgetSelected(SelectionEvent e) { onRemoveSelected(); }
+		});
+
 		return menu;
 	}
 
@@ -605,6 +619,60 @@ private:
 		foreach (ip, v; selectedIps_)
 			addresses ~= ip;
 		queryServers(addresses, true);
+	}
+
+	void onRemoveSelected()
+	{
+		MasterList master = serverList_.master;
+		char[][] toRemove;
+
+		// find all servers that are both selected and not filtered out
+		foreach (ip, index; selectedIps_) {
+			if (index != -1)
+				toRemove ~= ip;
+		}
+
+		if (toRemove.length == 0)
+			return;
+
+
+		synchronized (serverList_) synchronized (master) {
+			// ask user for confirmation
+			int style = DWT.ICON_QUESTION | DWT.YES | DWT.NO;
+			MessageBox mb = new MessageBox(mainWindow.handle, style);
+			if (toRemove.length == 1) {
+				mb.setText("Remove server");
+				int index = selectedIps_[toRemove[0]];
+				ServerData sd = serverList_.getFiltered(index);
+				char[] name = sd.server[ServerColumn.NAME];
+				mb.setMessage("Are you sure you want to remove \"" ~ name ~
+				                                                        "\"?");
+			}
+			else {
+				mb.setText("Remove servers");
+				char[] count = Integer.toString(toRemove.length);
+				mb.setMessage("Are you sure you want to remove these " ~
+				                                          count ~ " servers?");
+			}
+
+			if (mb.open() == DWT.YES) {
+				// do the actual removal
+				foreach (char[] ip; toRemove) {
+					int index = selectedIps_[ip];
+					ServerHandle sh = serverList_.getServerHandle(index);
+					ServerData sd = master.getServerData(sh);
+					setEmpty(&sd);
+					master.setServerData(sh, sd);
+					selectedIps_.removeKey(ip);
+				}
+
+				// refresh filtered list and update GUI
+				serverList_.refillFromMaster();
+				fullRefresh();
+				statusBar.setDefaultStatus(0, serverList_.filteredLength, 0,
+				                               countHumanPlayers(serverList_));
+			}
+		}
 	}
 
 	void onSelectAll()

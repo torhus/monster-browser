@@ -104,6 +104,8 @@ final class MasterList
 	 *
 	 * Returns InvalidServerHandle in case a server with the given address was
 	 * not found.
+	 *
+	 * Complexity is O(n).
 	 */
 	ServerHandle findServer(in char[] address)
 	{
