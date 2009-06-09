@@ -354,7 +354,7 @@ class SpecifyServerDialog
 						         "can't see it, try turning off the filters.");
 						int i = serverList.getFilteredIndex(address);
 						if (i != -1)
-							serverTable.setSelection([i]);
+							serverTable.setSelection([i], true);
 					}
 					else {
 						info("That server is already known, but belongs to a "
