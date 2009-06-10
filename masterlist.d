@@ -304,8 +304,9 @@ private final class XmlDumper
 		       .format(` ping="{}"`,          sd.server[ServerColumn.PING])
 		       .format(` player_count="{}"`,  sd.server[ServerColumn.PLAYERS])
 		       .format(` map="{}"`,           sd.server[ServerColumn.MAP])
+		       .format(` persistent="{}"`,    sd.persistent ? "true" : "false")
 		       .format(` fail_count="{}"`,    sd.failCount)
-			   .formatln(">");
+		       .formatln(">");
 
 		if (sd.cvars.length) {
 			output_.formatln("    <cvars>");
@@ -394,6 +395,8 @@ private final class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 				sd.server[ServerColumn.PLAYERS] = attr.value.dup;
 			else if (attr.localName == "map")
 				sd.server[ServerColumn.MAP] = attr.value.dup;
+			else if (attr.localName == "persistent")
+				sd.persistent = attr.value == "true";
 			else if (attr.localName == "fail_count")
 				sd.failCount = Integer.convert(attr.value);
 		}

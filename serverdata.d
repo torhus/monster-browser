@@ -26,9 +26,11 @@ struct ServerData {
 	/// list of cvars, with key and value for each
 	char[][][] cvars;
 
-	TextLayout customData = null;
+	TextLayout customData = null;  ///
 
-	int failCount = 0;
+	int failCount = 0;  ///
+
+	bool persistent;  ///
 
 
 	///
