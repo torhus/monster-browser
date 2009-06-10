@@ -48,7 +48,7 @@ alias Tuple!(75, 23) BUTTON_SIZE;
 const BUTTON_SPACING = 6;
 
 
-class MonitorNotify
+/+class MonitorNotify
 {
 	char[] password; ///
 
@@ -69,72 +69,10 @@ class MonitorNotify
 			}
 		}
 
-		/*// command line
-		Label labelA = new Label(shell_, DWT.NONE);
-		labelA.setText("Join \"" ~ serverName ~ "\"\n\n" ~ message ~ "\n");
-
-		// password input
-		Composite pwdComposite = new Composite(shell_, DWT.NONE);
-		GridData pwdData = new GridData();
-		pwdData.horizontalAlignment = DWT.CENTER;
-		pwdComposite.setLayoutData(pwdData);
-
-		RowLayout pwdLayout = new RowLayout();
-		pwdComposite.setLayout(pwdLayout);
-		Label labelB = new Label(pwdComposite, DWT.NONE);
-		labelB.setText("Password:");
-		pwdText_ = new Text(pwdComposite, DWT.SINGLE | DWT.BORDER);
-
-		// main buttons
-		Composite buttonComposite = new Composite(shell_, DWT.NONE);
-		GridData buttonData = new GridData();
-		buttonData.horizontalAlignment = DWT.CENTER;
-		buttonComposite.setLayoutData(buttonData);
-
-		RowLayout buttonLayout = new RowLayout();
-		buttonComposite.setLayout(buttonLayout);
-
-		okButton_ = new Button (buttonComposite, DWT.PUSH);
-		okButton_.setText ("OK");
-		cancelButton_ = new Button (buttonComposite, DWT.PUSH);
-		cancelButton_.setText ("Cancel");
-
-		Listener listener = new class Listener {
-			public void handleEvent (Event event)
-			{
-				if (event.widget == okButton_) {
-					result_ = DWT.OK;
-					password = pwdText_.getText;
-				}
-				shell_.close();
-			}
-		};
-
-		okButton_.addListener(DWT.Selection, listener);
-		cancelButton_.addListener(DWT.Selection, listener);
-		shell_.setDefaultButton(okButton_);
-		shell_.pack();
-		shell_.setLocation(center(parent_, shell_));
-		*/
-	}
-
-	/*int open()
-	{
-		pwdText_.setText(password);
-		pwdText_.selectAll();
-		shell_.open();
-		while (!shell_.isDisposed()) {
-			if (!display.readAndDispatch()) {
-				display.sleep ();
-			}
-		}
-		return result_;
-	}*/
-
 private:
 	Shell parent_, shell_;
 
-}
+}+/
 
 
 ///
