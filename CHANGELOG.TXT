@@ -7,6 +7,9 @@ Latest changes
 - New: Ability to remove servers from the list.
 - Change: Set player count to zero for servers that timed out, so they don't
           show up when filters are enabled.
+- Change: Manually added servers are no longer saved to the *.extra files, only
+          to the master server files.  Servers found in the *.extra files are
+          still queried.
 - Fix: More responsive in some cases, due to switching to a customized qstat.
        Also makes the status bar counter keep getting updated even when lots of
        servers time out.

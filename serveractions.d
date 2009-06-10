@@ -307,7 +307,7 @@ void delegate() getNewList()
 						addresses.remove(address);
 					}
 				}
-				else {
+				else if (!sd.persistent) {
 					setEmpty(&sd);
 					master.setServerData(sh, sd);
 					removed++;

@@ -184,7 +184,7 @@ class SpecifyServerDialog
 		parent_ = parent;
 		shell_ = new Shell(parent_, DWT.DIALOG_TRIM | DWT.APPLICATION_MODAL);
 		shell_.setLayout(new GridLayout);
-		shell_.setText("Specify Server");
+		shell_.setText("Add Server");
 
 		// address input
 		Composite addressComposite = new Composite(shell_, DWT.NONE);
@@ -202,8 +202,8 @@ class SpecifyServerDialog
 		addressText_.setLayoutData(addressTextData);
 
 		saveButton_ = new Button (shell_, DWT.CHECK);
-		char[] file = getGameConfig(filterBar.selectedGame).extraServersFile;
-		saveButton_.setText("Save server on file ('" ~ file ~ "')");
+		saveButton_.setText("Never remove this server automatically");
+		saveButton_.setSelection(true);
 		auto saveButtonData = new GridData;
 		saveButtonData.horizontalAlignment = DWT.CENTER;
 		saveButton_.setLayoutData(saveButtonData);
@@ -271,16 +271,13 @@ class SpecifyServerDialog
 				ServerHandle sh = master.findServer(address);
 
 				if (sh == InvalidServerHandle) {
-					if (saveButton_.getSelection()) {
-						if (!(address in serverList.extraServers)) {
-							GameConfig game =
-							                getGameConfig(serverList.gameName);
-							char[] file = game.extraServersFile;
-							// FIXME: error check here (IOException)
-							File.append(file, address ~ newline);
-						}
-					}
-					serverList.addExtraServer(address);
+					ServerData sd;
+
+					sd.server.length = ServerColumn.max + 1;
+					sd.server[ServerColumn.ADDRESS] = address;
+					sd.persistent = saveButton_.getSelection();
+					master.addServer(sd);
+
 					queryServers([address], false, true);
 				}
 				else {
