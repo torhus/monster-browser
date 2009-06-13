@@ -696,16 +696,16 @@ private:
 			return;
 
 		ServerData sd = serverList_.getFiltered(index);
-		char[] serverName = sd.server[ServerColumn.NAME];
-		auto dialog = new OpenRconDialog(mainWindow.handle, serverName);
+		char[] name = sd.server[ServerColumn.NAME];
+		char[] address = sd.server[ServerColumn.ADDRESS];
+		auto dialog = new OpenRconDialog(mainWindow.handle, name, address);
 		if (dialog.open()) {
-			char[] address = sd.server[ServerColumn.ADDRESS];
 			auto colon = locate(address, ':', 0);
 			char[] ip = address[0..colon];
 			int port = 27960;
 			if (colon < address.length)
 				port = Integer.toInt(address[colon+1..$]);
-			new RconWindow(serverName, ip, port, dialog.password);
+			new RconWindow(name, ip, port, dialog.password);
 		}
 	}
 

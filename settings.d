@@ -387,6 +387,30 @@ void setPassword(char[] ip, char[] password)
 }
 
 
+/**
+ * Retrieve a stored rcon password.
+ *
+ * ip is an IP address, with an optional colon and port number at the end.
+ *
+ * Returns: The password, or an empty string if none was found.
+ */
+char[] getRconPassword(in char[] ip)
+{
+	IniSection sec = settingsIni.section("RconPasswords");
+	if (sec is null)
+		return "";
+	return sec.getValue(ip, "");
+}
+
+
+/// Stores rcon passwords for later retrieval by getRconPassword().
+void setRconPassword(char[] ip, char[] password)
+{
+	IniSection sec = settingsIni.addSection("RconPasswords");
+	sec.setValue(ip, password);
+}
+
+
 private void loadSessionState()
 {
 	IniSection sec = settingsIni.addSection("Session");

@@ -443,12 +443,11 @@ private:
 ///
 class OpenRconDialog
 {
-	char[] password = ""; ///
-
 	///
-	this(Shell parent, char[] serverName)
+	this(Shell parent, in char[] serverName, in char[] address)
 	{
 		parent_ = parent;
+		address_ = address;
 		shell_ = new Shell(parent_, DWT.DIALOG_TRIM | DWT.APPLICATION_MODAL);
 		shell_.setLayout(new GridLayout);
 		shell_.setText("Open Remote Console");
@@ -474,6 +473,13 @@ class OpenRconDialog
 			}
 		});
 
+		saveButton_ = new Button (shell_, DWT.CHECK);
+		saveButton_.setText("Save this password");
+		saveButton_.setSelection(true);  // FIXME: save this state
+		auto saveButtonData = new GridData;
+		saveButtonData.horizontalAlignment = DWT.CENTER;
+		saveButton_.setLayoutData(saveButtonData);
+
 		// main buttons
 		Composite buttonComposite = new Composite(shell_, DWT.NONE);
 		GridData buttonData = new GridData();
@@ -487,6 +493,7 @@ class OpenRconDialog
 		okButton_ = new Button (buttonComposite, DWT.PUSH);
 		okButton_.setText ("OK");
 		okButton_.setLayoutData(new RowData(BUTTON_SIZE));
+
 		cancelButton_ = new Button (buttonComposite, DWT.PUSH);
 		cancelButton_.setText ("Cancel");
 		cancelButton_.setLayoutData(new RowData(BUTTON_SIZE));
@@ -502,7 +509,8 @@ class OpenRconDialog
 
 	bool open() ///
 	{
-		pwdText_.setText(password);
+		password_ = getRconPassword(address_);
+		pwdText_.setText(password_);
 		pwdText_.selectAll();
 		shell_.open();
 		Display display = Display.getDefault;
@@ -514,9 +522,15 @@ class OpenRconDialog
 		return result_ == DWT.OK;
 	}
 
+	///
+	char[] password() { return password_; }
+
+
 private:
+	char[] address_;
+	char[] password_;
 	Shell parent_, shell_;
-	Button okButton_, cancelButton_;
+	Button okButton_, cancelButton_, saveButton_;
 	Text pwdText_;
 	int result_ = DWT.CANCEL;
 
@@ -525,7 +539,9 @@ private:
 		{
 			if (event.widget == okButton_) {
 				result_ = DWT.OK;
-				password = pwdText_.getText;
+				password_ = pwdText_.getText();
+				if (saveButton_.getSelection())
+					setRconPassword(address_, password_);
 			}
 			shell_.close();
 		}
