@@ -530,7 +530,8 @@ private:
 		{
 			switch (e.keyCode) {
 				case DWT.F10:
-					onRemoteConsole();
+					if ((e.stateMask & DWT.MODIFIER_MASK) == 0)
+						onRemoteConsole();
 					break;
 				case DWT.DEL:
 					if ((e.stateMask & DWT.MODIFIER_MASK) == 0)

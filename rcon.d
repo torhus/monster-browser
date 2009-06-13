@@ -1,6 +1,8 @@
 module rcon;
 
 import dwt.DWT;
+import dwt.events.KeyAdapter;
+import dwt.events.KeyEvent;
 import dwt.events.SelectionAdapter;
 import dwt.events.SelectionEvent;
 import dwt.graphics.Device;
@@ -28,10 +30,12 @@ class RconWindow
 	{
 		shell_ = new Shell(Display.getDefault());
 		shell_.setText("Remote Console for " ~ serverName);
+		shell_.setSize(640, 480);  // FIXME: save and restore size
 		shell_.setImages(mainWindow.handle.getImages());
 		shell_.setLayout(new GridLayout);
 
-		outputText_ = new Text(shell_, DWT.MULTI | DWT.READ_ONLY | DWT.BORDER);
+		outputText_ = new Text(shell_, DWT.MULTI | DWT.READ_ONLY | DWT.BORDER |
+		                                                         DWT.V_SCROLL);
 		auto outputTextData = new GridData(DWT.FILL, DWT.FILL, true, true);
 		outputText_.setLayoutData(outputTextData);
 		outputText_.setFont(getFont());
@@ -42,6 +46,12 @@ class RconWindow
 		inputText_.addSelectionListener(new MySelectionListener);
 		inputText_.setMessage("Type an rcon command and press Enter");
 		inputText_.setFocus();
+
+		// handle shortcut keys that are global (for this window)
+		auto commonKeyListener = new CommonKeyListener;
+		shell_.addKeyListener(commonKeyListener);
+		outputText_.addKeyListener(commonKeyListener);
+		inputText_.addKeyListener(commonKeyListener);
 
 		rcon_ = new Rcon(address, port, password);
 
@@ -60,6 +70,22 @@ class RconWindow
 			}
 		}
 
+	}
+
+	private class CommonKeyListener : KeyAdapter
+	{
+		void keyPressed(KeyEvent e)
+		{
+			switch (e.keyCode) {
+				case DWT.ESC:
+					if ((e.stateMask & DWT.MODIFIER_MASK) == 0) {
+						shell_.close();
+					}
+					break;
+				default:
+					break;
+			}
+		}
 	}
 
 	private static Font getFont()
