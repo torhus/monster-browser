@@ -66,6 +66,9 @@ else {
 Clipboard clipboard;
 Timer globalTimer;
 
+// Add dispose() methods etc. to this array, and they will be called at
+// shutdown.
+void delegate()[] callAtShutdown;
 
 // Custom file open modes, since Tango doesn't have sharing enabled by default
 const File.Style WriteCreateShared =

@@ -164,6 +164,10 @@ private void _main(char[][] args)
 	foreach (icon; appIcons)
 		icon.dispose;
 	clipboard.dispose;
+	foreach (void delegate() dg; callAtShutdown)
+		dg();
+
+	// This has to come after all the other dispose calls.
 	display.dispose;
 
 	log("Saving settings...");
