@@ -120,12 +120,17 @@ class JoinDialog
 		cancelButton_.setText ("Cancel");
 		cancelButton_.setLayoutData(new RowData(BUTTON_SIZE));
 
-		Listener listener = new MyListener;
-
+		auto listener = new ButtonListener;
 		okButton_.addListener(DWT.Selection, listener);
 		cancelButton_.addListener(DWT.Selection, listener);
+
 		if (pwdMandatory)
-			pwdText_.addListener(DWT.Modify, listener);
+			pwdText_.addListener(DWT.Modify, new class Listener {
+				void handleEvent(Event e)
+				{
+					okButton_.setEnabled(pwdText_.getText().length > 0);
+				}
+			});
 
 		shell_.setDefaultButton(okButton_);
 		shell_.pack();
@@ -152,24 +157,14 @@ private:
 	Text pwdText_;
 	int result_ = DWT.CANCEL;
 
-	class MyListener : Listener {
+	class ButtonListener : Listener {
 		void handleEvent (Event event)
 		{
-			switch (event.type) {
-				case DWT.Selection:
-					if (event.widget == okButton_) {
-						result_ = DWT.OK;
-						password = pwdText_.getText;
-					}
-					shell_.close();
-					break;
-				case DWT.Modify:
-					if (pwdText_.getText().length > 0)
-						okButton_.setEnabled(true);
-					else
-						okButton_.setEnabled(false);
-					break;
+			if (event.widget == okButton_) {
+				result_ = DWT.OK;
+				password = pwdText_.getText;
 			}
+			shell_.close();
 		}
 	};
 }
@@ -442,6 +437,99 @@ private:
 	Text pathText_;
 	int result_ = DWT.CANCEL;
 	Spinner sqSpinner_;
+}
+
+
+///
+class OpenRconDialog
+{
+	char[] password = ""; ///
+
+	///
+	this(Shell parent, char[] serverName)
+	{
+		parent_ = parent;
+		shell_ = new Shell(parent_, DWT.DIALOG_TRIM | DWT.APPLICATION_MODAL);
+		shell_.setLayout(new GridLayout);
+		shell_.setText("Open Remote Console");
+
+		// show server name
+		Label labelA = new Label(shell_, DWT.NONE);
+		labelA.setText("Remote Console for \"" ~ serverName ~ "\"");
+
+		// password input
+		Composite pwdComposite = new Composite(shell_, DWT.NONE);
+		GridData pwdData = new GridData();
+		pwdData.horizontalAlignment = DWT.CENTER;
+		pwdComposite.setLayoutData(pwdData);
+
+		pwdComposite.setLayout(new RowLayout);
+		Label labelB = new Label(pwdComposite, DWT.NONE);
+		labelB.setText("Password:");
+		pwdText_ = new Text(pwdComposite, DWT.SINGLE | DWT.BORDER);
+		pwdText_.addListener(DWT.Modify, new class Listener {
+			void handleEvent(Event e)
+			{
+				okButton_.setEnabled(pwdText_.getText().length > 0);
+			}
+		});
+
+		// main buttons
+		Composite buttonComposite = new Composite(shell_, DWT.NONE);
+		GridData buttonData = new GridData();
+		buttonData.horizontalAlignment = DWT.CENTER;
+		buttonComposite.setLayoutData(buttonData);
+
+		RowLayout buttonLayout = new RowLayout();
+		buttonLayout.spacing = BUTTON_SPACING;
+		buttonComposite.setLayout(buttonLayout);
+
+		okButton_ = new Button (buttonComposite, DWT.PUSH);
+		okButton_.setText ("OK");
+		okButton_.setLayoutData(new RowData(BUTTON_SIZE));
+		cancelButton_ = new Button (buttonComposite, DWT.PUSH);
+		cancelButton_.setText ("Cancel");
+		cancelButton_.setLayoutData(new RowData(BUTTON_SIZE));
+
+		auto listener = new ButtonListener;
+		okButton_.addListener(DWT.Selection, listener);
+		cancelButton_.addListener(DWT.Selection, listener);
+
+		shell_.setDefaultButton(okButton_);
+		shell_.pack();
+		shell_.setLocation(center(parent_, shell_));
+	}
+
+	bool open() ///
+	{
+		pwdText_.setText(password);
+		pwdText_.selectAll();
+		shell_.open();
+		Display display = Display.getDefault;
+		while (!shell_.isDisposed()) {
+			if (!display.readAndDispatch()) {
+				display.sleep ();
+			}
+		}
+		return result_ == DWT.OK;
+	}
+
+private:
+	Shell parent_, shell_;
+	Button okButton_, cancelButton_;
+	Text pwdText_;
+	int result_ = DWT.CANCEL;
+
+	class ButtonListener : Listener {
+		void handleEvent (Event event)
+		{
+			if (event.widget == okButton_) {
+				result_ = DWT.OK;
+				password = pwdText_.getText;
+			}
+			shell_.close();
+		}
+	};
 }
 
 
