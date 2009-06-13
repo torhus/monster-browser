@@ -32,11 +32,13 @@ import dwt.widgets.TableItem;
 import colorednames;
 import common;
 import cvartable;
+import dialogs;
 import geoip;
 import launch;
 import mainwindow;
 import masterlist;
 import playertable;
+import rcon;
 import serveractions;
 import serverdata;
 import serverlist;
@@ -527,6 +529,9 @@ private:
 		public void keyPressed (KeyEvent e)
 		{
 			switch (e.keyCode) {
+				case DWT.F10:
+					onRemoteConsole();
+					break;
 				case DWT.DEL:
 					if ((e.stateMask & DWT.MODIFIER_MASK) == 0)
 						onRemoveSelected();
@@ -588,12 +593,18 @@ private:
 			void widgetSelected(SelectionEvent e) { onCopyAddresses(); }
 		});
 
-		item = new MenuItem(menu, DWT.SEPARATOR);
-
 		item = new MenuItem(menu, DWT.PUSH);
 		item.setText("Remove selected\tDel");
 		item.addSelectionListener(new class SelectionAdapter {
 			void widgetSelected(SelectionEvent e) { onRemoveSelected(); }
+		});
+
+		item = new MenuItem(menu, DWT.SEPARATOR);
+
+		item = new MenuItem(menu, DWT.PUSH);
+		item.setText("Remote console\tF10");
+		item.addSelectionListener(new class SelectionAdapter {
+			void widgetSelected(SelectionEvent e) { onRemoteConsole(); }
 		});
 
 		return menu;
@@ -674,6 +685,26 @@ private:
 				statusBar.setDefaultStatus(0, serverList_.filteredLength, 0,
 				                               countHumanPlayers(serverList_));
 			}
+		}
+	}
+
+	void onRemoteConsole()
+	{
+		int index = table_.getSelectionIndex();
+		if (index == -1)
+			return;
+
+		ServerData sd = serverList_.getFiltered(index);
+		char[] serverName = sd.server[ServerColumn.NAME];
+		auto dialog = new OpenRconDialog(mainWindow.handle, serverName);
+		if (dialog.open()) {
+			char[] address = sd.server[ServerColumn.ADDRESS];
+			auto colon = locate(address, ':', 0);
+			char[] ip = address[0..colon];
+			int port = 27960;
+			if (colon < address.length)
+				port = Integer.toInt(address[colon+1..$]);
+			new RconWindow(serverName, ip, port, dialog.password);
 		}
 	}
 
