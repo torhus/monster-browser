@@ -13,6 +13,7 @@ import dwt.widgets.Display;
 import dwt.widgets.Shell;
 import dwt.widgets.Text;
 
+import tango.core.Array;
 import tango.net.DatagramConduit;
 import tango.net.InternetAddress;
 
@@ -62,7 +63,9 @@ class RconWindow
 	/// Add a command to the command history.
 	private void storeCommand(in char[] cmd)
 	{
-		history_ ~= cmd;
+		// add cmd at the end, or move it there if already present
+		if (remove(history_, cmd) == history_.length)
+			history_ ~= cmd;
 		position_ = history_.length;
 	}
 
@@ -115,12 +118,10 @@ class RconWindow
 				case DWT.ARROW_DOWN:
 					if ((e.stateMask & DWT.MODIFIER_MASK) == 0) {
 						e.doit = false;
-						if (history_.length == 0 ||
-						                    position_ == history_.length ||
-						                    position_ == history_.length - 1) {
-							return;
-						}
-						inputText_.setText(history_[++position_]);
+						if (position_ < history_.length)
+							inputText_.setText(history_[position_++]);
+						else
+							inputText_.setText("");
 					}
 					break;
 				default:
@@ -186,13 +187,14 @@ private class Rcon
 		//conn_.shutdown();
 		//conn_.close();
 		//conn_.flush();
-		if (total < "\xff\xff\xff\xffprint\n".length) {
+		const prefix = "\xff\xff\xff\xffprint\n";
+		assert(total >= prefix.length);
+		if (total < prefix.length) {
 			return null;
 		}
 		else {
-			buf = buf[4..total-4];  // first four bytes are just 0xFF
-			assert(buf[0..6] == "print\n");
-			return buf[6..$];
+			assert(buf[0..prefix.length] == prefix);
+			return buf[prefix.length..total];
 		}
 	}
 
