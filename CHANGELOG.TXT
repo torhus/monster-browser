@@ -10,6 +10,7 @@ Latest changes
 - Change: Manually added servers are no longer saved to the *.extra files, only
           to the master server files.  Servers found in the *.extra files are
           still queried.
+- Change: Don't show passwords when typing them.
 - Fix: More responsive in some cases, due to switching to a customized qstat.
        Also makes the status bar counter keep getting updated even when lots of
        servers time out.
