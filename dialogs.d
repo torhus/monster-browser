@@ -101,7 +101,8 @@ class JoinDialog
 		pwdComposite.setLayout(new RowLayout);
 		Label labelB = new Label(pwdComposite, DWT.NONE);
 		labelB.setText("Password:");
-		pwdText_ = new Text(pwdComposite, DWT.SINGLE | DWT.BORDER);
+		pwdText_ = new Text(pwdComposite, DWT.SINGLE | DWT.BORDER |
+		                                                         DWT.PASSWORD);
 
 		// main buttons
 		Composite buttonComposite = new Composite(shell_, DWT.NONE);
@@ -465,7 +466,8 @@ class OpenRconDialog
 		pwdComposite.setLayout(new RowLayout);
 		Label labelB = new Label(pwdComposite, DWT.NONE);
 		labelB.setText("Password:");
-		pwdText_ = new Text(pwdComposite, DWT.SINGLE | DWT.BORDER);
+		pwdText_ = new Text(pwdComposite, DWT.SINGLE | DWT.BORDER |
+		                                                         DWT.PASSWORD);
 		pwdText_.addListener(DWT.Modify, new class Listener {
 			void handleEvent(Event e)
 			{
