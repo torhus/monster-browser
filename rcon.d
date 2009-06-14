@@ -45,6 +45,7 @@ class RconWindow
 		inputText_.setLayoutData(inputTextData);
 		inputText_.addSelectionListener(new MySelectionListener);
 		inputText_.setMessage("Type an rcon command and press Enter");
+		inputText_.addKeyListener(new InputKeyListener);
 		inputText_.setFocus();
 
 		// handle shortcut keys that are global (for this window)
@@ -58,6 +59,13 @@ class RconWindow
 		shell_.open();
 	}
 
+	/// Add a command to the command history.
+	private void storeCommand(in char[] cmd)
+	{
+		history_ ~= cmd;
+		position_ = history_.length;
+	}
+
 	private class MySelectionListener : SelectionAdapter
 	{
 		void widgetDefaultSelected(SelectionEvent e)
@@ -67,6 +75,7 @@ class RconWindow
 				char[] s = rcon_.command(cmd);
 				inputText_.setText("");
 				outputText_.setText(s);
+				storeCommand(cmd);
 			}
 		}
 
@@ -80,6 +89,38 @@ class RconWindow
 				case DWT.ESC:
 					if ((e.stateMask & DWT.MODIFIER_MASK) == 0) {
 						shell_.close();
+					}
+					break;
+				default:
+					break;
+			}
+		}
+	}
+
+	private class InputKeyListener : KeyAdapter
+	{
+		void keyPressed(KeyEvent e)
+		{
+			switch (e.keyCode) {
+				case DWT.ARROW_UP:
+					if ((e.stateMask & DWT.MODIFIER_MASK) == 0) {
+						e.doit = false;
+						if (history_.length == 0)
+							return;
+						if (position_ > 0)
+							position_--;
+						inputText_.setText(history_[position_]);
+					}
+					break;
+				case DWT.ARROW_DOWN:
+					if ((e.stateMask & DWT.MODIFIER_MASK) == 0) {
+						e.doit = false;
+						if (history_.length == 0 ||
+						                    position_ == history_.length ||
+						                    position_ == history_.length - 1) {
+							return;
+						}
+						inputText_.setText(history_[++position_]);
 					}
 					break;
 				default:
@@ -103,6 +144,8 @@ class RconWindow
 		Text outputText_;
 		Text inputText_;
 		Rcon rcon_;
+		char[][] history_;
+		int position_ = 0;  // index into history_
 	}
 }
 
