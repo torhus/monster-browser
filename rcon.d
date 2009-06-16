@@ -24,7 +24,7 @@ import mainwindow;
 ///
 class RconWindow
 {
-	private static Font font;  /// A monospaced font.
+	private static Font fixedWidthFont;  /// A monospaced font.
 
 	///
 	this(in char[] serverName, in char[] address, int port, in char[] password)
@@ -39,7 +39,7 @@ class RconWindow
 		                                                         DWT.V_SCROLL);
 		auto outputTextData = new GridData(DWT.FILL, DWT.FILL, true, true);
 		outputText_.setLayoutData(outputTextData);
-		outputText_.setFont(getFont());
+		outputText_.setFont(getFixedWidthFont());
 
 		inputText_ = new Text(shell_, DWT.BORDER);
 		auto inputTextData = new GridData(DWT.FILL, DWT.CENTER, true, false);
@@ -77,7 +77,7 @@ class RconWindow
 			if (cmd.length > 0) {
 				char[] s = rcon_.command(cmd);
 				inputText_.setText("");
-				outputText_.setText(s);
+				outputText_.append(s);
 				storeCommand(cmd);
 			}
 		}
@@ -113,16 +113,32 @@ class RconWindow
 						if (position_ > 0)
 							position_--;
 						inputText_.setText(history_[position_]);
+						// move cursor to end of line
+						inputText_.setSelection (inputText_.getCharCount());
 					}
 					break;
 				case DWT.ARROW_DOWN:
 					if ((e.stateMask & DWT.MODIFIER_MASK) == 0) {
 						e.doit = false;
-						if (position_ < history_.length)
-							inputText_.setText(history_[position_++]);
-						else
+						if (history_.length > 0 &&
+						                     position_ < history_.length - 1) {
+							inputText_.setText(history_[++position_]);
+						}
+						else {
 							inputText_.setText("");
+							position_ = history_.length;
+						}
+						// move cursor to end of line
+						inputText_.setSelection (inputText_.getCharCount());
 					}
+					break;
+				case DWT.PAGE_UP:
+					if ((e.stateMask & DWT.MODIFIER_MASK) == 0)
+						outputPageScroll(false);
+					break;
+				case DWT.PAGE_DOWN:
+					if ((e.stateMask & DWT.MODIFIER_MASK) == 0)
+						outputPageScroll(true);
 					break;
 				default:
 					break;
@@ -130,14 +146,26 @@ class RconWindow
 		}
 	}
 
-	private static Font getFont()
+	/// Scroll output field up or down by a page.
+	private void outputPageScroll(bool down)
 	{
-		if (font is null) {
-			font = new Font(cast(Device)Display.getDefault(), "Courier new",
-		                                                       10, DWT.NORMAL);
-			callAtShutdown ~= &font.dispose;
+		// FIXME: getClientArea().height seems to include some sort of margin,
+		// so linesPerPage will be one too many sometimes.
+		int totalHeight = outputText_.getClientArea().height;
+		int linesPerPage = totalHeight / outputText_.getLineHeight();
+		int scrollBy = down ? outputText_.getTopIndex() + linesPerPage - 1 :
+		                      outputText_.getTopIndex() - linesPerPage + 1;
+		outputText_.setTopIndex(scrollBy);
+	}
+
+	private static Font getFixedWidthFont()
+	{
+		if (fixedWidthFont is null) {
+			fixedWidthFont = new Font(cast(Device)Display.getDefault(),
+			                                    "Courier new", 10, DWT.NORMAL);
+			callAtShutdown ~= &fixedWidthFont.dispose;
 		}
-		return font;
+		return fixedWidthFont;
 	}
 
 	private {
@@ -188,7 +216,7 @@ private class Rcon
 		//conn_.close();
 		//conn_.flush();
 		const prefix = "\xff\xff\xff\xffprint\n";
-		assert(total >= prefix.length);
+		//assert(total >= prefix.length);
 		if (total < prefix.length) {
 			return null;
 		}
