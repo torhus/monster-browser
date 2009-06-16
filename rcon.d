@@ -17,6 +17,7 @@ import tango.core.Array;
 import tango.net.DatagramConduit;
 import tango.net.InternetAddress;
 
+import colorednames;
 import common;
 import mainwindow;
 
@@ -77,7 +78,7 @@ class RconWindow
 			if (cmd.length > 0) {
 				char[] s = rcon_.command(cmd);
 				inputText_.setText("");
-				outputText_.append(s);
+				outputText_.append(stripColorCodes(s));
 				storeCommand(cmd);
 			}
 		}
