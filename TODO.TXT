@@ -1,16 +1,35 @@
-- Reconcile ServerTable.quickRefresh and fullRefresh?
+- Wait for rcon replies in a separate thread.
 
-- Ability to remove the extra servers too?
+- Tab completion for rcon commands, at least fix tab order.
 
-- Avoid extra servers being saved to master files?
+- Make CTRL+A in rcon output and input work.
+
+- Don't ask for password in rcon if already known.  Ask for a new password
+  if the server returns "Bad rconpassword.".
+
+- Colored text in rcon output?
+
+- Server count in status bar is wrong after deleting a server.
+
+- Stop manually added servers from being saved twice to the XML files.
+
+- Don't display "There was no reply" when refreshing selected servers.
+
+- How does 'Never remove this server automatically' relate to automatic hiding
+  of servers with too high timeout count?
+
+- Make it optional to save password when joining a server?
+
+- Reconcile ServerTable.quickRefresh and fullRefresh, also look into unifying
+  selection keeping code.
+
+- Ability to change persistence state of manually added servers by adding them
+  again?
 
 - Change taskbar text when working, to keep user informed?
 
 - See if ServerData.customData really is needed, cache TextLayouts in
   ServerTable instead if there is a noticable speedup?
-
-- Show server name tooltips for players, and have a context menu with
-  'select server'?  Double click player to go to server?
 
 - Display better message when aborting Check for new servers.
 
