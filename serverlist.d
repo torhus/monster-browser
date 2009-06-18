@@ -50,7 +50,7 @@ class ServerList
 	body {
 		gameName_ = gameName;
 		master_ = master;
-		filteredIpHash_ = new HashMap!(char[], int);
+		IpHash_ = new HashMap!(char[], int);
 	}
 
 
@@ -67,15 +67,12 @@ class ServerList
 	{
 		bool refresh = false;
 
-		synchronized (this) {
-			synchronized (master_) {
-				ServerData sd = master_.getServerData(sh);
-				sd.server[ServerColumn.COUNTRY] = getCountryCode(&sd);
-			}
-			list ~= sh;
-			isSorted_ = false;
-			if (!isFilteredOut(sh)) {
-				insertSorted(list.length -1);
+		synchronized (this) synchronized (master_) {
+			ServerData sd = master_.getServerData(sh);
+			sd.server[ServerColumn.COUNTRY] = getCountryCode(&sd);
+			IpHash_[sd.server[ServerColumn.ADDRESS]] = -1;
+			if (!isFilteredOut(&sd)) {
+				insertSorted(sh);
 				refresh = true;
 			}
 		}
@@ -87,125 +84,109 @@ class ServerList
 	/// Always returns true.
 	bool replace(ServerHandle sh)
 	{
-		synchronized (this) {
-			isSorted_ = false;
-			synchronized (master_) {
-				ServerData sd = master_.getServerData(sh);
-				if (sd.customData)
-					sd.customData.dispose();
-
-				int i = getIndex(sd.server[ServerColumn.ADDRESS]);
-				assert(i != -1);
-				list[i] = sh;
-				removeFromFiltered(sh);
-				if (!isFilteredOut(sh))
-					insertSorted(i);
-			}
+		synchronized (this) synchronized (master_) {
+			ServerData sd = master_.getServerData(sh);
+			if (sd.customData)
+				sd.customData.dispose();
+			removeFromFiltered(sd.server[ServerColumn.ADDRESS]);
+			if (!isFilteredOut(&sd))
+				insertSorted(sh);
 		}
-
 		return true;
 	}
 
 
-	///
+	/**
+	 * Clear the filtered list and refill it from the master list.
+	 */
 	synchronized void refillFromMaster()
 	{
-		clear();
-		foreach (sh; master_) {
+		char[] mod = getGameConfig(gameName_).mod;
+
+		filteredList.length = 0;
+		synchronized (master_) foreach (sh; master_) {
 			ServerData sd = master_.getServerData(sh);
-			if (matchMod(&sd, getGameConfig(gameName_).mod))
-				add(sh);
+			char[] address = sd.server[ServerColumn.ADDRESS];
+			if (address in IpHash_ && matchMod(&sd, mod) &&
+			                                               !isFilteredOut(&sd))
+				filteredList ~= sh;
 		}
+		IpHashValid_ = false;
+		isSorted_ = false;
+		_sort();
 	}
 
 
-	 /// Iterate over the full list.
-	/*int opApply(int delegate(ref ServerData) dg)
-	{
-		int result = 0;
-
-		synchronized (this)
-			foreach(ServerData sd; list) {
-				result = dg(sd);
-				if (result) {
-					break;
-				}
-			}
-		return result;
-	}*/
-
-
-	/// Return a server from the filtered list
+	/**
+	 * Return a server from the filtered list.
+	 *
+	 * Complexity is O(1).
+	 */
 	ServerData getFiltered(int i)
 	{
 		synchronized (this) {
 			assert(i >= 0 && i < filteredList.length);
 			synchronized (master_) {
-				return master_.getServerData(list[filteredList[i]]);
+				return master_.getServerData(filteredList[i]);
 			}
 		}
-	}
-
-
-	/**
-	 * Given the IP and port number, find a server in the full list.
-	 *
-	 * Does a linear search.
-	 *
-	 * Returns: the server's index, or -1 if not found.
-	 */
-	int getIndex(char[] ipAndPort)
-	{
-		if (!ipAndPort.length)
-			return -1;
-
-		synchronized (this) synchronized (master_)
-		foreach (int i, ServerHandle sh; list) {
-			ServerData sd = master_.getServerData(sh);
-			if (sd.server[ServerColumn.ADDRESS] == ipAndPort)
-				return i;
-		}
-		return -1;
 	}
 
 
 	/**
 	 * Given the IP and port number, find a server in the filtered list.
 	 *
-	 * Returns: the server's index, or -1 if not found.
+	 * Returns: the server's index, or -1 if unknown or not found.
 	 */
-	int getFilteredIndex(char[] ipAndPort)
+	int getFilteredIndex(char[] ipAndPort, bool* found=null)
 	{
+		int result = -1;
+		bool wasFound = false;
+
 		synchronized (this) {
-			if (!filteredIpHashValid_)
-				createFilteredIpHash();
-			if (int* i = ipAndPort in filteredIpHash_) {
-				assert(*i >= 0 && *i < filteredList.length);
-				return *i;
+			if (!IpHashValid_)
+				updateIpHash();
+
+			if (int* i = ipAndPort in IpHash_) {
+				assert(*i == -1 || *i < filteredList.length);
+				result = *i;
+				wasFound = true;
 			}
 		}
-		return -1;
+		if (found)
+			*found = wasFound;
+		return result;
 	}
 
 
+	/**
+	 * Returns the server handle for a server in the filtered list.
+	 *
+	 * Complexity is O(1).
+	 */
+	ServerHandle getServerHandle(int i)
+	{
+		synchronized (this) {
+			assert(i >= 0 && i < filteredList.length);
+			return filteredList[i];
+		}
+	}
+	
+
 	///
 	size_t filteredLength() { synchronized (this) return filteredList.length; }
-	size_t length() { synchronized (this) return list.length; } /// ditto
 
 
 	/**
 	 * Clears the list and the filtered list.  Sets complete to false.
 	 */
-	ServerList clear()
+	void clear()
 	{
 		synchronized (this) {
 			disposeCustomData();
-
-			//filteredList.length = 0;
-			//list.length = 0;
-			delete filteredList;
-			delete list;
-			filteredIpHash_.reset();
+			filteredList.length = 0;
+			IpHash_.clear();
+			isSorted_ = true;
 			complete = false;
 		}
 
@@ -230,7 +211,7 @@ class ServerList
 
 
 	/**
-	 * Sort the full list, then update the filtered list.
+	 * Sorts the filtered list.
 	 *
 	 * Uses the previously selected _sort order, or the default
 	 * if there is none.
@@ -239,7 +220,6 @@ class ServerList
 	{
 		synchronized (this) {
 			_sort();
-			updateFilteredList();
 		}
 	}
 
@@ -257,27 +237,22 @@ class ServerList
 			setSort(column, reversed);
 			if (update) {
 				_sort();
-				updateFilteredList();
 			}
 		}
 	}
 
 
 	/**
-	 * Sets filters and updates the list accordingly.
-	 *
-	 * Set update to false if you don't want the filters to be applied
-	 * immediately.
+	 * Sets filters and updates the filtered list accordingly.
 	 */
-	void setFilters(Filter newFilters, bool update=true)
+	void setFilters(Filter newFilters)
 	{
 		if (newFilters == filters_)
 			return;
 
 		synchronized (this) {
 			filters_ = newFilters;
-			if (update)
-				updateFilteredList();
+			refillFromMaster();
 		}
 	}
 
@@ -307,19 +282,17 @@ class ServerList
  *                                                                     *
  ***********************************************************************/
 private:
-	ServerHandle[] list;
-	size_t[] filteredList;
+	ServerHandle[] filteredList;
 	// maps addresses to indices into the filtered list
-	HashMap!(char[], int) filteredIpHash_;
-	bool filteredIpHashValid_ = false;
+	HashMap!(char[], int) IpHash_;
+	bool IpHashValid_ = false;  // true if the values (indices) are up to date
 	Set!(char[]) extraServers_;
 	char[] gameName_;
 	MasterList master_;
 
 	int sortColumn_ = ServerColumn.NAME;
-	int oldSortColumn_ = -1;
 	bool reversed_ = false;
-	bool isSorted_= false;
+	bool isSorted_= true;
 
 	Filter filters_ = Filter.NONE;
 
@@ -327,14 +300,14 @@ private:
 	invariant()
 	{
 		synchronized (this) {
-			if (filteredList.length > list.length) {
+			/*if (filteredList.length > list.length) {
 				log(Format("filteredlist.length == {}\nlist.length == {}",
 				                            filteredList.length, list.length));
 				assert(0, "Details in log file.");
-			}
-			if (!(filters_ || filteredList.length == list.length ||
-							  filteredList.length == (list.length - 1))) {
-				log(Format("ServerList invariant broken!\n"
+			}*/
+			/*if (!(filters_ || filteredList.length == list.length ||
+			                       filteredList.length == (list.length - 1))) {
+				log(Format("ServerList invariant broken!"
 				           "\nfilters_ & Filter.HAS_HUMANS: {}"
 				           "\nfilters_ & Filter.NOT_EMPTY: {}"
 				           "\nlist.length: {}"
@@ -343,17 +316,20 @@ private:
 				           filters_ & Filter.NOT_EMPTY,
 				           list.length, filteredList.length));
 				assert(0, "Details in log file.");
-			}
+			}*/
 		}
 	}
 
 
-	/// Updates sort column and order for the main list.
+	/// Updates sort column and order for the filtered list.
 	void setSort(int column, bool reversed=false)
 	{
 		assert(column >= 0 && column <= ServerColumn.max);
-		oldSortColumn_ = sortColumn_;
-		sortColumn_ = column;
+
+		if (column != sortColumn_) {
+			sortColumn_ = column;
+			isSorted_ = false;
+		}
 		if (reversed != reversed_) {
 			reversed_ = reversed;
 			isSorted_ = false;
@@ -361,7 +337,7 @@ private:
 	}
 
 
-	/// Sorts the main list, doesn't touch the filtered list.
+	/// Sorts the filtered list.
 	void _sort()
 	{
 		debug scope timer = new Timer;
@@ -374,11 +350,12 @@ private:
 			return compare(&sda, &sdb) <= 0;
 		}
 
-		if (!isSorted_ || sortColumn_ != oldSortColumn_) {
+		if (!isSorted_) {
 			synchronized (master_) {
-				mergeSort(list, &lessOrEqual);
+				mergeSort(filteredList, &lessOrEqual);
 			}
 			isSorted_ = true;
+			IpHashValid_ = false;
 		}
 
 		debug log("ServerList._sort() took " ~
@@ -388,21 +365,23 @@ private:
 	/**
 	 * Insert a server in sorted order in the filtered list.
 	 */
-	void insertSorted(size_t listIndex)
+	void insertSorted(ServerHandle sh)
 	{
-		bool less(size_t a, size_t b)
+		assert(isSorted_);
+
+		bool less(ServerHandle a, ServerHandle b)
 		{
-			ServerData sda = master_.getServerData(list[a]);
-			ServerData sdb = master_.getServerData(list[b]);
+			ServerData sda = master_.getServerData(a);
+			ServerData sdb = master_.getServerData(b);
 
 			return compare(&sda, &sdb) < 0;
 		}
 
 		size_t i;
 		synchronized (master_) {
-			i = ubound(filteredList, listIndex, &less);
+			i = ubound(filteredList, sh, &less);
 		}
-		insertInFiltered(i, listIndex);
+		insertInFiltered(i, sh);
 	}
 
 	/**
@@ -431,8 +410,8 @@ private:
 				break;
 
 			case ServerColumn.PING:
-				result = Integer.toInt(a.server[ServerColumn.PING]) -
-				         Integer.toInt(b.server[ServerColumn.PING]);
+				result = Integer.parse(a.server[ServerColumn.PING]) -
+				         Integer.parse(b.server[ServerColumn.PING]);
 				break;
 
 			default:
@@ -443,7 +422,7 @@ private:
 		return (reversed_ ? -result : result);
 	}
 
-	void insertInFiltered(size_t index, size_t listIndex)
+	void insertInFiltered(size_t index, ServerHandle sh)
 	{
 		assert(index <= filteredList.length);
 
@@ -451,28 +430,27 @@ private:
 		filteredList.length = filteredList.length + 1;
 
 		if (index < oldLength) {
-			size_t* ptr = filteredList.ptr + index;
+			ServerHandle* ptr = filteredList.ptr + index;
 			size_t bytes = (oldLength - index) * filteredList[0].sizeof;
 			memmove(ptr + 1, ptr, bytes);
 		}
-		filteredList[index] = listIndex;
+		filteredList[index] = sh;
 
-		filteredIpHashValid_ = false;
+		IpHashValid_ = false;
 	}
 
-	void removeFromFiltered(ServerHandle sh)
+	void removeFromFiltered(in char[] address)
 	{
-		char[] address =
-		                master_.getServerData(sh).server[ServerColumn.ADDRESS];
-		int i = getFilteredIndex(address);
-		assert(i != -1);
+		bool found;
+		int i = getFilteredIndex(address, &found);
+		assert(found);
 
-		size_t* ptr = filteredList.ptr + i;
+		ServerHandle* ptr = filteredList.ptr + i;
 		size_t bytes = (filteredList.length - 1 - i) * filteredList[0].sizeof;
 		memmove(ptr, ptr + 1, bytes);
 		filteredList.length = filteredList.length - 1;
 
-		filteredIpHash_.removeKey(address);
+		IpHashValid_ = false;
 	}
 
 	char[] getCountryCode(in ServerData* sd)
@@ -483,71 +461,37 @@ private:
 		return code;
 	}
 
-	void copyListToFilteredList()
-	{
-		filteredList.length = list.length;
-		for (size_t i=0; i < list.length; i++)
-			filteredList[i] = i;
-
-		filteredIpHashValid_ = false;
-	}
-
 	bool isFilteredOut(ServerHandle sh)
 	{
 		if (filters_ == 0)
 			return false;
 
 		ServerData sd = master_.getServerData(sh);
-
-		if (filters_ & Filter.HAS_HUMANS && !sd.hasHumans)
-			return true;
-		if (filters_ & Filter.NOT_EMPTY && !(sd.hasHumans || sd.hasBots))
-			return true;
-
-		return false;
+		return isFilteredOut(&sd);
 	}
 
-	/**
-	 * Clear the filtered list and refill it with the contents of the full
-	 * list, except servers that are filtered out.
-	 *
-	 * Will if necessary sort the full list before using it.
-	 */
-	void updateFilteredList()
+	bool isFilteredOut(in ServerData* sd)
 	{
-		if (!isSorted_)
-			_sort();
+		if (filters_ == 0)
+			return false;
 
-		filteredList.length = 0;
-		if (filters_ & Filter.HAS_HUMANS) {
-			foreach (i, sh; list) {
-				ServerData sd = master_.getServerData(sh);
-				if (sd.hasHumans)
-					filteredList ~= i;
-			}
-			filteredIpHashValid_ = false;
-		}
-		else if (filters_ & Filter.NOT_EMPTY) {
-			foreach (i, sh; list) {
-				ServerData sd = master_.getServerData(sh);
-				if (sd.hasBots || sd.hasHumans)
-					filteredList ~= i;
-			}
-			filteredIpHashValid_ = false;
-		}
-		else {
-			copyListToFilteredList();
-		}
+		if (sd.hasHumans)
+			return false;
+		else
+			return filters_ & Filter.HAS_HUMANS || !sd.hasBots;
 	}
 
-	void createFilteredIpHash()
+	void updateIpHash(bool reset=true)
 	{
-		filteredIpHash_.clear();
-		foreach (int i, listIndex; filteredList) {
-			ServerData sd = master_.getServerData(list[listIndex]);
-			filteredIpHash_[sd.server[ServerColumn.ADDRESS]] = i;
+		if (reset) {
+			foreach (ref val; IpHash_)
+				val = -1;
 		}
-		filteredIpHashValid_ = true;
+		foreach (int i, sh; filteredList) {
+			ServerData sd = master_.getServerData(sh);
+			IpHash_[sd.server[ServerColumn.ADDRESS]] = i;
+		}
+		IpHashValid_ = true;
 	}
 
 	/// Prints the filtered list and its length to stdout.
@@ -555,22 +499,23 @@ private:
 	{
 		Trace.formatln("printFiltered(): {} elements in filteredList.",
 		                filteredList.length);
-		foreach (i, listIndex; filteredList) {
-			ServerData sd = master_.getServerData(list[listIndex]);
+		foreach (i, sh; filteredList) {
+			ServerData sd = master_.getServerData(sh);
 			Trace.formatln(/*i, ": ",*/ sd.server[ServerColumn.NAME]);
 		}
 		Trace.formatln("");
 	}
+}
 
-	/// Prints the full list and its length to stdout.
-	debug void printList()
-	{
-		Trace.formatln("printList(): {} elements in full list.", list.length);
-		int i = 0;
-		foreach (sh; list) {
-			ServerData sd = master_.getServerData(sh);
-			Trace.formatln(/*i++, ": ",*/ sd.server[ServerColumn.NAME]);
-		}
-		Trace.formatln("");
+
+/// Returns the total number of humans players in the filtered list of servers.
+int countHumanPlayers(in ServerList serverList)
+{
+	int players = 0;
+	synchronized (serverList) {
+		int max = serverList.filteredLength;
+		for (int i=0; i < max; i++)
+			players += serverList.getFiltered(i).humanCount;
 	}
+	return players;
 }

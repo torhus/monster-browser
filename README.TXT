@@ -38,6 +38,8 @@ Credits
 -------
 Monster Browser uses:
 
+GeoLite Country from maxmind.com.
+
 Function Free Icon set by Function Design & Development Studio
 http://www.wefunction.com
 

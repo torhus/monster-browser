@@ -1,10 +1,11 @@
 module common;
 
+import tango.core.Array;
+import tango.core.Thread;
 import tango.core.Version;
 import tango.io.device.File;
 import Path = tango.io.Path;
 import tango.stdc.ctype : isdigit;
-import tango.stdc.stdlib : qsort;
 import tango.stdc.string;
 import tango.stdc.time;
 import tango.text.Ascii;
@@ -142,6 +143,10 @@ void log(char[] s)
 void logx(char[] file, int line, Exception e)
 {
 	log(file, line, e.classinfo.name ~ ": " ~ e.toString());
+	log(Format("{} threads, currently in '{}'.", Thread.getAll().length,
+	                                                   Thread.getThis().name));
+
+	// output stack trace
 	e.writeOut((char[] s) { logString(s); });
 
 	version(redirect) {}
@@ -244,9 +249,8 @@ bool isValidIpAddress(in char[] address)
 int findString(char[][] array, char[] str)
 {
 	foreach (int i, char[] s; array) {
-		if (toLower(str.dup) == toLower(s.dup)) {
+		if (icompare(str, s) == 0)
 			return i;
-		}
 	}
 	return -1;
 }
@@ -259,9 +263,8 @@ int findString(char[][] array, char[] str)
 int findString(char[][][] array, char[] str, int column)
 {
 	foreach (int i, char[][] s; array) {
-		if (toLower(str.dup) == toLower(s[column].dup)) {
+		if (icompare(str, s[column]) == 0)
 			return i;
-		}
 	}
 	return -1;
 }
@@ -271,78 +274,27 @@ int findString(char[][][] array, char[] str, int column)
  * Sort a 2-dimensional string array.  Not a stable sort.
  *
  * Params:
- *     sortColumn = Column to sort on (the second dimension of arr).
+ *     column     = Column to sort on (the second dimension of arr).
  *     reverse    = Reversed order.
- *     numeric    = Set to true to get a numerical sort instead of an
- *                  alphabetical one.  The string in the column given by
- *                  sortColumn will be converted to an integer before
- *                  comparing.
- *
- * Throws: IllegalArgumentException if numeric is true, and the strings in
- *         sortColumn contains anything that doesn't parse as integers.
+ *     numerical  = Set to true to get a numerical sort instead of an
+ *                  alphabetical one.
  */
-void sortStringArray(char[][][] arr, int sortColumn=0, bool reverse=false,
-                     bool numeric=false)
+void sortStringArray(char[][][] arr, int column=0, bool reverse=false,
+                                                          bool numerical=false)
 {
-	static int _sortColumn;
-	static bool _reverse, _numeric;
-
-	static extern(C) int cmp(void* a, void* b)
-	{
-		char[] first = (*(cast(char[][]*) a))[_sortColumn];
-		char[] second = (*(cast(char[][]*) b))[_sortColumn];
-		int result;
-
-		if (_numeric) {
-			result = Integer.toInt(first) - Integer.toInt(second);
-		}
-		else {
-			result = icompare(first, second);
-		}
-		return (_reverse ? -result : result);
-	}
-
-	_sortColumn = sortColumn;
-	_reverse = reverse;
-	_numeric = numeric;
-
-	qsort(arr.ptr, arr.length, arr[0].sizeof, &cmp);
-}
-
-
-/**
- * Sort a 2-dimensional string array.  This is a stable sort.
- *
- * Params:
- *     sortColumn = Column to sort on (the second dimension of arr).
- *     reverse    = Reversed order.
- *     numeric    = Set to true to get a numerical sort instead of an
- *                  alphabetical one.  The string in the column given by
- *                  sortColumn will be converted to an integer before
- *                  comparing.
- *
- * Throws: IllegalArgumentException if numeric is true, and the strings in
- *         sortColumn contains anything that doesn't parse as integers.
- */
-void sortStringArrayStable(char[][][] arr, int sortColumn=0,
-                           bool reverse=false, bool numeric=false)
-{
-
-	bool lessOrEqual(char[][] a, char[][] b)
+	bool less(char[][] a, char[][] b)
 	{
 		int result;
 
-		if (numeric) {
-			result = Integer.toInt(a[sortColumn]) -
-			         Integer.toInt(b[sortColumn]);
-		}
-		else {
-			result = icompare(a[sortColumn], b[sortColumn]);
-		}
-		return (reverse ? -result <= 0 : result <= 0);
+		if (numerical)
+			result = Integer.parse(a[column]) - Integer.parse(b[column]);
+		else
+			result = icompare(a[column], b[column]);
+
+		return reverse ? result >= 0 : result < 0;
 	}
 
-	mergeSort(arr, &lessOrEqual);
+	sort(arr, &less);
 }
 
 
@@ -413,27 +365,27 @@ void mergeSort(T)(T[] a, bool delegate(T a, T b) lessOrEqual)
 
 
 /**
- * Parse a sequence of comma-separated integers, skipping all whitespace.
+ * Parse a sequence of integers, separated by any combination of commas,
+ * spaces, or tabs.
  *
- * Signs (+ or -) are not allowed.
+ * When an integer is not found, a zero is used instead.
  */
-int[] parseIntegerSequence(in char[] seq)
+int[] parseIntList(in char[] str, size_t forcedLength=0, int defaultVal=0)
 {
-	uint ate;
 	int[] r = null;
 
-	while (seq.length) {
-		seq = triml(seq);
-		int val = Integer.convert(seq, 10, &ate);
-		if (ate)
+	foreach (s; delimiters(str, ", \t")) {
+		if (s.length > 0) {
+			int val = Integer.parse(s);
 			r ~= val;
-		else
-			break;
+		}
+	}
 
-		seq = seq[ate..$];
-		seq = triml(seq);
-		if (seq.length && seq[0] == ',')
-			seq = seq[1..$];
+	if (forcedLength != 0 && r.length != forcedLength) {
+		size_t oldLen = r.length;
+		r.length = forcedLength;
+		if (forcedLength > oldLen)
+			r[oldLen .. $] = defaultVal;
 	}
 
 	return r;

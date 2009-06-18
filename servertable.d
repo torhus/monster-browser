@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
@@ -34,6 +35,7 @@ import cvartable;
 import geoip;
 import launch;
 import mainwindow;
+import masterlist;
 import playertable;
 import serveractions;
 import serverdata;
@@ -63,10 +65,8 @@ class ServerTable
 		table_.setHeaderVisible(true);
 		table_.setLinesVisible(true);
 
-		int[] widths = parseIntegerSequence(
-		                                getSessionState("serverColumnWidths"));
-		// FIXME use defaults if wrong length?
-		widths.length = serverHeaders.length;
+		int[] widths = parseIntList(getSessionState("serverColumnWidths"),
+		                                             serverHeaders.length, 50);
 
 		// add columns
 		foreach (int i, header; serverHeaders) {
@@ -121,7 +121,7 @@ class ServerTable
 
 		// padlock image for passworded servers
 		auto stream  = new ByteArrayInputStream(
-		                                    cast(byte[])import("padlock.png"));
+		                              cast(byte[])import("icons/padlock.png"));
 		auto data = new ImageData(stream);
 		padlockImage_ = new Image(Display.getDefault, data.scaledTo(12, 12));
 
@@ -174,9 +174,9 @@ class ServerTable
 		serverList_ = newList;
 
 		synchronized (serverList_) {
-			serverList_.setFilters(filterBar.filterState, false);
-			serverList_.sort(sortCol,
-			                 (table_.getSortDirection() == SWT.DOWN), false);
+			bool reversed = table_.getSortDirection() == SWT.DOWN;
+			serverList_.sort(sortCol, reversed, false);
+			serverList_.setFilters(filterBar.filterState);
 		}
 	}
 
@@ -227,13 +227,6 @@ class ServerTable
 	///
 	bool refreshInProgress() { return refreshInProgress_ ; }
 
-	/*void update(Object dummy = null)
-	{
-		if (!table_.isDisposed)
-			table_.setItemCount(serverList_.filteredLength);
-	}*/
-
-
 	/**
 	 * If necessary clears the table and refills it with updated data.
 	 *
@@ -257,12 +250,12 @@ class ServerTable
 				needRefresh = true;
 		}
 
+		table_.setItemCount(serverList_.filteredLength);
+
 		// Only refill the Table if visible items, or items further up have
-		// moved.  Refilling every time is very, very slow.
-		if (needRefresh || itemCount <= bottom) {
-			table_.setItemCount(serverList_.filteredLength);
+		// moved.  Refilling every time is very slow.
+		if (needRefresh || itemCount <= bottom)
 			table_.clearAll();
-		}
 
 		// Keep the same servers selected.
 		table_.deselectAll();
@@ -276,17 +269,11 @@ class ServerTable
 	/**
 	 * In addition to clearing the table and refilling it with updated data
 	 * without losing the selection (like quickRefresh(), only
-	 * unconditionally), it also:
-	 *
-	 * 1. Updates the cvar and player tables to show information for the
-	 *    selected server, or clears them if there is no server selected.
-	 * 2. Optionally sets the selection to the server specified by index.
-	 *
-	 * Params:
-	 *     index = If not equal to -1, the server with the given index is
-	 *             selected.
+	 * unconditionally), it also updates the cvar and player tables to show
+	 * information for the selected servers, or clears them if there are no
+	 * servers selected.
 	 */
-	void fullRefresh(int index=-1)
+	void fullRefresh()
 	{
 		if(table_.isDisposed())
 			return;
@@ -295,35 +282,44 @@ class ServerTable
 		table_.setItemCount(serverList_.filteredLength);
 
 		int[] indices;
-		if (index != -1) {
-			indices ~= index;
-		}
-		else {
-			foreach (ip, v; selectedIps_)
-				selectedIps_[ip] = serverList_.getFilteredIndex(ip);
-			indices = selectedIps_.toArray();
+		foreach (ip, v; selectedIps_) {
+			auto i = serverList_.getFilteredIndex(ip);
+			selectedIps_[ip] = i;
+			if (i != -1)
+				indices ~= i;
 		}
 
 		if (indices.length) {
 			table_.setSelection(indices);
-
-			char[][][] allPlayers;
-			foreach (i; indices) {
-				if (i < serverList_.filteredLength)
-					allPlayers ~= serverList_.getFiltered(i).players;
-			}
-			playerTable.setItems(allPlayers);
-
-			cvarTable.clear();
-			int i = table_.getSelectionIndex();
-			if (i >= 0 && i < serverList_.filteredLength)
-				cvarTable.setItems(serverList_.getFiltered(i).cvars);
+			playerTable.setItems(indices, serverList_);
+			int cvarIndex = table_.getSelectionIndex();
+			cvarTable.setItems(serverList_.getFiltered(cvarIndex).cvars);
 		}
 		else {
 			table_.deselectAll();
 			playerTable.clear();
 			cvarTable.clear();
 		}
+	}
+
+	/// Select one or more servers, replacing the current selection.
+	void setSelection(int[] indices, bool takeFocus=false)
+	{
+		assert(indices.length);
+
+		selectedIps_.clear();
+		foreach (ip, v; selectedIps_) {
+			int i = serverList_.getFilteredIndex(ip);
+			selectedIps_[ip] = i;
+			if (i != -1)
+				indices ~= i;
+		}
+		table_.setSelection(indices);
+		playerTable.setItems(indices, serverList_);
+		int cvarIndex = table_.getSelectionIndex();
+		cvarTable.setItems(serverList_.getFiltered(cvarIndex).cvars);
+		if (takeFocus)
+			table_.setFocus();
 	}
 
 	/// Empty the server, player, and cvar tables.
@@ -384,18 +380,16 @@ private:
 
 			synchronized (serverList_) {
 				int[] indices = table_.getSelectionIndices;
-				char[][][] allPlayers;
 				if (indices.length) {
 					foreach (i; indices) {
 						auto sd = serverList_.getFiltered(i);
 						selectedIps_[sd.server[ServerColumn.ADDRESS]] = i;
-						allPlayers ~= sd.players;
 					}
 
 					auto sd =
 					         serverList_.getFiltered(table_.getSelectionIndex);
 					cvarTable.setItems(sd.cvars);
-					playerTable.setItems(allPlayers);
+					playerTable.setItems(indices, serverList_);
 				}
 				else {
 					cvarTable.clear;
@@ -533,6 +527,10 @@ private:
 		public void keyPressed (KeyEvent e)
 		{
 			switch (e.keyCode) {
+				case SWT.DEL:
+					if ((e.stateMask & SWT.MODIFIER_MASK) == 0)
+						onRemoveSelected();
+					break;
 				case 'a':
 					if (e.stateMask == SWT.MOD1) {
 						// SWT bug? CTRL+A works by default in SWT.
@@ -590,6 +588,14 @@ private:
 			void widgetSelected(SelectionEvent e) { onCopyAddresses(); }
 		});
 
+		item = new MenuItem(menu, SWT.SEPARATOR);
+
+		item = new MenuItem(menu, SWT.PUSH);
+		item.setText("Remove selected\tDel");
+		item.addSelectionListener(new class SelectionAdapter {
+			void widgetSelected(SelectionEvent e) { onRemoveSelected(); }
+		});
+
 		return menu;
 	}
 
@@ -617,35 +623,77 @@ private:
 		queryServers(addresses, true);
 	}
 
+	void onRemoveSelected()
+	{
+		MasterList master = serverList_.master;
+		char[][] toRemove;
+
+		// find all servers that are both selected and not filtered out
+		foreach (ip, index; selectedIps_) {
+			if (index != -1)
+				toRemove ~= ip;
+		}
+
+		if (toRemove.length == 0)
+			return;
+
+
+		synchronized (serverList_) synchronized (master) {
+			// ask user for confirmation
+			int style = SWT.ICON_QUESTION | SWT.YES | SWT.NO;
+			MessageBox mb = new MessageBox(mainWindow.handle, style);
+			if (toRemove.length == 1) {
+				mb.setText("Remove server");
+				int index = selectedIps_[toRemove[0]];
+				ServerData sd = serverList_.getFiltered(index);
+				char[] name = sd.server[ServerColumn.NAME];
+				mb.setMessage("Are you sure you want to remove \"" ~ name ~
+				                                                        "\"?");
+			}
+			else {
+				mb.setText("Remove servers");
+				char[] count = Integer.toString(toRemove.length);
+				mb.setMessage("Are you sure you want to remove these " ~
+				                                          count ~ " servers?");
+			}
+
+			if (mb.open() == SWT.YES) {
+				// do the actual removal
+				foreach (char[] ip; toRemove) {
+					int index = selectedIps_[ip];
+					ServerHandle sh = serverList_.getServerHandle(index);
+					ServerData sd = master.getServerData(sh);
+					setEmpty(&sd);
+					master.setServerData(sh, sd);
+					selectedIps_.removeKey(ip);
+				}
+
+				// refresh filtered list and update GUI
+				serverList_.refillFromMaster();
+				fullRefresh();
+				statusBar.setDefaultStatus(0, serverList_.filteredLength, 0,
+				                               countHumanPlayers(serverList_));
+			}
+		}
+	}
+
 	void onSelectAll()
 	{
 		selectedIps_.clear();
 
 		synchronized (serverList_) {
-			char[][][] allPlayers;
+			int[] indices;
 
 			for (size_t i=0; i < serverList_.filteredLength; i++) {
 				auto sd = serverList_.getFiltered(i);
 				selectedIps_[sd.server[ServerColumn.ADDRESS]] = i;
-				allPlayers ~= sd.players;
+				indices ~= i;
 			}
 
 			auto sd = serverList_.getFiltered(table_.getSelectionIndex);
 			cvarTable.setItems(sd.cvars);
-			playerTable.setItems(allPlayers);
+			playerTable.setItems(indices, serverList_);
 		}
-	}
-
-	int[] getIndicesFromAddresses(char[][] addresses)
-	{
-		int[] indices;
-
-		foreach (char[] a; addresses) {
-			int i = serverList_.getFilteredIndex(a);
-			if (i != -1)
-				indices ~= i;
-		}
-		return indices;
 	}
 
 	int getBottomIndex()

@@ -69,21 +69,18 @@ class MainWindow
 
 		// restore window size and state
 		char[] size = getSetting("windowSize");
-		int x = locate(size, 'x');
-		// FIXME: handle the case of 'x' not being found
-		shell_.setSize(Integer.convert(size[0..x]),
-		        Integer.convert(size[x+1..length]));
+		uint x = locate(size, 'x');
+		if (x < size.length)
+			shell_.setSize(Integer.convert(size[0..x]),
+			               Integer.convert(size[x+1..length]));
 		if (getSetting("windowMaximized") == "true")
 			shell_.setMaximized(true);
 
 		// restore window position
-		int[] oldres = parseIntegerSequence(getSessionState("resolution"));
-		oldres.length = 2;
+		int[] oldres = parseIntList(getSessionState("resolution"), 2);
 		Rectangle res = Display.getDefault().getBounds();
 		if (oldres[0] == res.width && oldres[1] == res.height) {
-			int[] pos =
-			           parseIntegerSequence(getSessionState("windowPosition"));
-			pos.length = 2;
+			int[] pos = parseIntList(getSessionState("windowPosition"), 2);
 			shell_.setLocation(pos[0], pos[1]);
 		}
 
@@ -127,9 +124,8 @@ class MainWindow
 
 		rightForm_.setLayout(new FillLayout(SWT.VERTICAL));
 
-		int[] weights = parseIntegerSequence(getSessionState("middleWeights"));
-		weights.length = 2;  // FIXME: use defaults instead?
-		middleForm_.setWeights(weights);;
+		int[] weights = parseIntList(getSessionState("middleWeights"), 2);
+		middleForm_.setWeights(weights);
 
 		// player list
 		playerTable = new PlayerTable(rightForm_);
@@ -137,8 +133,7 @@ class MainWindow
 		// Server info, cvars, etc
 		cvarTable = new CvarTable(rightForm_);
 
-		weights = parseIntegerSequence(getSessionState("rightWeights"));
-		weights.length = 2;  // FIXME: use defaults instead?
+		weights = parseIntList(getSessionState("rightWeights"), 2);
 		rightForm_.setWeights(weights);
 
 
@@ -233,22 +228,17 @@ class StatusBar
 	}
 
 	void setDefaultStatus(uint totalServers, uint shownServers,
-	                      uint noReply=0)  ///
+	                                            uint noReply, uint humans)  ///
 	{
-		char[] msg;
-		char[] total = Integer.toString(totalServers);
+		char[] msg = Integer.toString(shownServers) ~ " servers";
 
-		if (shownServers != totalServers) {
-			msg = "Showing " ~ Integer.toString(shownServers) ~ " of " ~
-			                                                total ~ " servers";
-		}
-		else {
-			msg = "Showing " ~ total ~ " servers";
-		}
-		if (noReply > 0) {
-			char[] n = Integer.toString(noReply);
-			msg ~= " (" ~ n ~ " did not reply)";
-		}
+		if (noReply > 0)
+			msg ~= " (" ~ Integer.toString(noReply) ~ " did not reply)";
+
+		if (humans > 0)
+			msg ~= ", "  ~ Integer.toString(humans) ~ " people are playing";
+		else if (humans == 0)
+			msg ~= ", no human players";
 
 		setLeft(msg);
 	}
@@ -328,11 +318,6 @@ class FilterBar : FilterSuper
 		if (state & Filter.HAS_HUMANS)
 			hasHumansButton_.setSelection(true);
 
-		// game type selection
-		/*Combo combo = new Combo(filterComposite_, SWT.READ_ONLY);
-		combo.setItems(gametypes);
-		combo.select(0);*/
-
 		// game selection
 		gamesCombo_ = new Combo(this, SWT.DROP_DOWN);
 		setGames(settings.gameNames);
@@ -363,12 +348,11 @@ class FilterBar : FilterSuper
 			public void widgetDefaultSelected(SelectionEvent e)
 			{
 				char[] s = trim((cast(Combo)e.widget).getText());
-				if (s.length == 0) {
+				if (s.length == 0)
 					return;
-				}
 
-				int i = findString(gameNames, s);
-				Combo combo = (cast(Combo) e.widget);
+				Combo combo = cast(Combo)e.widget;
+				int i = findString(combo.getItems(), s);
 				if (i == -1) {
 					combo.add(s);
 					combo.select(combo.getItemCount() - 1);
@@ -473,8 +457,8 @@ class FilterBar : FilterSuper
 				auto list = serverTable.serverList;
 				synchronized (list)
 				if (!serverTable.refreshInProgress) {
-					statusBar.setDefaultStatus(list.length,
-			                                   list.filteredLength);
+					statusBar.setDefaultStatus(0, list.filteredLength, 0,
+					                                  countHumanPlayers(list));
 				}
 			}
 		});
@@ -525,9 +509,7 @@ ToolBar createToolbar(Composite parent) ///
 		public void widgetSelected(SelectionEvent e)
 		{
 			auto dialog = new SpecifyServerDialog(mainWindow.handle);
-			if (dialog.open() == SWT.OK) {
-				//saveSettings();
-			}
+			dialog.open();
 		}
 	});
 /+
@@ -540,9 +522,6 @@ ToolBar createToolbar(Composite parent) ///
 		public void widgetSelected(SelectionEvent e)
 		{
 			startMonitor(mainWindow.handle);
-			//SettingsDialog dialog = new SettingsDialog(mainWindow.handle);
-			/*if (dialog.open() == SWT.OK)
-				saveSettings();*/
 		}
 	});
 +/
@@ -556,7 +535,7 @@ ToolBar createToolbar(Composite parent) ///
 		public void widgetSelected(SelectionEvent e)
 		{
 			SettingsDialog dialog = new SettingsDialog(mainWindow.handle);
-			if (dialog.open() == SWT.OK)
+			if (dialog.open())
 				saveSettings();
 		}
 	});

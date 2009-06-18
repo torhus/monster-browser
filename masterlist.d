@@ -17,7 +17,7 @@ import serverdata;
 
 
 ///
-alias size_t ServerHandle;
+typedef size_t ServerHandle;
 
 ///
 const ServerHandle InvalidServerHandle = ServerHandle.max;
@@ -50,11 +50,11 @@ final class MasterList
 	ServerHandle addServer(ServerData sd)
 	{
 		synchronized (this) {
-			assert(isValid(&sd));
+			debug isValid(&sd);
 			if (timedOut(&sd))
 				sd.failCount = 1;
 			servers_ ~= sd;
-			return servers_.length - 1;
+			return cast(ServerHandle)(servers_.length - 1);
 		}
 	}
 
@@ -72,7 +72,7 @@ final class MasterList
 	{
 		synchronized (this) {
 			char[] address = sd.server[ServerColumn.ADDRESS];
-			assert(isValid(&sd));
+			debug isValid(&sd);
 			ServerHandle sh = findServer(address);
 
 			if (sh != InvalidServerHandle) {
@@ -83,6 +83,10 @@ final class MasterList
 				if (timedOut(&sd)) {
 					old.server[ServerColumn.PING] =
 					                              sd.server[ServerColumn.PING];
+					// clear player count
+					old.setPlayersColumn(0, 0, old.maxClients);
+					old.players = null;
+
 					old.failCount++;
 				}
 				else {
@@ -100,14 +104,16 @@ final class MasterList
 	 *
 	 * Returns InvalidServerHandle in case a server with the given address was
 	 * not found.
+	 *
+	 * Complexity is O(n).
 	 */
-	private ServerHandle findServer(in char[] address)
+	ServerHandle findServer(in char[] address)
 	{
 		synchronized (this) {
 			foreach (sh, sd; servers_) {
 				if (sd.server.length > 0 &&
 				                    sd.server[ServerColumn.ADDRESS] == address)
-					return sh;
+					return cast(ServerHandle)sh;
 			}
 			return InvalidServerHandle;
 		}
@@ -121,7 +127,7 @@ final class MasterList
 			assert(sh < servers_.length);
 			ServerData* sd = &servers_[sh];
 			assert(!isEmpty(sd));
-			assert(isValid(sd));
+			debug isValid(sd);
 			return *sd;
 		}
 	}
@@ -134,7 +140,7 @@ final class MasterList
 			assert(sh < servers_.length);
 			ServerData* old = &servers_[sh];
 			assert(!isEmpty(old));
-			assert(isValid(old));
+			debug isValid(old);
 			*old = sd;
 		}
 	}
@@ -162,7 +168,7 @@ final class MasterList
 		foreach (sh, sd; servers_) {
 			if (isEmpty(&sd))
 				continue;
-			result = dg(sh);
+			result = dg(cast(ServerHandle)sh);
 			if (result)
 				break;
 		}
@@ -237,7 +243,11 @@ final class MasterList
 	///
 	private bool isValid(in ServerData* sd)
 	{
-		return isValidIpAddress(sd.server[ServerColumn.ADDRESS]);
+		if (!isValidIpAddress(sd.server[ServerColumn.ADDRESS])) {
+			debug print("MasterList.isValid()" , *sd);
+			return false;
+		}
+		return true;
 	}
 
 
@@ -294,8 +304,9 @@ private final class XmlDumper
 		       .format(` ping="{}"`,          sd.server[ServerColumn.PING])
 		       .format(` player_count="{}"`,  sd.server[ServerColumn.PLAYERS])
 		       .format(` map="{}"`,           sd.server[ServerColumn.MAP])
+		       .format(` persistent="{}"`,    sd.persistent ? "true" : "false")
 		       .format(` fail_count="{}"`,    sd.failCount)
-			   .formatln(">");
+		       .formatln(">");
 
 		if (sd.cvars.length) {
 			output_.formatln("    <cvars>");
@@ -384,6 +395,8 @@ private final class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 				sd.server[ServerColumn.PLAYERS] = attr.value.dup;
 			else if (attr.localName == "map")
 				sd.server[ServerColumn.MAP] = attr.value.dup;
+			else if (attr.localName == "persistent")
+				sd.persistent = attr.value == "true";
 			else if (attr.localName == "fail_count")
 				sd.failCount = Integer.convert(attr.value);
 		}

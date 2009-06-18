@@ -24,12 +24,15 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 
 import common;
 import mainwindow;
+import masterlist;
 import messageboxes;
 import serveractions;
+import serverdata;
 import serverlist;
 import servertable;
 import settings;
@@ -44,7 +47,7 @@ alias Tuple!(75, 23) BUTTON_SIZE;
 const BUTTON_SPACING = 6;
 
 
-class MonitorNotify
+/+class MonitorNotify
 {
 	char[] password; ///
 
@@ -65,72 +68,10 @@ class MonitorNotify
 			}
 		}
 
-		/*// command line
-		Label labelA = new Label(shell_, SWT.NONE);
-		labelA.setText("Join \"" ~ serverName ~ "\"\n\n" ~ message ~ "\n");
-
-		// password input
-		Composite pwdComposite = new Composite(shell_, SWT.NONE);
-		GridData pwdData = new GridData();
-		pwdData.horizontalAlignment = SWT.CENTER;
-		pwdComposite.setLayoutData(pwdData);
-
-		RowLayout pwdLayout = new RowLayout();
-		pwdComposite.setLayout(pwdLayout);
-		Label labelB = new Label(pwdComposite, SWT.NONE);
-		labelB.setText("Password:");
-		pwdText_ = new Text(pwdComposite, SWT.SINGLE | SWT.BORDER);
-
-		// main buttons
-		Composite buttonComposite = new Composite(shell_, SWT.NONE);
-		GridData buttonData = new GridData();
-		buttonData.horizontalAlignment = SWT.CENTER;
-		buttonComposite.setLayoutData(buttonData);
-
-		RowLayout buttonLayout = new RowLayout();
-		buttonComposite.setLayout(buttonLayout);
-
-		okButton_ = new Button (buttonComposite, SWT.PUSH);
-		okButton_.setText ("OK");
-		cancelButton_ = new Button (buttonComposite, SWT.PUSH);
-		cancelButton_.setText ("Cancel");
-
-		Listener listener = new class Listener {
-			public void handleEvent (Event event)
-			{
-				if (event.widget == okButton_) {
-					result_ = SWT.OK;
-					password = pwdText_.getText;
-				}
-				shell_.close();
-			}
-		};
-
-		okButton_.addListener(SWT.Selection, listener);
-		cancelButton_.addListener(SWT.Selection, listener);
-		shell_.setDefaultButton(okButton_);
-		shell_.pack();
-		shell_.setLocation(center(parent_, shell_));
-		*/
-	}
-
-	/*int open()
-	{
-		pwdText_.setText(password);
-		pwdText_.selectAll();
-		shell_.open();
-		while (!shell_.isDisposed()) {
-			if (!display.readAndDispatch()) {
-				display.sleep ();
-			}
-		}
-		return result_;
-	}*/
-
 private:
 	Shell parent_, shell_;
 
-}
+}+/
 
 
 ///
@@ -139,7 +80,7 @@ class JoinDialog
 	char[] password = ""; ///
 
 	///
-	this(Shell parent, char[] serverName, char[] message)
+	this(Shell parent, char[] serverName, char[] message, bool pwdMandatory)
 	{
 		parent_ = parent;
 		shell_ = new Shell(parent_, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
@@ -178,25 +119,19 @@ class JoinDialog
 		cancelButton_.setText ("Cancel");
 		cancelButton_.setLayoutData(new RowData(BUTTON_SIZE));
 
-		Listener listener = new class Listener {
-			public void handleEvent (Event event)
-			{
-				if (event.widget == okButton_) {
-					result_ = SWT.OK;
-					password = pwdText_.getText;
-				}
-				shell_.close();
-			}
-		};
+		Listener listener = new MyListener;
 
 		okButton_.addListener(SWT.Selection, listener);
 		cancelButton_.addListener(SWT.Selection, listener);
+		if (pwdMandatory)
+			pwdText_.addListener(SWT.Modify, listener);
+
 		shell_.setDefaultButton(okButton_);
 		shell_.pack();
 		shell_.setLocation(center(parent_, shell_));
 	}
 
-	int open() ///
+	bool open() ///
 	{
 		pwdText_.setText(password);
 		pwdText_.selectAll();
@@ -207,7 +142,7 @@ class JoinDialog
 				display.sleep ();
 			}
 		}
-		return result_;
+		return result_ == SWT.OK;
 	}
 
 private:
@@ -215,6 +150,27 @@ private:
 	Button okButton_, cancelButton_;
 	Text pwdText_;
 	int result_ = SWT.CANCEL;
+
+	class MyListener : Listener {
+		void handleEvent (Event event)
+		{
+			switch (event.type) {
+				case SWT.Selection:
+					if (event.widget == okButton_) {
+						result_ = SWT.OK;
+						password = pwdText_.getText;
+					}
+					shell_.close();
+					break;
+				case SWT.Modify:
+					if (pwdText_.getText().length > 0)
+						okButton_.setEnabled(true);
+					else
+						okButton_.setEnabled(false);
+					break;
+			}
+		}
+	};
 }
 
 
@@ -227,7 +183,7 @@ class SpecifyServerDialog
 		parent_ = parent;
 		shell_ = new Shell(parent_, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
 		shell_.setLayout(new GridLayout);
-		shell_.setText("Specify Server");
+		shell_.setText("Add Server");
 
 		// address input
 		Composite addressComposite = new Composite(shell_, SWT.NONE);
@@ -245,8 +201,8 @@ class SpecifyServerDialog
 		addressText_.setLayoutData(addressTextData);
 
 		saveButton_ = new Button (shell_, SWT.CHECK);
-		char[] file = getGameConfig(filterBar.selectedGame).extraServersFile;
-		saveButton_.setText("Save server on file ('" ~ file ~ "')");
+		saveButton_.setText("Never remove this server automatically");
+		saveButton_.setSelection(true);
 		auto saveButtonData = new GridData;
 		saveButtonData.horizontalAlignment = SWT.CENTER;
 		saveButton_.setLayoutData(saveButtonData);
@@ -268,59 +224,21 @@ class SpecifyServerDialog
 		cancelButton_.setText ("Cancel");
 		cancelButton_.setLayoutData(new RowData(BUTTON_SIZE));
 
-		Listener listener = new class Listener {
-			public void handleEvent (Event event)
+		okButton_.addListener(SWT.Selection, new OkButtonListener);
+		cancelButton_.addListener(SWT.Selection, new class Listener {
+			void handleEvent(Event event)
 			{
-				bool closeDialog = true;
-
-				if (event.widget == okButton_) {
-					result_ = SWT.OK;
-					address = trim(addressText_.getText);
-
-					if (!isValidIpAddress(address)) {
-						error("Invalid address");
-						addressText_.setFocus();
-						addressText_.selectAll();
-						closeDialog = false;
-					}
-					else {
-						auto serverList = serverTable.serverList;
-						if (serverList.getIndex(address) == -1) {
-							if (saveButton_.getSelection()) {
-								if (!(address in serverList.extraServers)) {
-									GameConfig game =
-									        getGameConfig(serverList.gameName);
-									char[] file = game.extraServersFile;
-									// FIXME: error check here (FileException)
-									File.append(file, address ~ newline);
-								}
-							}
-							serverList.addExtraServer(address);
-							queryServers([address], false, true);
-						}
-						else {
-							info("That server is already on the list.  If you can't see it, "
-							        "try turning off the filters.");
-							int i = serverList.getFilteredIndex(address);
-							if (i != -1)
-								serverTable.fullRefresh(i);
-						}
-					}
-				}
-
-				if (closeDialog)
-					shell_.close();
+				shell_.close();
 			}
-		};
-
-		okButton_.addListener(SWT.Selection, listener);
-		cancelButton_.addListener(SWT.Selection, listener);
+		});
 		shell_.setDefaultButton(okButton_);
+
 		shell_.pack();
 		shell_.setLocation(center(parent_, shell_));
 	}
 
-	int open()
+
+	bool open()
 	{
 		addressText_.setText(address);
 		addressText_.selectAll();
@@ -331,15 +249,64 @@ class SpecifyServerDialog
 				display.sleep ();
 			}
 		}
-		return result_;
+		return result_ == SWT.OK;
 	}
 
-private:
-	Shell parent_, shell_;
-	Button okButton_, cancelButton_, saveButton_;
-	char[] address = "";
-	Text addressText_;
-	int result_ = SWT.CANCEL;
+	private class OkButtonListener : Listener {
+		void handleEvent (Event event)
+		{
+			result_ = SWT.OK;
+			address = trim(addressText_.getText);
+
+			if (!isValidIpAddress(address)) {
+				error("Invalid address");
+				addressText_.setFocus();
+				addressText_.selectAll();
+			}
+			else {
+				ServerList serverList = serverTable.serverList;
+				MasterList master = serverList.master;
+				ServerHandle sh = master.findServer(address);
+
+				if (sh == InvalidServerHandle) {
+					ServerData sd;
+
+					sd.server.length = ServerColumn.max + 1;
+					sd.server[ServerColumn.ADDRESS] = address;
+					sd.persistent = saveButton_.getSelection();
+					master.addServer(sd);
+
+					queryServers([address], false, true);
+				}
+				else {
+					ServerData sd = master.getServerData(sh);
+					GameConfig game = getGameConfig(serverList.gameName);
+
+					if (matchMod(&sd, game.mod)) {
+						info("That server is already on the list.  If you "
+						         "can't see it, try turning off the filters.");
+						int i = serverList.getFilteredIndex(address);
+						if (i != -1)
+							serverTable.setSelection([i], true);
+					}
+					else {
+						info("That server is already known, but belongs to a "
+						                             "different game or mod.");
+					}
+				}
+				shell_.close();
+			}
+		}
+	}
+
+
+	private {
+		Shell parent_, shell_;
+		Button okButton_, cancelButton_, saveButton_;
+		char[] address = "";
+		Text addressText_;
+		int result_ = SWT.CANCEL;
+	}
 }
 
 
@@ -382,6 +349,19 @@ class SettingsDialog
 			startupLastButton_.setSelection(true);
 		else
 			startupDefaultButton_.setSelection(true);
+
+		// simultaneousQueries
+		auto sqComposite = new Composite(mainComposite, SWT.NONE);
+		sqComposite.setLayout(new RowLayout);
+		Label sqLabel = new Label(sqComposite, SWT.WRAP);
+		sqLabel.setText("Number of servers to query\n"
+		                "simultaneously, default is 20:");
+		sqSpinner_ = new Spinner(sqComposite, SWT.BORDER);
+		sqSpinner_.setMinimum(1);
+		sqSpinner_.setMaximum(99);
+		uint ate;
+		int val = Integer.convert(getSetting("simultaneousQueries"), 10, &ate);
+		sqSpinner_.setSelection(ate > 0 ? val : 20);
 
 		// games button
 		Button gamesButton = new Button(mainComposite, SWT.PUSH);
@@ -438,7 +418,7 @@ class SettingsDialog
 		shell_.setLocation(center(parent_, shell_));
 	}
 
-	int open() ///
+	bool open() ///
 	{
 		shell_.open();
 		Display display = Display.getDefault;
@@ -447,7 +427,7 @@ class SettingsDialog
 				display.sleep();
 			}
 		}
-		return result_;
+		return result_ == SWT.OK;
 	}
 
 private:
@@ -456,6 +436,7 @@ private:
 	Button startupDefaultButton_, startupLastButton_;
 	Text pathText_;
 	int result_ = SWT.CANCEL;
+	Spinner sqSpinner_;
 }
 
 

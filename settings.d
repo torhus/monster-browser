@@ -219,7 +219,8 @@ GameConfig getGameConfig(in char[] name)
 GameConfig createGameConfig(in char[] name)
 {
 	if (gamesIni[name] !is null)
-		throw new Exception("createGameConfig: preexistant game name");
+		throw new Exception("createGameConfig: preexistant game  '" ~
+		                                                           name ~ "'");
 
 	IniSection section = gamesIni.addSection(name);
 

@@ -1,7 +1,11 @@
 module playertable;
 
+import tango.text.Ascii;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.TextLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -14,6 +18,8 @@ import org.eclipse.swt.widgets.TableItem;
 import colorednames;
 import common;
 import serverdata;
+import serverlist;
+import servertable;
 import settings;
 
 
@@ -35,10 +41,8 @@ class PlayerTable
 		table_.setHeaderVisible(true);
 		table_.setLinesVisible(true);
 
-		int[] widths = parseIntegerSequence(
-		                                getSessionState("playerColumnWidths"));
-		// FIXME use defaults if wrong length?
-		widths.length = playerHeaders.length;
+		int[] widths = parseIntList(getSessionState("playerColumnWidths"),
+		                                             playerHeaders.length, 50);
 
 		// add columns
 		foreach (int i, header; playerHeaders) {
@@ -51,8 +55,8 @@ class PlayerTable
 			public void handleEvent(Event e)
 			{
 				TableItem item = cast(TableItem) e.item;
-				auto player = players_[table_.indexOf(item)];
-				item.setText(player[0 .. table_.getColumnCount()]);
+				char[][] data = players_[table_.indexOf(item)].data;
+				item.setText(data[0 .. table_.getColumnCount()]);
 			}
 		});
 
@@ -70,11 +74,11 @@ class PlayerTable
 						return;
 
 					TableItem item = cast(TableItem) e.item;
-					auto player = players_[table_.indexOf(item)];
-					scope parsed = parseColors(player[PlayerColumn.RAWNAME]);
+					char[][] data = players_[table_.indexOf(item)].data;
+					scope parsed = parseColors(data[PlayerColumn.RAWNAME]);
 					scope tl = new TextLayout(Display.getDefault);
 
-					tl.setText(player[PlayerColumn.NAME]);
+					tl.setText(data[PlayerColumn.NAME]);
 					foreach (r; parsed.ranges)
 						tl.setStyle(r.style, r.start, r.end);
 
@@ -121,6 +125,17 @@ class PlayerTable
 			sortCol = 0;
 		table_.setSortColumn(table_.getColumn(sortCol));
 		table_.setSortDirection(reversed ? SWT.DOWN : SWT.UP);
+
+		table_.addListener(SWT.MouseMove, new MouseMoveListener);
+
+		table_.addSelectionListener(new class SelectionAdapter {
+			void widgetDefaultSelected(SelectionEvent e)
+			{
+				TableItem item = cast(TableItem)e.item;
+				int serverIndex = players_[table_.indexOf(item)].serverIndex;
+				serverTable.setSelection([serverIndex], true);
+			}
+		});
 	}
 
 	/// The index of the currently active sort column.
@@ -132,17 +147,29 @@ class PlayerTable
 	/// Returns the player list's Table widget object.
 	Table getTable() { return table_; };
 
-	/// Set the contents of this table.
-	void setItems(char[][][] players)
+	/**
+	 * Set the contents of this table.
+	 *
+	 * Params:
+	 *     serverIndices = Indices into the filtered list of servers.
+	 *     serverList    = The ServerList instances that the indices are for.
+	 */
+	void setItems(int[] serverIndices, ServerList serverList)
 	{
-		players_ = players;
-		addCleanPlayerNames();
-		reset();
-	}
+		assert(serverIndices.length > 0 && serverList !is null);
 
-	///
-	void reset()
-	{
+		moreThanOneServer_ = serverIndices.length > 1;
+
+		players_.length = 0;
+		foreach (serverIndex; serverIndices) {
+			auto sd = serverList.getFiltered(serverIndex);
+			foreach (player; sd.players)
+				players_ ~= Player(player, serverIndex);
+		}
+
+		serverList_ = serverList;
+		addCleanPlayerNames();
+
 		table_.clearAll();
 		sort();
 		table_.setItemCount(players_.length);
@@ -152,7 +179,7 @@ class PlayerTable
 	void clear()
 	{
 		table_.removeAll();
-		players_ = null;
+		players_.length = 0;
 	}
 
 	/************************************************
@@ -161,37 +188,71 @@ class PlayerTable
 private:
 	Table table_;
 	Composite parent_;
-	char[][][] players_;
+	ServerList serverList_;
+	Player[] players_;
+	bool moreThanOneServer_;
+
+
+	class MouseMoveListener : Listener {
+		void handleEvent(Event event) {
+			if (!moreThanOneServer_) {
+				table_.setToolTipText(null);
+				return;
+			}
+
+			char[] text = null;
+			scope point = new Point(event.x, event.y);
+			TableItem item = table_.getItem(point);
+
+			if (item && item.getBounds(PlayerColumn.NAME).contains(point)) {
+				int serverIndex = players_[table_.indexOf(item)].serverIndex;
+				ServerData sd = serverList_.getFiltered(serverIndex);
+				text = sd.server[ServerColumn.NAME];
+			}
+
+			if (table_.getToolTipText() != text)
+				table_.setToolTipText(text);
+		}
+	}
 
 	void sort()
 	{
 		int sortCol = table_.indexOf(table_.getSortColumn());
-		int dir = table_.getSortDirection();
+		bool isScore = sortCol == PlayerColumn.SCORE;
+		bool isPing = sortCol == PlayerColumn.PING;
+		bool numerical = isScore || isPing;
+		bool reverse = (table_.getSortDirection() == SWT.DOWN) ^ isScore;
 
-		switch (sortCol) {
-			case PlayerColumn.NAME:
-				sortStringArrayStable(players_, sortCol,
-		                              ((dir == SWT.UP) ? false : true));
-				break;
-			case PlayerColumn.SCORE:
-				sortStringArrayStable(players_, sortCol,
-		                          ((dir == SWT.DOWN) ? false : true), true);
-				break;
-			case PlayerColumn.PING:
-				sortStringArrayStable(players_, sortCol,
-		                          ((dir == SWT.UP) ? false : true), true);
-				break;
-			default:
-				assert(0);
+		bool lessOrEqual(Player a, Player b)
+		{
+			int result;
+
+			if (numerical) {
+				result = Integer.parse(a.data[sortCol]) -
+				         Integer.parse(b.data[sortCol]);
+			}
+			else {
+				result = icompare(a.data[sortCol], b.data[sortCol]);
+			}
+			return (reverse ? -result <= 0 : result <= 0);
 		}
+
+		mergeSort(players_, &lessOrEqual);
 	}
 
 
 	void addCleanPlayerNames()
 	{
 		foreach (p; players_)
-			if (p[PlayerColumn.NAME] is null)
-				p[PlayerColumn.NAME] = stripColorCodes(p[PlayerColumn.RAWNAME]);
+			if (p.data[PlayerColumn.NAME] is null)
+				p.data[PlayerColumn.NAME] =
+				                 stripColorCodes(p.data[PlayerColumn.RAWNAME]);
 	}
 
+}
+
+
+private struct Player {
+	char[][] data;    // Ordered according to the PlayerColumn enum.
+	int serverIndex;  // Index into the filtered list of servers.
 }

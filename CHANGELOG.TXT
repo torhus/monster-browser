@@ -1,3 +1,28 @@
+Latest changes
+--------------
+- New: When multiple servers are selected, you can place the mouse pointer over
+       a player name to get a tool tip showing the server name.  Double click a
+       player to select the server he's on.
+- New: Show the total number of human players for the current game.
+- New: Ability to remove servers from the list.
+- Change: Set player count to zero for servers that timed out, so they don't
+          show up when filters are enabled.
+- Change: Manually added servers are no longer saved to the *.extra files, only
+          to the master server files.  Servers found in the *.extra files are
+          still queried.
+- Fix: More responsive in some cases, due to switching to a customized qstat.
+       Also makes the status bar counter keep getting updated even when lots of
+       servers time out.
+- Fix: Servers that timed out were not displayed if their game and mod names
+       differed.
+- Fix: Would sometimes crash when switching to another game after changing
+       filters.
+- Fix: More robust against errors in settings.ini, in the XML files, and in
+       data received from servers.
+- Fix: Would crash if you typed a game name into the combo box that was the
+       last game selected before shutdown, but didn't exist in mods.ini.
+
+
 v0.5 - 2009-05-16
 -----------------
 The "Get new list" button was renamed to "Check for new".  It does no longer

@@ -74,7 +74,6 @@ bool parseOutput(in char[] modName, Lines!(char) iter,
 		gtypes = defaultGameTypes;
 	}
 
-each_server:
 	while (keepGoing) {
 		debug checkTime(timer2, "1");
 		char[] line = iter.next();
@@ -132,9 +131,8 @@ each_server:
 				if (bots < 0)
 					bots = 0;
 
-				sd.server[ServerColumn.PLAYERS] = toString(humans) ~
-				                               "+" ~ toString(bots) ~
-				                               "/" ~ fields[Field.MAX_PLAYERS];
+				sd.setPlayersColumn(humans, bots,
+				                           convert(fields[Field.MAX_PLAYERS]));
 
 				sd.server[ServerColumn.NAME] = stripColorCodes(sd.rawName);
 

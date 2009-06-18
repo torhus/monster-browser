@@ -131,8 +131,8 @@ void switchToGame(in char[] name)
 			serverTable.serverList.sort();
 			serverTable.forgetSelection();
 			serverTable.fullRefresh();
-			statusBar.setDefaultStatus(serverList.length,
-			                                        serverList.filteredLength);
+			statusBar.setDefaultStatus(0, serverList.filteredLength, 0,
+			                                    countHumanPlayers(serverList));
 		}
 
 		return null;
@@ -307,7 +307,7 @@ void delegate() getNewList()
 						addresses.remove(address);
 					}
 				}
-				else {
+				else if (!sd.persistent) {
 					setEmpty(&sd);
 					master.setServerData(sh, sd);
 					removed++;
@@ -520,7 +520,7 @@ class ServerRetrievalController
 			// display the server if we know it runs the right mod.
 			assert(!matched);  // assure we don't do this needlessly
 			ServerData sd = serverList_.master.getServerData(sh);
-			matched = matchMod(&sd, serverList_.gameName);
+			matched = matchMod(&sd, getGameConfig(serverList_.gameName).mod);
 		}
 
 		if (matched)
@@ -535,17 +535,21 @@ class ServerRetrievalController
 
 	private void done()
 	{
-		if (serverList_.length > 0) {
+		if (serverCount_ != timedOut_) {
 			int index = -1;
 			if (autoSelect.length) {
 				// FIXME: select them all, not just the first one
 				index = serverList_.getFilteredIndex(autoSelect[0]);
+				serverTable.setSelection([index], true);
 			}
 
-			serverTable.fullRefresh(index);
-			statusBar.setDefaultStatus(serverList_.length,
+			// FIXME: only doing this so that players will be shown
+			serverTable.fullRefresh();
+
+			statusBar.setDefaultStatus(0,
 			                           serverList_.filteredLength,
-			                           timedOut_);
+			                           timedOut_,
+			                           countHumanPlayers(serverList_));
 		}
 		else {
 			statusBar.setLeft(noReplyMessage);

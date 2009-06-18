@@ -26,9 +26,20 @@ struct ServerData {
 	/// list of cvars, with key and value for each
 	char[][][] cvars;
 
-	TextLayout customData = null;
+	TextLayout customData = null;  ///
 
-	int failCount = 0;
+	int failCount = 0;  ///
+
+	bool persistent;  ///
+
+
+	///
+	void setPlayersColumn(int humans, int bots, int maxClients)
+	{
+		server[ServerColumn.PLAYERS] = Integer.toString(humans) ~ "+" ~
+		                               Integer.toString(bots) ~ "/" ~
+		                               Integer.toString(maxClients);
+	}
 
 	/*
 	 * Extract some info about the server.

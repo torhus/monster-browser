@@ -6,6 +6,7 @@ static if (__VERSION__ < 1041) {
 	debug import tango.core.stacktrace.StackTrace;
 	debug version = bug2673;
 }
+import tango.core.Thread;
 debug import tango.core.stacktrace.TraceExceptions;
 import tango.io.Console;
 import tango.io.Path;
@@ -37,6 +38,8 @@ import threadmanager;
 
 void main(char[][] args) ///
 {
+	Thread.getThis().name = "main";
+
 	version (bug2673)
 		rt_setTraceHandler(&basicTracer);
 
@@ -77,6 +80,7 @@ private void _main(char[][] args)
 
 	loadSettings;
 
+	// FIXME: make function for this
 	// check for presence of Gslist
 	char[] gslistExe;
 	version (Windows) {
@@ -98,8 +102,8 @@ private void _main(char[][] args)
 
 	// Set the application's window icon.
 	ByteArrayInputStream streams[];
-	streams ~= new ByteArrayInputStream(cast(byte[])import("mb16.png"));
-	streams ~= new ByteArrayInputStream(cast(byte[])import("mb32.png"));
+	streams ~= new ByteArrayInputStream(cast(byte[])import("icons/mb16.png"));
+	streams ~= new ByteArrayInputStream(cast(byte[])import("icons/mb32.png"));
 
 	Image[] appIcons;
 	foreach (stream; streams)
