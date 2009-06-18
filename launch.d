@@ -37,6 +37,7 @@ void joinServer(in char[] gameName, ServerData sd)
 	FilePath path;
 	bool launch = true;
 	bool showDialog = false;
+	bool mandatoryPwd;
 	char[] msg;
 
 	if (!pathString) {
@@ -57,33 +58,40 @@ void joinServer(in char[] gameName, ServerData sd)
 	}
 	argv ~= " +connect " ~ sd.server[ServerColumn.ADDRESS];
 
-	if (sd.cvars[findString(sd.cvars, "g_needpass", 0)][1] == "1") {
+	int i = findString(sd.cvars, "g_needpass", 0);
+	if (i != -1 && sd.cvars[i][1] == "1") {
 		showDialog = true;
 		msg = "You need a password to join this server.";
+		mandatoryPwd = true;
 	}
-	else if (Integer.convert(
-	          sd.cvars[findString(sd.cvars, "sv_privateClients", 0)][1]) > 0) {
-		showDialog = true;
-		msg = "This server has got private slots, so type your\n"
-		      "password if you have one.  Otherwise just click OK.";
+	else {
+		int j = findString(sd.cvars, "sv_privateClients", 0);
+		if (j != -1 && Integer.convert(sd.cvars[j][1]) > 0) {
+			showDialog = true;
+			msg = "This server has got private slots, so type your\n"
+		          "password if you have one.  Otherwise just click OK.";
+			mandatoryPwd = false;
+		}
 	}
 
 	if (showDialog) {
 		scope JoinDialog dialog = new JoinDialog(mainWindow.handle,
-		                                    sd.server[ServerColumn.NAME], msg);
+		                      sd.server[ServerColumn.NAME], msg, mandatoryPwd);
 
 		dialog.password = getPassword(sd.server[ServerColumn.ADDRESS]);
 
-		int res = dialog.open();
-		if (res == SWT.OK && dialog.password.length) {
-			argv ~= " +set password " ~ dialog.password;
-			setPassword(sd.server[ServerColumn.ADDRESS], dialog.password);
+		if (dialog.open()) {
+			if (dialog.password.length) {
+				argv ~= " +set password " ~ dialog.password;
+				setPassword(sd.server[ServerColumn.ADDRESS], dialog.password);
+			}
 		}
-		if (res != SWT.OK)
+		else {
 			launch = false;
+		}
 	}
 
-	if (launch) {		
+	if (launch) {
 		version (Windows) {
 			PROCESS_INFORMATION info;
 			STARTUPINFO startup;
@@ -108,7 +116,7 @@ void joinServer(in char[] gameName, ServerData sd)
 			}
 		}
 		else {
-			error("joinServer() not implemented on this platform.");
+			error("Launching a game is not implemented on this platform.");
 		}
 	}
 }

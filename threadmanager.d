@@ -1,6 +1,7 @@
 module threadmanager;
 
 import tango.core.Thread;
+import tango.text.convert.Integer;
 
 import runtools : killServerBrowser;
 
@@ -86,6 +87,7 @@ class ThreadManager
 			void delegate() startIt = fp();
 			if (startIt !is null) {
 				thread_ = new Thread(startIt);
+				thread_.name = "secondary " ~ .toString(++threadCounter_);
 				thread_.start();
 			}
 		}
@@ -96,5 +98,6 @@ class ThreadManager
 		void delegate() function() fp_= null;
 		void delegate() function() fp2_= null;
 		Thread thread_;
+		int threadCounter_ = 0;
 	}
 }
