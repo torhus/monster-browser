@@ -217,7 +217,6 @@ class StatusBar
 	this(Composite parent)
 	{
 		leftLabel_ = new Label(parent, DWT.NONE);
-		leftLabel_.setText(APPNAME ~ " is ready.");
 	}
 
 	void setLeft(char[] text)  ///

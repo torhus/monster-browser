@@ -1,6 +1,7 @@
 module rcon;
 
 import dwt.DWT;
+import dwt.dwthelper.Runnable;
 import dwt.events.KeyAdapter;
 import dwt.events.KeyEvent;
 import dwt.events.SelectionAdapter;
@@ -10,16 +11,20 @@ import dwt.graphics.Font;
 import dwt.layout.GridData;
 import dwt.layout.GridLayout;
 import dwt.widgets.Display;
+import dwt.widgets.Label;
 import dwt.widgets.Shell;
 import dwt.widgets.Text;
 
 import tango.core.Array;
+import tango.core.Thread;
 import tango.net.DatagramConduit;
 import tango.net.InternetAddress;
+import tango.text.convert.Format;
 
 import colorednames;
 import common;
 import mainwindow;
+import messageboxes;
 
 
 ///
@@ -46,9 +51,12 @@ class RconWindow
 		auto inputTextData = new GridData(DWT.FILL, DWT.CENTER, true, false);
 		inputText_.setLayoutData(inputTextData);
 		inputText_.addSelectionListener(new MySelectionListener);
-		inputText_.setMessage("Type an rcon command and press Enter");
+		//inputText_.setMessage("Type an rcon command and press Enter");
 		inputText_.addKeyListener(new InputKeyListener);
 		inputText_.setFocus();
+
+		statusLabel_ = new Label(shell_, DWT.NONE);
+		statusLabel_.setText("Type an rcon command and press Enter");
 
 		// handle shortcut keys that are global (for this window)
 		auto commonKeyListener = new CommonKeyListener;
@@ -56,7 +64,7 @@ class RconWindow
 		outputText_.addKeyListener(commonKeyListener);
 		inputText_.addKeyListener(commonKeyListener);
 
-		rcon_ = new Rcon(address, port, password);
+		rcon_ = new Rcon(address, port, password, &deliverOutput);
 
 		shell_.open();
 	}
@@ -70,15 +78,39 @@ class RconWindow
 		position_ = history_.length;
 	}
 
+
+	///
+	private void deliverOutput(in char[] s, bool timeout)
+	{
+		Display.getDefault().syncExec(new class Runnable {
+			void run()
+			{
+				if (outputText_.isDisposed())
+					return;
+
+				if (s.length > 0) {
+					outputText_.append(stripColorCodes(s));
+					statusLabel_.setText("");
+				}
+				else if (timeout) {
+					statusLabel_.setText("Timed out");
+				}
+				else {
+					statusLabel_.setText("Got nothing");
+				}
+			}
+		});
+	}
+
+
 	private class MySelectionListener : SelectionAdapter
 	{
 		void widgetDefaultSelected(SelectionEvent e)
 		{
 			char[] cmd = inputText_.getText();
 			if (cmd.length > 0) {
-				char[] s = rcon_.command(cmd);
+				rcon_.command(cmd);
 				inputText_.setText("");
-				outputText_.append(stripColorCodes(s));
 				storeCommand(cmd);
 			}
 		}
@@ -173,6 +205,7 @@ class RconWindow
 		Shell shell_;
 		Text outputText_;
 		Text inputText_;
+		Label statusLabel_;
 		Rcon rcon_;
 		char[][] history_;
 		int position_ = 0;  // index into history_
@@ -184,24 +217,42 @@ class RconWindow
 private class Rcon
 {
 	///
-	this(in char[] address, int port, in char[] password)
+	this(in char[] address, int port, in char[] password,
+	                                        void delegate(char[], bool) output)
 	{
 		conn_ = new DatagramConduit;
 		conn_.connect(new InternetAddress(address, port));
+		conn_.setTimeout(4);
 		password_ = password;
+		output_ = output;
 	}
 
 
 	/// Run a command on the server, return the output.
-	char[] command(in char[] cmd)
+	void command(in char[] cmd)
+	{
+		//conn_ = new DatagramConduit;
+		//conn_.connect(new InternetAddress("91.121.207.93", 27964));
+		char[] s = "\xff\xff\xff\xff" ~ "rcon \"" ~ password_ ~ "\" " ~ cmd;
+		size_t written = conn_.write(s);
+		if (written < s.length) {
+			log(Format("Rcon: Only {} of {} bytes sent.", written, s.length));
+			error("An error occurred while sending the\n"
+			      "command, please check our connection.");
+		}
+		else {
+			// FIXME: use only one thread, with timeout.
+			// maybe need to use semaphore
+			Thread t = new Thread(&receive);
+			t.start();
+		}
+	}
+
+	private void receive()
 	{
 		const size_t growBy = 1000;
 		char[] buf = new char[growBy];
 		size_t total = 0;
-
-		//conn_ = new DatagramConduit;
-		//conn_.connect(new InternetAddress("91.121.207.93", 27964));
-		conn_.write("\xff\xff\xff\xff" ~ "rcon \"" ~ password_ ~ "\" " ~ cmd);
 
 		while (true) {
 			size_t received = conn_.read(buf[total..$]);
@@ -216,20 +267,22 @@ private class Rcon
 		//conn_.shutdown();
 		//conn_.close();
 		//conn_.flush();
+
 		const prefix = "\xff\xff\xff\xffprint\n";
 		//assert(total >= prefix.length);
 		if (total < prefix.length) {
-			return null;
+			output_(null, conn_.hadTimeout);
 		}
 		else {
 			assert(buf[0..prefix.length] == prefix);
-			return buf[prefix.length..total];
+			output_(buf[prefix.length..total], conn_.hadTimeout);
 		}
 	}
 
 	private {
 		char[] password_;
 		DatagramConduit conn_;
+		void delegate(char[], bool) output_;
 	}
 
 }
