@@ -581,6 +581,8 @@ private:
 			}
 		});
 
+		new MenuItem(menu, DWT.SEPARATOR);
+
 		item = new MenuItem(menu, DWT.PUSH);
 		item.setText("Refresh selected\tCtrl+R");
 		item.addSelectionListener(new class SelectionAdapter {
@@ -600,7 +602,7 @@ private:
 			void widgetSelected(SelectionEvent e) { onRemoveSelected(); }
 		});
 
-		item = new MenuItem(menu, DWT.SEPARATOR);
+		new MenuItem(menu, DWT.SEPARATOR);
 
 		item = new MenuItem(menu, DWT.PUSH);
 		item.setText("Remote console\tF10");
