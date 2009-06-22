@@ -127,6 +127,13 @@ class RconWindow
 						shell_.close();
 					}
 					break;
+				case 'a':
+					// CTRL+A doesn't work by default
+					if (e.stateMask == DWT.MOD1) {
+						(cast(Text)e.widget).selectAll();
+						e.doit = false;
+					}
+					break;
 				default:
 					break;
 			}
@@ -238,7 +245,7 @@ private class Rcon
 		if (written < s.length) {
 			log(Format("Rcon: Only {} of {} bytes sent.", written, s.length));
 			error("An error occurred while sending the\n"
-			      "command, please check our connection.");
+			      "command, please check your connection.");
 		}
 		else {
 			// FIXME: use only one thread, with timeout.
