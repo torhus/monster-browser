@@ -618,11 +618,8 @@ private:
 		char[][] addresses;
 		foreach (ip, v; selectedIps_)
 			addresses ~= ip;
-		char[] s = join(addresses, newline);
-		if (s.length) {
-			s ~= newline;
-			copyToClipboard(s);
-		}
+		if (addresses.length)
+			copyToClipboard(join(addresses, newline));
 	}
 
 	void onRefreshSelected()
