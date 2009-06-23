@@ -8,7 +8,6 @@ import tango.core.Exception;
 import tango.io.device.File;
 import tango.io.model.IConduit : OutputStream;
 import tango.io.stream.Buffered;
-import tango.io.stream.TextFile;
 import tango.stdc.ctype : isdigit;
 import tango.text.Ascii;
 import tango.text.Util;

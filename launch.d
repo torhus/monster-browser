@@ -75,15 +75,18 @@ void joinServer(in char[] gameName, ServerData sd)
 	}
 
 	if (showDialog) {
-		scope JoinDialog dialog = new JoinDialog(mainWindow.handle,
-		                      sd.server[ServerColumn.NAME], msg, mandatoryPwd);
-
+		char[] message = "Join \"" ~ sd.server[ServerColumn.NAME] ~ "\"\n\n" ~
+		                                                            msg ~ "\n";
+		scope dialog = new PasswordDialog(mainWindow.handle, "Join Server",
+		                                                        message, true);
 		dialog.password = getPassword(sd.server[ServerColumn.ADDRESS]);
 
 		if (dialog.open()) {
 			if (dialog.password.length) {
 				argv ~= " +set password " ~ dialog.password;
-				setPassword(sd.server[ServerColumn.ADDRESS], dialog.password);
+				if (dialog.savePassword)
+					setPassword(sd.server[ServerColumn.ADDRESS],
+					                                          dialog.password);
 			}
 		}
 		else {

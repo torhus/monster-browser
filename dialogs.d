@@ -75,22 +75,36 @@ private:
 }+/
 
 
-///
-class JoinDialog
+/**
+ * A generic dialog with OK and Cancel buttons, that asks for a password and
+ * whether to save it.
+ */
+class PasswordDialog
 {
-	char[] password = ""; ///
+	/**
+	 * Set these before calling open(). After open() returns, their values will
+	 * have been updated to reflect the user's input.
+	 *
+	 * The default is an empty password, and yes to saving it.
+	 */
+	char[] password = "";
+	bool savePassword = true;  /// ditto
 
-	///
-	this(Shell parent, char[] serverName, char[] message, bool pwdMandatory)
+	/**
+	 * If pwdMandatory is true, the OK button will be disabled whenever the
+	 * password field is empty.
+	 */
+	this(Shell parent, in char[] title, in char[] message,
+	                                                   bool pwdMandatory=false)
 	{
 		parent_ = parent;
 		shell_ = new Shell(parent_, DWT.DIALOG_TRIM | DWT.APPLICATION_MODAL);
 		shell_.setLayout(new GridLayout);
-		shell_.setText("Join Server");
+		shell_.setText(title);
 
-		// command line
+		// message
 		Label labelA = new Label(shell_, DWT.NONE);
-		labelA.setText("Join \"" ~ serverName ~ "\"\n\n" ~ message ~ "\n");
+		labelA.setText(message);
 
 		// password input
 		Composite pwdComposite = new Composite(shell_, DWT.NONE);
@@ -103,6 +117,19 @@ class JoinDialog
 		labelB.setText("Password:");
 		pwdText_ = new Text(pwdComposite, DWT.SINGLE | DWT.BORDER |
 		                                                         DWT.PASSWORD);
+		if (pwdMandatory) {
+			pwdText_.addListener(DWT.Modify, new class Listener {
+				void handleEvent(Event e)
+				{
+					okButton_.setEnabled(pwdText_.getText().length > 0);
+				}
+			});
+		}
+		saveButton_ = new Button (shell_, DWT.CHECK);
+		saveButton_.setText("Save this password");
+		auto saveButtonData = new GridData;
+		saveButtonData.horizontalAlignment = DWT.CENTER;
+		saveButton_.setLayoutData(saveButtonData);
 
 		// main buttons
 		Composite buttonComposite = new Composite(shell_, DWT.NONE);
@@ -117,6 +144,7 @@ class JoinDialog
 		okButton_ = new Button (buttonComposite, DWT.PUSH);
 		okButton_.setText ("OK");
 		okButton_.setLayoutData(new RowData(BUTTON_SIZE));
+
 		cancelButton_ = new Button (buttonComposite, DWT.PUSH);
 		cancelButton_.setText ("Cancel");
 		cancelButton_.setLayoutData(new RowData(BUTTON_SIZE));
@@ -125,23 +153,21 @@ class JoinDialog
 		okButton_.addListener(DWT.Selection, listener);
 		cancelButton_.addListener(DWT.Selection, listener);
 
-		if (pwdMandatory)
-			pwdText_.addListener(DWT.Modify, new class Listener {
-				void handleEvent(Event e)
-				{
-					okButton_.setEnabled(pwdText_.getText().length > 0);
-				}
-			});
-
 		shell_.setDefaultButton(okButton_);
 		shell_.pack();
 		shell_.setLocation(center(parent_, shell_));
 	}
 
-	bool open() ///
+	/**
+	 * Show the dialog.
+	 *
+	 * Returns true if the user pressed OK, false if Cancel.
+	 */
+	bool open()
 	{
 		pwdText_.setText(password);
 		pwdText_.selectAll();
+		saveButton_.setSelection(savePassword);
 		shell_.open();
 		Display display = Display.getDefault;
 		while (!shell_.isDisposed()) {
@@ -152,19 +178,20 @@ class JoinDialog
 		return result_ == DWT.OK;
 	}
 
+
 private:
 	Shell parent_, shell_;
-	Button okButton_, cancelButton_;
+	Button okButton_, cancelButton_, saveButton_;
 	Text pwdText_;
 	int result_ = DWT.CANCEL;
 
 	class ButtonListener : Listener {
 		void handleEvent (Event event)
 		{
-			if (event.widget == okButton_) {
+			if (event.widget == okButton_)
 				result_ = DWT.OK;
-				password = pwdText_.getText;
-			}
+			password = pwdText_.getText();
+			savePassword = saveButton_.getSelection();
 			shell_.close();
 		}
 	};
@@ -442,112 +469,26 @@ private:
 
 
 ///
-class OpenRconDialog
+class OpenRconDialog : PasswordDialog
 {
 	///
 	this(Shell parent, in char[] serverName, in char[] address)
 	{
-		parent_ = parent;
 		address_ = address;
-		shell_ = new Shell(parent_, DWT.DIALOG_TRIM | DWT.APPLICATION_MODAL);
-		shell_.setLayout(new GridLayout);
-		shell_.setText("Open Remote Console");
-
-		// show server name
-		Label labelA = new Label(shell_, DWT.NONE);
-		labelA.setText("Remote Console for \"" ~ serverName ~ "\"");
-
-		// password input
-		Composite pwdComposite = new Composite(shell_, DWT.NONE);
-		GridData pwdData = new GridData();
-		pwdData.horizontalAlignment = DWT.CENTER;
-		pwdComposite.setLayoutData(pwdData);
-
-		pwdComposite.setLayout(new RowLayout);
-		Label labelB = new Label(pwdComposite, DWT.NONE);
-		labelB.setText("Password:");
-		pwdText_ = new Text(pwdComposite, DWT.SINGLE | DWT.BORDER |
-		                                                         DWT.PASSWORD);
-		pwdText_.addListener(DWT.Modify, new class Listener {
-			void handleEvent(Event e)
-			{
-				okButton_.setEnabled(pwdText_.getText().length > 0);
-			}
-		});
-
-		saveButton_ = new Button (shell_, DWT.CHECK);
-		saveButton_.setText("Save this password");
-		saveButton_.setSelection(true);  // FIXME: save this state
-		auto saveButtonData = new GridData;
-		saveButtonData.horizontalAlignment = DWT.CENTER;
-		saveButton_.setLayoutData(saveButtonData);
-
-		// main buttons
-		Composite buttonComposite = new Composite(shell_, DWT.NONE);
-		GridData buttonData = new GridData();
-		buttonData.horizontalAlignment = DWT.CENTER;
-		buttonComposite.setLayoutData(buttonData);
-
-		RowLayout buttonLayout = new RowLayout();
-		buttonLayout.spacing = BUTTON_SPACING;
-		buttonComposite.setLayout(buttonLayout);
-
-		okButton_ = new Button (buttonComposite, DWT.PUSH);
-		okButton_.setText ("OK");
-		okButton_.setLayoutData(new RowData(BUTTON_SIZE));
-
-		cancelButton_ = new Button (buttonComposite, DWT.PUSH);
-		cancelButton_.setText ("Cancel");
-		cancelButton_.setLayoutData(new RowData(BUTTON_SIZE));
-
-		auto listener = new ButtonListener;
-		okButton_.addListener(DWT.Selection, listener);
-		cancelButton_.addListener(DWT.Selection, listener);
-
-		shell_.setDefaultButton(okButton_);
-		shell_.pack();
-		shell_.setLocation(center(parent_, shell_));
+		super(parent, "Open Remote Console",
+		                    "Remote Console for \"" ~ serverName ~ "\"", true);
+		password = getRconPassword(address_);
 	}
 
-	bool open() ///
+	override bool open() ///
 	{
-		password_ = getRconPassword(address_);
-		pwdText_.setText(password_);
-		pwdText_.selectAll();
-		shell_.open();
-		Display display = Display.getDefault;
-		while (!shell_.isDisposed()) {
-			if (!display.readAndDispatch()) {
-				display.sleep ();
-			}
-		}
-		return result_ == DWT.OK;
+		bool result = super.open();
+		if (result && savePassword)
+			setRconPassword(address_, password);
+		return result;
 	}
 
-	///
-	char[] password() { return password_; }
-
-
-private:
-	char[] address_;
-	char[] password_;
-	Shell parent_, shell_;
-	Button okButton_, cancelButton_, saveButton_;
-	Text pwdText_;
-	int result_ = DWT.CANCEL;
-
-	class ButtonListener : Listener {
-		void handleEvent (Event event)
-		{
-			if (event.widget == okButton_) {
-				result_ = DWT.OK;
-				password_ = pwdText_.getText();
-				if (saveButton_.getSelection())
-					setRconPassword(address_, password_);
-			}
-			shell_.close();
-		}
-	};
+	private char[] address_;
 }
 
 
