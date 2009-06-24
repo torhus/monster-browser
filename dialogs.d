@@ -301,7 +301,7 @@ class SpecifyServerDialog
 					sd.persistent = saveButton_.getSelection();
 					master.addServer(sd);
 
-					queryServers([address], false, true);
+					queryServers([address], true, true);
 				}
 				else {
 					ServerData sd = master.getServerData(sh);
