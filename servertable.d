@@ -310,16 +310,26 @@ class ServerTable
 		assert(indices.length);
 
 		selectedIps_.clear();
-		foreach (ip, v; selectedIps_) {
-			int i = serverList_.getFilteredIndex(ip);
-			selectedIps_[ip] = i;
-			if (i != -1)
-				indices ~= i;
+		int[] validIndices;
+		foreach (i; indices) {
+			if (i != -1) {
+				validIndices ~= i;
+				char[] address =
+				       serverList_.getFiltered(i).server[ServerColumn.ADDRESS];
+				selectedIps_[address] = i;
+			}
 		}
-		table_.setSelection(indices);
-		playerTable.setItems(indices, serverList_);
-		int cvarIndex = table_.getSelectionIndex();
-		cvarTable.setItems(serverList_.getFiltered(cvarIndex).cvars);
+		table_.setSelection(validIndices);
+		if (validIndices.length > 0) {
+			playerTable.setItems(validIndices, serverList_);
+			int cvarIndex = table_.getSelectionIndex();
+			cvarTable.setItems(serverList_.getFiltered(cvarIndex).cvars);
+		}
+		else {
+			playerTable.clear();
+			cvarTable.clear();
+		}
+
 		if (takeFocus)
 			table_.setFocus();
 	}

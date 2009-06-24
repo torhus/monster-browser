@@ -81,18 +81,33 @@ class ServerList
 	}
 
 
-	/// Always returns true.
+	/**
+	* Replace a server in the list, or add it if it's missing.
+	*
+	* Returns true if the filtered list was altered.
+	*/
 	bool replace(ServerHandle sh)
 	{
 		synchronized (this) synchronized (master_) {
 			ServerData sd = master_.getServerData(sh);
+			bool removed = removeFromFiltered(sd.server[ServerColumn.ADDRESS]);
+
 			if (sd.customData)
 				sd.customData.dispose();
-			removeFromFiltered(sd.server[ServerColumn.ADDRESS]);
-			if (!isFilteredOut(&sd))
+
+			if (!removed) {
+				// adding as a new server
+				IpHash_[sd.server[ServerColumn.ADDRESS]] = -1;
+				sd.server[ServerColumn.COUNTRY] = getCountryCode(&sd);
+			}
+			if (!isFilteredOut(&sd)) {
 				insertSorted(sh);
+				return true;
+			}
+			else {
+				return removed;
+			}
 		}
-		return true;
 	}
 
 
@@ -171,7 +186,7 @@ class ServerList
 			return filteredList[i];
 		}
 	}
-	
+
 
 	///
 	size_t filteredLength() { synchronized (this) return filteredList.length; }
@@ -439,11 +454,13 @@ private:
 		IpHashValid_ = false;
 	}
 
-	void removeFromFiltered(in char[] address)
+	bool removeFromFiltered(in char[] address)
 	{
 		bool found;
 		int i = getFilteredIndex(address, &found);
-		assert(found);
+		assert(i != -1 || !found);
+		if (i == -1)
+			return false;
 
 		ServerHandle* ptr = filteredList.ptr + i;
 		size_t bytes = (filteredList.length - 1 - i) * filteredList[0].sizeof;
@@ -451,6 +468,7 @@ private:
 		filteredList.length = filteredList.length - 1;
 
 		IpHashValid_ = false;
+		return true;
 	}
 
 	char[] getCountryCode(in ServerData* sd)
