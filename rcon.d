@@ -30,8 +30,6 @@ import messageboxes;
 ///
 class RconWindow
 {
-	private static Font fixedWidthFont;  /// A monospaced font.
-
 	///
 	this(in char[] serverName, in char[] address, int port, in char[] password)
 	{
@@ -191,11 +189,10 @@ class RconWindow
 	{
 		// FIXME: getClientArea().height seems to include some sort of margin,
 		// so linesPerPage will be one too many sometimes.
-		int totalHeight = outputText_.getClientArea().height;
-		int linesPerPage = totalHeight / outputText_.getLineHeight();
-		int scrollBy = down ? outputText_.getTopIndex() + linesPerPage - 1 :
-		                      outputText_.getTopIndex() - linesPerPage + 1;
-		outputText_.setTopIndex(scrollBy);
+		int visibleHeight = outputText_.getClientArea().height;
+		int linesPerPage = visibleHeight / outputText_.getLineHeight();
+		int scrollBy = down ? linesPerPage - 1 : -linesPerPage + 1;
+		outputText_.setTopIndex(outputText_.getTopIndex() + scrollBy);
 	}
 
 	private static Font getFixedWidthFont()
@@ -216,6 +213,8 @@ class RconWindow
 		Rcon rcon_;
 		char[][] history_;
 		int position_ = 0;  // index into history_
+
+		static Font fixedWidthFont;  /// A monospaced font.
 	}
 }
 
@@ -235,7 +234,7 @@ private class Rcon
 	}
 
 
-	/// Run a command on the server, return the output.
+	/// Send a command to the server.
 	void command(in char[] cmd)
 	{
 		//conn_ = new DatagramConduit;
