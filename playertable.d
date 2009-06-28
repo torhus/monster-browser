@@ -3,6 +3,8 @@ module playertable;
 import tango.text.Ascii;
 
 import dwt.DWT;
+import dwt.events.MenuDetectEvent;
+import dwt.events.MenuDetectListener;
 import dwt.events.SelectionAdapter;
 import dwt.events.SelectionEvent;
 import dwt.graphics.Point;
@@ -11,6 +13,8 @@ import dwt.widgets.Composite;
 import dwt.widgets.Display;
 import dwt.widgets.Event;
 import dwt.widgets.Listener;
+import dwt.widgets.Menu;
+import dwt.widgets.MenuItem;
 import dwt.widgets.Table;
 import dwt.widgets.TableColumn;
 import dwt.widgets.TableItem;
@@ -37,7 +41,7 @@ class PlayerTable
 	{
 		parent_ = parent;
 		table_ = new Table(parent, DWT.VIRTUAL | DWT.BORDER |
-		                           DWT.HIDE_SELECTION);
+		                           DWT.FULL_SELECTION);
 		table_.setHeaderVisible(true);
 		table_.setLinesVisible(true);
 
@@ -136,6 +140,15 @@ class PlayerTable
 				serverTable.setSelection([serverIndex], true);
 			}
 		});
+
+		table_.setMenu(createContextMenu());
+		table_.addMenuDetectListener(new class MenuDetectListener {
+			void menuDetected(MenuDetectEvent e)
+			{
+				if (table_.getSelectionCount() == 0)
+					e.doit = false;
+			}
+		});
 	}
 
 	/// The index of the currently active sort column.
@@ -214,6 +227,25 @@ private:
 				table_.setToolTipText(text);
 		}
 	}
+
+
+	Menu createContextMenu()
+	{
+		Menu menu = new Menu(table_);
+
+		MenuItem item = new MenuItem(menu, DWT.PUSH);
+		item.setText("Select server\tEnter");
+		menu.setDefaultItem(item);
+		item.addSelectionListener(new class SelectionAdapter {
+			void widgetSelected(SelectionEvent e) {
+				int index = players_[table_.getSelectionIndex()].serverIndex;
+				serverTable.setSelection([index], true);
+			}
+		});
+
+		return menu;
+	}
+
 
 	void sort()
 	{
