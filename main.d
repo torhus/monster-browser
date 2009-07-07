@@ -150,7 +150,6 @@ private void _main(char[][] args)
 	// main loop
 	Display display = Display.getDefault;
 	while (!mainWindow.handle.isDisposed) {
-		threadManager.dispatch();
 		if (!display.readAndDispatch())
 			display.sleep();
 	}
