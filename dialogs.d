@@ -315,8 +315,7 @@ class SpecifyServerDialog
 							serverTable.setSelection([i], true);
 					}
 					else {
-						info("That server is already known, but belongs to a "
-						                             "different game or mod.");
+						queryServers([address], true, true);
 					}
 				}
 				shell_.close();
