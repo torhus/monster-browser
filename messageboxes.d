@@ -46,7 +46,8 @@ void _messageBox(char[] title, int style)(char[] fmt, ...)
  * Displays message boxes with preset titles and icons.
  * Does formatting, the argument list is: (char[] fmt, ...)
  */
-alias _messageBox!(APPNAME, DWT.ICON_INFORMATION) info;
+//alias _messageBox!(APPNAME, DWT.ICON_INFORMATION) info;
+alias _messageBox!("Monster Browser", DWT.ICON_INFORMATION) info;
 alias _messageBox!("Warning", DWT.ICON_WARNING) warning;  /// ditto
 alias _messageBox!("Error", DWT.ICON_ERROR) error;        /// ditto
 

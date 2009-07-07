@@ -24,6 +24,7 @@ import dwt.dwthelper.utils;
 import dwt.widgets.Table;
 
 import set;
+import threadmanager;
 
 
 version (allservers)  // useful for speed testing
@@ -148,6 +149,8 @@ void logx(char[] file, int line, Exception e)
 	log(file, line, e.classinfo.name ~ ": " ~ e.toString());
 	log(Format("{} threads, currently in '{}'.", Thread.getAll().length,
 	                                                   Thread.getThis().name));
+	log(Format("ThreadManager's thread is {}.",
+	                         threadManager.sleeping ? "sleeping" : "working"));
 
 	// output stack trace
 	e.writeOut((char[] s) { logString(s); });
