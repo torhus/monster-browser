@@ -94,7 +94,7 @@ class ThreadManager
 			if (shutdown_)
 				break;
 
-			synchronized assert(fp_ !is null || fp2_ !is null);
+			synchronized (this) assert(fp_ !is null || fp2_ !is null);
 
 			killServerBrowser();
 
