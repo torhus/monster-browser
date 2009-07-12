@@ -1,7 +1,7 @@
 /**
  * Decoding of Quake 3 style player and server name color codes.
  */
- 
+
 module colorednames;
 
 import tango.stdc.ctype;
@@ -13,6 +13,8 @@ import dwt.widgets.Display;
 
 
 private TextStyle[8] q3Colors;
+
+private const char[] Q3_DEFAULT_NAME = "UnnamedPlayer";
 
 
 static this() {
@@ -99,6 +101,9 @@ ColoredName parseColors(in char[] s)
 	if (name.ranges.length)
 		name.ranges[$-1].end = name.cleanName.length - 1;
 
+	if (name.cleanName.length == 0)
+		name.cleanName = Q3_DEFAULT_NAME;
+
 	return name;
 }
 
@@ -110,7 +115,7 @@ unittest {
 	assert(parseColors("^wwhite^8black").cleanName == "whiteblack");
 	assert(parseColors("1a2b3c4^").cleanName == "1a2b3c4");
 	assert(parseColors("^^0blackie").cleanName == "^blackie");
-	//assert(parseColors("^1").cleanName == "UnnamedPlayer");
+	assert(parseColors("^1").cleanName == "UnnamedPlayer");
 
 	printf("colorednames.parseColors unit test succeeded.\n");
 }
@@ -131,5 +136,8 @@ char[] stripColorCodes(in char[] s)
 		name ~= s[i];
 	}
 
+	if (name.length == 0)
+		name = Q3_DEFAULT_NAME;
+	
 	return name;
 }
