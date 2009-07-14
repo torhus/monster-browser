@@ -590,6 +590,13 @@ private:
 				          serverList_.getFiltered(table_.getSelectionIndex()));
 			}
 		});
+		
+		item = new MenuItem(menu, DWT.PUSH);
+		item.setText("Set password");
+		item.addSelectionListener(new class SelectionAdapter {
+			void widgetSelected(SelectionEvent e) { onSetPassword(); }
+		});
+
 
 		new MenuItem(menu, DWT.SEPARATOR);
 
@@ -697,6 +704,33 @@ private:
 			}
 		}
 	}
+
+
+	void onSetPassword()
+	{
+		int index = table_.getSelectionIndex();
+		if (index == -1)
+			return;
+
+		ServerData sd = serverList_.getFiltered(index);
+		char[] address = sd.server[ServerColumn.ADDRESS];
+		char[] message =
+		            "Set the password to be used when joining the server.\n"
+		            "The password will be saved on disk.\n\n"
+					"To delete the stored password, clear the password field\n"
+		            "and press OK.";
+					
+		scope dialog = new PasswordDialog(mainWindow.handle, "Set Password",
+		                                                              message);
+		dialog.password = getPassword(address);
+		if (dialog.open()) {
+			if (dialog.password.length)
+				setPassword(address, dialog.password);
+			else
+				removePassword(address);
+		}
+	}
+
 
 	void onRemoteConsole()
 	{

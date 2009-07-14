@@ -387,6 +387,15 @@ void setPassword(char[] ip, char[] password)
 }
 
 
+/// Removes the password stored for a server.
+void removePassword(char[] ip)
+{
+	IniSection sec = settingsIni.section("Passwords");
+	if (sec !is null)
+		sec.remove(ip);
+}
+
+
 /**
  * Retrieve a stored rcon password.
  *
