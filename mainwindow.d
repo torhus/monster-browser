@@ -261,7 +261,7 @@ class FilterBar : FilterSuper
 	{
 		version (icons) {
 			super(parent, DWT.SHADOW_NONE);
-			setText("Filters and game selection");
+			setText("Filters and Game Selection");
 			auto data = new GridData;
 			//data.verticalAlignment = DWT.FILL;
 			setLayoutData(data);
@@ -477,7 +477,7 @@ ToolBar createToolbar(Composite parent) ///
 	auto toolBar = new ToolBar(parent, DWT.HORIZONTAL);
 
 	auto button1 = new ToolItem(toolBar, DWT.PUSH);
-	button1.setText("Check for new");
+	button1.setText("Check for New");
 	version (icons)
 		button1.setImage(loadImage!("icons/box_download_32.png"));
 	button1.addSelectionListener(new class SelectionAdapter {
@@ -489,7 +489,7 @@ ToolBar createToolbar(Composite parent) ///
 
 	new ToolItem(toolBar, DWT.SEPARATOR);
 	ToolItem button2 = new ToolItem(toolBar, DWT.PUSH);
-	button2.setText("Refresh all");
+	button2.setText("Refresh All");
 	version (icons)
 		button2.setImage(loadImage!("icons/refresh_32.png"));
 	button2.addSelectionListener(new class SelectionAdapter {
