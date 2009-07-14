@@ -32,13 +32,12 @@ import settings;
 void joinServer(in char[] gameName, ServerData sd)
 {
 	char[] argv;
+	char[] address = sd.server[ServerColumn.ADDRESS];
 	GameConfig game = getGameConfig(gameName);
 	char[] pathString = game.exePath;
 	FilePath path;
 	bool launch = true;
 	bool showDialog = false;
-	bool mandatoryPwd;
-	char[] msg;
 
 	if (!pathString) {
 		error("No path found for " ~ gameName ~
@@ -56,37 +55,20 @@ void joinServer(in char[] gameName, ServerData sd)
 	if (MOD_ONLY) {
 		argv = "+set fs_game " ~ game.mod;
 	}
-	argv ~= " +connect " ~ sd.server[ServerColumn.ADDRESS];
+	argv ~= " +connect " ~ address;
 
 	int i = findString(sd.cvars, "g_needpass", 0);
-	if (i != -1 && sd.cvars[i][1] == "1") {
-		showDialog = true;
-		msg = "You need a password to join this server.";
-		mandatoryPwd = true;
-	}
-	else {
-		int j = findString(sd.cvars, "sv_privateClients", 0);
-		if (j != -1 && Integer.convert(sd.cvars[j][1]) > 0) {
-			showDialog = true;
-			msg = "This server has got private slots, so type your\n"
-		          "password if you have one.  Otherwise just click OK.";
-			mandatoryPwd = false;
-		}
-	}
-
-	if (showDialog) {
+	if (i != -1 && sd.cvars[i][1] == "1" && getPassword(address).length == 0) {
 		char[] message = "Join \"" ~ sd.server[ServerColumn.NAME] ~ "\"\n\n" ~
-		                                                            msg ~ "\n";
+		                          "You need a password to join this server.\n";
 		scope dialog = new PasswordDialog(mainWindow.handle, "Join Server",
-		                                                        message, true);
-		dialog.password = getPassword(sd.server[ServerColumn.ADDRESS]);
+		                                                  message, true, true);
 
 		if (dialog.open()) {
 			if (dialog.password.length) {
 				argv ~= " +set password " ~ dialog.password;
 				if (dialog.savePassword)
-					setPassword(sd.server[ServerColumn.ADDRESS],
-					                                          dialog.password);
+					setPassword(address, dialog.password);
 			}
 		}
 		else {

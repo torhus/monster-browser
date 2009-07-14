@@ -77,7 +77,7 @@ private:
 
 /**
  * A generic dialog with OK and Cancel buttons, that asks for a password and
- * whether to save it.
+ * optionally whether to save it.
  */
 class PasswordDialog
 {
@@ -95,7 +95,7 @@ class PasswordDialog
 	 * password field is empty.
 	 */
 	this(Shell parent, in char[] title, in char[] message,
-	                                                   bool pwdMandatory=false)
+	                             bool pwdMandatory=false, bool askToSave=false)
 	{
 		parent_ = parent;
 		shell_ = new Shell(parent_, DWT.DIALOG_TRIM | DWT.APPLICATION_MODAL);
@@ -125,11 +125,13 @@ class PasswordDialog
 				}
 			});
 		}
-		saveButton_ = new Button (shell_, DWT.CHECK);
-		saveButton_.setText("Save this password");
-		auto saveButtonData = new GridData;
-		saveButtonData.horizontalAlignment = DWT.CENTER;
-		saveButton_.setLayoutData(saveButtonData);
+		if (askToSave) {
+			saveButton_ = new Button (shell_, DWT.CHECK);
+			saveButton_.setText("Save this password");
+			auto saveButtonData = new GridData;
+			saveButtonData.horizontalAlignment = DWT.CENTER;
+			saveButton_.setLayoutData(saveButtonData);
+		}
 
 		// main buttons
 		Composite buttonComposite = new Composite(shell_, DWT.NONE);
@@ -167,7 +169,8 @@ class PasswordDialog
 	{
 		pwdText_.setText(password);
 		pwdText_.selectAll();
-		saveButton_.setSelection(savePassword);
+		if (saveButton_ !is null)
+			saveButton_.setSelection(savePassword);
 		shell_.open();
 		Display display = Display.getDefault;
 		while (!shell_.isDisposed()) {
@@ -191,7 +194,8 @@ private:
 			if (event.widget == okButton_)
 				result_ = DWT.OK;
 			password = pwdText_.getText();
-			savePassword = saveButton_.getSelection();
+			if (saveButton_ !is null)
+				savePassword = saveButton_.getSelection();
 			shell_.close();
 		}
 	};
@@ -475,7 +479,8 @@ class OpenRconDialog : PasswordDialog
 	{
 		address_ = address;
 		super(parent, "Open Remote Console",
-		                    "Remote Console for \"" ~ serverName ~ "\"", true);
+		                           "Remote Console for \"" ~ serverName ~ "\"",
+		                                                           true, true);
 		password = getRconPassword(address_);
 	}
 
