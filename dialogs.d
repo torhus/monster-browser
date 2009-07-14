@@ -365,7 +365,7 @@ class SettingsDialog
 
 		// startup game
 		Group startupGroup = new Group(mainComposite, DWT.SHADOW_ETCHED_IN);
-		startupGroup.setText("Start with");
+		startupGroup.setText("Start With");
 		auto startupLayout = new GridLayout();
 		startupGroup.setLayout(startupLayout);
 		startupDefaultButton_ = new Button(startupGroup, DWT.RADIO);
