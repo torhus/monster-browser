@@ -250,38 +250,26 @@ private class Rcon
 			// FIXME: use only one thread, with timeout.
 			// maybe need to use semaphore
 			Thread t = new Thread(&receive);
+			t.name = "rcon";
 			t.start();
 		}
 	}
 
 	private void receive()
 	{
-		const size_t growBy = 1000;
-		char[] buf = new char[growBy];
-		size_t total = 0;
+		char[1024] buf = void;
 
-		while (true) {
-			size_t received = conn_.read(buf[total..$]);
-			if (received == IConduit.Eof)
-				break;
-			total += received;
-			if (total < buf.length)
-				break;
-			buf.length = buf.length + growBy;
-		}
-
-		//conn_.shutdown();
-		//conn_.close();
-		//conn_.flush();
+		size_t received = conn_.read(buf);
+		assert(received != IConduit.Eof);
 
 		const prefix = "\xff\xff\xff\xffprint\n";
-		//assert(total >= prefix.length);
-		if (total < prefix.length) {
+		assert(received >= prefix.length);
+		if (received < prefix.length) {
 			output_(null, conn_.hadTimeout);
 		}
 		else {
 			assert(buf[0..prefix.length] == prefix);
-			output_(buf[prefix.length..total], conn_.hadTimeout);
+			output_(buf[prefix.length..received].dup, conn_.hadTimeout);
 		}
 	}
 
