@@ -6,6 +6,8 @@ import dwt.events.KeyAdapter;
 import dwt.events.KeyEvent;
 import dwt.events.SelectionAdapter;
 import dwt.events.SelectionEvent;
+import dwt.events.ShellAdapter;
+import dwt.events.ShellEvent;
 import dwt.graphics.Device;
 import dwt.graphics.Font;
 import dwt.layout.GridData;
@@ -17,6 +19,7 @@ import dwt.widgets.Text;
 
 import tango.core.Array;
 import tango.core.Thread;
+import tango.io.selector.Selector;
 import tango.net.DatagramConduit;
 import tango.net.InternetAddress;
 import tango.text.convert.Format;
@@ -64,6 +67,13 @@ class RconWindow
 
 		rcon_ = new Rcon(address, port, password, &deliverOutput);
 
+		shell_.addShellListener(new class ShellAdapter
+		{
+			void shellClosed(ShellEvent e)
+			{
+				rcon_.shutdown();  // stop thread
+			}
+		});
 		shell_.open();
 	}
 
@@ -78,7 +88,7 @@ class RconWindow
 
 
 	///
-	private void deliverOutput(in char[] s, bool timeout)
+	private void deliverOutput(in char[] s)
 	{
 		Display.getDefault().syncExec(new class Runnable {
 			void run()
@@ -89,12 +99,6 @@ class RconWindow
 				if (s.length > 0) {
 					outputText_.append(stripColorCodes(s));
 					statusLabel_.setText("");
-				}
-				else if (timeout) {
-					statusLabel_.setText("Timed out");
-				}
-				else {
-					statusLabel_.setText("Got nothing");
 				}
 			}
 		});
@@ -224,21 +228,23 @@ private class Rcon
 {
 	///
 	this(in char[] address, int port, in char[] password,
-	                                        void delegate(char[], bool) output)
+	                                              void delegate(char[]) output)
 	{
 		conn_ = new DatagramConduit;
 		conn_.connect(new InternetAddress(address, port));
-		conn_.setTimeout(4);
 		password_ = password;
 		output_ = output;
+
+		Thread thread = new Thread(&receive);
+		thread.isDaemon = true;
+		thread.name = "rcon";
+		thread.start();
 	}
 
 
 	/// Send a command to the server.
 	void command(in char[] cmd)
 	{
-		//conn_ = new DatagramConduit;
-		//conn_.connect(new InternetAddress("91.121.207.93", 27964));
 		char[] s = "\xff\xff\xff\xff" ~ "rcon \"" ~ password_ ~ "\" " ~ cmd;
 		size_t written = conn_.write(s);
 		if (written < s.length) {
@@ -246,37 +252,48 @@ private class Rcon
 			error("An error occurred while sending the\n"
 			      "command, please check your connection.");
 		}
-		else {
-			// FIXME: use only one thread, with timeout.
-			// maybe need to use semaphore
-			Thread t = new Thread(&receive);
-			t.name = "rcon";
-			t.start();
-		}
 	}
 
+
+	///
+	void shutdown() { stop_ = true; }
+
+
+	/// Waits for data in a separate thread, dumps it to output window.
 	private void receive()
 	{
-		char[1024] buf = void;
+		char[1024] buf = '\0';
+		scope selector = new Selector;
 
-		size_t received = conn_.read(buf);
-		assert(received != IConduit.Eof);
+		selector.open(1, 2);
+		selector.register(conn_, Event.Read);
 
-		const prefix = "\xff\xff\xff\xffprint\n";
-		assert(received >= prefix.length);
-		if (received < prefix.length) {
-			output_(null, conn_.hadTimeout);
-		}
-		else {
-			assert(buf[0..prefix.length] == prefix);
-			output_(buf[prefix.length..received].dup, conn_.hadTimeout);
+		while (true) {
+			int eventCount = selector.select(1);
+			assert(eventCount >= 0);
+			if (stop_)
+				break;
+
+			while (eventCount > 0) {
+				size_t received = conn_.read(buf);
+				assert(received != IConduit.Eof);
+				assert(!conn_.hadTimeout);
+
+				const prefix = "\xff\xff\xff\xffprint\n";
+				assert(received >= prefix.length);
+				assert(buf[0..prefix.length] == prefix);
+				output_(buf[prefix.length..received].dup);
+
+				eventCount--;
+			}
 		}
 	}
 
 	private {
 		char[] password_;
 		DatagramConduit conn_;
-		void delegate(char[], bool) output_;
+		bool stop_ = false;
+		void delegate(char[]) output_;
 	}
 
 }
