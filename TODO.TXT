@@ -1,8 +1,10 @@
-- Wait for rcon replies in a separate thread.
+- Verify that server passwords still work.
+
+- Add max timeout count (3?) so I get some time to test it.
+
+- Complete threading for rcon.
 
 - Tab completion for rcon commands, at least fix tab order.
-
-- Make CTRL+A in rcon output and input work.
 
 - Don't ask for password in rcon if already known.  Ask for a new password
   if the server returns "Bad rconpassword.".
@@ -11,14 +13,12 @@
 
 - Server count in status bar is wrong after deleting a server.
 
-- Stop manually added servers from being saved twice to the XML files.
-
 - Don't display "There was no reply" when refreshing selected servers.
 
 - How does 'Never remove this server automatically' relate to automatic hiding
   of servers with too high timeout count?
 
-- Make it optional to save password when joining a server?
+- Remove old passwords when changing them without saving the new one?
 
 - Reconcile ServerTable.quickRefresh and fullRefresh, also look into unifying
   selection keeping code.
