@@ -56,9 +56,6 @@ class RconWindow
 		inputText_.addKeyListener(new InputKeyListener);
 		inputText_.setFocus();
 
-		statusLabel_ = new Label(shell_, DWT.NONE);
-		statusLabel_.setText("Type an rcon command and press Enter");
-
 		// handle shortcut keys that are global (for this window)
 		auto commonKeyListener = new CommonKeyListener;
 		shell_.addKeyListener(commonKeyListener);
@@ -95,11 +92,8 @@ class RconWindow
 			{
 				if (outputText_.isDisposed())
 					return;
-
-				if (s.length > 0) {
+				if (s.length > 0)
 					outputText_.append(stripColorCodes(s));
-					statusLabel_.setText("");
-				}
 			}
 		});
 	}
@@ -213,7 +207,6 @@ class RconWindow
 		Shell shell_;
 		Text outputText_;
 		Text inputText_;
-		Label statusLabel_;
 		Rcon rcon_;
 		char[][] history_;
 		int position_ = 0;  // index into history_
