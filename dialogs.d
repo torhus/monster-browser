@@ -481,7 +481,6 @@ class OpenRconDialog : PasswordDialog
 		super(parent, "Open Remote Console",
 		                           "Remote Console for \"" ~ serverName ~ "\"",
 		                                                           true, true);
-		password = getRconPassword(address_);
 	}
 
 	override bool open() ///
