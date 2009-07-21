@@ -189,6 +189,8 @@ useGslist=false
 	                                 {"serverColumnWidths",
 	                                              "27,250,21,32,50,40,90,130"},
 	                                 {"windowPosition", "150, 150"},
+	                                 {"rconWindowPosition", "100, 100"},
+	                                 {"rconWindowSize", "640, 480"},
 	                                ];
 }
 

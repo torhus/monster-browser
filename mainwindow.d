@@ -49,6 +49,9 @@ import threadmanager;
 StatusBar statusBar;  ///
 FilterBar filterBar;  ///
 MainWindow mainWindow;  ///
+/// The close() method will be called for these shells, before everything is
+/// disposed of.
+Shell[] subWindows;
 
 // Image objects that needs to be disposed of before shut down.
 version (icons)
@@ -205,6 +208,10 @@ class MainWindow
 			statusBar.setLeft("Exiting...");
 			log("Shutting down...");
 			killServerBrowser();
+			foreach (shell; subWindows) {
+				if (!shell.isDisposed())
+					shell.close();
+			}
 			saveState();
 		}
 	}
