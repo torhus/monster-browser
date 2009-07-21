@@ -10,6 +10,8 @@ import dwt.events.ShellAdapter;
 import dwt.events.ShellEvent;
 import dwt.graphics.Device;
 import dwt.graphics.Font;
+import dwt.graphics.Point;
+import dwt.graphics.Rectangle;
 import dwt.layout.GridData;
 import dwt.layout.GridLayout;
 import dwt.widgets.Button;
@@ -45,7 +47,18 @@ class RconWindow
 
 		shell_ = new Shell(Display.getDefault());
 		shell_.setText("Remote Console for " ~ serverName);
-		shell_.setSize(640, 480);  // FIXME: save and restore size
+
+		// restore window size and position
+		int[] size = parseIntList(getSessionState("rconWindowSize"), 2, 480);
+		shell_.setSize(size[0], size[1]);
+		int[] oldres = parseIntList(getSessionState("resolution"), 2);
+		Rectangle res = Display.getDefault().getBounds();
+		if (oldres[0] == res.width && oldres[1] == res.height) {
+			int[] pos = parseIntList(getSessionState("rconWindowPosition"), 2,
+		                                                                  100);
+			shell_.setLocation(pos[0], pos[1]);
+		}
+
 		shell_.setImages(mainWindow.handle.getImages());
 		shell_.setLayout(new GridLayout(2, false));
 
@@ -87,8 +100,10 @@ class RconWindow
 			void shellClosed(ShellEvent e)
 			{
 				rcon_.shutdown();  // stop thread
+				saveSessionState();
 			}
 		});
+		subWindows ~= shell_;
 		shell_.open();
 	}
 
@@ -214,6 +229,20 @@ class RconWindow
 				setRconPassword(address_, dialog.password);
 		}
 	}
+
+
+	///
+	private void saveSessionState()
+	{
+		if (!shell_.getMaximized()) {
+			Point pos = shell_.getLocation();
+			setSessionState("rconWindowPosition", toCsv([pos.x, pos.y]));
+
+			Point size = shell_.getSize();
+			setSessionState("rconWindowSize", toCsv([size.x, size.y]));
+		}
+	}
+
 
 	/// Scroll output field up or down by a page.
 	private void outputPageScroll(bool down)

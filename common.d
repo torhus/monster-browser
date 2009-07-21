@@ -374,7 +374,9 @@ void mergeSort(T)(T[] a, bool delegate(T a, T b) lessOrEqual)
  * Parse a sequence of integers, separated by any combination of commas,
  * spaces, or tabs.
  *
- * When an integer is not found, a zero is used instead.
+ * If forcedLength is > 0, the returned array will have been shortened or
+ * extended as necessary to match that length.  If it needs to be extended,
+ * the extra elements will have defaultVal as their value.
  */
 int[] parseIntList(in char[] str, size_t forcedLength=0, int defaultVal=0)
 {
