@@ -5,7 +5,7 @@ import tango.core.Thread;
 import tango.core.Version;
 import tango.io.device.File;
 import Path = tango.io.Path;
-import tango.stdc.ctype : isdigit;
+import tango.stdc.ctype;
 import tango.stdc.string;
 import tango.stdc.time;
 import tango.text.Ascii;
@@ -411,7 +411,7 @@ char[] toCsv(T)(T[] a)
 	}
 	else {
 		assert(s[0..1] == "[" && s[$-1..$] == "]");
-		assert(isdigit(s[1]) && isdigit(s[$-2]));
+		assert(!isspace(s[1]) && !isspace(s[$-2]));
 		return s[1..$-1];
 	}
 }

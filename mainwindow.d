@@ -172,18 +172,23 @@ class MainWindow
 	{
 		serverTable.saveState();
 
-		Rectangle res = Display.getDefault().getBounds();
-		setSessionState("resolution", toCsv([res.width, res.height]));
-		Point pos = shell_.getLocation();
-		setSessionState("windowPosition", toCsv([pos.x, pos.y]));
+		if (shell_.getMaximized()) {
+			setSetting("windowMaximized", "true");
+		}
+		else {
+			setSetting("windowMaximized", "false");
 
-		if (!shell_.getMaximized()) {
+			Rectangle res = Display.getDefault().getBounds();
+			setSessionState("resolution", toCsv([res.width, res.height]));
+
+			Point pos = shell_.getLocation();
+			setSessionState("windowPosition", toCsv([pos.x, pos.y]));
+
 			char[] width  = Integer.toString(shell_.getSize().x);
 			char[] height = Integer.toString(shell_.getSize().y);
 			setSetting("windowSize", width ~ "x" ~ height);
 		}
-		setSetting("windowMaximized", shell_.getMaximized() ?
-		                                                     "true" : "false");
+
 		setSessionState("middleWeights", toCsv(middleForm_.getWeights()));
 		setSessionState("rightWeights", toCsv(rightForm_.getWeights()));
 
