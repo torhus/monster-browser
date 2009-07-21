@@ -590,7 +590,7 @@ private:
 				          serverList_.getFiltered(table_.getSelectionIndex()));
 			}
 		});
-		
+
 		item = new MenuItem(menu, DWT.PUSH);
 		item.setText("Set password");
 		item.addSelectionListener(new class SelectionAdapter {
@@ -719,7 +719,7 @@ private:
 		            "The password will be saved on disk.\n\n"
 					"To delete the stored password, clear the password field\n"
 		            "and press OK.";
-					
+
 		scope dialog = new PasswordDialog(mainWindow.handle, "Set Password",
 		                                                              message);
 		dialog.password = getPassword(address);
@@ -741,14 +741,15 @@ private:
 		ServerData sd = serverList_.getFiltered(index);
 		char[] name = sd.server[ServerColumn.NAME];
 		char[] address = sd.server[ServerColumn.ADDRESS];
-		auto dialog = new OpenRconDialog(mainWindow.handle, name, address);
-		if (dialog.open()) {
-			auto colon = locate(address, ':', 0);
-			char[] ip = address[0..colon];
-			int port = 27960;
-			if (colon < address.length)
-				port = Integer.toInt(address[colon+1..$]);
-			new RconWindow(name, ip, port, dialog.password);
+		char[] pw = getRconPassword(address);
+
+		if (pw.length > 0) {
+			new RconWindow(name, address, pw);
+		}
+		else {
+			auto dialog = new OpenRconDialog(mainWindow.handle, name, address);
+			if (dialog.open())
+				new RconWindow(name, address, dialog.password);
 		}
 	}
 

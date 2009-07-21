@@ -12,6 +12,7 @@ import dwt.graphics.Device;
 import dwt.graphics.Font;
 import dwt.layout.GridData;
 import dwt.layout.GridLayout;
+import dwt.widgets.Button;
 import dwt.widgets.Display;
 import dwt.widgets.Label;
 import dwt.widgets.Shell;
@@ -22,29 +23,36 @@ import tango.core.Thread;
 import tango.io.selector.Selector;
 import tango.net.DatagramConduit;
 import tango.net.InternetAddress;
+import tango.text.Util;
 import tango.text.convert.Format;
+import Integer = tango.text.convert.Integer;
 
 import colorednames;
 import common;
+import dialogs;
 import mainwindow;
 import messageboxes;
+import settings;
 
 
 ///
 class RconWindow
 {
 	///
-	this(in char[] serverName, in char[] address, int port, in char[] password)
+	this(in char[] serverName, in char[] address, in char[] password)
 	{
+		address_ = address;
+
 		shell_ = new Shell(Display.getDefault());
 		shell_.setText("Remote Console for " ~ serverName);
 		shell_.setSize(640, 480);  // FIXME: save and restore size
 		shell_.setImages(mainWindow.handle.getImages());
-		shell_.setLayout(new GridLayout);
+		shell_.setLayout(new GridLayout(2, false));
 
 		outputText_ = new Text(shell_, DWT.MULTI | DWT.READ_ONLY | DWT.BORDER |
 		                                                         DWT.V_SCROLL);
 		auto outputTextData = new GridData(DWT.FILL, DWT.FILL, true, true);
+		outputTextData.horizontalSpan = 2;
 		outputText_.setLayoutData(outputTextData);
 		outputText_.setFont(getFixedWidthFont());
 
@@ -52,9 +60,19 @@ class RconWindow
 		auto inputTextData = new GridData(DWT.FILL, DWT.CENTER, true, false);
 		inputText_.setLayoutData(inputTextData);
 		inputText_.addSelectionListener(new MySelectionListener);
-		//inputText_.setMessage("Type an rcon command and press Enter");
+		inputText_.setMessage("Type an rcon command and press Enter");
 		inputText_.addKeyListener(new InputKeyListener);
 		inputText_.setFocus();
+
+		auto passwordButton = new Button(shell_, DWT.PUSH);
+		passwordButton.setText("Change Password...");
+		passwordButton.addSelectionListener(new class SelectionAdapter
+		{
+			void widgetSelected(SelectionEvent e)
+			{
+				onChangePassword();
+			}
+		});
 
 		// handle shortcut keys that are global (for this window)
 		auto commonKeyListener = new CommonKeyListener;
@@ -62,7 +80,7 @@ class RconWindow
 		outputText_.addKeyListener(commonKeyListener);
 		inputText_.addKeyListener(commonKeyListener);
 
-		rcon_ = new Rcon(address, port, password, &deliverOutput);
+		rcon_ = new Rcon(address, password, &deliverOutput);
 
 		shell_.addShellListener(new class ShellAdapter
 		{
@@ -182,6 +200,21 @@ class RconWindow
 		}
 	}
 
+
+	///
+	void onChangePassword()
+	{
+		auto dialog = new PasswordDialog(shell_, "Change Password", "", true,
+		                                                                 true);
+		dialog.password = rcon_.password;
+		//FIXME: save or not by default?
+		if (dialog.open()) {
+			rcon_.password = dialog.password;
+			if (dialog.savePassword)
+				setRconPassword(address_, dialog.password);
+		}
+	}
+
 	/// Scroll output field up or down by a page.
 	private void outputPageScroll(bool down)
 	{
@@ -205,6 +238,7 @@ class RconWindow
 
 	private {
 		Shell shell_;
+		char[] address_;
 		Text outputText_;
 		Text inputText_;
 		Rcon rcon_;
@@ -220,12 +254,20 @@ class RconWindow
 private class Rcon
 {
 	///
-	this(in char[] address, int port, in char[] password,
-	                                              void delegate(char[]) output)
+	char[] password;
+
+
+	///
+	this(in char[] address, in char[] password, void delegate(char[]) output)
 	{
 		conn_ = new DatagramConduit;
+		auto colon = locate(address, ':', 0);
+		char[] ip = address[0..colon];
+		int port = 27960;
+		if (colon < address.length)
+			port = Integer.toInt(address[colon+1..$]);
 		conn_.connect(new InternetAddress(address, port));
-		password_ = password;
+		this.password = password;
 		output_ = output;
 
 		Thread thread = new Thread(&receive);
@@ -238,7 +280,7 @@ private class Rcon
 	/// Send a command to the server.
 	void command(in char[] cmd)
 	{
-		char[] s = "\xff\xff\xff\xff" ~ "rcon \"" ~ password_ ~ "\" " ~ cmd;
+		char[] s = "\xff\xff\xff\xff" ~ "rcon \"" ~ password ~ "\" " ~ cmd;
 		size_t written = conn_.write(s);
 		if (written < s.length) {
 			log(Format("Rcon: Only {} of {} bytes sent.", written, s.length));
@@ -283,7 +325,6 @@ private class Rcon
 	}
 
 	private {
-		char[] password_;
 		DatagramConduit conn_;
 		bool stop_ = false;
 		void delegate(char[]) output_;
