@@ -192,6 +192,7 @@ useGslist=false
 	                                 {"rconWindowPosition", "100, 100"},
 	                                 {"rconWindowSize", "640, 480"},
 	                                 {"saveRconPasswords", "true"},
+	                                 {"saveServerPasswords", "true"},
 	                                ];
 }
 

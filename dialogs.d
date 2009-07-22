@@ -471,6 +471,46 @@ private:
 }
 
 
+
+/**
+ * Takes care of loading and saving passwords, and updating the
+ * "saveServerPasswords" setting.  Otherwise like PasswordDialog.
+ */
+class ServerPasswordDialog : PasswordDialog
+{
+	///
+	this(Shell parent, in char[] title, in char[] message, in char[] address,
+	                             bool pwdMandatory=false, bool askToSave=false)
+	{
+		address_ = address;
+		askToSave_ = askToSave;
+		super(parent, title, message, pwdMandatory, askToSave);
+		password = getPassword(address);
+		if (askToSave)
+			savePassword = getSessionState("saveServerPasswords") == "true";
+		else 
+			savePassword = true;
+	}
+
+	override bool open() ///
+	{
+		bool result = super.open();
+		if (result) {
+			bool oldSave = getSessionState("saveServerPasswords") == "true";
+			if (savePassword)
+				setPassword(address_, password);
+			if (askToSave_ && oldSave != savePassword)
+				setSessionState("saveServerPasswords",
+				                              savePassword ? "true" : "false");
+		}
+		return result;
+	}
+
+	private char[] address_;
+	private bool askToSave_;
+}
+
+
 /**
  * Takes care of saving but not loading passwords, and updating the
  * "saveRconPasswords" setting.  Otherwise like PasswordDialog.
