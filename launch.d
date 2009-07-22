@@ -61,15 +61,12 @@ void joinServer(in char[] gameName, ServerData sd)
 	if (i != -1 && sd.cvars[i][1] == "1" && getPassword(address).length == 0) {
 		char[] message = "Join \"" ~ sd.server[ServerColumn.NAME] ~ "\"\n\n" ~
 		                          "You need a password to join this server.\n";
-		scope dialog = new PasswordDialog(mainWindow.handle, "Join Server",
-		                                                  message, true, true);
+		scope dialog = new ServerPasswordDialog(mainWindow.handle,
+		                          "Join Server", message, address, true, true);
 
 		if (dialog.open()) {
-			if (dialog.password.length) {
+			if (dialog.password.length)
 				argv ~= " +set password " ~ dialog.password;
-				if (dialog.savePassword)
-					setPassword(address, dialog.password);
-			}
 		}
 		else {
 			launch = false;

@@ -717,18 +717,13 @@ private:
 		char[] message =
 		            "Set the password to be used when joining the server.\n"
 		            "The password will be saved on disk.\n\n"
-					"To delete the stored password, clear the password field\n"
+		            "To delete the stored password, clear the password field\n"
 		            "and press OK.";
 
-		scope dialog = new PasswordDialog(mainWindow.handle, "Set Password",
-		                                                              message);
-		dialog.password = getPassword(address);
-		if (dialog.open()) {
-			if (dialog.password.length)
-				setPassword(address, dialog.password);
-			else
-				removePassword(address);
-		}
+		scope dialog = new ServerPasswordDialog(mainWindow.handle,
+		                                     "Set Password", message, address);
+		if (dialog.open() && !dialog.password.length)
+			removePassword(address);
 	}
 
 
