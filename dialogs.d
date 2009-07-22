@@ -228,9 +228,10 @@ class SpecifyServerDialog
 		addressTextData.widthHint = 140;
 		addressText_.setLayoutData(addressTextData);
 
-		saveButton_ = new Button (shell_, DWT.CHECK);
+		saveButton_ = new Button(shell_, DWT.CHECK);
 		saveButton_.setText("Never remove this server automatically");
-		saveButton_.setSelection(true);
+		saveButton_.setSelection(
+		                  getSessionState("addServersAsPersistent") == "true");
 		auto saveButtonData = new GridData;
 		saveButtonData.horizontalAlignment = DWT.CENTER;
 		saveButton_.setLayoutData(saveButtonData);
@@ -296,13 +297,17 @@ class SpecifyServerDialog
 				ServerList serverList = serverTable.serverList;
 				MasterList master = serverList.master;
 				ServerHandle sh = master.findServer(address);
+				bool persistent = saveButton_.getSelection();
+
+				setSessionState("addServersAsPersistent",
+				                                persistent ? "true" : "false");
 
 				if (sh == InvalidServerHandle) {
 					ServerData sd;
 
 					sd.server.length = ServerColumn.max + 1;
 					sd.server[ServerColumn.ADDRESS] = address;
-					sd.persistent = saveButton_.getSelection();
+					sd.persistent = persistent;
 					master.addServer(sd);
 
 					queryServers([address], true, true);
@@ -488,7 +493,7 @@ class ServerPasswordDialog : PasswordDialog
 		password = getPassword(address);
 		if (askToSave)
 			savePassword = getSessionState("saveServerPasswords") == "true";
-		else 
+		else
 			savePassword = true;
 	}
 

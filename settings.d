@@ -191,6 +191,7 @@ useGslist=false
 	                                 {"windowPosition", "150, 150"},
 	                                 {"rconWindowPosition", "100, 100"},
 	                                 {"rconWindowSize", "640, 480"},
+	                                 {"addServersAsPersistent", "true"},
 	                                 {"saveRconPasswords", "true"},
 	                                 {"saveServerPasswords", "true"},
 	                                ];
