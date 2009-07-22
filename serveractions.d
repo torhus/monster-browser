@@ -159,7 +159,6 @@ void delegate() loadSavedList()
 		auto contr = new ServerRetrievalController(retriever);
 		contr.disableQueue();
 		contr.startMessage = "Loading saved server list...";
-		contr.noReplyMessage = "No servers were found in the file";
 		return &contr.run;
 	}
 	else {
@@ -263,7 +262,6 @@ void delegate() refreshList()
 		auto contr = new ServerRetrievalController(retriever);
 		contr.startMessage =
                             Format("Refreshing {} servers...", servers.length);
-		contr.noReplyMessage = "None of the servers replied";
 		return &contr.run;
 	}
 	else {
@@ -347,7 +345,6 @@ void delegate() getNewList()
 				auto contr = new ServerRetrievalController(retriever);
 				contr.startMessage = Format("Got {} servers, querying...",
 				                                             addresses.length);
-				contr.noReplyMessage = "None of the servers replied";
 				contr.run();
 			}
 		}
@@ -391,7 +388,6 @@ class ServerRetrievalController
 	 * Set before calling run() if you don't want the defaults to be used.
 	 */
 	char[] startMessage = "Querying server(s)...";
-	char[] noReplyMessage = "There was no reply";  /// ditto
 
 
 	/**
@@ -448,9 +444,7 @@ class ServerRetrievalController
 			statusBarUpdater_.text = startMessage;
 			Display.getDefault.syncExec(statusBarUpdater_);
 
-			serverCount_ = serverRetriever_.prepare();
-
-			if (serverCount_ != 0) {
+			if (serverRetriever_.prepare() != 0) {
 				auto dg = replace_ ? &serverList_.replace : &serverList_.add;
 
 				if (useQueue_) {
@@ -535,26 +529,21 @@ class ServerRetrievalController
 
 	private void done()
 	{
-		if (serverCount_ != timedOut_) {
-			int index = -1;
-			if (autoSelect.length) {
-				// FIXME: select them all, not just the first one
-				index = serverList_.getFilteredIndex(autoSelect[0]);
-				serverTable.setSelection([index], true);
-			}
-
-			// FIXME: only doing this so that players will be shown
-			serverTable.fullRefresh();
-
-			statusBar.setDefaultStatus(0,
-			                           serverList_.filteredLength,
-			                           timedOut_,
-			                           countHumanPlayers(serverList_));
+		int index = -1;
+		if (autoSelect.length) {
+			// FIXME: select them all, not just the first one
+			index = serverList_.getFilteredIndex(autoSelect[0]);
+			serverTable.setSelection([index], true);
 		}
-		else {
-			statusBar.setLeft(noReplyMessage);
-		}
-		serverTable.notifyRefreshEnded;
+
+		// FIXME: only doing this so that players will be shown
+		serverTable.fullRefresh();
+
+		statusBar.setDefaultStatus(0,
+		                           serverList_.filteredLength,
+		                           timedOut_,
+		                           countHumanPlayers(serverList_));
+		serverTable.notifyRefreshEnded();
 	}
 
 
@@ -569,7 +558,6 @@ class ServerRetrievalController
 
 	private {
 		IServerRetriever serverRetriever_;
-		int serverCount_;
 		int counter_ = 0;
 		uint timedOut_ = 0;
 		StatusBarUpdater statusBarUpdater_;
