@@ -456,9 +456,9 @@ private:
 
 	bool removeFromFiltered(in char[] address)
 	{
-		bool found;
-		int i = getFilteredIndex(address, &found);
-		assert(i != -1 || !found);
+		if (!ipHashValid_)
+			updateIpHash();
+		int i = getFilteredIndex(address);
 		if (i == -1)
 			return false;
 
