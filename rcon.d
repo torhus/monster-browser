@@ -43,6 +43,7 @@ class RconWindow
 	///
 	this(in char[] serverName, in char[] address, in char[] password)
 	{
+		serverName_ = serverName;
 		address_ = address;
 
 		shell_ = new Shell(Display.getDefault());
@@ -219,15 +220,10 @@ class RconWindow
 	///
 	void onChangePassword()
 	{
-		auto dialog = new PasswordDialog(shell_, "Change Password", "", true,
-		                                                                 true);
+		auto dialog = new RconPasswordDialog(shell_, serverName_, address_);
 		dialog.password = rcon_.password;
-		//FIXME: save or not by default?
-		if (dialog.open()) {
+		if (dialog.open())
 			rcon_.password = dialog.password;
-			if (dialog.savePassword)
-				setRconPassword(address_, dialog.password);
-		}
 	}
 
 
@@ -267,6 +263,7 @@ class RconWindow
 
 	private {
 		Shell shell_;
+		char[] serverName_;
 		char[] address_;
 		Text outputText_;
 		Text inputText_;
