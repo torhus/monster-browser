@@ -747,7 +747,8 @@ private:
 			new RconWindow(name, address, pw);
 		}
 		else {
-			auto dialog = new OpenRconDialog(mainWindow.handle, name, address);
+			auto dialog = new RconPasswordDialog(mainWindow.handle, name,
+			                                                          address);
 			if (dialog.open())
 				new RconWindow(name, address, dialog.password);
 		}

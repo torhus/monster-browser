@@ -471,23 +471,32 @@ private:
 }
 
 
-///
-class OpenRconDialog : PasswordDialog
+/**
+ * Takes care of saving but not loading passwords, and updating the
+ * "saveRconPasswords" setting.  Otherwise like PasswordDialog.
+ */
+class RconPasswordDialog : PasswordDialog
 {
 	///
 	this(Shell parent, in char[] serverName, in char[] address)
 	{
 		address_ = address;
-		super(parent, "Open Remote Console",
-		                           "Remote Console for \"" ~ serverName ~ "\"",
-		                                                           true, true);
+		super(parent, "Remote Console",
+		                "Set password for \"" ~ serverName ~ "\"", true, true);
+		savePassword = getSessionState("saveRconPasswords") == "true";
 	}
 
 	override bool open() ///
 	{
 		bool result = super.open();
-		if (result && savePassword)
-			setRconPassword(address_, password);
+		if (result) {
+			bool oldSave = getSessionState("saveRconPasswords") == "true";
+			if (savePassword)
+				setRconPassword(address_, password);
+			if (oldSave != savePassword)
+				setSessionState("saveRconPasswords",
+				                              savePassword ? "true" : "false");
+		}
 		return result;
 	}
 
