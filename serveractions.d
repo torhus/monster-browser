@@ -195,6 +195,8 @@ void queryServers(in char[][] addresses, bool replace=false, bool select=false)
 		auto retriever = new QstatServerRetriever(gameName, master,
 		                                   Set!(char[])(addresses_), replace_);
 		auto contr = new ServerRetrievalController(retriever, replace_);
+		contr.startMessage = Format("Querying {} server(s)...",
+		                                                    addresses_.length);
 		if (select_)
 			contr.autoSelect = addresses_;
 
@@ -383,9 +385,9 @@ void delegate() getNewList()
 class ServerRetrievalController
 {
 	/**
-	 * Status bar messages.
+	 * Status bar message.
 	 *
-	 * Set before calling run() if you don't want the defaults to be used.
+	 * Set before calling run() if you don't want the default to be used.
 	 */
 	char[] startMessage = "Querying server(s)...";
 
