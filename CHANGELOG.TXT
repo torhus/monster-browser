@@ -1,10 +1,12 @@
 Latest changes
 --------------
+- New: Remote console (rcon).
 - New: When multiple servers are selected, you can place the mouse pointer over
        a player name to get a tool tip showing the server name.  Double click a
        player to select the server he's on.
 - New: Show the total number of human players for the current game.
-- New: Ability to remove servers from the list.
+- New: Servers that time out three times in a row are automatically removed.
+- New: Ability to manually remove servers from the list.
 - Change: Set player count to zero for servers that timed out, so they don't
           show up when filters are enabled.
 - Change: Manually added servers are no longer saved to the *.extra files, only

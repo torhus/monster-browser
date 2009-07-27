@@ -170,6 +170,7 @@ useGslist=false
 	}
 	Setting[] defaults = [{"coloredNames", "true"},
 	                      {"lastMod", "Smokin' Guns"},
+	                      {"maxTimeouts", "3"},
 	                      {"minimizeOnGameLaunch", "true"},
 	                      {"showFlags", "true"},
 	                      {"simultaneousQueries", "20"},

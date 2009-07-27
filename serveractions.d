@@ -418,6 +418,11 @@ class ServerRetrievalController
 
 		serverList_ = serverTable.serverList;
 
+		try
+			maxTimeouts_ = Integer.toInt(getSetting("maxTimeouts"));
+		catch (IllegalArgumentException e)
+			maxTimeouts_ = 3;  // FIXME: use the actual default
+
 		Display.getDefault.syncExec(new class Runnable {
 			void run() { serverTable.notifyRefreshStarted(&stop); }
 		});
@@ -511,12 +516,20 @@ class ServerRetrievalController
 		assert(sh != InvalidServerHandle);
 
 		if (!replied) {
-			timedOut_++;
-			// Try to match using the old data, since we still want to
-			// display the server if we know it runs the right mod.
-			assert(!matched);  // assure we don't do this needlessly
 			ServerData sd = serverList_.master.getServerData(sh);
-			matched = matchMod(&sd, getGameConfig(serverList_.gameName).mod);
+			if (sd.failCount < maxTimeouts_) {
+				timedOut_++;
+				// Try to match using the old data, since we still want to
+				// display the server if we know it runs the right mod.
+				assert(!matched);  // assure we don't do this needlessly
+				matched =
+				        matchMod(&sd, getGameConfig(serverList_.gameName).mod);
+			}
+			else {
+				setEmpty(&sd);
+				serverList_.master.setServerData(sh, sd);
+				matched = false;
+			}
 		}
 
 		if (matched)
@@ -562,6 +575,7 @@ class ServerRetrievalController
 		IServerRetriever serverRetriever_;
 		int counter_ = 0;
 		uint timedOut_ = 0;
+		int maxTimeouts_;
 		StatusBarUpdater statusBarUpdater_;
 		bool replace_;
 		void delegate(ServerHandle) deliverDg_;
