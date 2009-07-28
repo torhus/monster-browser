@@ -49,6 +49,7 @@ Set!(char[]) browserGetNewList(in GameConfig game)
 		                                              game.masterServer ~ ",-";
 
 	// use gslist's server-sider filtering
+	// Note: gslist returns no servers if filtering on "baseq3"
 	if (gslist && MOD_ONLY && game.mod != "baseq3")
 		cmdLine ~= " -f \"(gametype = \'" ~ game.mod ~ "\'\")";
 
