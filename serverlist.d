@@ -307,7 +307,7 @@ private:
 
 	int sortColumn_ = ServerColumn.NAME;
 	bool reversed_ = false;
-	bool isSorted_= true;
+	bool isSorted_ = true;
 
 	Filter filters_ = Filter.NONE;
 
@@ -343,11 +343,11 @@ private:
 
 		if (column != sortColumn_) {
 			sortColumn_ = column;
-			isSorted_ = false;
+			isSorted_ = filteredList.length == 0;
 		}
 		if (reversed != reversed_) {
 			reversed_ = reversed;
-			isSorted_ = false;
+			isSorted_ = filteredList.length == 0;
 		}
 	}
 
