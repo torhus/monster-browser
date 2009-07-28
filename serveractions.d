@@ -517,7 +517,7 @@ class ServerRetrievalController
 
 		if (!replied) {
 			ServerData sd = serverList_.master.getServerData(sh);
-			if (sd.failCount < maxTimeouts_) {
+			if (sd.failCount <= maxTimeouts_) {
 				timedOut_++;
 				// Try to match using the old data, since we still want to
 				// display the server if we know it runs the right mod.
