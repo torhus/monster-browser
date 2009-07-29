@@ -24,6 +24,11 @@ If you want to query a server that isn't registered with the master server, you 
 If you have more than a couple of servers to add, it's easier to add them directly to a file called '<gamename>.extra' in the Monster Browser directory.  The format is just one IP address per line, with or without a port number.  For instance, when refreshing a list or checking for new servers for the cpma mod, Monster Browser checks for existence of a file called 'cpma.extra', and adds any servers listed in it to the list of servers to query.
 
 
+Remote Console
+--------------
+The remote console (rcon) lets you send commands to a game server.  It's an advanced feature primarily useful for server administrators.  To open a remote console window, select a server and press F10, or use the context menu.  The up and down arrow keys access the command history, while page up and page down scroll the output window.  Pressing Esc closes the window.
+
+
 Keyboard shortcuts
 ------------------
 F4     - Check for new servers

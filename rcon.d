@@ -47,7 +47,7 @@ class RconWindow
 		address_ = address;
 
 		shell_ = new Shell(Display.getDefault());
-		shell_.setText("Remote Console for " ~ serverName);
+		shell_.setText(serverName ~ " - Remote Console");
 
 		// restore window size and position
 		int[] size = parseIntList(getSessionState("rconWindowSize"), 2, 480);
