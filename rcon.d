@@ -310,8 +310,8 @@ private class Rcon
 		size_t written = conn_.write(s);
 		if (written < s.length) {
 			log(Format("Rcon: Only {} of {} bytes sent.", written, s.length));
-			error("An error occurred while sending the\n"
-			      "command, please check your connection.");
+			error("An error occurred while sending the command, please check "
+			                                               "your connection.");
 		}
 	}
 
