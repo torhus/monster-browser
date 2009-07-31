@@ -55,7 +55,7 @@ bool parseOutput(in char[] modName, Lines!(char) iter,
 			                                   "qstat.out", WriteCreateShared));
 		}
 		catch (IOException e) {
-			error("Unable to create file, qstat output will not be saved"
+			error("Unable to create file, qstat output will not be saved "
 			                                                       "to disk.");
 			outfile = null;
 		}

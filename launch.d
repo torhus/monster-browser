@@ -47,7 +47,7 @@ void joinServer(in char[] gameName, ServerData sd)
 
 	path = FilePath(replace(pathString, '\\', '/'));
 	if (!path.exists || path.isFolder) {
-		error(path.toString ~ " was not found or is not a file,\n"
+		error(path.toString ~ " was not found or is not a file, "
 		                                        "please check your settings.");
 		return;
 	}
