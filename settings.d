@@ -497,7 +497,7 @@ private char[] autodetectQuake3Path()
  */
 private char[] getProgramFilesDirectory()
 {
-	char buf[MAX_PATH];
+	char buf[MAX_PATH] = void;
 	auto r = SHGetSpecialFolderPathA(null, buf.ptr, CSIDL_PROGRAM_FILES,
 	                                                                    false);
 	assert(r);
@@ -506,11 +506,13 @@ private char[] getProgramFilesDirectory()
 
 
 /**
+ * Returns the value of a registry key, or null if there was an error.
+ 
  * Throws: IllegalArgumentException if the argument is not a valid key.
  *
  * BUGS: Doesn't convert arguments to ANSI.
  */
-private char[] getRegistryStringValue(in char[] key)
+version (Windows) private char[] getRegistryStringValue(in char[] key)
 {
 	HKEY hKey;
 	DWORD dwType = REG_SZ;
@@ -518,7 +520,7 @@ private char[] getRegistryStringValue(in char[] key)
 	LPBYTE lpData = buf.ptr;
 	DWORD dwSize = buf.length;
 	LONG status;
-	char[] retval = null;
+	char[] retval;
 
 	char[][] parts = split(key, "\\");
 	if (parts.length < 3)
@@ -528,7 +530,7 @@ private char[] getRegistryStringValue(in char[] key)
 	char[] subKey = join(parts[1..$-1], "\\");
 	char[] name = parts[$-1];
 
-	status = RegOpenKeyExA(keyConst, toStringz(subKey), 0L, KEY_ALL_ACCESS,
+	status = RegOpenKeyExA(keyConst, toStringz(subKey), 0, KEY_ALL_ACCESS,
 	                                                                    &hKey);
 
 	if (status == ERROR_SUCCESS) {
@@ -552,12 +554,12 @@ private char[] getRegistryStringValue(in char[] key)
 		RegCloseKey(hKey);
 	}
 
-	return retval;
+	return (status == ERROR_SUCCESS) ? retval : null;
 }
 
 
 /// Throws: IllegalArgumentException.
-private HKEY hkeyFromString(in char[] s)
+version (Windows) private HKEY hkeyFromString(in char[] s)
 {
 	if (icompare(s, "HKEY_CLASSES_ROOT") == 0)
 		return HKEY_CLASSES_ROOT;
