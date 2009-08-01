@@ -15,10 +15,8 @@ import ini;
 version (Windows) {
 	import tango.stdc.stringz;
 	import tango.sys.win32.CodePage;
+	import tango.sys.win32.SpecialPath;
 	import tango.sys.win32.UserGdi;
-
-	enum { CSIDL_PROGRAM_FILES = 38 }
-	extern (Windows) BOOL SHGetSpecialFolderPathA(HWND, LPSTR, int, BOOL);
 
 	const HKEY_CLASSES_ROOT  = cast(HKEY)0x80000000;
 	const HKEY_CURRENT_USER  = cast(HKEY)0x80000001;
@@ -497,11 +495,9 @@ private char[] autodetectQuake3Path()
  */
 private char[] getProgramFilesDirectory()
 {
-	char buf[MAX_PATH] = void;
-	auto r = SHGetSpecialFolderPathA(null, buf.ptr, CSIDL_PROGRAM_FILES,
-	                                                                    false);
-	assert(r);
-	return r ? fromStringz(buf.ptr).dup : "C:\\Program Files".dup;
+	char[] path = getSpecialPath(CSIDL_PROGRAM_FILES);
+	assert(path.length);
+	return path.length ? path : "C:\\Program Files".dup;
 }
 
 
