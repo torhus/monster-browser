@@ -406,8 +406,6 @@ class ServerRetrievalController
 	 * Params:
 	 *     replace = Pass the received servers to ServerList.replace instead of
 	 *               the default ServerList.add.
-	 *     store   = Add or update this server in the MasterList object
-	 *               associated with this game/mod.
 	 */
 	this(IServerRetriever retriever, bool replace=false)
 	{
@@ -528,6 +526,8 @@ class ServerRetrievalController
 			else {
 				setEmpty(&sd);
 				serverList_.master.setServerData(sh, sd);
+				if (replace_)
+					refillAndRefresh();  // make server disappear from GUI
 				matched = false;
 			}
 		}
@@ -561,6 +561,17 @@ class ServerRetrievalController
 		serverTable.notifyRefreshEnded();
 	}
 
+
+	private void refillAndRefresh()
+	{
+		Display.getDefault.syncExec(new class Runnable {
+			void run()
+			{
+				serverList_.refillFromMaster();
+				serverTable.fullRefresh();
+			}
+		});
+	}
 
 	// Just a workaround for ServerQueue.add and ServerList.add and replace
 	// not having the same signatures.
