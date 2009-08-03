@@ -9,7 +9,7 @@ To update the server list, press the 'Refresh All' button.  This happens automat
 
 The filters and column sorting should be pretty straight forward to use.  You can leave the filters on while doing a refresh, all the servers will be queried anyway.
 
-To join a server, just select it and double click or press <enter>.  If the server requires a password, a password dialog will pop up.  To change the password, or add an optional password for servers with private slots, select 'Set password' in the right-click menu.
+To join a server, just select it and double click or press <Enter>.  If the server requires a password, a password dialog will pop up.  To change the password, or add an optional password for servers with private slots, select 'Set password' in the right-click menu.
 
 
 Customizing the Game List
