@@ -1,5 +1,5 @@
-Latest changes
---------------
+v0.6 - 2009-08-03
+-----------------
 - New: Remote console (rcon).
 - New: When multiple servers are selected, you can place the mouse pointer over
        a player name to get a tool tip showing the server name.  Double click a
