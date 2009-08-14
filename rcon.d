@@ -21,6 +21,7 @@ import dwt.widgets.Shell;
 import dwt.widgets.Text;
 
 import tango.core.Array;
+import tango.core.Exception;
 import tango.core.Thread;
 import tango.io.selector.Selector;
 import tango.net.DatagramConduit;
@@ -37,14 +38,39 @@ import messageboxes;
 import settings;
 
 
+
+///
+bool openRconWindow(in char[] serverName, in char[] address,
+                                                          in char[] password) {
+
+	Rcon rcon;
+
+	try {
+		rcon = new Rcon(address, password);
+	}
+	catch (SocketException e) {
+		error(e.toString());
+	}
+
+	if (rcon) {
+		new RconWindow(serverName, rcon);
+		return true;
+	}
+
+	return false;
+}
+
+
 ///
 class RconWindow
 {
 	///
-	this(in char[] serverName, in char[] address, in char[] password)
+	this(in char[] serverName, Rcon rcon)
 	{
 		serverName_ = serverName;
-		address_ = address;
+		assert(rcon);
+		rcon_ = rcon;
+		rcon_.output = &deliverOutput;
 
 		shell_ = new Shell(Display.getDefault());
 		shell_.setText(serverName ~ " - Remote Console");
@@ -93,8 +119,6 @@ class RconWindow
 		shell_.addKeyListener(commonKeyListener);
 		outputText_.addKeyListener(commonKeyListener);
 		inputText_.addKeyListener(commonKeyListener);
-
-		rcon_ = new Rcon(address, password, &deliverOutput);
 
 		shell_.addShellListener(new class ShellAdapter
 		{
@@ -220,7 +244,8 @@ class RconWindow
 	///
 	void onChangePassword()
 	{
-		auto dialog = new RconPasswordDialog(shell_, serverName_, address_);
+		auto dialog = new RconPasswordDialog(shell_, serverName_,
+		                                                        rcon_.address);
 		dialog.password = rcon_.password;
 		if (dialog.open())
 			rcon_.password = dialog.password;
@@ -264,7 +289,6 @@ class RconWindow
 	private {
 		Shell shell_;
 		char[] serverName_;
-		char[] address_;
 		Text outputText_;
 		Text inputText_;
 		Rcon rcon_;
@@ -283,13 +307,15 @@ private class Rcon
 	char[] password;
 
 
-	///
-	this(in char[] address, in char[] password, void delegate(char[]) output)
+	/**
+	* Throws: SocketException if unable to connect.
+	*/
+	this(in char[] address, in char[] password)
 	{
+		address_ = address;
 		conn_ = new DatagramConduit;
-		conn_.connect(new InternetAddress(address));
+		conn_.connect(new InternetAddress(address_));
 		this.password = password;
-		output_ = output;
 
 		Thread thread = new Thread(&receive);
 		thread.isDaemon = true;
@@ -301,6 +327,8 @@ private class Rcon
 	/// Send a command to the server.
 	void command(in char[] cmd)
 	{
+		assert(output_);
+
 		char[] s = "\xff\xff\xff\xff" ~ "rcon \"" ~ password ~ "\" " ~ cmd;
 		size_t written = conn_.write(s);
 		if (written < s.length) {
@@ -312,7 +340,15 @@ private class Rcon
 
 
 	///
+	char[] address() { return address_; }
+
+
+	///
 	void shutdown() { stop_ = true; }
+
+
+	/// Sets the sink that receives the output.
+	private void output(void delegate(char[]) dg) { output_ = dg;  }
 
 
 	/// Waits for data in a separate thread, dumps it to output window.
@@ -347,6 +383,7 @@ private class Rcon
 
 	private {
 		DatagramConduit conn_;
+		char[] address_;
 		bool stop_ = false;
 		void delegate(char[]) output_;
 	}
