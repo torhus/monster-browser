@@ -739,13 +739,13 @@ private:
 		char[] pw = getRconPassword(address);
 
 		if (pw.length > 0) {
-			new RconWindow(name, address, pw);
+			openRconWindow(name, address, pw);
 		}
 		else {
 			auto dialog = new RconPasswordDialog(mainWindow.handle, name,
 			                                                          address);
 			if (dialog.open())
-				new RconWindow(name, address, dialog.password);
+				openRconWindow(name, address, dialog.password);
 		}
 	}
 
