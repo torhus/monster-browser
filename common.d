@@ -43,6 +43,8 @@ static:
 
 
 char[] appDir;  /// Absolute path to where the application is installed.
+char[] dataDir;  /// Absolute path to where settings and data is stored.
+char[] logDir;  /// Absolute path to where the log file is.
 
 bool haveGslist;  /// Will be true if gslist was found during startup.
 
@@ -97,8 +99,8 @@ void initLogging(char[] name="LOG.TXT")
 	const char[] sep =
 	           "-------------------------------------------------------------";
 	char[] error = null;
-	assert(appDir);
-	char[] path = appDir ~ name;
+	assert(logDir);
+	char[] path = logDir ~ name;
 
 	if (Path.exists(path) && Path.fileSize(path) < MAX_LOG_SIZE)
 		logfile = new File(path, WriteAppendingShared);
