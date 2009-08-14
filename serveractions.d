@@ -154,7 +154,7 @@ void delegate() loadSavedList()
 	GC.collect();
 
 	GameConfig game = getGameConfig(serverList.gameName);
-	if (Path.exists(appDir ~ master.fileName)) {
+	if (Path.exists(dataDir ~ master.fileName)) {
 		auto retriever = new MasterListServerRetriever(game, master);
 		auto contr = new ServerRetrievalController(retriever);
 		contr.disableQueue();

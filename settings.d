@@ -49,7 +49,7 @@ struct GameConfig
 
 	char[] extraServersFile() /// Like "baseq3.extra".
 	{
-		return appDir ~ mod ~ ".extra";
+		return appDir ~ mod ~ ".extra";  // FIXME: check dataDir too?
 	}
 
 	/**
@@ -293,8 +293,8 @@ private void writeDefaultGamesFile()
  */
 void loadSettings()
 {
-	assert(appDir !is null);
-	settingsFileName = appDir ~ "settings.ini";
+	assert(dataDir.length);
+	settingsFileName = dataDir ~ "settings.ini";
 
 	settingsIni = new Ini(settingsFileName);
 	IniSection sec = settingsIni.addSection("Settings");
@@ -320,7 +320,7 @@ void loadSettings()
 
 	loadSessionState();
 
-	gamesFileName = appDir ~ "mods.ini";
+	gamesFileName = dataDir ~ "mods.ini";
 	loadGamesFile();
 }
 
@@ -503,7 +503,7 @@ private char[] getProgramFilesDirectory()
 
 /**
  * Returns the value of a registry key, or null if there was an error.
- 
+
  * Throws: IllegalArgumentException if the argument is not a valid key.
  *
  * BUGS: Doesn't convert arguments to ANSI.
