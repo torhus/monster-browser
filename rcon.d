@@ -287,12 +287,7 @@ private class Rcon
 	this(in char[] address, in char[] password, void delegate(char[]) output)
 	{
 		conn_ = new DatagramConduit;
-		auto colon = locate(address, ':', 0);
-		char[] ip = address[0..colon];
-		int port = 27960;
-		if (colon < address.length)
-			port = Integer.toInt(address[colon+1..$]);
-		conn_.connect(new InternetAddress(address, port));
+		conn_.connect(new InternetAddress(address));
 		this.password = password;
 		output_ = output;
 
