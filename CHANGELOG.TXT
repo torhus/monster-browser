@@ -1,3 +1,9 @@
+Latest changes
+--------------
+- Change: Settings and data are now stored in a user-specific location, instead
+  of the installation folder.  The installer will move your files to this
+  location so you don't lose your current settings or server lists.
+
 v0.6 - 2009-08-03
 -----------------
 - New: Remote console (rcon).
