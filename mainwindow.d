@@ -141,12 +141,10 @@ class MainWindow
 
 
 		// **************** STATUS BAR ******************************
-		Composite statusComposite = new Composite(shell_, DWT.NONE);
+		statusBar = new StatusBar(shell_);
 		auto statusData = new GridData(DWT.FILL, DWT.CENTER, true, false);
 		statusData.horizontalSpan = 2;
-		statusComposite.setLayoutData(statusData);
-		statusComposite.setLayout(new FillLayout);
-		statusBar = new StatusBar(statusComposite);
+		statusBar.setLayoutData(statusData);
 		statusBar.setLeft(APPNAME ~ " is ready.");
 	}
 
@@ -224,12 +222,14 @@ class MainWindow
 
 
 ///
-class StatusBar
+class StatusBar : Composite
 {
 	///
 	this(Composite parent)
 	{
-		leftLabel_ = new Label(parent, DWT.NONE);
+		super(parent, DWT.NONE);
+		setLayout(new FillLayout);
+		leftLabel_ = new Label(this, DWT.NONE);
 	}
 
 	void setLeft(char[] text)  ///
