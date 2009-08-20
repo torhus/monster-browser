@@ -2,12 +2,12 @@ module main;
 
 // Workaround for a bug in dmd < 1.041.
 // http://d.puremagic.com/issues/show_bug.cgi?id=2673
-static if (__VERSION__ < 1041) {
+/*static if (__VERSION__ < 1041) {
 	debug import tango.core.stacktrace.StackTrace;
 	debug version = bug2673;
-}
+}*/
 import tango.core.Thread;
-debug import tango.core.stacktrace.TraceExceptions;
+//debug import tango.core.stacktrace.TraceExceptions;
 import tango.io.Console;
 import tango.io.Path;
 import tango.io.device.BitBucket;
