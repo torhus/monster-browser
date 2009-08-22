@@ -6,6 +6,7 @@ version = icons;
 
 import tango.text.Util;
 import Integer = tango.text.convert.Integer;
+import tango.text.convert.Layout;
 
 import dwt.DWT;
 import dwt.custom.SashForm;
@@ -243,6 +244,7 @@ class StatusBar : Composite
 		auto progressData = new GridData(DWT.RIGHT, DWT.CENTER, false, false);
 		progressBar_.setLayoutData(progressData);
 
+		layout_ = new Layout!(char);
 	}
 
 	void setLeft(char[] text)  ///
@@ -255,17 +257,17 @@ class StatusBar : Composite
 	void setDefaultStatus(uint totalServers, uint shownServers,
 	                                            uint noReply, uint humans)  ///
 	{
-		char[] msg = Integer.toString(shownServers) ~ " servers";
+		char[] fmt = "{1} servers";
 
 		/*if (noReply > 0)
-			msg ~= " (" ~ Integer.toString(noReply) ~ " did not reply)";*/
+			fmt ~= " ({2} did not reply)";*/
 
 		if (humans > 0)
-			msg ~= ", "  ~ Integer.toString(humans) ~ " people are playing";
+			fmt ~= ", {3} people are playing";
 		else if (humans == 0)
-			msg ~= ", no human players";
+			fmt ~= ", no human players";
 
-		setLeft(msg);
+		setLeft(format(fmt, totalServers, shownServers, noReply, humans));
 	}
 
 
@@ -298,10 +300,21 @@ class StatusBar : Composite
 	}
 
 
+	private char[] format(char[] fmt, ...)
+	{
+		char[] result = layout_.vprint(buffer_, fmt, _arguments, _argptr);
+		// check that the buffer was big enough
+		assert(result.ptr == buffer_.ptr);
+		return result;
+	}
+
+
 private:
 	Label leftLabel_;
 	//Label progressLabel_;
 	ProgressBar progressBar_;
+	Layout!(char) layout_;
+	char[100] buffer_;
 }
 
 
