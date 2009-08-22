@@ -30,6 +30,7 @@ import dwt.widgets.Display;
 version (icons)
 	import dwt.widgets.Group;
 import dwt.widgets.Label;
+import dwt.widgets.ProgressBar;
 import dwt.widgets.Shell;
 import dwt.widgets.ToolBar;
 import dwt.widgets.ToolItem;
@@ -228,8 +229,20 @@ class StatusBar : Composite
 	this(Composite parent)
 	{
 		super(parent, DWT.NONE);
-		setLayout(new FillLayout);
+		auto layout = new GridLayout(2, false);
+		layout.marginWidth = 2;
+		layout.marginHeight = 0;
+		setLayout(layout);
+
 		leftLabel_ = new Label(this, DWT.NONE);
+		auto leftData = new GridData(DWT.FILL, DWT.CENTER, true, false);
+		leftLabel_.setLayoutData(leftData);
+
+		progressBar_ = new ProgressBar(this, DWT.RIGHT);
+		//progressBar_.setSize(computeSize(300, DWT.DEFAULT));
+		auto progressData = new GridData(DWT.RIGHT, DWT.CENTER, false, false);
+		progressBar_.setLayoutData(progressData);
+
 	}
 
 	void setLeft(char[] text)  ///
@@ -244,8 +257,8 @@ class StatusBar : Composite
 	{
 		char[] msg = Integer.toString(shownServers) ~ " servers";
 
-		if (noReply > 0)
-			msg ~= " (" ~ Integer.toString(noReply) ~ " did not reply)";
+		/*if (noReply > 0)
+			msg ~= " (" ~ Integer.toString(noReply) ~ " did not reply)";*/
 
 		if (humans > 0)
 			msg ~= ", "  ~ Integer.toString(humans) ~ " people are playing";
@@ -255,8 +268,40 @@ class StatusBar : Composite
 		setLeft(msg);
 	}
 
+
+	void showProgress()
+	{
+		if (progressBar_.isDisposed())
+			return;
+		//progressLabel_.setVisible(true);
+		progressBar_.setVisible(true);
+	}
+
+
+	void hideProgress()
+	{
+		if (progressBar_.isDisposed())
+			return;
+		//progressLabel_.setVisible(false);
+		progressBar_.setVisible(false);
+	}
+
+
+	void setProgress(int total, int current)
+	{
+		if (progressBar_.isDisposed())
+			return;
+		//char[] text = Format("Queried {} of {} servers", current, total);
+		//progressLabel_.setText(text);
+		progressBar_.setMaximum(total);
+		progressBar_.setSelection(current);
+	}
+
+
 private:
 	Label leftLabel_;
+	//Label progressLabel_;
+	ProgressBar progressBar_;
 }
 
 

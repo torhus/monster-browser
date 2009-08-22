@@ -449,7 +449,9 @@ class ServerRetrievalController
 			statusBarUpdater_.text = startMessage;
 			Display.getDefault.syncExec(statusBarUpdater_);
 
-			if (serverRetriever_.prepare() != 0) {
+			total_ = serverRetriever_.prepare();
+
+			if (total_ != 0) {
 				auto dg = replace_ ? &serverList_.replace : &serverList_.add;
 
 				if (useQueue_) {
@@ -460,6 +462,10 @@ class ServerRetrievalController
 					deliverDg2_ = dg;
 					deliverDg_ = &deliverDgWrapper;
 				}
+
+				Display.getDefault.syncExec(new class Runnable {
+					void run() { statusBar.showProgress(); }
+				});
 
 				serverRetriever_.retrieve(&deliver);
 				serverList_.complete = !threadManager.abort;
@@ -486,6 +492,8 @@ class ServerRetrievalController
 						done;
 					else
 						serverTable.notifyRefreshEnded;
+
+					statusBar.hideProgress();
 				}
 			});
 		}
@@ -511,6 +519,8 @@ class ServerRetrievalController
 
 	private bool deliver(ServerHandle sh, bool replied, bool matched)
 	{
+		counter_++;
+
 		assert(sh != InvalidServerHandle);
 
 		if (!replied) {
@@ -535,7 +545,17 @@ class ServerRetrievalController
 		if (matched)
 			deliverDg_(sh);
 
-		statusBarUpdater_.text = startMessage ~ Integer.toString(counter_++);
+		//statusBarUpdater_.text = startMessage ~ Integer.toString(counter_);
+		// FIXME: these numbers are old, serverList might not be updated yet.
+		// Maybe do this in deliverDg_ or sth instead?
+		statusBarUpdater_.shownServers = serverList_.filteredLength;
+		statusBarUpdater_.noReply = timedOut_;
+		statusBarUpdater_.humanCount = countHumanPlayers(serverList_);
+
+		// progress display
+		statusBarUpdater_.totalToQuery = total_;
+		statusBarUpdater_.progress = counter_;
+
 		Display.getDefault.syncExec(statusBarUpdater_);
 
 		return !threadManager.abort;
@@ -585,6 +605,7 @@ class ServerRetrievalController
 	private {
 		IServerRetriever serverRetriever_;
 		int counter_ = 0;
+		int total_;
 		uint timedOut_ = 0;
 		int maxTimeouts_;
 		StatusBarUpdater statusBarUpdater_;
@@ -602,8 +623,18 @@ class ServerRetrievalController
 
 private class StatusBarUpdater : Runnable {
 	char[] text;
+	int shownServers;
+	int noReply;
+	int humanCount;
+	int totalToQuery;
+	int progress;
 
 	this(char[] text=null) { this.text = text; }
 
-	void run() { statusBar.setLeft(text); }
+	//void run() { statusBar.setLeft(text); }
+	void run()
+	{
+		statusBar.setDefaultStatus(0, shownServers, noReply, humanCount);
+		statusBar.setProgress(totalToQuery, progress);
+	}
 }
