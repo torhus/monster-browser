@@ -230,7 +230,7 @@ class StatusBar : Composite
 	this(Composite parent)
 	{
 		super(parent, DWT.NONE);
-		auto layout = new GridLayout(2, false);
+		auto layout = new GridLayout(3, false);
 		layout.marginWidth = 2;
 		layout.marginHeight = 0;
 		setLayout(layout);
@@ -239,10 +239,11 @@ class StatusBar : Composite
 		auto leftData = new GridData(DWT.FILL, DWT.CENTER, true, false);
 		leftLabel_.setLayoutData(leftData);
 
-		progressBar_ = new ProgressBar(this, DWT.RIGHT);
-		//progressBar_.setSize(computeSize(300, DWT.DEFAULT));
-		auto progressData = new GridData(DWT.RIGHT, DWT.CENTER, false, false);
-		progressBar_.setLayoutData(progressData);
+		progressLabel_ = new Label(this, DWT.RIGHT);
+		progressLabel_.setVisible(false);
+
+		progressBar_ = createProgressBar(false);
+		progressBar_.setVisible(false);
 
 		layout_ = new Layout!(char);
 	}
@@ -271,21 +272,41 @@ class StatusBar : Composite
 	}
 
 
-	void showProgress()
+	void showProgress(in char[] label, bool indeterminate=false)
 	{
-		if (progressBar_.isDisposed())
+		if (isDisposed())
 			return;
-		//progressLabel_.setVisible(true);
+
+		assert(progressBar_ !is null);
+
+		if ((progressBar_.getStyle() & DWT.INDETERMINATE) != indeterminate) {
+			// remove the old ProgressBar, insert a new one
+			progressBar_.dispose();
+			progressBar_ = createProgressBar(indeterminate);
+			getLayout().layout(this, true);
+		}
+		setProgressLabel(label);
+		progressBar_.setSelection(0);
+		progressLabel_.setVisible(true);
 		progressBar_.setVisible(true);
 	}
 
 
 	void hideProgress()
 	{
-		if (progressBar_.isDisposed())
+		if (progressLabel_.isDisposed() || progressBar_.isDisposed())
 			return;
-		//progressLabel_.setVisible(false);
+		progressLabel_.setVisible(false);
 		progressBar_.setVisible(false);
+	}
+
+
+	private void setProgressLabel(in char[] text)
+	{
+		if (progressLabel_.isDisposed())
+			return;
+		progressLabel_.setText(text ~ ":");
+		getLayout().layout(this, true);
 	}
 
 
@@ -300,6 +321,17 @@ class StatusBar : Composite
 	}
 
 
+	private ProgressBar createProgressBar(bool indeterminate)
+	{
+		auto pb = new ProgressBar(this, indeterminate ?
+		                                         DWT.INDETERMINATE : DWT.NONE);
+		auto data = new GridData(DWT.RIGHT, DWT.CENTER, false, false);
+		data.widthHint = 100;
+		pb.setLayoutData(data);
+		return pb;
+	}
+
+
 	private char[] format(char[] fmt, ...)
 	{
 		char[] result = layout_.vprint(buffer_, fmt, _arguments, _argptr);
@@ -311,7 +343,7 @@ class StatusBar : Composite
 
 private:
 	Label leftLabel_;
-	//Label progressLabel_;
+	Label progressLabel_;
 	ProgressBar progressBar_;
 	Layout!(char) layout_;
 	char[100] buffer_;

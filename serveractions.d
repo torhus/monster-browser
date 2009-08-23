@@ -264,6 +264,7 @@ void delegate() refreshList()
 		auto contr = new ServerRetrievalController(retriever);
 		contr.startMessage =
                             Format("Refreshing {} servers...", servers.length);
+		contr.progressLabel = "Refreshing servers";
 		return &contr.run;
 	}
 	else {
@@ -286,12 +287,28 @@ void delegate() getNewList()
 			ServerList serverList = serverTable.serverList;
 			MasterList master = serverList.master;
 			GameConfig game = getGameConfig(serverList.gameName);
+
+			Display.getDefault().syncExec(new class Runnable {
+				void run()
+				{
+					statusBar.showProgress("Getting new list from master",
+					                                                     true);
+				}
+			});
+
 			Set!(char[]) addresses = browserGetNewList(game);
 
 			// Make sure we don't start removing servers based on an incomplete
 			// address list.
-			if (threadManager.abort)
+			if (threadManager.abort) {
+				Display.getDefault().syncExec(new class Runnable {
+					void run()
+					{
+						statusBar.hideProgress();
+					}
+				});
 				return;
+			}
 
 			size_t total = addresses.length;
 			int removed = 0;
@@ -335,6 +352,7 @@ void delegate() getNewList()
 				Display.getDefault.asyncExec(new class Runnable {
 					void run()
 					{
+						statusBar.hideProgress();
 						serverTable.fullRefresh;
 						serverTable.notifyRefreshEnded;
 						statusBar.setLeft("There were no new servers.");
@@ -347,6 +365,7 @@ void delegate() getNewList()
 				auto contr = new ServerRetrievalController(retriever);
 				contr.startMessage = Format("Got {} servers, querying...",
 				                                             addresses.length);
+				contr.progressLabel = "Checking for new servers";
 				contr.run();
 			}
 		}
@@ -358,11 +377,11 @@ void delegate() getNewList()
 
 	ServerList serverList = serverTable.serverList;
 	if (serverList.master.length > 0) {
-		statusBar.setLeft("Checking for new servers...");
+		//statusBar.setLeft("Checking for new servers...");
 		log("Checking for new servers for " ~ serverList.gameName ~ "...");
 	}
 	else {
-		statusBar.setLeft("Getting new server list...");
+		//statusBar.setLeft("Getting new server list...");
 		log("Getting new server list for " ~ serverList.gameName ~ "...");
 	}
 	serverTable.notifyRefreshStarted((bool) { threadManager.abort = true; });
@@ -390,6 +409,14 @@ class ServerRetrievalController
 	 * Set before calling run() if you don't want the default to be used.
 	 */
 	char[] startMessage = "Querying server(s)...";
+
+	/**
+	 * Text label for the progress bar.
+	 *
+	 * Set before calling run() if you don't want the default to be used.
+	 */
+
+	char[] progressLabel = "Querying servers";
 
 
 	/**
@@ -464,7 +491,10 @@ class ServerRetrievalController
 				}
 
 				Display.getDefault.syncExec(new class Runnable {
-					void run() { statusBar.showProgress(); }
+					void run()
+					{
+						statusBar.showProgress(progressLabel);
+					}
 				});
 
 				serverRetriever_.retrieve(&deliver);
