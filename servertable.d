@@ -654,8 +654,9 @@ private:
 	 */
 	void updateStatusBar()
 	{
-		assert(table_.getItemCount() == serverList_.filteredLength);
-		statusBar.setDefaultStatus(0, table_.getItemCount(), 0,
+		int itemCount = table_.getItemCount();
+		assert(itemCount == serverList_.filteredLength || itemCount == 0);
+		statusBar.setDefaultStatus(0, itemCount, 0,
 		                                       countHumanPlayers(serverList_));
 	}
 
