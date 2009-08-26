@@ -156,7 +156,7 @@ void delegate() loadSavedList()
 		auto retriever = new MasterListServerRetriever(game, master);
 		auto contr = new ServerRetrievalController(retriever);
 		contr.disableQueue();
-		contr.startMessage = "Loading saved server list...";
+		statusBar.setLeft("Loading saved server list...");
 		return &contr.run;
 	}
 	else {
@@ -193,8 +193,7 @@ void queryServers(in char[][] addresses, bool replace=false, bool select=false)
 		auto retriever = new QstatServerRetriever(gameName, master,
 		                                   Set!(char[])(addresses_), replace_);
 		auto contr = new ServerRetrievalController(retriever, replace_);
-		contr.startMessage = Format("Querying {} server(s)...",
-		                                                    addresses_.length);
+
 		if (select_)
 			contr.autoSelect = addresses_;
 
@@ -260,8 +259,6 @@ void delegate() refreshList()
 		auto retriever = new QstatServerRetriever(game.name, master, servers,
 		                                                                 true);
 		auto contr = new ServerRetrievalController(retriever);
-		contr.startMessage =
-                            Format("Refreshing {} servers...", servers.length);
 		contr.progressLabel = "Refreshing servers";
 		return &contr.run;
 	}
@@ -361,8 +358,6 @@ void delegate() getNewList()
 				auto retriever = new QstatServerRetriever(game.name, master,
 				                                              addresses, true);
 				auto contr = new ServerRetrievalController(retriever);
-				contr.startMessage = Format("Got {} servers, querying...",
-				                                             addresses.length);
 				contr.progressLabel = "Checking for new servers";
 				contr.run();
 			}
@@ -401,13 +396,6 @@ void delegate() getNewList()
  */
 class ServerRetrievalController
 {
-	/**
-	 * Status bar message.
-	 *
-	 * Set before calling run() if you don't want the default to be used.
-	 */
-	char[] startMessage = "Querying server(s)...";
-
 	/**
 	 * Text label for the progress bar.
 	 *
@@ -571,8 +559,6 @@ class ServerRetrievalController
 
 		if (matched)
 			deliverDg_(sh);
-
-		//statusBarUpdater_.text = startMessage ~ Integer.toString(counter_);
 
 		// progress display
 		statusBarUpdater_.totalToQuery = total_;
