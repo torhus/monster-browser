@@ -6,7 +6,7 @@ version = icons;
 
 import tango.text.Util;
 import Integer = tango.text.convert.Integer;
-import tango.text.convert.Layout;
+import tango.text.convert.Format;
 
 import dwt.DWT;
 import dwt.custom.SashForm;
@@ -244,15 +244,12 @@ class StatusBar : Composite
 
 		progressBar_ = createProgressBar(false);
 		progressBar_.setVisible(false);
-
-		layout_ = new Layout!(char);
 	}
 
 	void setLeft(char[] text)  ///
 	{
-		if (!leftLabel_.isDisposed) {
+		if (!leftLabel_.isDisposed())
 			leftLabel_.setText(text);
-		}
 	}
 
 	void setDefaultStatus(uint totalServers, uint shownServers,
@@ -268,7 +265,7 @@ class StatusBar : Composite
 		else if (humans == 0)
 			fmt ~= ", no human players";
 
-		setLeft(format(fmt, totalServers, shownServers, noReply, humans));
+		setLeft(Format(fmt, totalServers, shownServers, noReply, humans));
 	}
 
 
@@ -314,8 +311,6 @@ class StatusBar : Composite
 	{
 		if (progressBar_.isDisposed())
 			return;
-		//char[] text = Format("Queried {} of {} servers", current, total);
-		//progressLabel_.setText(text);
 		progressBar_.setMaximum(total);
 		progressBar_.setSelection(current);
 	}
@@ -332,21 +327,10 @@ class StatusBar : Composite
 	}
 
 
-	private char[] format(char[] fmt, ...)
-	{
-		char[] result = layout_.vprint(buffer_, fmt, _arguments, _argptr);
-		// check that the buffer was big enough
-		assert(result.ptr == buffer_.ptr);
-		return result;
-	}
-
-
 private:
 	Label leftLabel_;
 	Label progressLabel_;
 	ProgressBar progressBar_;
-	Layout!(char) layout_;
-	char[100] buffer_;
 }
 
 
@@ -552,17 +536,7 @@ class FilterBar : FilterSuper
 	private void refreshServerTable()
 	{
 		Display.getDefault.asyncExec(new class Runnable {
-			void run()
-			{
-				serverTable.fullRefresh;
-
-				auto list = serverTable.serverList;
-				synchronized (list)
-				if (!serverTable.refreshInProgress) {
-					statusBar.setDefaultStatus(0, list.filteredLength, 0,
-					                                  countHumanPlayers(list));
-				}
-			}
+			void run() { serverTable.fullRefresh; }
 		});
 	}
 

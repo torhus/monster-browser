@@ -131,8 +131,6 @@ void switchToGame(in char[] name)
 			serverTable.serverList.sort();
 			serverTable.forgetSelection();
 			serverTable.fullRefresh();
-			statusBar.setDefaultStatus(0, serverList.filteredLength, 0,
-			                                    countHumanPlayers(serverList));
 		}
 
 		return null;
@@ -473,7 +471,6 @@ class ServerRetrievalController
 	{
 		try {
 			statusBarUpdater_ = new StatusBarUpdater;
-			statusBarUpdater_.text = startMessage;
 			Display.getDefault.syncExec(statusBarUpdater_);
 
 			total_ = serverRetriever_.prepare();
@@ -576,11 +573,6 @@ class ServerRetrievalController
 			deliverDg_(sh);
 
 		//statusBarUpdater_.text = startMessage ~ Integer.toString(counter_);
-		// FIXME: these numbers are old, serverList might not be updated yet.
-		// Maybe do this in deliverDg_ or sth instead?
-		statusBarUpdater_.shownServers = serverList_.filteredLength;
-		statusBarUpdater_.noReply = timedOut_;
-		statusBarUpdater_.humanCount = countHumanPlayers(serverList_);
 
 		// progress display
 		statusBarUpdater_.totalToQuery = total_;
@@ -604,10 +596,6 @@ class ServerRetrievalController
 		// FIXME: only doing this so that players will be shown
 		serverTable.fullRefresh();
 
-		statusBar.setDefaultStatus(0,
-		                           serverList_.filteredLength,
-		                           timedOut_,
-		                           countHumanPlayers(serverList_));
 		serverTable.notifyRefreshEnded();
 	}
 
@@ -651,20 +639,13 @@ class ServerRetrievalController
 }
 
 
+// Update the progress bar when querying servers.
 private class StatusBarUpdater : Runnable {
-	char[] text;
-	int shownServers;
-	int noReply;
-	int humanCount;
 	int totalToQuery;
 	int progress;
 
-	this(char[] text=null) { this.text = text; }
-
-	//void run() { statusBar.setLeft(text); }
 	void run()
 	{
-		statusBar.setDefaultStatus(0, shownServers, noReply, humanCount);
 		statusBar.setProgress(totalToQuery, progress);
 	}
 }
