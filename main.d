@@ -2,17 +2,18 @@ module main;
 
 // Workaround for a bug in dmd < 1.041.
 // http://d.puremagic.com/issues/show_bug.cgi?id=2673
-static if (__VERSION__ < 1041) {
+/*static if (__VERSION__ < 1041) {
 	debug import tango.core.stacktrace.StackTrace;
 	debug version = bug2673;
-}
+}*/
 import tango.core.Thread;
-debug import tango.core.stacktrace.TraceExceptions;
+//debug import tango.core.stacktrace.TraceExceptions;
 import tango.io.Console;
 import tango.io.Path;
 import tango.io.device.BitBucket;
 import tango.io.device.File;
 import tango.sys.Environment;
+import tango.sys.win32.SpecialPath;
 import tango.util.PathUtil;
 
 import java.io.ByteArrayInputStream;
@@ -56,12 +57,12 @@ void main(char[][] args) ///
 
 private void _main(char[][] args)
 {
-	appDir = normalize(Environment.exePath(args[0]).path);
-
 	globalTimer = new Timer;
 
+	detectDirectories(args[0]);
+
 	version (redirect)
-		redirectOutput(appDir ~ "CONSOLE.OUT");
+		redirectOutput(logDir ~ "CONSOLE.OUT");
 
 	if (!consoleOutputOk()) {
 		// Avoid getting IOExceptions all over the place.
@@ -74,7 +75,7 @@ private void _main(char[][] args)
 	catch (IOException e)
 		debug warning(e.toString());
 
-	log("Using path '" ~ appDir ~ "'.");
+	log("Data path is '" ~ dataDir ~ "'.");
 
 	parseCmdLine(args);
 
@@ -150,7 +151,6 @@ private void _main(char[][] args)
 	// main loop
 	Display display = Display.getDefault;
 	while (!mainWindow.handle.isDisposed) {
-		threadManager.dispatch();
 		if (!display.readAndDispatch())
 			display.sleep();
 	}
@@ -164,6 +164,10 @@ private void _main(char[][] args)
 	foreach (icon; appIcons)
 		icon.dispose;
 	clipboard.dispose;
+	foreach (void delegate() dg; callAtShutdown)
+		dg();
+
+	// This has to come after all the other dispose calls.
 	display.dispose;
 
 	log("Saving settings...");
@@ -175,6 +179,34 @@ private void _main(char[][] args)
 
 	log("Exit.");
 	shutDownLogging;
+}
+
+
+
+/**
+ * Set the values of the globals appDir, dataDir, and logDir.
+ *
+ * The argument is args[0], as received by main().
+ */
+private void detectDirectories(in char[] firstArg)
+{
+	appDir = normalize(Environment.exePath(firstArg).path);
+	if (appDir[$-1] != '/')
+		appDir ~= '/';
+
+	if (exists(appDir ~ "portable.txt")) {
+		dataDir = logDir = appDir;
+	}
+	else {
+		version (Windows) {
+			dataDir = getSpecialPath(CSIDL_APPDATA) ~ '/' ~ APPNAME ~ '/';
+			logDir = getSpecialPath(CSIDL_LOCAL_APPDATA) ~ '/' ~ APPNAME ~ '/';
+		}
+		if (!exists(dataDir))
+			createFolder(dataDir);
+		if (!exists(logDir))
+			createFolder(logDir);
+	}
 }
 
 

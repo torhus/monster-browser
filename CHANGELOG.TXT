@@ -1,15 +1,29 @@
 Latest changes
 --------------
+- Change: Settings and data are now stored in a user-specific location, instead
+  of the installation folder.  The installer will move your files to this
+  location so you don't lose your current settings or server lists.
+
+v0.6 - 2009-08-03
+-----------------
+- New: Remote console (rcon).
 - New: When multiple servers are selected, you can place the mouse pointer over
        a player name to get a tool tip showing the server name.  Double click a
        player to select the server he's on.
-- New: Show the total number of human players for the current game.
-- New: Ability to remove servers from the list.
+- New: Show the total number of human players for the currently visible
+       servers.
+- New: Servers that time out more than three times in a row are automatically
+       removed.
+- New: Ability to manually remove servers from the list.
 - Change: Set player count to zero for servers that timed out, so they don't
           show up when filters are enabled.
+- Change: Don't ask for a password if one is already set.
+- Change: Don't ask for password for a server with reserved slots, can set the
+          password through the right-click menu instead.
 - Change: Manually added servers are no longer saved to the *.extra files, only
           to the master server files.  Servers found in the *.extra files are
           still queried.
+- Change: Don't show passwords when typing them.
 - Fix: More responsive in some cases, due to switching to a customized qstat.
        Also makes the status bar counter keep getting updated even when lots of
        servers time out.

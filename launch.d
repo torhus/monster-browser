@@ -32,13 +32,12 @@ import settings;
 void joinServer(in char[] gameName, ServerData sd)
 {
 	char[] argv;
+	char[] address = sd.server[ServerColumn.ADDRESS];
 	GameConfig game = getGameConfig(gameName);
 	char[] pathString = game.exePath;
 	FilePath path;
 	bool launch = true;
 	bool showDialog = false;
-	bool mandatoryPwd;
-	char[] msg;
 
 	if (!pathString) {
 		error("No path found for " ~ gameName ~
@@ -48,7 +47,7 @@ void joinServer(in char[] gameName, ServerData sd)
 
 	path = FilePath(replace(pathString, '\\', '/'));
 	if (!path.exists || path.isFolder) {
-		error(path.toString ~ " was not found or is not a file,\n"
+		error(path.toString ~ " was not found or is not a file, "
 		                                        "please check your settings.");
 		return;
 	}
@@ -56,35 +55,18 @@ void joinServer(in char[] gameName, ServerData sd)
 	if (MOD_ONLY) {
 		argv = "+set fs_game " ~ game.mod;
 	}
-	argv ~= " +connect " ~ sd.server[ServerColumn.ADDRESS];
+	argv ~= " +connect " ~ address;
 
 	int i = findString(sd.cvars, "g_needpass", 0);
-	if (i != -1 && sd.cvars[i][1] == "1") {
-		showDialog = true;
-		msg = "You need a password to join this server.";
-		mandatoryPwd = true;
-	}
-	else {
-		int j = findString(sd.cvars, "sv_privateClients", 0);
-		if (j != -1 && Integer.convert(sd.cvars[j][1]) > 0) {
-			showDialog = true;
-			msg = "This server has got private slots, so type your\n"
-		          "password if you have one.  Otherwise just click OK.";
-			mandatoryPwd = false;
-		}
-	}
-
-	if (showDialog) {
-		scope JoinDialog dialog = new JoinDialog(mainWindow.handle,
-		                      sd.server[ServerColumn.NAME], msg, mandatoryPwd);
-
-		dialog.password = getPassword(sd.server[ServerColumn.ADDRESS]);
+	if (i != -1 && sd.cvars[i][1] == "1" && getPassword(address).length == 0) {
+		char[] message = "Join \"" ~ sd.server[ServerColumn.NAME] ~ "\"\n\n" ~
+		                          "You need a password to join this server.\n";
+		scope dialog = new ServerPasswordDialog(mainWindow.handle,
+		                          "Join Server", message, address, true, true);
 
 		if (dialog.open()) {
-			if (dialog.password.length) {
+			if (dialog.password.length)
 				argv ~= " +set password " ~ dialog.password;
-				setPassword(sd.server[ServerColumn.ADDRESS], dialog.password);
-			}
 		}
 		else {
 			launch = false;

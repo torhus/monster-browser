@@ -49,6 +49,9 @@ import threadmanager;
 StatusBar statusBar;  ///
 FilterBar filterBar;  ///
 MainWindow mainWindow;  ///
+/// The close() method will be called for these shells, before everything is
+/// disposed of.
+Shell[] subWindows;
 
 // Image objects that needs to be disposed of before shut down.
 version (icons)
@@ -138,12 +141,10 @@ class MainWindow
 
 
 		// **************** STATUS BAR ******************************
-		Composite statusComposite = new Composite(shell_, SWT.NONE);
+		statusBar = new StatusBar(shell_);
 		auto statusData = new GridData(SWT.FILL, SWT.CENTER, true, false);
 		statusData.horizontalSpan = 2;
-		statusComposite.setLayoutData(statusData);
-		statusComposite.setLayout(new FillLayout);
-		statusBar = new StatusBar(statusComposite);
+		statusBar.setLayoutData(statusData);
 		statusBar.setLeft(APPNAME ~ " is ready.");
 	}
 
@@ -172,18 +173,23 @@ class MainWindow
 	{
 		serverTable.saveState();
 
-		Rectangle res = Display.getDefault().getBounds();
-		setSessionState("resolution", toCsv([res.width, res.height]));
-		Point pos = shell_.getLocation();
-		setSessionState("windowPosition", toCsv([pos.x, pos.y]));
+		if (shell_.getMaximized()) {
+			setSetting("windowMaximized", "true");
+		}
+		else {
+			setSetting("windowMaximized", "false");
 
-		if (!shell_.getMaximized()) {
+			Rectangle res = Display.getDefault().getBounds();
+			setSessionState("resolution", toCsv([res.width, res.height]));
+
+			Point pos = shell_.getLocation();
+			setSessionState("windowPosition", toCsv([pos.x, pos.y]));
+
 			char[] width  = Integer.toString(shell_.getSize().x);
 			char[] height = Integer.toString(shell_.getSize().y);
 			setSetting("windowSize", width ~ "x" ~ height);
 		}
-		setSetting("windowMaximized", shell_.getMaximized() ?
-		                                                     "true" : "false");
+
 		setSessionState("middleWeights", toCsv(middleForm_.getWeights()));
 		setSessionState("rightWeights", toCsv(rightForm_.getWeights()));
 
@@ -196,9 +202,14 @@ class MainWindow
 		void shellClosed(ShellEvent e)  ///
 		{
 			serverTable.stopRefresh(false);
+			threadManager.shutdown();
 			statusBar.setLeft("Exiting...");
 			log("Shutting down...");
 			killServerBrowser();
+			foreach (shell; subWindows) {
+				if (!shell.isDisposed())
+					shell.close();
+			}
 			saveState();
 		}
 	}
@@ -211,13 +222,14 @@ class MainWindow
 
 
 ///
-class StatusBar
+class StatusBar : Composite
 {
 	///
 	this(Composite parent)
 	{
-		leftLabel_ = new Label(parent, SWT.NONE);
-		leftLabel_.setText(APPNAME ~ " is ready.");
+		super(parent, SWT.NONE);
+		setLayout(new FillLayout);
+		leftLabel_ = new Label(this, SWT.NONE);
 	}
 
 	void setLeft(char[] text)  ///
@@ -261,7 +273,7 @@ class FilterBar : FilterSuper
 	{
 		version (icons) {
 			super(parent, SWT.SHADOW_NONE);
-			setText("Filters and game selection");
+			setText("Filters and Game Selection");
 			auto data = new GridData;
 			//data.verticalAlignment = SWT.FILL;
 			setLayoutData(data);
@@ -477,7 +489,7 @@ ToolBar createToolbar(Composite parent) ///
 	auto toolBar = new ToolBar(parent, SWT.HORIZONTAL);
 
 	auto button1 = new ToolItem(toolBar, SWT.PUSH);
-	button1.setText("Check for new");
+	button1.setText("Check for New");
 	version (icons)
 		button1.setImage(loadImage!("icons/box_download_32.png"));
 	button1.addSelectionListener(new class SelectionAdapter {
@@ -489,7 +501,7 @@ ToolBar createToolbar(Composite parent) ///
 
 	new ToolItem(toolBar, SWT.SEPARATOR);
 	ToolItem button2 = new ToolItem(toolBar, SWT.PUSH);
-	button2.setText("Refresh all");
+	button2.setText("Refresh All");
 	version (icons)
 		button2.setImage(loadImage!("icons/refresh_32.png"));
 	button2.addSelectionListener(new class SelectionAdapter {

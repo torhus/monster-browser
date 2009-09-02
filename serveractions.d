@@ -154,12 +154,11 @@ void delegate() loadSavedList()
 	GC.collect();
 
 	GameConfig game = getGameConfig(serverList.gameName);
-	if (Path.exists(appDir ~ master.fileName)) {
+	if (Path.exists(dataDir ~ master.fileName)) {
 		auto retriever = new MasterListServerRetriever(game, master);
 		auto contr = new ServerRetrievalController(retriever);
 		contr.disableQueue();
 		contr.startMessage = "Loading saved server list...";
-		contr.noReplyMessage = "No servers were found in the file";
 		return &contr.run;
 	}
 	else {
@@ -196,6 +195,8 @@ void queryServers(in char[][] addresses, bool replace=false, bool select=false)
 		auto retriever = new QstatServerRetriever(gameName, master,
 		                                   Set!(char[])(addresses_), replace_);
 		auto contr = new ServerRetrievalController(retriever, replace_);
+		contr.startMessage = Format("Querying {} server(s)...",
+		                                                    addresses_.length);
 		if (select_)
 			contr.autoSelect = addresses_;
 
@@ -263,7 +264,6 @@ void delegate() refreshList()
 		auto contr = new ServerRetrievalController(retriever);
 		contr.startMessage =
                             Format("Refreshing {} servers...", servers.length);
-		contr.noReplyMessage = "None of the servers replied";
 		return &contr.run;
 	}
 	else {
@@ -347,7 +347,6 @@ void delegate() getNewList()
 				auto contr = new ServerRetrievalController(retriever);
 				contr.startMessage = Format("Got {} servers, querying...",
 				                                             addresses.length);
-				contr.noReplyMessage = "None of the servers replied";
 				contr.run();
 			}
 		}
@@ -386,12 +385,11 @@ void delegate() getNewList()
 class ServerRetrievalController
 {
 	/**
-	 * Status bar messages.
+	 * Status bar message.
 	 *
-	 * Set before calling run() if you don't want the defaults to be used.
+	 * Set before calling run() if you don't want the default to be used.
 	 */
 	char[] startMessage = "Querying server(s)...";
-	char[] noReplyMessage = "There was no reply";  /// ditto
 
 
 	/**
@@ -408,8 +406,6 @@ class ServerRetrievalController
 	 * Params:
 	 *     replace = Pass the received servers to ServerList.replace instead of
 	 *               the default ServerList.add.
-	 *     store   = Add or update this server in the MasterList object
-	 *               associated with this game/mod.
 	 */
 	this(IServerRetriever retriever, bool replace=false)
 	{
@@ -419,6 +415,11 @@ class ServerRetrievalController
 		serverRetriever_.initialize();
 
 		serverList_ = serverTable.serverList;
+
+		try
+			maxTimeouts_ = Integer.toInt(getSetting("maxTimeouts"));
+		catch (IllegalArgumentException e)
+			maxTimeouts_ = 3;  // FIXME: use the actual default
 
 		Display.getDefault.syncExec(new class Runnable {
 			void run() { serverTable.notifyRefreshStarted(&stop); }
@@ -448,9 +449,7 @@ class ServerRetrievalController
 			statusBarUpdater_.text = startMessage;
 			Display.getDefault.syncExec(statusBarUpdater_);
 
-			serverCount_ = serverRetriever_.prepare();
-
-			if (serverCount_ != 0) {
+			if (serverRetriever_.prepare() != 0) {
 				auto dg = replace_ ? &serverList_.replace : &serverList_.add;
 
 				if (useQueue_) {
@@ -515,12 +514,22 @@ class ServerRetrievalController
 		assert(sh != InvalidServerHandle);
 
 		if (!replied) {
-			timedOut_++;
-			// Try to match using the old data, since we still want to
-			// display the server if we know it runs the right mod.
-			assert(!matched);  // assure we don't do this needlessly
 			ServerData sd = serverList_.master.getServerData(sh);
-			matched = matchMod(&sd, getGameConfig(serverList_.gameName).mod);
+			if (sd.failCount <= maxTimeouts_) {
+				timedOut_++;
+				// Try to match using the old data, since we still want to
+				// display the server if we know it runs the right mod.
+				assert(!matched);  // assure we don't do this needlessly
+				matched =
+				        matchMod(&sd, getGameConfig(serverList_.gameName).mod);
+			}
+			else {
+				setEmpty(&sd);
+				serverList_.master.setServerData(sh, sd);
+				if (replace_)
+					refillAndRefresh();  // make server disappear from GUI
+				matched = false;
+			}
 		}
 
 		if (matched)
@@ -535,28 +544,34 @@ class ServerRetrievalController
 
 	private void done()
 	{
-		if (serverCount_ != timedOut_) {
-			int index = -1;
-			if (autoSelect.length) {
-				// FIXME: select them all, not just the first one
-				index = serverList_.getFilteredIndex(autoSelect[0]);
-				serverTable.setSelection([index], true);
-			}
-
-			// FIXME: only doing this so that players will be shown
-			serverTable.fullRefresh();
-
-			statusBar.setDefaultStatus(0,
-			                           serverList_.filteredLength,
-			                           timedOut_,
-			                           countHumanPlayers(serverList_));
+		int index = -1;
+		if (autoSelect.length) {
+			// FIXME: select them all, not just the first one
+			index = serverList_.getFilteredIndex(autoSelect[0]);
+			serverTable.setSelection([index], true);
 		}
-		else {
-			statusBar.setLeft(noReplyMessage);
-		}
-		serverTable.notifyRefreshEnded;
+
+		// FIXME: only doing this so that players will be shown
+		serverTable.fullRefresh();
+
+		statusBar.setDefaultStatus(0,
+		                           serverList_.filteredLength,
+		                           timedOut_,
+		                           countHumanPlayers(serverList_));
+		serverTable.notifyRefreshEnded();
 	}
 
+
+	private void refillAndRefresh()
+	{
+		Display.getDefault.syncExec(new class Runnable {
+			void run()
+			{
+				serverList_.refillFromMaster();
+				serverTable.fullRefresh();
+			}
+		});
+	}
 
 	// Just a workaround for ServerQueue.add and ServerList.add and replace
 	// not having the same signatures.
@@ -569,9 +584,9 @@ class ServerRetrievalController
 
 	private {
 		IServerRetriever serverRetriever_;
-		int serverCount_;
 		int counter_ = 0;
 		uint timedOut_ = 0;
+		int maxTimeouts_;
 		StatusBarUpdater statusBarUpdater_;
 		bool replace_;
 		void delegate(ServerHandle) deliverDg_;

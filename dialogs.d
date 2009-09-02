@@ -74,22 +74,36 @@ private:
 }+/
 
 
-///
-class JoinDialog
+/**
+ * A generic dialog with OK and Cancel buttons, that asks for a password and
+ * optionally whether to save it.
+ */
+class PasswordDialog
 {
-	char[] password = ""; ///
+	/**
+	 * Set these before calling open(). After open() returns, their values will
+	 * have been updated to reflect the user's input.
+	 *
+	 * The default is an empty password, and yes to saving it.
+	 */
+	char[] password = "";
+	bool savePassword = true;  /// ditto
 
-	///
-	this(Shell parent, char[] serverName, char[] message, bool pwdMandatory)
+	/**
+	 * If pwdMandatory is true, the OK button will be disabled whenever the
+	 * password field is empty.
+	 */
+	this(Shell parent, in char[] title, in char[] message,
+	                             bool pwdMandatory=false, bool askToSave=false)
 	{
 		parent_ = parent;
 		shell_ = new Shell(parent_, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
 		shell_.setLayout(new GridLayout);
-		shell_.setText("Join Server");
+		shell_.setText(title);
 
-		// command line
+		// message
 		Label labelA = new Label(shell_, SWT.NONE);
-		labelA.setText("Join \"" ~ serverName ~ "\"\n\n" ~ message ~ "\n");
+		labelA.setText(message);
 
 		// password input
 		Composite pwdComposite = new Composite(shell_, SWT.NONE);
@@ -100,7 +114,23 @@ class JoinDialog
 		pwdComposite.setLayout(new RowLayout);
 		Label labelB = new Label(pwdComposite, SWT.NONE);
 		labelB.setText("Password:");
-		pwdText_ = new Text(pwdComposite, SWT.SINGLE | SWT.BORDER);
+		pwdText_ = new Text(pwdComposite, SWT.SINGLE | SWT.BORDER |
+		                                                         SWT.PASSWORD);
+		if (pwdMandatory) {
+			pwdText_.addListener(SWT.Modify, new class Listener {
+				void handleEvent(Event e)
+				{
+					okButton_.setEnabled(pwdText_.getText().length > 0);
+				}
+			});
+		}
+		if (askToSave) {
+			saveButton_ = new Button (shell_, SWT.CHECK);
+			saveButton_.setText("Save this password");
+			auto saveButtonData = new GridData;
+			saveButtonData.horizontalAlignment = SWT.CENTER;
+			saveButton_.setLayoutData(saveButtonData);
+		}
 
 		// main buttons
 		Composite buttonComposite = new Composite(shell_, SWT.NONE);
@@ -115,26 +145,31 @@ class JoinDialog
 		okButton_ = new Button (buttonComposite, SWT.PUSH);
 		okButton_.setText ("OK");
 		okButton_.setLayoutData(new RowData(BUTTON_SIZE));
+
 		cancelButton_ = new Button (buttonComposite, SWT.PUSH);
 		cancelButton_.setText ("Cancel");
 		cancelButton_.setLayoutData(new RowData(BUTTON_SIZE));
 
-		Listener listener = new MyListener;
-
+		auto listener = new ButtonListener;
 		okButton_.addListener(SWT.Selection, listener);
 		cancelButton_.addListener(SWT.Selection, listener);
-		if (pwdMandatory)
-			pwdText_.addListener(SWT.Modify, listener);
 
 		shell_.setDefaultButton(okButton_);
 		shell_.pack();
 		shell_.setLocation(center(parent_, shell_));
 	}
 
-	bool open() ///
+	/**
+	 * Show the dialog.
+	 *
+	 * Returns true if the user pressed OK, false if Cancel.
+	 */
+	bool open()
 	{
 		pwdText_.setText(password);
 		pwdText_.selectAll();
+		if (saveButton_ !is null)
+			saveButton_.setSelection(savePassword);
 		shell_.open();
 		Display display = Display.getDefault;
 		while (!shell_.isDisposed()) {
@@ -145,30 +180,22 @@ class JoinDialog
 		return result_ == SWT.OK;
 	}
 
+
 private:
 	Shell parent_, shell_;
-	Button okButton_, cancelButton_;
+	Button okButton_, cancelButton_, saveButton_;
 	Text pwdText_;
 	int result_ = SWT.CANCEL;
 
-	class MyListener : Listener {
+	class ButtonListener : Listener {
 		void handleEvent (Event event)
 		{
-			switch (event.type) {
-				case SWT.Selection:
-					if (event.widget == okButton_) {
-						result_ = SWT.OK;
-						password = pwdText_.getText;
-					}
-					shell_.close();
-					break;
-				case SWT.Modify:
-					if (pwdText_.getText().length > 0)
-						okButton_.setEnabled(true);
-					else
-						okButton_.setEnabled(false);
-					break;
-			}
+			if (event.widget == okButton_)
+				result_ = SWT.OK;
+			password = pwdText_.getText();
+			if (saveButton_ !is null)
+				savePassword = saveButton_.getSelection();
+			shell_.close();
 		}
 	};
 }
@@ -200,9 +227,10 @@ class SpecifyServerDialog
 		addressTextData.widthHint = 140;
 		addressText_.setLayoutData(addressTextData);
 
-		saveButton_ = new Button (shell_, SWT.CHECK);
+		saveButton_ = new Button(shell_, SWT.CHECK);
 		saveButton_.setText("Never remove this server automatically");
-		saveButton_.setSelection(true);
+		saveButton_.setSelection(
+		                  getSessionState("addServersAsPersistent") == "true");
 		auto saveButtonData = new GridData;
 		saveButtonData.horizontalAlignment = SWT.CENTER;
 		saveButton_.setLayoutData(saveButtonData);
@@ -267,16 +295,20 @@ class SpecifyServerDialog
 				ServerList serverList = serverTable.serverList;
 				MasterList master = serverList.master;
 				ServerHandle sh = master.findServer(address);
+				bool persistent = saveButton_.getSelection();
+
+				setSessionState("addServersAsPersistent",
+				                                persistent ? "true" : "false");
 
 				if (sh == InvalidServerHandle) {
 					ServerData sd;
 
 					sd.server.length = ServerColumn.max + 1;
 					sd.server[ServerColumn.ADDRESS] = address;
-					sd.persistent = saveButton_.getSelection();
+					sd.persistent = persistent;
 					master.addServer(sd);
 
-					queryServers([address], false, true);
+					queryServers([address], true, true);
 				}
 				else {
 					ServerData sd = master.getServerData(sh);
@@ -290,8 +322,7 @@ class SpecifyServerDialog
 							serverTable.setSelection([i], true);
 					}
 					else {
-						info("That server is already known, but belongs to a "
-						                             "different game or mod.");
+						queryServers([address], true, true);
 					}
 				}
 				shell_.close();
@@ -337,7 +368,7 @@ class SettingsDialog
 
 		// startup game
 		Group startupGroup = new Group(mainComposite, SWT.SHADOW_ETCHED_IN);
-		startupGroup.setText("Start with");
+		startupGroup.setText("Start With");
 		auto startupLayout = new GridLayout();
 		startupGroup.setLayout(startupLayout);
 		startupDefaultButton_ = new Button(startupGroup, SWT.RADIO);
@@ -437,6 +468,79 @@ private:
 	Text pathText_;
 	int result_ = SWT.CANCEL;
 	Spinner sqSpinner_;
+}
+
+
+
+/**
+ * Takes care of loading and saving passwords, and updating the
+ * "saveServerPasswords" setting.  Otherwise like PasswordDialog.
+ */
+class ServerPasswordDialog : PasswordDialog
+{
+	///
+	this(Shell parent, in char[] title, in char[] message, in char[] address,
+	                             bool pwdMandatory=false, bool askToSave=false)
+	{
+		address_ = address;
+		askToSave_ = askToSave;
+		super(parent, title, message, pwdMandatory, askToSave);
+		password = getPassword(address);
+		if (askToSave)
+			savePassword = getSessionState("saveServerPasswords") == "true";
+		else
+			savePassword = true;
+	}
+
+	override bool open() ///
+	{
+		bool result = super.open();
+		if (result) {
+			bool oldSave = getSessionState("saveServerPasswords") == "true";
+			if (savePassword)
+				setPassword(address_, password);
+			if (askToSave_ && oldSave != savePassword)
+				setSessionState("saveServerPasswords",
+				                              savePassword ? "true" : "false");
+		}
+		return result;
+	}
+
+	private char[] address_;
+	private bool askToSave_;
+}
+
+
+/**
+ * Takes care of saving but not loading passwords, and updating the
+ * "saveRconPasswords" setting.  Otherwise like PasswordDialog.
+ */
+class RconPasswordDialog : PasswordDialog
+{
+	///
+	this(Shell parent, in char[] serverName, in char[] address)
+	{
+		address_ = address;
+		super(parent, "Remote Console",
+		                "Set password for \"" ~ serverName ~ "\"", true, true);
+		savePassword = getSessionState("saveRconPasswords") == "true";
+	}
+
+	override bool open() ///
+	{
+		bool result = super.open();
+		if (result) {
+			bool oldSave = getSessionState("saveRconPasswords") == "true";
+			if (savePassword)
+				setRconPassword(address_, password);
+			if (oldSave != savePassword)
+				setSessionState("saveRconPasswords",
+				                              savePassword ? "true" : "false");
+		}
+		return result;
+	}
+
+	private char[] address_;
 }
 
 

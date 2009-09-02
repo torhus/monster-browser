@@ -15,10 +15,8 @@ import ini;
 version (Windows) {
 	import tango.stdc.stringz;
 	import tango.sys.win32.CodePage;
+	import tango.sys.win32.SpecialPath;
 	import tango.sys.win32.UserGdi;
-
-	enum { CSIDL_PROGRAM_FILES = 38 }
-	extern (Windows) BOOL SHGetSpecialFolderPathA(HWND, LPSTR, int, BOOL);
 
 	const HKEY_CLASSES_ROOT  = cast(HKEY)0x80000000;
 	const HKEY_CURRENT_USER  = cast(HKEY)0x80000001;
@@ -51,7 +49,7 @@ struct GameConfig
 
 	char[] extraServersFile() /// Like "baseq3.extra".
 	{
-		return appDir ~ mod ~ ".extra";
+		return appDir ~ mod ~ ".extra";  // FIXME: check dataDir too?
 	}
 
 	/**
@@ -170,6 +168,7 @@ useGslist=false
 	}
 	Setting[] defaults = [{"coloredNames", "true"},
 	                      {"lastMod", "Smokin' Guns"},
+	                      {"maxTimeouts", "3"},
 	                      {"minimizeOnGameLaunch", "true"},
 	                      {"showFlags", "true"},
 	                      {"simultaneousQueries", "20"},
@@ -189,6 +188,11 @@ useGslist=false
 	                                 {"serverColumnWidths",
 	                                              "27,250,21,32,50,40,90,130"},
 	                                 {"windowPosition", "150, 150"},
+	                                 {"rconWindowPosition", "100, 100"},
+	                                 {"rconWindowSize", "640, 480"},
+	                                 {"addServersAsPersistent", "true"},
+	                                 {"saveRconPasswords", "true"},
+	                                 {"saveServerPasswords", "true"},
 	                                ];
 }
 
@@ -289,8 +293,8 @@ private void writeDefaultGamesFile()
  */
 void loadSettings()
 {
-	assert(appDir !is null);
-	settingsFileName = appDir ~ "settings.ini";
+	assert(dataDir.length);
+	settingsFileName = dataDir ~ "settings.ini";
 
 	settingsIni = new Ini(settingsFileName);
 	IniSection sec = settingsIni.addSection("Settings");
@@ -316,7 +320,7 @@ void loadSettings()
 
 	loadSessionState();
 
-	gamesFileName = appDir ~ "mods.ini";
+	gamesFileName = dataDir ~ "mods.ini";
 	loadGamesFile();
 }
 
@@ -383,6 +387,39 @@ char[] getPassword(in char[] ip)
 void setPassword(char[] ip, char[] password)
 {
 	IniSection sec = settingsIni.addSection("Passwords");
+	sec.setValue(ip, password);
+}
+
+
+/// Removes the password stored for a server.
+void removePassword(char[] ip)
+{
+	IniSection sec = settingsIni.section("Passwords");
+	if (sec !is null)
+		sec.remove(ip);
+}
+
+
+/**
+ * Retrieve a stored rcon password.
+ *
+ * ip is an IP address, with an optional colon and port number at the end.
+ *
+ * Returns: The password, or an empty string if none was found.
+ */
+char[] getRconPassword(in char[] ip)
+{
+	IniSection sec = settingsIni.section("RconPasswords");
+	if (sec is null)
+		return "";
+	return sec.getValue(ip, "");
+}
+
+
+/// Stores rcon passwords for later retrieval by getRconPassword().
+void setRconPassword(char[] ip, char[] password)
+{
+	IniSection sec = settingsIni.addSection("RconPasswords");
 	sec.setValue(ip, password);
 }
 
@@ -458,20 +495,20 @@ private char[] autodetectQuake3Path()
  */
 private char[] getProgramFilesDirectory()
 {
-	char buf[MAX_PATH];
-	auto r = SHGetSpecialFolderPathA(null, buf.ptr, CSIDL_PROGRAM_FILES,
-	                                                                    false);
-	assert(r);
-	return r ? fromStringz(buf.ptr).dup : "C:\\Program Files".dup;
+	char[] path = getSpecialPath(CSIDL_PROGRAM_FILES);
+	assert(path.length);
+	return path.length ? path : "C:\\Program Files".dup;
 }
 
 
 /**
+ * Returns the value of a registry key, or null if there was an error.
+
  * Throws: IllegalArgumentException if the argument is not a valid key.
  *
  * BUGS: Doesn't convert arguments to ANSI.
  */
-private char[] getRegistryStringValue(in char[] key)
+version (Windows) private char[] getRegistryStringValue(in char[] key)
 {
 	HKEY hKey;
 	DWORD dwType = REG_SZ;
@@ -479,7 +516,7 @@ private char[] getRegistryStringValue(in char[] key)
 	LPBYTE lpData = buf.ptr;
 	DWORD dwSize = buf.length;
 	LONG status;
-	char[] retval = null;
+	char[] retval;
 
 	char[][] parts = split(key, "\\");
 	if (parts.length < 3)
@@ -489,7 +526,7 @@ private char[] getRegistryStringValue(in char[] key)
 	char[] subKey = join(parts[1..$-1], "\\");
 	char[] name = parts[$-1];
 
-	status = RegOpenKeyExA(keyConst, toStringz(subKey), 0L, KEY_ALL_ACCESS,
+	status = RegOpenKeyExA(keyConst, toStringz(subKey), 0, KEY_ALL_ACCESS,
 	                                                                    &hKey);
 
 	if (status == ERROR_SUCCESS) {
@@ -513,12 +550,12 @@ private char[] getRegistryStringValue(in char[] key)
 		RegCloseKey(hKey);
 	}
 
-	return retval;
+	return (status == ERROR_SUCCESS) ? retval : null;
 }
 
 
 /// Throws: IllegalArgumentException.
-private HKEY hkeyFromString(in char[] s)
+version (Windows) private HKEY hkeyFromString(in char[] s)
 {
 	if (icompare(s, "HKEY_CLASSES_ROOT") == 0)
 		return HKEY_CLASSES_ROOT;

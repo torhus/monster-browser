@@ -49,6 +49,7 @@ Set!(char[]) browserGetNewList(in GameConfig game)
 		                                              game.masterServer ~ ",-";
 
 	// use gslist's server-sider filtering
+	// Note: gslist returns no servers if filtering on "baseq3"
 	if (gslist && MOD_ONLY && game.mod != "baseq3")
 		cmdLine ~= " -f \"(gametype = \'" ~ game.mod ~ "\'\")";
 
@@ -61,7 +62,7 @@ Set!(char[]) browserGetNewList(in GameConfig game)
 	}
 	catch (ProcessException e) {
 		char[] s = gslist ? "gslist" : "qstat";
-		error(s ~ " not found!\nPlease reinstall " ~ APPNAME ~ ".");
+		error(s ~ " not found! Please reinstall " ~ APPNAME ~ ".");
 		logx(__FILE__, __LINE__, e);
 		proc = null;
 	}
@@ -151,7 +152,7 @@ final class MasterListServerRetriever : IServerRetriever
 		}
 
 		if (error) {
-			warning("Unable to load the server list from disk,\n"
+			warning("Unable to load the server list from disk, "
 			                 "press \'Get new list\' to download a new list.");
 		}
 
@@ -245,7 +246,7 @@ final class QstatServerRetriever : IServerRetriever
 				dumpFile.flush.close;
 		}
 		catch (ProcessException e) {
-			error("qstat not found!\nPlease reinstall " ~ APPNAME ~ ".");
+			error("qstat not found! Please reinstall " ~ APPNAME ~ ".");
 			return 0;
 		}
 

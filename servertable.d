@@ -32,11 +32,13 @@ import org.eclipse.swt.widgets.TableItem;
 import colorednames;
 import common;
 import cvartable;
+import dialogs;
 import geoip;
 import launch;
 import mainwindow;
 import masterlist;
 import playertable;
+import rcon;
 import serveractions;
 import serverdata;
 import serverlist;
@@ -308,16 +310,26 @@ class ServerTable
 		assert(indices.length);
 
 		selectedIps_.clear();
-		foreach (ip, v; selectedIps_) {
-			int i = serverList_.getFilteredIndex(ip);
-			selectedIps_[ip] = i;
-			if (i != -1)
-				indices ~= i;
+		int[] validIndices;
+		foreach (i; indices) {
+			if (i != -1) {
+				validIndices ~= i;
+				char[] address =
+				       serverList_.getFiltered(i).server[ServerColumn.ADDRESS];
+				selectedIps_[address] = i;
+			}
 		}
-		table_.setSelection(indices);
-		playerTable.setItems(indices, serverList_);
-		int cvarIndex = table_.getSelectionIndex();
-		cvarTable.setItems(serverList_.getFiltered(cvarIndex).cvars);
+		table_.setSelection(validIndices);
+		if (validIndices.length > 0) {
+			playerTable.setItems(validIndices, serverList_);
+			int cvarIndex = table_.getSelectionIndex();
+			cvarTable.setItems(serverList_.getFiltered(cvarIndex).cvars);
+		}
+		else {
+			playerTable.clear();
+			cvarTable.clear();
+		}
+
 		if (takeFocus)
 			table_.setFocus();
 	}
@@ -527,6 +539,10 @@ private:
 		public void keyPressed (KeyEvent e)
 		{
 			switch (e.keyCode) {
+				case SWT.F10:
+					if ((e.stateMask & SWT.MODIFIER_MASK) == 0)
+						onRemoteConsole();
+					break;
 				case SWT.DEL:
 					if ((e.stateMask & SWT.MODIFIER_MASK) == 0)
 						onRemoveSelected();
@@ -576,6 +592,15 @@ private:
 		});
 
 		item = new MenuItem(menu, SWT.PUSH);
+		item.setText("Set password");
+		item.addSelectionListener(new class SelectionAdapter {
+			void widgetSelected(SelectionEvent e) { onSetPassword(); }
+		});
+
+
+		new MenuItem(menu, SWT.SEPARATOR);
+
+		item = new MenuItem(menu, SWT.PUSH);
 		item.setText("Refresh selected\tCtrl+R");
 		item.addSelectionListener(new class SelectionAdapter {
 			void widgetSelected(SelectionEvent e) { onRefreshSelected(); }
@@ -588,12 +613,18 @@ private:
 			void widgetSelected(SelectionEvent e) { onCopyAddresses(); }
 		});
 
-		item = new MenuItem(menu, SWT.SEPARATOR);
-
 		item = new MenuItem(menu, SWT.PUSH);
 		item.setText("Remove selected\tDel");
 		item.addSelectionListener(new class SelectionAdapter {
 			void widgetSelected(SelectionEvent e) { onRemoveSelected(); }
+		});
+
+		new MenuItem(menu, SWT.SEPARATOR);
+
+		item = new MenuItem(menu, SWT.PUSH);
+		item.setText("Remote console\tF10");
+		item.addSelectionListener(new class SelectionAdapter {
+			void widgetSelected(SelectionEvent e) { onRemoteConsole(); }
 		});
 
 		return menu;
@@ -604,11 +635,8 @@ private:
 		char[][] addresses;
 		foreach (ip, v; selectedIps_)
 			addresses ~= ip;
-		char[] s = join(addresses, newline);
-		if (s.length) {
-			s ~= newline;
-			copyToClipboard(s);
-		}
+		if (addresses.length)
+			copyToClipboard(join(addresses, newline));
 	}
 
 	void onRefreshSelected()
@@ -674,6 +702,50 @@ private:
 				statusBar.setDefaultStatus(0, serverList_.filteredLength, 0,
 				                               countHumanPlayers(serverList_));
 			}
+		}
+	}
+
+
+	void onSetPassword()
+	{
+		int index = table_.getSelectionIndex();
+		if (index == -1)
+			return;
+
+		ServerData sd = serverList_.getFiltered(index);
+		char[] address = sd.server[ServerColumn.ADDRESS];
+		char[] message =
+		            "Set the password to be used when joining the server.\n"
+		            "The password will be saved on disk.\n\n"
+		            "To delete the stored password, clear the password field\n"
+		            "and press OK.";
+
+		scope dialog = new ServerPasswordDialog(mainWindow.handle,
+		                                     "Set Password", message, address);
+		if (dialog.open() && !dialog.password.length)
+			removePassword(address);
+	}
+
+
+	void onRemoteConsole()
+	{
+		int index = table_.getSelectionIndex();
+		if (index == -1)
+			return;
+
+		ServerData sd = serverList_.getFiltered(index);
+		char[] name = sd.server[ServerColumn.NAME];
+		char[] address = sd.server[ServerColumn.ADDRESS];
+		char[] pw = getRconPassword(address);
+
+		if (pw.length > 0) {
+			openRconWindow(name, address, pw);
+		}
+		else {
+			auto dialog = new RconPasswordDialog(mainWindow.handle, name,
+			                                                          address);
+			if (dialog.open())
+				openRconWindow(name, address, dialog.password);
 		}
 	}
 
