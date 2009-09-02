@@ -1,7 +1,10 @@
 module threadmanager;
 
 import tango.core.Thread;
-import tango.text.convert.Integer;
+import tango.core.sync.Semaphore;
+
+import java.lang.Runnable;
+import org.eclipse.swt.widgets.Display;
 
 import runtools : killServerBrowser;
 
@@ -11,15 +14,23 @@ ThreadManager threadManager;
 
 
 /**
- * Stores a pointer to a function or delegate and calls it only when
- * the previous has terminated.
- *
- * Note: Meant to be used as a singleton, but this is not enforced currently.
+ * Stores a pointer to a function, and calls it only when the previous one has
+ * terminated.
  */
 class ThreadManager
 {
 
 	bool abort;  ///
+
+
+	///
+	this()
+	{
+		thread_ = new Thread(&dispatch);
+		thread_.name = "secondary";
+		semaphore_ = new Semaphore;
+		thread_.start();
+	}
 
 
 	/**
@@ -33,11 +44,12 @@ class ThreadManager
 	 *
 	 * Note: This will set the function pointer stored by runSecond to null.
 	 */
-	void run(void delegate() function() fp)
+	synchronized void run(void delegate() function() fp)
 	{
 		abort = true;
 		fp_ = fp;
 		fp2_ = null;
+		semaphore_.notify();
 	}
 
 
@@ -49,47 +61,66 @@ class ThreadManager
 	 *
 	 * This method does not change the abort property.
 	 */
-	void runSecond(void delegate() function() fp)  ///
+	synchronized void runSecond(void delegate() function() fp)  ///
 	{
 		fp2_ = fp;
+		semaphore_.notify();
 	}
 
 
-	void dispatch() ///
+	/**
+	 * Tell the secondary thread to stop what it's doing and exit.
+	 */
+	void shutdown()
 	{
-		if (fp_ is null && fp2_ is null)
-			return;
+		abort = true;
+		shutdown_ = true;
+		semaphore_.notify();
+	}
+	
+	
+	/// Is the secondary thread sleeping or working?
+	bool sleeping() { return sleeping_; }
 
-		killServerBrowser();
-		if (thread_ !is null && thread_.isRunning) {
-			// If we have fp2_, let fp_ run to completion first, otherwise
-			// interrupt it.
-			if (fp2_ is null)
-				abort = true;
-		}
-		else {
-			void delegate() function() fp;
 
-			//killServerBrowser();
+	private void dispatch()
+	{
+		while (true) {
+			void delegate() inSecondaryThread;
 
-			if (fp_ !is null) {
-				fp = fp_;
-				fp_ = null;
-			}
-			else {
-				assert(fp2_ !is null);
-				fp = fp2_;
-				fp2_ = null;
-			}
+			sleeping_ = true;
+			semaphore_.wait();
+			sleeping_ = false;
+			if (shutdown_)
+				break;
 
-			abort = false;
+			synchronized (this) assert(fp_ !is null || fp2_ !is null);
 
-			void delegate() startIt = fp();
-			if (startIt !is null) {
-				thread_ = new Thread(startIt);
-				thread_.name = "secondary " ~ .toString(++threadCounter_);
-				thread_.start();
-			}
+			killServerBrowser();
+
+			Display.getDefault.syncExec(new class(this) Runnable {
+				this(Object outer) { outer_ = outer; }				
+				void run()
+				{
+					void delegate() function() inGuiThread;
+					synchronized (outer_) {
+						if (fp_ !is null) {
+							inGuiThread = fp_;
+							fp_ = null;							
+						}
+						else if (fp2_ !is null) {
+							inGuiThread = fp2_;
+							fp2_ = null;
+						}
+						abort = false;
+					}
+					inSecondaryThread = inGuiThread();
+				}
+				private Object outer_;
+			});
+
+			if (!abort && inSecondaryThread !is null)
+				inSecondaryThread();
 		}
 	}
 
@@ -98,6 +129,8 @@ class ThreadManager
 		void delegate() function() fp_= null;
 		void delegate() function() fp2_= null;
 		Thread thread_;
-		int threadCounter_ = 0;
+		Semaphore semaphore_;
+		bool shutdown_ = false;
+		bool sleeping_ = true;
 	}
 }

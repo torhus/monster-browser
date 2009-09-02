@@ -3,6 +3,8 @@ module playertable;
 import tango.text.Ascii;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MenuDetectEvent;
+import org.eclipse.swt.events.MenuDetectListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
@@ -11,6 +13,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
@@ -37,7 +41,7 @@ class PlayerTable
 	{
 		parent_ = parent;
 		table_ = new Table(parent, SWT.VIRTUAL | SWT.BORDER |
-		                           SWT.HIDE_SELECTION);
+		                           SWT.FULL_SELECTION);
 		table_.setHeaderVisible(true);
 		table_.setLinesVisible(true);
 
@@ -136,6 +140,15 @@ class PlayerTable
 				serverTable.setSelection([serverIndex], true);
 			}
 		});
+
+		table_.setMenu(createContextMenu());
+		table_.addMenuDetectListener(new class MenuDetectListener {
+			void menuDetected(MenuDetectEvent e)
+			{
+				if (table_.getSelectionCount() == 0)
+					e.doit = false;
+			}
+		});
 	}
 
 	/// The index of the currently active sort column.
@@ -214,6 +227,25 @@ private:
 				table_.setToolTipText(text);
 		}
 	}
+
+
+	Menu createContextMenu()
+	{
+		Menu menu = new Menu(table_);
+
+		MenuItem item = new MenuItem(menu, SWT.PUSH);
+		item.setText("Select server\tEnter");
+		menu.setDefaultItem(item);
+		item.addSelectionListener(new class SelectionAdapter {
+			void widgetSelected(SelectionEvent e) {
+				int index = players_[table_.getSelectionIndex()].serverIndex;
+				serverTable.setSelection([index], true);
+			}
+		});
+
+		return menu;
+	}
+
 
 	void sort()
 	{

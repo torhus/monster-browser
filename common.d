@@ -5,7 +5,7 @@ import tango.core.Thread;
 import tango.core.Version;
 import tango.io.device.File;
 import Path = tango.io.Path;
-import tango.stdc.ctype : isdigit;
+import tango.stdc.ctype;
 import tango.stdc.string;
 import tango.stdc.time;
 import tango.text.Ascii;
@@ -24,6 +24,7 @@ import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.widgets.Table;
 
 import set;
+import threadmanager;
 
 
 version (allservers)  // useful for speed testing
@@ -42,6 +43,8 @@ static:
 
 
 char[] appDir;  /// Absolute path to where the application is installed.
+char[] dataDir;  /// Absolute path to where settings and data is stored.
+char[] logDir;  /// Absolute path to where the log file is.
 
 bool haveGslist;  /// Will be true if gslist was found during startup.
 
@@ -50,7 +53,7 @@ const char[] APPNAME = "Monster Browser";
 
 const char[] SVN = import("svnversion.txt");
 
-const char[] FINAL_VERSION = "0.5";
+const char[] FINAL_VERSION = "0.6";
 
 debug {
 	const char[] VERSION = __DATE__ ~
@@ -66,6 +69,9 @@ else {
 Clipboard clipboard;
 Timer globalTimer;
 
+// Add dispose() methods etc. to this array, and they will be called at
+// shutdown.
+void delegate()[] callAtShutdown;
 
 // Custom file open modes, since Tango doesn't have sharing enabled by default
 const File.Style WriteCreateShared =
@@ -93,8 +99,8 @@ void initLogging(char[] name="LOG.TXT")
 	const char[] sep =
 	           "-------------------------------------------------------------";
 	char[] error = null;
-	assert(appDir);
-	char[] path = appDir ~ name;
+	assert(logDir);
+	char[] path = logDir ~ name;
 
 	if (Path.exists(path) && Path.fileSize(path) < MAX_LOG_SIZE)
 		logfile = new File(path, WriteAppendingShared);
@@ -145,6 +151,8 @@ void logx(char[] file, int line, Exception e)
 	log(file, line, e.classinfo.name ~ ": " ~ e.toString());
 	log(Format("{} threads, currently in '{}'.", Thread.getAll().length,
 	                                                   Thread.getThis().name));
+	log(Format("ThreadManager's thread is {}.",
+	                         threadManager.sleeping ? "sleeping" : "working"));
 
 	// output stack trace
 	e.writeOut((char[] s) { logString(s); });
@@ -368,7 +376,9 @@ void mergeSort(T)(T[] a, bool delegate(T a, T b) lessOrEqual)
  * Parse a sequence of integers, separated by any combination of commas,
  * spaces, or tabs.
  *
- * When an integer is not found, a zero is used instead.
+ * If forcedLength is > 0, the returned array will have been shortened or
+ * extended as necessary to match that length.  If it needs to be extended,
+ * the extra elements will have defaultVal as their value.
  */
 int[] parseIntList(in char[] str, size_t forcedLength=0, int defaultVal=0)
 {
@@ -405,7 +415,7 @@ char[] toCsv(T)(T[] a)
 	}
 	else {
 		assert(s[0..1] == "[" && s[$-1..$] == "]");
-		assert(isdigit(s[1]) && isdigit(s[$-2]));
+		assert(!isspace(s[1]) && !isspace(s[$-2]));
 		return s[1..$-1];
 	}
 }

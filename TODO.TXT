@@ -1,23 +1,33 @@
-- Reconcile ServerTable.quickRefresh and fullRefresh?
+- Display better message when aborting Check for new servers.
 
-- Ability to remove the extra servers too?
+- Selection bug when clicking on a server, then pressing Ctrl+A right after.
 
-- Avoid extra servers being saved to master files?
+- When interrupting a check for new servers, the press of Refresh all won't
+  query the servers the were not tried already.
+
+- Tab completion for rcon commands, or at least fix tab traversal order.
+
+- Make the infinity sign for timed out servers more visible?
+
+- Colored text in rcon output?
+
+- Server count in status bar is wrong after deleting a server.
+
+- How does 'Never remove this server automatically' relate to automatic hiding
+  of servers with too high timeout count?
+
+- Remove old passwords when changing them without saving the new one?
+
+- Reconcile ServerTable.quickRefresh and fullRefresh, also look into unifying
+  selection keeping code.
+
+- Ability to change persistence state of manually added servers by adding them
+  again?
 
 - Change taskbar text when working, to keep user informed?
 
 - See if ServerData.customData really is needed, cache TextLayouts in
   ServerTable instead if there is a noticable speedup?
-
-- Show server name tooltips for players, and have a context menu with
-  'select server'?  Double click player to go to server?
-
-- Display better message when aborting Check for new servers.
-
-- When interrupting a check for new servers, the press of Refresh all won't
-  query the servers the were not tried already.
-
-- Don't save xml files when using gslist?
 
 - Fix the name of extra servers files, use game or mod name, maybe a
   customizable name?
@@ -28,8 +38,6 @@
 - Check out qstat's option to use Gamespy masters.
 
 - Check out more qstat parameters, like sendinterval, timeout and interval.
-
-- Fix baseq3 server list when using gslist.
 
 - Implement some kind of server monitoring.
 

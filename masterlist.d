@@ -190,13 +190,13 @@ final class MasterList
 	 */
 	bool load()
 	{
-		if (!Path.exists(appDir ~ fileName_))
+		if (!Path.exists(dataDir ~ fileName_))
 			return false;
 
 		log(Format("Opening '{}'...", fileName_));
 
 		scope timer = new Timer;
-		char[] content = cast(char[])File.get(appDir ~ fileName_);
+		char[] content = cast(char[])File.get(dataDir ~ fileName_);
 		GC.setAttr(content.ptr, GC.BlkAttr.NO_SCAN);
 		auto parser = new SaxParser!(char);
 		auto handler = new MySaxHandler!(char);
@@ -226,7 +226,7 @@ final class MasterList
 	void save()
 	{
 		scope timer = new Timer;
-		scope dumper = new XmlDumper(appDir ~ fileName_);
+		scope dumper = new XmlDumper(dataDir ~ fileName_);
 
 		synchronized (this) {
 			foreach (sd; servers_) {

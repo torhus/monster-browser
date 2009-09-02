@@ -8,7 +8,6 @@ import tango.core.Exception;
 import tango.io.device.File;
 import tango.io.model.IConduit : OutputStream;
 import tango.io.stream.Buffered;
-import tango.io.stream.TextFile;
 import tango.stdc.ctype : isdigit;
 import tango.text.Ascii;
 import tango.text.Util;
@@ -56,7 +55,7 @@ bool parseOutput(in char[] modName, Lines!(char) iter,
 			                                   "qstat.out", WriteCreateShared));
 		}
 		catch (IOException e) {
-			error("Unable to create file, qstat output will not be saved"
+			error("Unable to create file, qstat output will not be saved "
 			                                                       "to disk.");
 			outfile = null;
 		}
