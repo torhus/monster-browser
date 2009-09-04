@@ -259,7 +259,7 @@ void delegate() refreshList()
 		auto retriever = new QstatServerRetriever(game.name, master, servers,
 		                                                                 true);
 		auto contr = new ServerRetrievalController(retriever);
-		contr.progressLabel = "Refreshing servers";
+		contr.progressLabel = Format("Refreshing {} servers", servers.length);
 		return &contr.run;
 	}
 	else {
@@ -358,7 +358,8 @@ void delegate() getNewList()
 				auto retriever = new QstatServerRetriever(game.name, master,
 				                                              addresses, true);
 				auto contr = new ServerRetrievalController(retriever);
-				contr.progressLabel = "Checking for new servers";
+				contr.progressLabel = Format("Querying {} servers",
+				                                             addresses.length);
 				contr.run();
 			}
 		}

@@ -89,7 +89,9 @@ class MainWindow
 			shell_.setLocation(pos[0], pos[1]);
 		}
 
-		shell_.setLayout(new GridLayout(2, false));
+		auto layout = new GridLayout(2, false);
+		layout.horizontalSpacing = 0;
+		shell_.setLayout(layout);
 
 
 		// *********** MAIN WINDOW TOP ***************
@@ -230,42 +232,66 @@ class StatusBar : Composite
 	this(Composite parent)
 	{
 		super(parent, DWT.NONE);
-		auto layout = new GridLayout(3, false);
+		auto layout = new GridLayout(7, false);
 		layout.marginWidth = 2;
 		layout.marginHeight = 0;
 		setLayout(layout);
 
-		leftLabel_ = new Label(this, DWT.NONE);
-		auto leftData = new GridData(DWT.FILL, DWT.CENTER, true, false);
-		leftLabel_.setLayoutData(leftData);
-
-		progressLabel_ = new Label(this, DWT.RIGHT);
+		progressLabel_ = new Label(this, DWT.NONE);
 		progressLabel_.setVisible(false);
 
 		progressBar_ = createProgressBar(false);
 		progressBar_.setVisible(false);
+
+		// an empty Label to push the rest of the labels to the far right of
+		// the status bar
+		auto empty = new Label(this, DWT.NONE);
+		auto emptyData = new GridData(DWT.CENTER, DWT.CENTER, true, false);
+		empty.setLayoutData(emptyData);
+
+		int sepHeight = progressLabel_.computeSize(DWT.DEFAULT, DWT.DEFAULT).y;
+
+		createSeparator(sepHeight);
+
+		serverLabel_ = new Label(this, DWT.NONE);
+		auto serverData = new GridData(DWT.RIGHT, DWT.CENTER, false, false);
+		serverLabel_.setLayoutData(serverData);
+
+		createSeparator(sepHeight);
+
+		playerLabel_ = new Label(this, DWT.NONE);
+		auto playerData = new GridData(DWT.RIGHT, DWT.CENTER, false, false);
+		playerLabel_.setLayoutData(playerData);
 	}
 
 	void setLeft(char[] text)  ///
 	{
-		if (!leftLabel_.isDisposed())
-			leftLabel_.setText(text);
+		if (progressLabel_.isDisposed())
+			return;
+		progressLabel_.setText(text);
+		layout();
 	}
 
 	void setDefaultStatus(uint totalServers, uint shownServers,
 	                                            uint noReply, uint humans)  ///
 	{
+		if (isDisposed())
+			return;
+			
+		setRedraw(false);
+
 		char[] fmt = "{1} servers";
 
 		/*if (noReply > 0)
 			fmt ~= " ({2} did not reply)";*/
 
-		if (humans > 0)
-			fmt ~= ", {3} people are playing";
-		else if (humans == 0)
-			fmt ~= ", no human players";
+		char[] s = Format(fmt, totalServers, shownServers, noReply);
+		serverLabel_.setText(s);
 
-		setLeft(Format(fmt, totalServers, shownServers, noReply, humans));
+		playerLabel_.setText(Format("{} human players", humans));
+
+		layout();
+		setRedraw(true);
 	}
 
 
@@ -280,7 +306,8 @@ class StatusBar : Composite
 			// remove the old ProgressBar, insert a new one
 			progressBar_.dispose();
 			progressBar_ = createProgressBar(indeterminate);
-			getLayout().layout(this, true);
+			progressBar_.moveBelow(progressLabel_);
+			layout();
 		}
 		setProgressLabel(label);
 		progressBar_.setSelection(0);
@@ -291,19 +318,16 @@ class StatusBar : Composite
 
 	void hideProgress()
 	{
-		if (progressLabel_.isDisposed() || progressBar_.isDisposed())
+		if (isDisposed())
 			return;
-		progressLabel_.setVisible(false);
+		progressLabel_.setText("Ready");
 		progressBar_.setVisible(false);
 	}
 
 
 	private void setProgressLabel(in char[] text)
 	{
-		if (progressLabel_.isDisposed())
-			return;
-		progressLabel_.setText(text ~ ":");
-		getLayout().layout(this, true);
+		setLeft(text ~ "...");
 	}
 
 
@@ -320,15 +344,27 @@ class StatusBar : Composite
 	{
 		auto pb = new ProgressBar(this, indeterminate ?
 		                                         DWT.INDETERMINATE : DWT.NONE);
-		auto data = new GridData(DWT.RIGHT, DWT.CENTER, false, false);
+		auto data = new GridData;
 		data.widthHint = 100;
 		pb.setLayoutData(data);
 		return pb;
 	}
 
 
+	private Label createSeparator(int height)
+	{
+		auto sep = new Label(this, DWT.SEPARATOR);
+		auto sepData = new GridData;
+		sepData.heightHint = height;
+		sepData.widthHint = 5;
+		sep.setLayoutData(sepData);
+		return sep;
+	}
+
+
 private:
-	Label leftLabel_;
+	Label serverLabel_;
+	Label playerLabel_;
 	Label progressLabel_;
 	ProgressBar progressBar_;
 }
@@ -348,9 +384,7 @@ class FilterBar : FilterSuper
 		version (icons) {
 			super(parent, DWT.SHADOW_NONE);
 			setText("Filters and Game Selection");
-			auto data = new GridData;
-			//data.verticalAlignment = DWT.FILL;
-			setLayoutData(data);
+			setLayoutData(new GridData);
 		}
 		else {
 			super(parent, DWT.NONE);
