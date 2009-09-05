@@ -254,13 +254,13 @@ class StatusBar : Composite
 		createSeparator(sepHeight);
 
 		serverLabel_ = new Label(this, DWT.NONE);
-		auto serverData = new GridData(DWT.RIGHT, DWT.CENTER, false, false);
+		auto serverData = new GridData(DWT.CENTER, DWT.CENTER, false, false);
 		serverLabel_.setLayoutData(serverData);
 
 		createSeparator(sepHeight);
 
 		playerLabel_ = new Label(this, DWT.NONE);
-		auto playerData = new GridData(DWT.RIGHT, DWT.CENTER, false, false);
+		auto playerData = new GridData(DWT.CENTER, DWT.CENTER, false, false);
 		playerLabel_.setLayoutData(playerData);
 	}
 
@@ -277,7 +277,7 @@ class StatusBar : Composite
 	{
 		if (isDisposed())
 			return;
-			
+
 		setRedraw(false);
 
 		char[] fmt = "{1} servers";
@@ -354,9 +354,9 @@ class StatusBar : Composite
 	private Label createSeparator(int height)
 	{
 		auto sep = new Label(this, DWT.SEPARATOR);
-		auto sepData = new GridData;
+		auto sepData = new GridData(DWT.CENTER, DWT.CENTER, false, false);
 		sepData.heightHint = height;
-		sepData.widthHint = 5;
+		//sepData.widthHint = 5;
 		sep.setLayoutData(sepData);
 		return sep;
 	}

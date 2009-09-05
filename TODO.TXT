@@ -1,3 +1,5 @@
+- should optimize countHumanPlayers?  Profile it.
+
 - Display better message when aborting Check for new servers.
 
 - Selection bug when clicking on a server, then pressing Ctrl+A right after.
