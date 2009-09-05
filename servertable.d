@@ -232,7 +232,8 @@ class ServerTable
 	/**
 	 * If necessary clears the table and refills it with updated data.
 	 *
-	 * Keeps the same selection if there was one.
+	 * Keeps the same selection if there was one.  Updates the status bar main
+	 * info.
 	 */
 	void quickRefresh()
 	{
@@ -266,6 +267,8 @@ class ServerTable
 			selectedIps_[ip] = index;
 			table_.select(index);
 		}
+
+		updateStatusBar();
 	}
 
 	/**
@@ -274,6 +277,8 @@ class ServerTable
 	 * unconditionally), it also updates the cvar and player tables to show
 	 * information for the selected servers, or clears them if there are no
 	 * servers selected.
+	 *
+	 * Also updates the status bar main info.
 	 */
 	void fullRefresh()
 	{
@@ -302,6 +307,8 @@ class ServerTable
 			playerTable.clear();
 			cvarTable.clear();
 		}
+
+		updateStatusBar();
 	}
 
 	/// Select one or more servers, replacing the current selection.
@@ -345,6 +352,8 @@ class ServerTable
 
 		cvarTable.clear;
 		playerTable.clear;
+
+		updateStatusBar();
 	}
 
 	///
@@ -630,6 +639,27 @@ private:
 		return menu;
 	}
 
+
+	/**
+	 * Updates the status main status bar info to show the current number of
+	 * servers and players.
+	 *
+	 * Any method that alters the number of visible servers, or the number of
+	 * players on those servers, should call this when it is done making
+	 * changes.
+	 *
+	 * Note:
+	 *     Changes to the player or cvar tables do not affect the status bar,
+	 *     so it's not necessary to call this method in those cases.
+	 */
+	void updateStatusBar()
+	{
+		int itemCount = table_.getItemCount();
+		assert(itemCount == serverList_.filteredLength || itemCount == 0);
+		statusBar.setDefaultStatus(0, itemCount, 0,
+		                                       countHumanPlayers(serverList_));
+	}
+
 	void onCopyAddresses()
 	{
 		char[][] addresses;
@@ -699,8 +729,6 @@ private:
 				// refresh filtered list and update GUI
 				serverList_.refillFromMaster();
 				fullRefresh();
-				statusBar.setDefaultStatus(0, serverList_.filteredLength, 0,
-				                               countHumanPlayers(serverList_));
 			}
 		}
 	}
