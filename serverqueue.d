@@ -19,13 +19,6 @@ class ServerQueue
 	}
 
 
-	~this()
-	{
-		if (list_ !is null)
-			delete list_;
-	}
-
-
 	///
 	void add(ServerHandle sh)
 	{

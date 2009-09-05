@@ -131,8 +131,6 @@ void switchToGame(in char[] name)
 			serverTable.serverList.sort();
 			serverTable.forgetSelection();
 			serverTable.fullRefresh();
-			statusBar.setDefaultStatus(0, serverList.filteredLength, 0,
-			                                    countHumanPlayers(serverList));
 		}
 
 		return null;
@@ -158,7 +156,7 @@ void delegate() loadSavedList()
 		auto retriever = new MasterListServerRetriever(game, master);
 		auto contr = new ServerRetrievalController(retriever);
 		contr.disableQueue();
-		contr.startMessage = "Loading saved server list...";
+		statusBar.setLeft("Loading saved server list...");
 		return &contr.run;
 	}
 	else {
@@ -195,8 +193,7 @@ void queryServers(in char[][] addresses, bool replace=false, bool select=false)
 		auto retriever = new QstatServerRetriever(gameName, master,
 		                                   Set!(char[])(addresses_), replace_);
 		auto contr = new ServerRetrievalController(retriever, replace_);
-		contr.startMessage = Format("Querying {} server(s)...",
-		                                                    addresses_.length);
+
 		if (select_)
 			contr.autoSelect = addresses_;
 
@@ -262,8 +259,7 @@ void delegate() refreshList()
 		auto retriever = new QstatServerRetriever(game.name, master, servers,
 		                                                                 true);
 		auto contr = new ServerRetrievalController(retriever);
-		contr.startMessage =
-                            Format("Refreshing {} servers...", servers.length);
+		contr.progressLabel = Format("Refreshing {} servers", servers.length);
 		return &contr.run;
 	}
 	else {
@@ -286,12 +282,28 @@ void delegate() getNewList()
 			ServerList serverList = serverTable.serverList;
 			MasterList master = serverList.master;
 			GameConfig game = getGameConfig(serverList.gameName);
+
+			Display.getDefault().syncExec(new class Runnable {
+				void run()
+				{
+					statusBar.showProgress("Getting new list from master",
+					                                                     true);
+				}
+			});
+
 			Set!(char[]) addresses = browserGetNewList(game);
 
 			// Make sure we don't start removing servers based on an incomplete
 			// address list.
-			if (threadManager.abort)
+			if (threadManager.abort) {
+				Display.getDefault().syncExec(new class Runnable {
+					void run()
+					{
+						statusBar.hideProgress();
+					}
+				});
 				return;
+			}
 
 			size_t total = addresses.length;
 			int removed = 0;
@@ -335,6 +347,7 @@ void delegate() getNewList()
 				Display.getDefault.asyncExec(new class Runnable {
 					void run()
 					{
+						statusBar.hideProgress();
 						serverTable.fullRefresh;
 						serverTable.notifyRefreshEnded;
 						statusBar.setLeft("There were no new servers.");
@@ -345,7 +358,7 @@ void delegate() getNewList()
 				auto retriever = new QstatServerRetriever(game.name, master,
 				                                              addresses, true);
 				auto contr = new ServerRetrievalController(retriever);
-				contr.startMessage = Format("Got {} servers, querying...",
+				contr.progressLabel = Format("Querying {} servers",
 				                                             addresses.length);
 				contr.run();
 			}
@@ -358,11 +371,11 @@ void delegate() getNewList()
 
 	ServerList serverList = serverTable.serverList;
 	if (serverList.master.length > 0) {
-		statusBar.setLeft("Checking for new servers...");
+		//statusBar.setLeft("Checking for new servers...");
 		log("Checking for new servers for " ~ serverList.gameName ~ "...");
 	}
 	else {
-		statusBar.setLeft("Getting new server list...");
+		//statusBar.setLeft("Getting new server list...");
 		log("Getting new server list for " ~ serverList.gameName ~ "...");
 	}
 	serverTable.notifyRefreshStarted((bool) { threadManager.abort = true; });
@@ -385,11 +398,12 @@ void delegate() getNewList()
 class ServerRetrievalController
 {
 	/**
-	 * Status bar message.
+	 * Text label for the progress bar.
 	 *
 	 * Set before calling run() if you don't want the default to be used.
 	 */
-	char[] startMessage = "Querying server(s)...";
+
+	char[] progressLabel = "Querying servers";
 
 
 	/**
@@ -446,10 +460,11 @@ class ServerRetrievalController
 	{
 		try {
 			statusBarUpdater_ = new StatusBarUpdater;
-			statusBarUpdater_.text = startMessage;
 			Display.getDefault.syncExec(statusBarUpdater_);
 
-			if (serverRetriever_.prepare() != 0) {
+			total_ = serverRetriever_.prepare();
+
+			if (total_ != 0) {
 				auto dg = replace_ ? &serverList_.replace : &serverList_.add;
 
 				if (useQueue_) {
@@ -460,6 +475,13 @@ class ServerRetrievalController
 					deliverDg2_ = dg;
 					deliverDg_ = &deliverDgWrapper;
 				}
+
+				Display.getDefault.syncExec(new class Runnable {
+					void run()
+					{
+						statusBar.showProgress(progressLabel);
+					}
+				});
 
 				serverRetriever_.retrieve(&deliver);
 				serverList_.complete = !threadManager.abort;
@@ -486,6 +508,8 @@ class ServerRetrievalController
 						done;
 					else
 						serverTable.notifyRefreshEnded;
+
+					statusBar.hideProgress();
 				}
 			});
 		}
@@ -511,6 +535,8 @@ class ServerRetrievalController
 
 	private bool deliver(ServerHandle sh, bool replied, bool matched)
 	{
+		counter_++;
+
 		assert(sh != InvalidServerHandle);
 
 		if (!replied) {
@@ -535,7 +561,10 @@ class ServerRetrievalController
 		if (matched)
 			deliverDg_(sh);
 
-		statusBarUpdater_.text = startMessage ~ Integer.toString(counter_++);
+		// progress display
+		statusBarUpdater_.totalToQuery = total_;
+		statusBarUpdater_.progress = counter_;
+
 		Display.getDefault.syncExec(statusBarUpdater_);
 
 		return !threadManager.abort;
@@ -554,10 +583,6 @@ class ServerRetrievalController
 		// FIXME: only doing this so that players will be shown
 		serverTable.fullRefresh();
 
-		statusBar.setDefaultStatus(0,
-		                           serverList_.filteredLength,
-		                           timedOut_,
-		                           countHumanPlayers(serverList_));
 		serverTable.notifyRefreshEnded();
 	}
 
@@ -585,6 +610,7 @@ class ServerRetrievalController
 	private {
 		IServerRetriever serverRetriever_;
 		int counter_ = 0;
+		int total_;
 		uint timedOut_ = 0;
 		int maxTimeouts_;
 		StatusBarUpdater statusBarUpdater_;
@@ -600,10 +626,13 @@ class ServerRetrievalController
 }
 
 
+// Update the progress bar when querying servers.
 private class StatusBarUpdater : Runnable {
-	char[] text;
+	int totalToQuery;
+	int progress;
 
-	this(char[] text=null) { this.text = text; }
-
-	void run() { statusBar.setLeft(text); }
+	void run()
+	{
+		statusBar.setProgress(totalToQuery, progress);
+	}
 }
