@@ -307,6 +307,7 @@ void delegate() getNewList()
 
 			size_t total = addresses.length;
 			int removed = 0;
+			Set!(char[]) addresses2;
 
 			// Exclude servers that are already known to run the right mod, and
 			// delete servers from the master list that's missing from the
@@ -315,9 +316,9 @@ void delegate() getNewList()
 				ServerData sd = master.getServerData(sh);
 				char[] address = sd.server[ServerColumn.ADDRESS];
 				if (address in addresses) {
-					if (matchMod(&sd, game.mod)) {
-						addresses.remove(address);
-					}
+					addresses.remove(address);
+					if (!matchMod(&sd, game.mod))
+						addresses2.add(address);
 				}
 				else if (!sd.persistent) {
 					setEmpty(&sd);
@@ -341,8 +342,10 @@ void delegate() getNewList()
 				log(Format("Removed {} servers that were missing from master.",
 				                                                     removed));
 			}
+			
+			size_t count = addresses.length + addresses2.length;
 
-			if (addresses.length == 0) {
+			if (count == 0) {
 				// FIXME: what to do when there are no servers?
 				Display.getDefault.asyncExec(new class Runnable {
 					void run()
@@ -355,12 +358,28 @@ void delegate() getNewList()
 				});
 			}
 			else {
+				// if it's only a few servers, do it all in one go
+				if (count < 100 || addresses.length == 0) {
+					foreach (addr; addresses2)
+						addresses.add(addr);
+					addresses2.clear();
+				}
+
 				auto retriever = new QstatServerRetriever(game.name, master,
 				                                              addresses, true);
 				auto contr = new ServerRetrievalController(retriever);
-				contr.progressLabel = Format("Querying {} servers",
+				contr.progressLabel = Format("Checking {} servers",
 				                                             addresses.length);
 				contr.run();
+
+				if (addresses2.length) {
+					retriever = new QstatServerRetriever(game.name,
+					                                 master, addresses2, true);
+					contr = new ServerRetrievalController(retriever);
+					contr.progressLabel = Format("Extended check, {} servers",
+					                                        addresses2.length);
+					contr.run();
+				}
 			}
 		}
 		catch(Exception e) {
@@ -371,11 +390,9 @@ void delegate() getNewList()
 
 	ServerList serverList = serverTable.serverList;
 	if (serverList.master.length > 0) {
-		//statusBar.setLeft("Checking for new servers...");
 		log("Checking for new servers for " ~ serverList.gameName ~ "...");
 	}
 	else {
-		//statusBar.setLeft("Getting new server list...");
 		log("Getting new server list for " ~ serverList.gameName ~ "...");
 	}
 	serverTable.notifyRefreshStarted((bool) { threadManager.abort = true; });

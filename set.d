@@ -19,6 +19,7 @@ struct Set(T) {
 	bool opIn_r(T val) { return (val in data_) != null; } ///
 	size_t length() { return data_.length; } ///
 	void rehash() { data_.rehash; } ///
+	void clear() { data_ = null; } ///
 	T[] toArray() { return data_.keys; } ///
 
 	///
