@@ -31,7 +31,7 @@ enum Filter {
  * A list of servers, with all necessary synchronization taken care of.
  *
  */
-class ServerList
+final class ServerList
 {
 	/**
 	 * true if list contains all servers for the mod, that replied when queried.
@@ -113,19 +113,28 @@ class ServerList
 
 	/**
 	 * Clear the filtered list and refill it from the master list.
+	 *
+	 * Only servers previously added by calling add() or replace() will be
+	 * considered.
 	 */
 	synchronized void refillFromMaster()
 	{
 		char[] mod = getGameConfig(gameName_).mod;
+		auto newHash = new typeof(ipHash_);
 
 		filteredList.length = 0;
 		synchronized (master_) foreach (sh; master_) {
 			ServerData sd = master_.getServerData(sh);
 			char[] address = sd.server[ServerColumn.ADDRESS];
-			if (address in ipHash_ && matchMod(&sd, mod) &&
-			                                               !isFilteredOut(&sd))
-				filteredList ~= sh;
+
+			if (address in ipHash_ && matchMod(&sd, mod)) {
+				newHash[address] = -1;
+				if (!isFilteredOut(&sd))
+					filteredList ~= sh;
+			}
 		}
+
+		ipHash_ = newHash;
 		ipHashValid_ = false;
 		isSorted_ = false;
 		_sort();
@@ -187,9 +196,11 @@ class ServerList
 		}
 	}
 
+	///
+	synchronized size_t totalLength() { return ipHash_.size; }
 
 	///
-	size_t filteredLength() { synchronized (this) return filteredList.length; }
+	synchronized size_t filteredLength() { return filteredList.length; }
 
 
 	/**
@@ -456,8 +467,6 @@ private:
 
 	bool removeFromFiltered(in char[] address)
 	{
-		if (!ipHashValid_)
-			updateIpHash();
 		int i = getFilteredIndex(address);
 		if (i == -1)
 			return false;
