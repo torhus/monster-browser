@@ -656,7 +656,7 @@ private:
 	{
 		int itemCount = table_.getItemCount();
 		assert(itemCount == serverList_.filteredLength || itemCount == 0);
-		statusBar.setDefaultStatus(0, itemCount, 0,
+		statusBar.setDefaultStatus(serverList_.totalLength, itemCount, 0,
 		                                       countHumanPlayers(serverList_));
 	}
 

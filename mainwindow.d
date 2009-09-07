@@ -280,7 +280,12 @@ class StatusBar : Composite
 
 		setRedraw(false);
 
-		char[] fmt = "{1} servers";
+		char[] fmt;
+
+		if (shownServers != totalServers)
+			fmt = "{1} of {0} servers";
+		else
+			fmt = "{1} servers";
 
 		/*if (noReply > 0)
 			fmt ~= " ({2} did not reply)";*/
