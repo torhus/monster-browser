@@ -126,11 +126,11 @@ private void _main(char[][] args)
 					}
 					break;
 				case DWT.F4:
-					threadManager.run(&getNewList);
+					threadManager.run(&checkForNewServers);
 					e.type = DWT.None;
 					break;
 				case DWT.F5:
-					threadManager.run(&refreshList);
+					threadManager.run(&refreshAll);
 					e.type = DWT.None;
 					break;
 				default:
