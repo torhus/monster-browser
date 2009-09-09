@@ -62,7 +62,11 @@ final class ServerList
 	MasterList master() { return master_; }
 
 
-	/// Returns false if the added server is filtered out.
+	/**
+	 * Add a server to the list.
+	 *
+	 * Returns true if the filtered list was altered.
+	 */
 	bool add(ServerHandle sh)
 	{
 		bool refresh = false;

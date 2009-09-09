@@ -9,7 +9,7 @@ import servertable;
 
 
 ///
-class ServerQueue
+final class ServerQueue
 {
 	///
 	this(bool delegate(ServerHandle sh) addDg)
@@ -61,6 +61,8 @@ class ServerQueue
 				return;
 			if (addAll() && !arguments.norefresh)
 				serverTable.quickRefresh;
+			else
+				serverTable.updateStatusBar();
 		}
 	}
 
