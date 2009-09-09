@@ -314,6 +314,9 @@ class ServerTable
 	/// Select one or more servers, replacing the current selection.
 	void setSelection(int[] indices, bool takeFocus=false)
 	{
+		if (table_.isDisposed())
+			return;
+
 		assert(indices.length);
 
 		selectedIps_.clear();
@@ -339,6 +342,29 @@ class ServerTable
 
 		if (takeFocus)
 			table_.setFocus();
+	}
+
+	/**
+	 * Updates the status main status bar info to show the current number of
+	 * servers and players.
+	 *
+	 * Any method that alters the number of visible servers, or the number of
+	 * players on those servers, should call this when it is done making
+	 * changes.
+	 *
+	 * Note:
+	 *     Changes to the player or cvar tables do not affect the status bar,
+	 *     so it's not necessary to call this method in those cases.
+	 */
+	void updateStatusBar()
+	{
+		if (table_.isDisposed())
+			return;
+
+		int itemCount = table_.getItemCount();
+		assert(itemCount == serverList_.filteredLength || itemCount == 0);
+		statusBar.setDefaultStatus(serverList_.totalLength, itemCount, 0,
+		                                       countHumanPlayers(serverList_));
 	}
 
 	/// Empty the server, player, and cvar tables.
@@ -637,27 +663,6 @@ private:
 		});
 
 		return menu;
-	}
-
-
-	/**
-	 * Updates the status main status bar info to show the current number of
-	 * servers and players.
-	 *
-	 * Any method that alters the number of visible servers, or the number of
-	 * players on those servers, should call this when it is done making
-	 * changes.
-	 *
-	 * Note:
-	 *     Changes to the player or cvar tables do not affect the status bar,
-	 *     so it's not necessary to call this method in those cases.
-	 */
-	void updateStatusBar()
-	{
-		int itemCount = table_.getItemCount();
-		assert(itemCount == serverList_.filteredLength || itemCount == 0);
-		statusBar.setDefaultStatus(serverList_.totalLength, itemCount, 0,
-		                                       countHumanPlayers(serverList_));
 	}
 
 	void onCopyAddresses()
