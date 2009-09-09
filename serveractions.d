@@ -102,7 +102,7 @@ void switchToGame(in char[] name)
 			if (arguments.fromfile)
 				threadManager.runSecond(&loadSavedList);
 			else if (common.haveGslist && game.useGslist)
-				threadManager.runSecond(&getNewList);
+				threadManager.runSecond(&checkForNewServers);
 			else {
 				// try to refresh if we can, otherwise get a new list
 				MasterList master = serverList.master;
@@ -122,9 +122,9 @@ void switchToGame(in char[] name)
 				}
 
 				if (canRefresh)
-					threadManager.runSecond(&refreshList);
+					threadManager.runSecond(&refreshAll);
 				else
-					threadManager.runSecond(&getNewList);
+					threadManager.runSecond(&checkForNewServers);
 			}
 		}
 		else {
@@ -215,11 +215,11 @@ void queryServers(in char[][] addresses, bool replace=false, bool select=false)
 
 
 /**
- * Refreshes the list.
+ * Refreshes all servers for the current mod.
  *
  * Note: To be called through ThreadManager.run().
  */
-void delegate() refreshList()
+void delegate() refreshAll()
 {
 	ServerList serverList = serverTable.serverList;
 	MasterList master = serverList.master;
@@ -270,11 +270,11 @@ void delegate() refreshList()
 
 
 /**
- * Retrieves a new list from the master server.
+ * Checks for new servers for the current mod.
  *
  * Note: To be called through ThreadManager.run().
  */
-void delegate() getNewList()
+void delegate() checkForNewServers()
 {
 	void f()
 	{

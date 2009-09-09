@@ -35,7 +35,7 @@ void startMonitor(Shell shell)
 
 		// only the gui thread can display message boxes
 		Display.getDefault().syncExec(null, &monitorDone);
-		threadManager.run(&refreshList);
+		threadManager.run(&refreshAll);
 		return 0;
 	}
 
