@@ -621,6 +621,8 @@ private:
 		menu.setDefaultItem(item);
 		item.addSelectionListener(new class SelectionAdapter {
 			void widgetSelected(SelectionEvent e) {
+				if (stopServerRefresh_ !is null)
+					stopServerRefresh_(true);
 				joinServer(serverList_.gameName,
 				          serverList_.getFiltered(table_.getSelectionIndex()));
 			}
