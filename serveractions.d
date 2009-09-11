@@ -193,6 +193,7 @@ void queryServers(in char[][] addresses, bool replace=false, bool select=false)
 		auto retriever = new QstatServerRetriever(gameName, master,
 		                                   Set!(char[])(addresses_), replace_);
 		auto contr = new ServerRetrievalController(retriever, replace_);
+		contr.progressLabel = Format("Querying {} servers", addresses_.length);
 
 		if (select_)
 			contr.autoSelect = addresses_;
@@ -342,7 +343,7 @@ void delegate() checkForNewServers()
 				log(Format("Removed {} servers that were missing from master.",
 				                                                     removed));
 			}
-			
+
 			size_t count = addresses.length + addresses2.length;
 
 			if (count == 0) {
