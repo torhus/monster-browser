@@ -145,15 +145,12 @@ class RconWindow
 	///
 	private void deliverOutput(in char[] s)
 	{
-		Display.getDefault().syncExec(new class Runnable {
-			void run()
-			{
-				if (outputText_.isDisposed())
-					return;
-				if (s.length > 0)
-					outputText_.append(stripColorCodes(s));
-			}
-		});
+		Display.getDefault().syncExec(dgRunnable( {
+			if (outputText_.isDisposed())
+				return;
+			if (s.length > 0)
+				outputText_.append(stripColorCodes(s));
+		}));
 	}
 
 
