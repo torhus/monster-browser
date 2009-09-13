@@ -30,9 +30,9 @@ final class ServerQueue
 	void stop(bool addRemaining)
 	{
 		if (addRemaining) {
-			Display.getDefault.syncExec(new class Runnable {
-				void run() { synchronizedAdd(); }
-			});
+			Display.getDefault.syncExec(dgRunnable( {
+				synchronizedAdd();
+			}));
 		}
 		stop_ = true;
 	}

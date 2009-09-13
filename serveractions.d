@@ -284,25 +284,18 @@ void delegate() checkForNewServers()
 			MasterList master = serverList.master;
 			GameConfig game = getGameConfig(serverList.gameName);
 
-			Display.getDefault().syncExec(new class Runnable {
-				void run()
-				{
-					statusBar.showProgress("Getting new list from master",
-					                                                     true);
-				}
-			});
+			Display.getDefault().syncExec(dgRunnable( {
+				statusBar.showProgress("Getting new list from master", true);
+			}));
 
 			Set!(char[]) addresses = browserGetNewList(game);
 
 			// Make sure we don't start removing servers based on an incomplete
 			// address list.
 			if (threadManager.abort) {
-				Display.getDefault().syncExec(new class Runnable {
-					void run()
-					{
-						statusBar.hideProgress();
-					}
-				});
+				Display.getDefault().syncExec(dgRunnable( {
+					statusBar.hideProgress();
+				}));
 				return;
 			}
 
@@ -332,13 +325,10 @@ void delegate() checkForNewServers()
 			                      total, game.masterServer, addresses.length));
 
 			if (removed > 0) {
-				Display.getDefault().syncExec(new class Runnable {
-					void run()
-					{
-						serverList.refillFromMaster();
-						serverTable.fullRefresh();
-					}
-				});
+				Display.getDefault().syncExec(dgRunnable( {
+					serverList.refillFromMaster();
+					serverTable.fullRefresh();
+				}));
 
 				log(Format("Removed {} servers that were missing from master.",
 				                                                     removed));
@@ -348,15 +338,12 @@ void delegate() checkForNewServers()
 
 			if (count == 0) {
 				// FIXME: what to do when there are no servers?
-				Display.getDefault.asyncExec(new class Runnable {
-					void run()
-					{
-						statusBar.hideProgress();
-						serverTable.fullRefresh;
-						serverTable.notifyRefreshEnded;
-						statusBar.setLeft("There were no new servers.");
-					}
-				});
+				Display.getDefault.asyncExec(dgRunnable( {
+					statusBar.hideProgress();
+					serverTable.fullRefresh;
+					serverTable.notifyRefreshEnded;
+					statusBar.setLeft("There were no new servers.");
+				}));
 			}
 			else {
 				// if it's only a few servers, do it all in one go
@@ -453,9 +440,9 @@ class ServerRetrievalController
 		catch (IllegalArgumentException e)
 			maxTimeouts_ = 3;  // FIXME: use the actual default
 
-		Display.getDefault.syncExec(new class Runnable {
-			void run() { serverTable.notifyRefreshStarted(&stop); }
-		});
+		Display.getDefault.syncExec(dgRunnable( {
+			serverTable.notifyRefreshStarted(&stop);
+		}));
 	}
 
 
@@ -494,42 +481,33 @@ class ServerRetrievalController
 					deliverDg_ = &deliverDgWrapper;
 				}
 
-				Display.getDefault.syncExec(new class Runnable {
-					void run()
-					{
-						statusBar.showProgress(progressLabel);
-					}
-				});
+				Display.getDefault.syncExec(dgRunnable( {
+					statusBar.showProgress(progressLabel);
+				}));
 
 				serverRetriever_.retrieve(&deliver);
 				serverList_.complete = !threadManager.abort;
 
 				// a benchmarking tool
 				if (arguments.quit) {
-					Display.getDefault.syncExec(new class Runnable {
-						void run()
-						{
-							Trace.formatln("Time since startup: {} seconds.",
-							                              globalTimer.seconds);
-							mainWindow.close;
-						}
-					});
+					Display.getDefault.syncExec(dgRunnable( {
+						Trace.formatln("Time since startup: {} seconds.",
+						                                  globalTimer.seconds);
+						mainWindow.close;
+					}));
 				}
 				if (useQueue_)
 					serverQueue_.stop(addRemaining_);
 			}
 
-			Display.getDefault.syncExec(new class Runnable {
-				void run()
-				{
-					if (!threadManager.abort || wasStopped_)
-						done;
-					else
-						serverTable.notifyRefreshEnded;
+			Display.getDefault.syncExec(dgRunnable( {
+				if (!threadManager.abort || wasStopped_)
+					done;
+				else
+					serverTable.notifyRefreshEnded;
 
-					statusBar.hideProgress();
-				}
-			});
+				statusBar.hideProgress();
+			}));
 		}
 		catch(Exception e) {
 			logx(__FILE__, __LINE__, e);
@@ -607,13 +585,10 @@ class ServerRetrievalController
 
 	private void refillAndRefresh()
 	{
-		Display.getDefault.syncExec(new class Runnable {
-			void run()
-			{
-				serverList_.refillFromMaster();
-				serverTable.fullRefresh();
-			}
-		});
+		Display.getDefault.syncExec(dgRunnable( {
+			serverList_.refillFromMaster();
+			serverTable.fullRefresh();
+		}));
 	}
 
 	// Just a workaround for ServerQueue.add and ServerList.add and replace

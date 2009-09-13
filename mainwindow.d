@@ -574,9 +574,9 @@ class FilterBar : FilterSuper
 
 	private void refreshServerTable()
 	{
-		Display.getDefault.asyncExec(new class Runnable {
-			void run() { serverTable.fullRefresh; }
-		});
+		Display.getDefault.asyncExec(dgRunnable( {
+			serverTable.fullRefresh;
+		}));
 	}
 
 
