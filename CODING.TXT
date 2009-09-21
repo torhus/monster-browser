@@ -39,6 +39,9 @@ Libraries used
 Tango, currently svn revision 4498:
 http://dsource.org/projects/tango/
 
+For debug builds on Vista, this fix is needed:
+http://www.dsource.org/projects/tango/changeset/4940
+
 ini.d (included in the source download):
 http://www.dprogramming.com/ini.php
 
