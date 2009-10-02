@@ -171,7 +171,7 @@ useGslist=false
 	                      {"maxTimeouts", "3"},
 	                      {"minimizeOnGameLaunch", "true"},
 	                      {"showFlags", "true"},
-	                      {"simultaneousQueries", "20"},
+	                      {"simultaneousQueries", "10"},
 	                      {"startWithLastMod", "true"},
 	                      {"windowMaximized", "false"},
 	                      {"windowSize", "800x568"},
