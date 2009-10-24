@@ -228,14 +228,21 @@ void delegate() refreshAll()
 
 	assert(master.length > 0);
 
-	Set!(char[]) addresses;
+	static Set!(char[]) addresses, addresses2;
+
+	// reset static variables
+	addresses.clear();
+	addresses2.clear();
 
 	foreach (sh; master) {
 		ServerData sd = master.getServerData(sh);
 		bool matched = matchMod(&sd, game.mod);
 
-		if (matched || timedOut(&sd) && sd.failCount < 2)
+		if (matched)
 			addresses.add(sd.server[ServerColumn.ADDRESS]);
+		else if (timedOut(&sd) && sd.failCount < 2)
+			// retry previously unresponsive servers
+			addresses2.add(sd.server[ServerColumn.ADDRESS]);
 	}
 
 	log("Refreshing server list for " ~ game.name ~ "...");
@@ -256,12 +263,34 @@ void delegate() refreshAll()
 	serverList.clear();
 	GC.collect();
 
-	if (addresses.length) {
-		auto retriever = new QstatServerRetriever(game.name, master, addresses,
-		                                                                 true);
-		auto contr = new ServerRetrievalController(retriever);
-		contr.progressLabel = Format("Refreshing {} servers", addresses.length);
-		return &contr.run;
+	void f()
+	{
+		ServerList serverList = serverTable.serverList;
+		MasterList master = serverList.master;
+		GameConfig game = getGameConfig(serverList.gameName);
+
+		if (addresses.length) {
+			auto retriever = new QstatServerRetriever(game.name, master,
+			                                                  addresses, true);
+			auto contr = new ServerRetrievalController(retriever);
+			contr.progressLabel = Format("Refreshing {} servers",
+			                                                 addresses.length);
+			contr.run();
+		}
+
+		if (addresses2.length) {
+			auto retriever = new QstatServerRetriever(game.name, master,
+			                                                 addresses2, true);
+			auto contr = new ServerRetrievalController(retriever);
+			contr.progressLabel =
+			              Format("Retrying {} previously unresponsive servers",
+			                                                addresses2.length);
+			contr.run();
+		}
+	}
+
+	if (addresses.length || addresses2.length) {
+		return &f;
 	}
 	else {
 		statusBar.setLeft("No servers were found for this game");
