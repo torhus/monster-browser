@@ -83,10 +83,10 @@ void switchToGame(in char[] name)
 			try {
 				if (Path.exists(file)) {
 					auto input = new TextFileInput(file);
-					auto servers = collectIpAddresses(input);
+					auto addresses = collectIpAddresses(input);
 					input.close;
-					foreach (s; servers)
-						serverList.addExtraServer(s);
+					foreach (addr; addresses)
+						serverList.addExtraServer(addr);
 				}
 			}
 			catch (IOException e) {
@@ -228,27 +228,27 @@ void delegate() refreshAll()
 
 	assert(master.length > 0);
 
-	Set!(char[]) servers;
+	Set!(char[]) addresses;
 
 	foreach (sh; master) {
 		ServerData sd = master.getServerData(sh);
 		bool matched = matchMod(&sd, game.mod);
 
 		if (matched || timedOut(&sd) && sd.failCount < 2)
-			servers.add(sd.server[ServerColumn.ADDRESS]);
+			addresses.add(sd.server[ServerColumn.ADDRESS]);
 	}
 
 	log("Refreshing server list for " ~ game.name ~ "...");
-	log(Format("Found {} servers, master is {}.", servers.length,
+	log(Format("Found {} servers, master is {}.", addresses.length,
 	                                                          master.address));
 
 	// merge in the extra servers
 	Set!(char[]) extraServers = serverList.extraServers;
-	auto oldLength = servers.length;
+	auto oldLength = addresses.length;
 	foreach (server; extraServers)
-		servers.add(server);
+		addresses.add(server);
 
-	auto delta = servers.length - oldLength;
+	auto delta = addresses.length - oldLength;
 	log(Format("Added {} extra servers, skipping {} duplicates.",
 	                                        delta, extraServers.length-delta));
 
@@ -256,11 +256,11 @@ void delegate() refreshAll()
 	serverList.clear();
 	GC.collect();
 
-	if (servers.length) {
-		auto retriever = new QstatServerRetriever(game.name, master, servers,
+	if (addresses.length) {
+		auto retriever = new QstatServerRetriever(game.name, master, addresses,
 		                                                                 true);
 		auto contr = new ServerRetrievalController(retriever);
-		contr.progressLabel = Format("Refreshing {} servers", servers.length);
+		contr.progressLabel = Format("Refreshing {} servers", addresses.length);
 		return &contr.run;
 	}
 	else {
