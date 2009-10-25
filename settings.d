@@ -226,8 +226,6 @@ GameConfig createGameConfig(in char[] name)
 		throw new Exception("createGameConfig: preexistant game  '" ~
 		                                                           name ~ "'");
 
-	IniSection section = gamesIni.addSection(name);
-
 	return GameConfig(name, gamesIni.addSection(name));
 }
 
