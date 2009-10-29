@@ -523,10 +523,9 @@ private:
 						// FIXME: this caching is broken now
 						TextLayout tl = sd.customData;
 						if (tl is null) {
-							auto parsed = parseColors(sd.rawName);
 							tl = new TextLayout(Display.getDefault);
 							tl.setText(sd.server[ServerColumn.NAME]);
-							foreach (r; parsed.ranges)
+							foreach (r; parseColors(sd.rawName).ranges)
 								tl.setStyle(r.style, r.start, r.end);
 
 							sd.customData = tl;  // cache it

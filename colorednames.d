@@ -48,9 +48,8 @@ void disposeNameColors() {
 
 
 /** A parsed colored name. */
-// FIXME: ColoredName.cleanName is not being used anywhere.  ColoredName could
-// also  be made a struct, to avoid some heap allocation.
-class ColoredName {
+// FIXME: ColoredName.cleanName is not being used anywhere.
+struct ColoredName {
 	char[] cleanName;     ///  The string in question, stripped of color codes.
 	ColorRange[] ranges;  ///
 }
@@ -70,7 +69,7 @@ struct ColorRange {
  */
 ColoredName parseColors(in char[] s)
 {
-	ColoredName name = new ColoredName;
+	ColoredName name;
 	ColorRange range;
 
 	for (int i=0; i < s.length; i++) {

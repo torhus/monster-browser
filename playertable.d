@@ -79,11 +79,10 @@ class PlayerTable
 
 					TableItem item = cast(TableItem) e.item;
 					char[][] data = players_[table_.indexOf(item)].data;
-					scope parsed = parseColors(data[PlayerColumn.RAWNAME]);
 					scope tl = new TextLayout(Display.getDefault);
 
 					tl.setText(data[PlayerColumn.NAME]);
-					foreach (r; parsed.ranges)
+					foreach (r; parseColors(data[PlayerColumn.RAWNAME]).ranges)
 						tl.setStyle(r.style, r.start, r.end);
 
 					if (e.detail & DWT.SELECTED)
