@@ -8,13 +8,14 @@ import tango.core.Exception;
 import tango.io.device.File;
 import tango.io.model.IConduit : OutputStream;
 import tango.io.stream.Buffered;
+import tango.io.stream.Lines;
 import tango.stdc.ctype : isdigit;
 import tango.text.Ascii;
 import tango.text.Util;
 import Float = tango.text.convert.Float;
 debug import tango.text.convert.Format;
 import tango.text.convert.Integer;
-import tango.io.stream.Lines;
+import tango.time.StopWatch;
 
 import colorednames;
 import common;
@@ -44,7 +45,8 @@ bool parseOutput(in char[] modName, Lines!(char) iter,
 {
 	char[][] gtypes;
 	scope BufferedOutput outfile = null;
-	debug scope timer2 = new Timer;
+	debug StopWatch timer2;
+	debug timer2.start();
 	bool keepGoing = true;
 
 	assert(deliver);
@@ -155,11 +157,12 @@ bool parseOutput(in char[] modName, Lines!(char) iter,
 }
 
 
-debug private void checkTime(Timer t, char[] name)
+debug private void checkTime(ref StopWatch t, char[] name)
 {
-	if (t.seconds >= 2)
-		log(Format("qstat timer {}: {}", name, t.seconds));
-	t.restart;
+	auto time = t.stop();
+	if (time >= 2)
+		log(Format("qstat timer {}: {}", name, time));
+	t.start();
 }
 
 

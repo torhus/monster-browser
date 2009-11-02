@@ -8,6 +8,7 @@ import tango.text.Util;
 import tango.text.convert.Format;
 import Integer = tango.text.convert.Integer;
 import tango.stdc.string : memmove;
+import tango.time.StopWatch;
 import tango.util.container.HashMap;
 debug import tango.util.log.Trace;
 
@@ -370,7 +371,10 @@ private:
 	/// Sorts the filtered list.
 	void _sort()
 	{
-		debug scope timer = new Timer;
+		debug {
+			StopWatch timer;
+			timer.start();
+		}
 
 		bool lessOrEqual(ServerHandle a, ServerHandle b)
 		{
@@ -389,7 +393,7 @@ private:
 		}
 
 		debug log("ServerList._sort() took " ~
-		          Integer.toString(timer.millis) ~ " milliseconds.");
+		          Integer.toString(timer.microsec / 1000) ~ " milliseconds.");
 	}
 
 	/**
