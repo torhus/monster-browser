@@ -521,7 +521,7 @@ class ServerRetrievalController
 				if (arguments.quit) {
 					Display.getDefault.syncExec(dgRunnable( {
 						Trace.formatln("Time since startup: {} seconds.",
-						                                  globalTimer.seconds);
+						                                   globalTimer.stop());
 						mainWindow.close;
 					}));
 				}

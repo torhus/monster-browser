@@ -57,7 +57,7 @@ void main(char[][] args) ///
 
 private void _main(char[][] args)
 {
-	globalTimer = new Timer;
+	globalTimer.start();
 
 	detectDirectories(args[0]);
 
