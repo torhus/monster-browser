@@ -220,8 +220,6 @@ final class ServerList
 			isSorted_ = true;
 			complete = false;
 		}
-
-		return this;
 	}
 
 

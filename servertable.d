@@ -123,7 +123,7 @@ class ServerTable
 
 		// padlock image for passworded servers
 		auto stream  = new ByteArrayInputStream(
-		                              cast(byte[])import("icons/padlock.png"));
+		                                    cast(byte[])import("padlock.png"));
 		auto data = new ImageData(stream);
 		padlockImage_ = new Image(Display.getDefault, data.scaledTo(12, 12));
 
