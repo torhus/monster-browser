@@ -594,7 +594,7 @@ ToolBar createToolbar(Composite parent) ///
 	auto button1 = new ToolItem(toolBar, DWT.PUSH);
 	button1.setText("Check for New");
 	version (icons)
-		button1.setImage(loadImage!("icons/box_download_32.png"));
+		button1.setImage(loadImage!("box_download_32.png"));
 	button1.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{
@@ -606,7 +606,7 @@ ToolBar createToolbar(Composite parent) ///
 	ToolItem button2 = new ToolItem(toolBar, DWT.PUSH);
 	button2.setText("Refresh All");
 	version (icons)
-		button2.setImage(loadImage!("icons/refresh_32.png"));
+		button2.setImage(loadImage!("refresh_32.png"));
 	button2.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{
@@ -619,7 +619,7 @@ ToolBar createToolbar(Composite parent) ///
 	auto button3 = new ToolItem(toolBar, DWT.PUSH);
 	button3.setText("    Add...  ");
 	version (icons)
-		button3.setImage(loadImage!("icons/add_32.png"));
+		button3.setImage(loadImage!("add_32.png"));
 	button3.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{
@@ -645,7 +645,7 @@ ToolBar createToolbar(Composite parent) ///
 	auto button5 = new ToolItem(toolBar, DWT.PUSH);
 	button5.setText("Settings...");
 	version (icons)
-		button5.setImage(loadImage!("icons/spanner_32.png"));
+		button5.setImage(loadImage!("spanner_32.png"));
 	button5.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{

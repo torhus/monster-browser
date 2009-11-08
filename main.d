@@ -103,8 +103,8 @@ private void _main(char[][] args)
 
 	// Set the application's window icon.
 	ByteArrayInputStream streams[];
-	streams ~= new ByteArrayInputStream(cast(byte[])import("icons/mb16.png"));
-	streams ~= new ByteArrayInputStream(cast(byte[])import("icons/mb32.png"));
+	streams ~= new ByteArrayInputStream(cast(byte[])import("mb16.png"));
+	streams ~= new ByteArrayInputStream(cast(byte[])import("mb32.png"));
 
 	Image[] appIcons;
 	foreach (stream; streams)
