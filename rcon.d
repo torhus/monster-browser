@@ -366,7 +366,6 @@ private class Rcon
 			while (eventCount > 0) {
 				size_t received = conn_.read(buf);
 				assert(received != IConduit.Eof);
-				assert(!conn_.hadTimeout);
 
 				const prefix = "\xff\xff\xff\xffprint\n";
 				assert(received >= prefix.length);
