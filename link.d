@@ -1,20 +1,19 @@
 module link;
 
-// used by the Bud and Rebuild tools
-version(build) {
-	pragma(link, "advapi32.lib");
-	pragma(link, "comctl32.lib");
-	pragma(link, "comdlg32.lib");
-	pragma(link, "gdi32.lib");
+version(all) {
+	pragma(lib, "advapi32.lib");
+	pragma(lib, "comctl32.lib");
+	pragma(lib, "comdlg32.lib");
+	pragma(lib, "gdi32.lib");
 	// Only needed for win 95/98 compatibility for SHGetSpecialFolderPath()
-	pragma(link, "shfolder.lib");
-	pragma(link, "shell32.lib");
-	pragma(link, "shlwapi.lib");
-	pragma(link, "ole32.lib");
-	pragma(link, "oleaut32.lib");
-	pragma(link, "olepro32.lib");
-	pragma(link, "oleacc.lib");
-	pragma(link, "msimg32.lib");
-	pragma(link, "usp10.lib");
-	pragma(link, "zlib.lib");
+	pragma(lib, "shfolder.lib");
+	pragma(lib, "shell32.lib");
+	pragma(lib, "shlwapi.lib");
+	pragma(lib, "ole32.lib");
+	pragma(lib, "oleaut32.lib");
+	pragma(lib, "olepro32.lib");
+	pragma(lib, "oleacc.lib");
+	pragma(lib, "msimg32.lib");
+	pragma(lib, "usp10.lib");
+	pragma(lib, "zlib.lib");
 }
