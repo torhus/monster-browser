@@ -2,12 +2,12 @@ module main;
 
 // Workaround for a bug in dmd < 1.041.
 // http://d.puremagic.com/issues/show_bug.cgi?id=2673
-/*static if (__VERSION__ < 1041) {
+static if (__VERSION__ < 1041) {
 	debug import tango.core.stacktrace.StackTrace;
 	debug version = bug2673;
-}*/
+}
 import tango.core.Thread;
-//debug import tango.core.stacktrace.TraceExceptions;
+debug import tango.core.stacktrace.TraceExceptions;
 import tango.io.Console;
 import tango.io.Path;
 import tango.io.device.BitBucket;
@@ -57,7 +57,7 @@ void main(char[][] args) ///
 
 private void _main(char[][] args)
 {
-	globalTimer = new Timer;
+	globalTimer.start();
 
 	detectDirectories(args[0]);
 
@@ -103,8 +103,8 @@ private void _main(char[][] args)
 
 	// Set the application's window icon.
 	ByteArrayInputStream streams[];
-	streams ~= new ByteArrayInputStream(cast(byte[])import("icons/mb16.png"));
-	streams ~= new ByteArrayInputStream(cast(byte[])import("icons/mb32.png"));
+	streams ~= new ByteArrayInputStream(cast(byte[])import("mb16.png"));
+	streams ~= new ByteArrayInputStream(cast(byte[])import("mb32.png"));
 
 	Image[] appIcons;
 	foreach (stream; streams)
@@ -126,11 +126,11 @@ private void _main(char[][] args)
 					}
 					break;
 				case SWT.F4:
-					threadManager.run(&getNewList);
+					threadManager.run(&checkForNewServers);
 					e.type = SWT.None;
 					break;
 				case SWT.F5:
-					threadManager.run(&refreshList);
+					threadManager.run(&refreshAll);
 					e.type = SWT.None;
 					break;
 				default:

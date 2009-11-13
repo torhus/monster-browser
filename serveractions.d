@@ -83,10 +83,10 @@ void switchToGame(in char[] name)
 			try {
 				if (Path.exists(file)) {
 					auto input = new TextFileInput(file);
-					auto servers = collectIpAddresses(input);
+					auto addresses = collectIpAddresses(input);
 					input.close;
-					foreach (s; servers)
-						serverList.addExtraServer(s);
+					foreach (addr; addresses)
+						serverList.addExtraServer(addr);
 				}
 			}
 			catch (IOException e) {
@@ -102,7 +102,7 @@ void switchToGame(in char[] name)
 			if (arguments.fromfile)
 				threadManager.runSecond(&loadSavedList);
 			else if (common.haveGslist && game.useGslist)
-				threadManager.runSecond(&getNewList);
+				threadManager.runSecond(&checkForNewServers);
 			else {
 				// try to refresh if we can, otherwise get a new list
 				MasterList master = serverList.master;
@@ -122,17 +122,15 @@ void switchToGame(in char[] name)
 				}
 
 				if (canRefresh)
-					threadManager.runSecond(&refreshList);
+					threadManager.runSecond(&refreshAll);
 				else
-					threadManager.runSecond(&getNewList);
+					threadManager.runSecond(&checkForNewServers);
 			}
 		}
 		else {
 			serverTable.serverList.sort();
 			serverTable.forgetSelection();
 			serverTable.fullRefresh();
-			statusBar.setDefaultStatus(0, serverList.filteredLength, 0,
-			                                    countHumanPlayers(serverList));
 		}
 
 		return null;
@@ -158,7 +156,7 @@ void delegate() loadSavedList()
 		auto retriever = new MasterListServerRetriever(game, master);
 		auto contr = new ServerRetrievalController(retriever);
 		contr.disableQueue();
-		contr.startMessage = "Loading saved server list...";
+		statusBar.setLeft("Loading saved server list...");
 		return &contr.run;
 	}
 	else {
@@ -195,8 +193,8 @@ void queryServers(in char[][] addresses, bool replace=false, bool select=false)
 		auto retriever = new QstatServerRetriever(gameName, master,
 		                                   Set!(char[])(addresses_), replace_);
 		auto contr = new ServerRetrievalController(retriever, replace_);
-		contr.startMessage = Format("Querying {} server(s)...",
-		                                                    addresses_.length);
+		contr.progressLabel = Format("Querying {} servers", addresses_.length);
+
 		if (select_)
 			contr.autoSelect = addresses_;
 
@@ -218,11 +216,11 @@ void queryServers(in char[][] addresses, bool replace=false, bool select=false)
 
 
 /**
- * Refreshes the list.
+ * Refreshes all servers for the current mod.
  *
  * Note: To be called through ThreadManager.run().
  */
-void delegate() refreshList()
+void delegate() refreshAll()
 {
 	ServerList serverList = serverTable.serverList;
 	MasterList master = serverList.master;
@@ -230,27 +228,34 @@ void delegate() refreshList()
 
 	assert(master.length > 0);
 
-	Set!(char[]) servers;
+	static Set!(char[]) addresses, addresses2;
+
+	// reset static variables
+	addresses.clear();
+	addresses2.clear();
 
 	foreach (sh; master) {
 		ServerData sd = master.getServerData(sh);
 		bool matched = matchMod(&sd, game.mod);
 
-		if (matched || timedOut(&sd) && sd.failCount < 2)
-			servers.add(sd.server[ServerColumn.ADDRESS]);
+		if (matched)
+			addresses.add(sd.server[ServerColumn.ADDRESS]);
+		else if (timedOut(&sd) && sd.failCount < 2)
+			// retry previously unresponsive servers
+			addresses2.add(sd.server[ServerColumn.ADDRESS]);
 	}
 
 	log("Refreshing server list for " ~ game.name ~ "...");
-	log(Format("Found {} servers, master is {}.", servers.length,
+	log(Format("Found {} servers, master is {}.", addresses.length,
 	                                                          master.address));
 
 	// merge in the extra servers
 	Set!(char[]) extraServers = serverList.extraServers;
-	auto oldLength = servers.length;
+	auto oldLength = addresses.length;
 	foreach (server; extraServers)
-		servers.add(server);
+		addresses.add(server);
 
-	auto delta = servers.length - oldLength;
+	auto delta = addresses.length - oldLength;
 	log(Format("Added {} extra servers, skipping {} duplicates.",
 	                                        delta, extraServers.length-delta));
 
@@ -258,13 +263,34 @@ void delegate() refreshList()
 	serverList.clear();
 	GC.collect();
 
-	if (servers.length) {
-		auto retriever = new QstatServerRetriever(game.name, master, servers,
-		                                                                 true);
-		auto contr = new ServerRetrievalController(retriever);
-		contr.startMessage =
-                            Format("Refreshing {} servers...", servers.length);
-		return &contr.run;
+	void f()
+	{
+		ServerList serverList = serverTable.serverList;
+		MasterList master = serverList.master;
+		GameConfig game = getGameConfig(serverList.gameName);
+
+		if (addresses.length) {
+			auto retriever = new QstatServerRetriever(game.name, master,
+			                                                  addresses, true);
+			auto contr = new ServerRetrievalController(retriever);
+			contr.progressLabel = Format("Refreshing {} servers",
+			                                                 addresses.length);
+			contr.run();
+		}
+
+		if (addresses2.length) {
+			auto retriever = new QstatServerRetriever(game.name, master,
+			                                                 addresses2, true);
+			auto contr = new ServerRetrievalController(retriever);
+			contr.progressLabel =
+			              Format("Retrying {} previously unresponsive servers",
+			                                                addresses2.length);
+			contr.run();
+		}
+	}
+
+	if (addresses.length || addresses2.length) {
+		return &f;
 	}
 	else {
 		statusBar.setLeft("No servers were found for this game");
@@ -274,11 +300,11 @@ void delegate() refreshList()
 
 
 /**
- * Retrieves a new list from the master server.
+ * Checks for new servers for the current mod.
  *
  * Note: To be called through ThreadManager.run().
  */
-void delegate() getNewList()
+void delegate() checkForNewServers()
 {
 	void f()
 	{
@@ -286,15 +312,25 @@ void delegate() getNewList()
 			ServerList serverList = serverTable.serverList;
 			MasterList master = serverList.master;
 			GameConfig game = getGameConfig(serverList.gameName);
+
+			Display.getDefault().syncExec(dgRunnable( {
+				statusBar.showProgress("Getting new list from master", true);
+			}));
+
 			Set!(char[]) addresses = browserGetNewList(game);
 
 			// Make sure we don't start removing servers based on an incomplete
 			// address list.
-			if (threadManager.abort)
+			if (threadManager.abort) {
+				Display.getDefault().syncExec(dgRunnable( {
+					statusBar.hideProgress();
+				}));
 				return;
+			}
 
 			size_t total = addresses.length;
 			int removed = 0;
+			Set!(char[]) addresses2;
 
 			// Exclude servers that are already known to run the right mod, and
 			// delete servers from the master list that's missing from the
@@ -303,9 +339,9 @@ void delegate() getNewList()
 				ServerData sd = master.getServerData(sh);
 				char[] address = sd.server[ServerColumn.ADDRESS];
 				if (address in addresses) {
-					if (matchMod(&sd, game.mod)) {
-						addresses.remove(address);
-					}
+					addresses.remove(address);
+					if (!matchMod(&sd, game.mod))
+						addresses2.add(address);
 				}
 				else if (!sd.persistent) {
 					setEmpty(&sd);
@@ -318,36 +354,49 @@ void delegate() getNewList()
 			                      total, game.masterServer, addresses.length));
 
 			if (removed > 0) {
-				Display.getDefault().syncExec(new class Runnable {
-					void run()
-					{
-						serverList.refillFromMaster();
-						serverTable.fullRefresh();
-					}
-				});
+				Display.getDefault().syncExec(dgRunnable( {
+					serverList.refillFromMaster();
+					serverTable.fullRefresh();
+				}));
 
 				log(Format("Removed {} servers that were missing from master.",
 				                                                     removed));
 			}
 
-			if (addresses.length == 0) {
+			size_t count = addresses.length + addresses2.length;
+
+			if (count == 0) {
 				// FIXME: what to do when there are no servers?
-				Display.getDefault.asyncExec(new class Runnable {
-					void run()
-					{
-						serverTable.fullRefresh;
-						serverTable.notifyRefreshEnded;
-						statusBar.setLeft("There were no new servers.");
-					}
-				});
+				Display.getDefault.asyncExec(dgRunnable( {
+					statusBar.hideProgress();
+					serverTable.fullRefresh;
+					serverTable.notifyRefreshEnded;
+					statusBar.setLeft("There were no new servers.");
+				}));
 			}
 			else {
+				// if it's only a few servers, do it all in one go
+				if (count < 100 || addresses.length == 0) {
+					foreach (addr; addresses2)
+						addresses.add(addr);
+					addresses2.clear();
+				}
+
 				auto retriever = new QstatServerRetriever(game.name, master,
 				                                              addresses, true);
 				auto contr = new ServerRetrievalController(retriever);
-				contr.startMessage = Format("Got {} servers, querying...",
+				contr.progressLabel = Format("Checking {} servers",
 				                                             addresses.length);
 				contr.run();
+
+				if (addresses2.length) {
+					retriever = new QstatServerRetriever(game.name,
+					                                 master, addresses2, true);
+					contr = new ServerRetrievalController(retriever);
+					contr.progressLabel = Format("Extended check, {} servers",
+					                                        addresses2.length);
+					contr.run();
+				}
 			}
 		}
 		catch(Exception e) {
@@ -358,11 +407,9 @@ void delegate() getNewList()
 
 	ServerList serverList = serverTable.serverList;
 	if (serverList.master.length > 0) {
-		statusBar.setLeft("Checking for new servers...");
 		log("Checking for new servers for " ~ serverList.gameName ~ "...");
 	}
 	else {
-		statusBar.setLeft("Getting new server list...");
 		log("Getting new server list for " ~ serverList.gameName ~ "...");
 	}
 	serverTable.notifyRefreshStarted((bool) { threadManager.abort = true; });
@@ -385,11 +432,12 @@ void delegate() getNewList()
 class ServerRetrievalController
 {
 	/**
-	 * Status bar message.
+	 * Text label for the progress bar.
 	 *
 	 * Set before calling run() if you don't want the default to be used.
 	 */
-	char[] startMessage = "Querying server(s)...";
+
+	char[] progressLabel = "Querying servers";
 
 
 	/**
@@ -421,9 +469,9 @@ class ServerRetrievalController
 		catch (IllegalArgumentException e)
 			maxTimeouts_ = 3;  // FIXME: use the actual default
 
-		Display.getDefault.syncExec(new class Runnable {
-			void run() { serverTable.notifyRefreshStarted(&stop); }
-		});
+		Display.getDefault.syncExec(dgRunnable( {
+			serverTable.notifyRefreshStarted(&stop);
+		}));
 	}
 
 
@@ -446,10 +494,11 @@ class ServerRetrievalController
 	{
 		try {
 			statusBarUpdater_ = new StatusBarUpdater;
-			statusBarUpdater_.text = startMessage;
 			Display.getDefault.syncExec(statusBarUpdater_);
 
-			if (serverRetriever_.prepare() != 0) {
+			total_ = serverRetriever_.prepare();
+
+			if (total_ != 0) {
 				auto dg = replace_ ? &serverList_.replace : &serverList_.add;
 
 				if (useQueue_) {
@@ -461,33 +510,33 @@ class ServerRetrievalController
 					deliverDg_ = &deliverDgWrapper;
 				}
 
+				Display.getDefault.syncExec(dgRunnable( {
+					statusBar.showProgress(progressLabel);
+				}));
+
 				serverRetriever_.retrieve(&deliver);
 				serverList_.complete = !threadManager.abort;
 
 				// a benchmarking tool
 				if (arguments.quit) {
-					Display.getDefault.syncExec(new class Runnable {
-						void run()
-						{
-							Trace.formatln("Time since startup: {} seconds.",
-							                              globalTimer.seconds);
-							mainWindow.close;
-						}
-					});
+					Display.getDefault.syncExec(dgRunnable( {
+						Trace.formatln("Time since startup: {} seconds.",
+						                                   globalTimer.stop());
+						mainWindow.close;
+					}));
 				}
 				if (useQueue_)
 					serverQueue_.stop(addRemaining_);
 			}
 
-			Display.getDefault.syncExec(new class Runnable {
-				void run()
-				{
-					if (!threadManager.abort || wasStopped_)
-						done;
-					else
-						serverTable.notifyRefreshEnded;
-				}
-			});
+			Display.getDefault.syncExec(dgRunnable( {
+				if (!threadManager.abort || wasStopped_)
+					done;
+				else
+					serverTable.notifyRefreshEnded;
+
+				statusBar.hideProgress();
+			}));
 		}
 		catch(Exception e) {
 			logx(__FILE__, __LINE__, e);
@@ -511,6 +560,8 @@ class ServerRetrievalController
 
 	private bool deliver(ServerHandle sh, bool replied, bool matched)
 	{
+		counter_++;
+
 		assert(sh != InvalidServerHandle);
 
 		if (!replied) {
@@ -535,7 +586,10 @@ class ServerRetrievalController
 		if (matched)
 			deliverDg_(sh);
 
-		statusBarUpdater_.text = startMessage ~ Integer.toString(counter_++);
+		// progress display
+		statusBarUpdater_.totalToQuery = total_;
+		statusBarUpdater_.progress = counter_;
+
 		Display.getDefault.syncExec(statusBarUpdater_);
 
 		return !threadManager.abort;
@@ -554,23 +608,16 @@ class ServerRetrievalController
 		// FIXME: only doing this so that players will be shown
 		serverTable.fullRefresh();
 
-		statusBar.setDefaultStatus(0,
-		                           serverList_.filteredLength,
-		                           timedOut_,
-		                           countHumanPlayers(serverList_));
 		serverTable.notifyRefreshEnded();
 	}
 
 
 	private void refillAndRefresh()
 	{
-		Display.getDefault.syncExec(new class Runnable {
-			void run()
-			{
-				serverList_.refillFromMaster();
-				serverTable.fullRefresh();
-			}
-		});
+		Display.getDefault.syncExec(dgRunnable( {
+			serverList_.refillFromMaster();
+			serverTable.fullRefresh();
+		}));
 	}
 
 	// Just a workaround for ServerQueue.add and ServerList.add and replace
@@ -585,6 +632,7 @@ class ServerRetrievalController
 	private {
 		IServerRetriever serverRetriever_;
 		int counter_ = 0;
+		int total_;
 		uint timedOut_ = 0;
 		int maxTimeouts_;
 		StatusBarUpdater statusBarUpdater_;
@@ -600,10 +648,13 @@ class ServerRetrievalController
 }
 
 
+// Update the progress bar when querying servers.
 private class StatusBarUpdater : Runnable {
-	char[] text;
+	int totalToQuery;
+	int progress;
 
-	this(char[] text=null) { this.text = text; }
-
-	void run() { statusBar.setLeft(text); }
+	void run()
+	{
+		statusBar.setProgress(totalToQuery, progress);
+	}
 }

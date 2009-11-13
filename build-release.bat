@@ -1,2 +1,2 @@
 @svnversion -n . trunk > svnversion.txt
-bud -TMonsterBrowser main.d -version=Tango -gui -O -release -inline -J. -Jres -full -Xjava -Xorg -Xtango -odrelease -L/rc:dwt.res -L/rc:mb.res tango-user-dmd.lib dwt-base.lib dwt.lib %*
+xfbuild main.d +oMonsterBrowser +Orelease +Drelease/.deps -O -release -inline -J. -Jflags -Jicons -Jres +xtango -L/subsystem:windows:4 -L/rc:dwt.res -L/rc:mb.res -version=TANGOSVN tango-user-dmd.lib %*

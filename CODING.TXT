@@ -13,7 +13,8 @@ DMD 1.033 WORKS
 DMD 1.037 WORKS
 DMD 1.038-1.040 DON'T WORK
 DMD 1.041 WORKS
-Currently I'm using 1.041.
+DMD 1.051 WORKS
+Currently I'm using 1.051.
 
 D docs:
 Language: http://www.digitalmars.com/d/1.0/lex.html
@@ -26,10 +27,8 @@ http://www.digitalmars.com/NewsGroup.html
 irc://irc.freenode.org/D
 irc://irc.freenode.org/d.tango
 
-Derek Parnell's Build, aka Bud, needed for building the project on Windows:
-http://www.dsource.org/projects/build
-Recommended version:
-http://trac.dsource.org/projects/build/browser/downloads/bud_win_3.04.exe?format=raw
+xfBuild for building on Windows:
+http://bitbucket.org/h3r3tic/xfbuild/wiki/Home
 
 DSSS, needed for building the project on Linux:
 http://dsource.org/projects/dsss
@@ -38,16 +37,17 @@ Version 0.75 is known to work.
 
 Libraries used
 --------------
-Tango, currently svn revision 4498:
+Tango, currently svn revision 5035:
 http://dsource.org/projects/tango/
 
 ini.d (included in the source download):
 http://www.dprogramming.com/ini.php
 
 DWT2 GUI library. DWT2 is a D port of IBM's SWT 3.4.1 for Java.
-Revision used with this project is currently 62 on Windows.
+Revision used with this project is currently 106 on Windows.
+
 http://www.dsource.org/projects/dwt
-http://help.eclipse.org/help32/nftopic/org.eclipse.platform.doc.isv/reference/api/org/eclipse/swt/widgets/package-tree.html
+http://help.eclipse.org/ganymede/nftopic/org.eclipse.platform.doc.isv/reference/api/org/eclipse/swt/widgets/package-tree.html
 There's also a DWT news group on news.digitalmars.com, and a #dwt channel on
 freenode (IRC).
 
@@ -55,20 +55,19 @@ freenode (IRC).
 Building on Windows
 -------------------
 - Download the correct revision of dwt2, see above.
-- In the top level dir, run 'rake base swt'.  The output files are in the 'lib'
-  directory. Rename the lib file with the long name to just 'dwt.lib'.
-- Optionally run 'rake DEBUG=1 base swt' to create the debug versions, which 
-  you rename to dwt-base-debug.lib and dwt-debug.lib.
-- Copy those .lib files into the directory where you checked out Monster
-  Browser.
-- Also copy the 'java', 'org' and 'res' directories.  The two first of which
-  are found in 'imp', the latter in 'org.eclipse.swt.win32.win32.x86'.
-- You might need some of the extra .lib files found in the 'lib' directory too,
-  if you haven't got them installed already.
+- Copy these directories to the directory where you checked out Monster
+  Browser, alternatively to somewhere in you D import path:
+  * org.eclipse.swt.win32.win32.x86\src\org
+  * base\src\java
+- Copy this directory to the directory where you checked out Monster Browser:
+  * org.eclipse.swt.win32.win32.x86\res
+- You might need some of the extra .lib files found in the
+  'org.eclipse.swt.win32.win32.x86\lib\' directory too, if you haven't got them
+  installed already.  They go in the compiler's lib directory.
 - Unzip http://monsterbrowser.googlecode.com/files/monsterbrowser_flags.zip
   into the Monster Browser directory.
-- Run build-release.bat or one of the other batch files.  Requires bud to be
-  installed, see above.
+- Run build-release.bat or one of the other batch files.  Requires xfBuild to
+  be installed, see above.
 
 
 Building on Linux

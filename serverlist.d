@@ -8,6 +8,7 @@ import tango.text.Util;
 import tango.text.convert.Format;
 import Integer = tango.text.convert.Integer;
 import tango.stdc.string : memmove;
+import tango.time.StopWatch;
 import tango.util.container.HashMap;
 debug import tango.util.log.Trace;
 
@@ -31,7 +32,7 @@ enum Filter {
  * A list of servers, with all necessary synchronization taken care of.
  *
  */
-class ServerList
+final class ServerList
 {
 	/**
 	 * true if list contains all servers for the mod, that replied when queried.
@@ -62,7 +63,11 @@ class ServerList
 	MasterList master() { return master_; }
 
 
-	/// Returns false if the added server is filtered out.
+	/**
+	 * Add a server to the list.
+	 *
+	 * Returns true if the filtered list was altered.
+	 */
 	bool add(ServerHandle sh)
 	{
 		bool refresh = false;
@@ -113,19 +118,28 @@ class ServerList
 
 	/**
 	 * Clear the filtered list and refill it from the master list.
+	 *
+	 * Only servers previously added by calling add() or replace() will be
+	 * considered.
 	 */
 	synchronized void refillFromMaster()
 	{
 		char[] mod = getGameConfig(gameName_).mod;
+		auto newHash = new typeof(ipHash_);
 
 		filteredList.length = 0;
 		synchronized (master_) foreach (sh; master_) {
 			ServerData sd = master_.getServerData(sh);
 			char[] address = sd.server[ServerColumn.ADDRESS];
-			if (address in ipHash_ && matchMod(&sd, mod) &&
-			                                               !isFilteredOut(&sd))
-				filteredList ~= sh;
+
+			if (address in ipHash_ && matchMod(&sd, mod)) {
+				newHash[address] = -1;
+				if (!isFilteredOut(&sd))
+					filteredList ~= sh;
+			}
 		}
+
+		ipHash_ = newHash;
 		ipHashValid_ = false;
 		isSorted_ = false;
 		_sort();
@@ -187,9 +201,11 @@ class ServerList
 		}
 	}
 
+	///
+	synchronized size_t totalLength() { return ipHash_.size; }
 
 	///
-	size_t filteredLength() { synchronized (this) return filteredList.length; }
+	synchronized size_t filteredLength() { return filteredList.length; }
 
 
 	/**
@@ -204,8 +220,6 @@ class ServerList
 			isSorted_ = true;
 			complete = false;
 		}
-
-		return this;
 	}
 
 
@@ -355,7 +369,10 @@ private:
 	/// Sorts the filtered list.
 	void _sort()
 	{
-		debug scope timer = new Timer;
+		debug {
+			StopWatch timer;
+			timer.start();
+		}
 
 		bool lessOrEqual(ServerHandle a, ServerHandle b)
 		{
@@ -374,7 +391,7 @@ private:
 		}
 
 		debug log("ServerList._sort() took " ~
-		          Integer.toString(timer.millis) ~ " milliseconds.");
+		          Integer.toString(timer.microsec / 1000) ~ " milliseconds.");
 	}
 
 	/**
@@ -456,8 +473,6 @@ private:
 
 	bool removeFromFiltered(in char[] address)
 	{
-		if (!ipHashValid_)
-			updateIpHash();
 		int i = getFilteredIndex(address);
 		if (i == -1)
 			return false;

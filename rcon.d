@@ -145,15 +145,12 @@ class RconWindow
 	///
 	private void deliverOutput(in char[] s)
 	{
-		Display.getDefault().syncExec(new class Runnable {
-			void run()
-			{
-				if (outputText_.isDisposed())
-					return;
-				if (s.length > 0)
-					outputText_.append(stripColorCodes(s));
-			}
-		});
+		Display.getDefault().syncExec(dgRunnable( {
+			if (outputText_.isDisposed())
+				return;
+			if (s.length > 0)
+				outputText_.append(stripColorCodes(s));
+		}));
 	}
 
 
@@ -369,7 +366,6 @@ private class Rcon
 			while (eventCount > 0) {
 				size_t received = conn_.read(buf);
 				assert(received != IConduit.Eof);
-				assert(!conn_.hadTimeout);
 
 				const prefix = "\xff\xff\xff\xffprint\n";
 				assert(received >= prefix.length);

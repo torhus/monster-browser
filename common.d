@@ -13,7 +13,7 @@ import tango.text.Util;
 import tango.text.convert.Format;
 import Integer = tango.text.convert.Integer;
 import tango.io.stream.Iterator;
-import tango.time.Clock;
+import tango.time.StopWatch;
 import tango.time.Time;
 import tango.util.log.Trace;
 
@@ -67,7 +67,7 @@ else {
 }
 
 Clipboard clipboard;
-Timer globalTimer;
+StopWatch globalTimer;
 
 // Add dispose() methods etc. to this array, and they will be called at
 // shutdown.
@@ -303,21 +303,6 @@ void sortStringArray(char[][][] arr, int column=0, bool reverse=false,
 	}
 
 	sort(arr, &less);
-}
-
-
-/// A timer.
-class Timer
-{
-	this() { time_ = Clock.now(); } ///
-	long millis() { return span.millis(); } ///
-	double seconds() { return span.interval(); } ///
-	void restart() { time_ = Clock.now(); } ///
-
-	private {
-		TimeSpan span() { return Clock.now() - time_; } ///
-		private Time time_;
-	}
 }
 
 

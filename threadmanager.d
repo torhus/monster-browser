@@ -77,8 +77,8 @@ class ThreadManager
 		shutdown_ = true;
 		semaphore_.notify();
 	}
-	
-	
+
+
 	/// Is the secondary thread sleeping or working?
 	bool sleeping() { return sleeping_; }
 
@@ -98,26 +98,21 @@ class ThreadManager
 
 			killServerBrowser();
 
-			Display.getDefault.syncExec(new class(this) Runnable {
-				this(Object outer) { outer_ = outer; }				
-				void run()
-				{
-					void delegate() function() inGuiThread;
-					synchronized (outer_) {
-						if (fp_ !is null) {
-							inGuiThread = fp_;
-							fp_ = null;							
-						}
-						else if (fp2_ !is null) {
-							inGuiThread = fp2_;
-							fp2_ = null;
-						}
-						abort = false;
+			Display.getDefault.syncExec(dgRunnable( (ThreadManager outer_) {
+				void delegate() function() inGuiThread;
+				synchronized (outer_) {
+					if (fp_ !is null) {
+						inGuiThread = fp_;
+						fp_ = null;
 					}
-					inSecondaryThread = inGuiThread();
+					else if (fp2_ !is null) {
+						inGuiThread = fp2_;
+						fp2_ = null;
+					}
+					abort = false;
 				}
-				private Object outer_;
-			});
+				inSecondaryThread = inGuiThread();
+			}, this));
 
 			if (!abort && inSecondaryThread !is null)
 				inSecondaryThread();
