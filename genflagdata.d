@@ -44,7 +44,7 @@ int main()
 	size_t counter  = 0;
 	foreach (path; files) {
 		f.format("\t             \"{}\": cast(ubyte[])import(\"{}\")",
-		                                         stripSuffix(path.name), path);
+		                                    stripSuffix(path.name), path.name);
 		if (counter < files.files - 1)
 			f.write(",");
 		f.newline;

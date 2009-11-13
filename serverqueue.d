@@ -9,20 +9,13 @@ import servertable;
 
 
 ///
-class ServerQueue
+final class ServerQueue
 {
 	///
 	this(bool delegate(ServerHandle sh) addDg)
 	{
 		addDg_ = addDg;
 		Display.getDefault.syncExec(new TimerTask);
-	}
-
-
-	~this()
-	{
-		if (list_ !is null)
-			delete list_;
 	}
 
 
@@ -37,9 +30,9 @@ class ServerQueue
 	void stop(bool addRemaining)
 	{
 		if (addRemaining) {
-			Display.getDefault.syncExec(new class Runnable {
-				void run() { synchronizedAdd(); }
-			});
+			Display.getDefault.syncExec(dgRunnable( {
+				synchronizedAdd();
+			}));
 		}
 		stop_ = true;
 	}
@@ -68,6 +61,8 @@ class ServerQueue
 				return;
 			if (addAll() && !arguments.norefresh)
 				serverTable.quickRefresh;
+			else
+				serverTable.updateStatusBar();
 		}
 	}
 

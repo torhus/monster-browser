@@ -1,1 +1,1 @@
-bud main.d -Dddocs -J. -Jres -full -obj -o- -clean -Xjava -Xorg -Xtango -Xini -Xlink %*
+bud main.d -Dddocs -J. -Jflags -Jicons -Jres -full -obj -o- -clean -version=TANGOSVN -Xdwt -Xtango -Xphobos -Xlib -Xini -Xlink %*

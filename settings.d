@@ -171,7 +171,7 @@ useGslist=false
 	                      {"maxTimeouts", "3"},
 	                      {"minimizeOnGameLaunch", "true"},
 	                      {"showFlags", "true"},
-	                      {"simultaneousQueries", "20"},
+	                      {"simultaneousQueries", "10"},
 	                      {"startWithLastMod", "true"},
 	                      {"windowMaximized", "false"},
 	                      {"windowSize", "800x568"},
@@ -225,8 +225,6 @@ GameConfig createGameConfig(in char[] name)
 	if (gamesIni[name] !is null)
 		throw new Exception("createGameConfig: preexistant game  '" ~
 		                                                           name ~ "'");
-
-	IniSection section = gamesIni.addSection(name);
 
 	return GameConfig(name, gamesIni.addSection(name));
 }

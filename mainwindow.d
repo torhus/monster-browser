@@ -6,6 +6,7 @@ version = icons;
 
 import tango.text.Util;
 import Integer = tango.text.convert.Integer;
+import tango.text.convert.Format;
 
 import java.io.ByteArrayInputStream;
 import java.lang.Runnable;
@@ -30,6 +31,7 @@ import org.eclipse.swt.widgets.Display;
 version (icons)
 	import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.ProgressBar;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
@@ -87,7 +89,9 @@ class MainWindow
 			shell_.setLocation(pos[0], pos[1]);
 		}
 
-		shell_.setLayout(new GridLayout(2, false));
+		auto layout = new GridLayout(2, false);
+		layout.horizontalSpacing = 0;
+		shell_.setLayout(layout);
 
 
 		// *********** MAIN WINDOW TOP ***************
@@ -228,35 +232,146 @@ class StatusBar : Composite
 	this(Composite parent)
 	{
 		super(parent, SWT.NONE);
-		setLayout(new FillLayout);
-		leftLabel_ = new Label(this, SWT.NONE);
+		auto layout = new GridLayout(7, false);
+		layout.marginWidth = 2;
+		layout.marginHeight = 0;
+		setLayout(layout);
+
+		progressLabel_ = new Label(this, SWT.NONE);
+		progressLabel_.setVisible(false);
+
+		progressBar_ = createProgressBar(false);
+		progressBar_.setVisible(false);
+
+		// an empty Label to push the rest of the labels to the far right of
+		// the status bar
+		auto empty = new Label(this, SWT.NONE);
+		auto emptyData = new GridData(SWT.CENTER, SWT.CENTER, true, false);
+		empty.setLayoutData(emptyData);
+
+		int sepHeight = progressLabel_.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
+
+		createSeparator(sepHeight);
+
+		serverLabel_ = new Label(this, SWT.NONE);
+		auto serverData = new GridData(SWT.CENTER, SWT.CENTER, false, false);
+		serverLabel_.setLayoutData(serverData);
+
+		createSeparator(sepHeight);
+
+		playerLabel_ = new Label(this, SWT.NONE);
+		auto playerData = new GridData(SWT.CENTER, SWT.CENTER, false, false);
+		playerLabel_.setLayoutData(playerData);
 	}
 
 	void setLeft(char[] text)  ///
 	{
-		if (!leftLabel_.isDisposed) {
-			leftLabel_.setText(text);
-		}
+		if (progressLabel_.isDisposed())
+			return;
+		progressLabel_.setText(text);
+		layout();
 	}
 
 	void setDefaultStatus(uint totalServers, uint shownServers,
 	                                            uint noReply, uint humans)  ///
 	{
-		char[] msg = Integer.toString(shownServers) ~ " servers";
+		if (isDisposed())
+			return;
 
-		if (noReply > 0)
-			msg ~= " (" ~ Integer.toString(noReply) ~ " did not reply)";
+		setRedraw(false);
 
-		if (humans > 0)
-			msg ~= ", "  ~ Integer.toString(humans) ~ " people are playing";
-		else if (humans == 0)
-			msg ~= ", no human players";
+		char[] fmt;
 
-		setLeft(msg);
+		if (shownServers != totalServers)
+			fmt = "{1} of {0} servers";
+		else
+			fmt = "{1} servers";
+
+		/*if (noReply > 0)
+			fmt ~= " ({2} did not reply)";*/
+
+		char[] s = Format(fmt, totalServers, shownServers, noReply);
+		serverLabel_.setText(s);
+
+		playerLabel_.setText(Format("{} human players", humans));
+
+		layout();
+		setRedraw(true);
 	}
 
+
+	void showProgress(in char[] label, bool indeterminate=false)
+	{
+		if (isDisposed())
+			return;
+
+		assert(progressBar_ !is null);
+
+		if ((progressBar_.getStyle() & SWT.INDETERMINATE) != indeterminate) {
+			// remove the old ProgressBar, insert a new one
+			progressBar_.dispose();
+			progressBar_ = createProgressBar(indeterminate);
+			progressBar_.moveBelow(progressLabel_);
+			layout();
+		}
+		setProgressLabel(label);
+		progressBar_.setSelection(0);
+		progressLabel_.setVisible(true);
+		progressBar_.setVisible(true);
+	}
+
+
+	void hideProgress()
+	{
+		if (isDisposed())
+			return;
+		progressLabel_.setText("Ready");
+		progressBar_.setVisible(false);
+	}
+
+
+	private void setProgressLabel(in char[] text)
+	{
+		setLeft(text ~ "...");
+	}
+
+
+	void setProgress(int total, int current)
+	{
+		if (progressBar_.isDisposed())
+			return;
+		progressBar_.setMaximum(total);
+		progressBar_.setSelection(current);
+	}
+
+
+	private ProgressBar createProgressBar(bool indeterminate)
+	{
+		auto pb = new ProgressBar(this, indeterminate ?
+		                                        SWT.INDETERMINATE : SWT.NONE);
+		auto data = new GridData;
+		data.widthHint = 100;
+		pb.setLayoutData(data);
+		return pb;
+	}
+
+
+	private Label createSeparator(int height)
+	{
+		auto sep = new Label(this, SWT.SEPARATOR);
+		auto sepData = new GridData(SWT.CENTER, SWT.CENTER, false, false);
+		sepData.heightHint = height;
+		//sepData.widthHint = 5;
+		sep.setLayoutData(sepData);
+		return sep;
+	}
+
+
 private:
-	Label leftLabel_;
+	Label serverLabel_;
+	Label playerLabel_;
+	Label progressLabel_;
+	ProgressBar progressBar_;
 }
 
 
@@ -274,9 +389,7 @@ class FilterBar : FilterSuper
 		version (icons) {
 			super(parent, SWT.SHADOW_NONE);
 			setText("Filters and Game Selection");
-			auto data = new GridData;
-			//data.verticalAlignment = SWT.FILL;
-			setLayoutData(data);
+			setLayoutData(new GridData);
 		}
 		else {
 			super(parent, SWT.NONE);
@@ -461,19 +574,9 @@ class FilterBar : FilterSuper
 
 	private void refreshServerTable()
 	{
-		Display.getDefault.asyncExec(new class Runnable {
-			void run()
-			{
-				serverTable.fullRefresh;
-
-				auto list = serverTable.serverList;
-				synchronized (list)
-				if (!serverTable.refreshInProgress) {
-					statusBar.setDefaultStatus(0, list.filteredLength, 0,
-					                                  countHumanPlayers(list));
-				}
-			}
-		});
+		Display.getDefault.asyncExec(dgRunnable( {
+			serverTable.fullRefresh;
+		}));
 	}
 
 
@@ -491,11 +594,11 @@ ToolBar createToolbar(Composite parent) ///
 	auto button1 = new ToolItem(toolBar, SWT.PUSH);
 	button1.setText("Check for New");
 	version (icons)
-		button1.setImage(loadImage!("icons/box_download_32.png"));
+		button1.setImage(loadImage!("box_download_32.png"));
 	button1.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{
-			threadManager.run(&getNewList);
+			threadManager.run(&checkForNewServers);
 		}
 	});
 
@@ -503,11 +606,11 @@ ToolBar createToolbar(Composite parent) ///
 	ToolItem button2 = new ToolItem(toolBar, SWT.PUSH);
 	button2.setText("Refresh All");
 	version (icons)
-		button2.setImage(loadImage!("icons/refresh_32.png"));
+		button2.setImage(loadImage!("refresh_32.png"));
 	button2.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{
-			threadManager.run(&refreshList);
+			threadManager.run(&refreshAll);
 		}
 	});
 
@@ -516,7 +619,7 @@ ToolBar createToolbar(Composite parent) ///
 	auto button3 = new ToolItem(toolBar, SWT.PUSH);
 	button3.setText("    Add...  ");
 	version (icons)
-		button3.setImage(loadImage!("icons/add_32.png"));
+		button3.setImage(loadImage!("add_32.png"));
 	button3.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{
@@ -542,7 +645,7 @@ ToolBar createToolbar(Composite parent) ///
 	auto button5 = new ToolItem(toolBar, SWT.PUSH);
 	button5.setText("Settings...");
 	version (icons)
-		button5.setImage(loadImage!("icons/spanner_32.png"));
+		button5.setImage(loadImage!("spanner_32.png"));
 	button5.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{

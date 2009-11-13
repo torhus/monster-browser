@@ -123,7 +123,7 @@ class ServerTable
 
 		// padlock image for passworded servers
 		auto stream  = new ByteArrayInputStream(
-		                              cast(byte[])import("icons/padlock.png"));
+		                                    cast(byte[])import("padlock.png"));
 		auto data = new ImageData(stream);
 		padlockImage_ = new Image(Display.getDefault, data.scaledTo(12, 12));
 
@@ -232,7 +232,8 @@ class ServerTable
 	/**
 	 * If necessary clears the table and refills it with updated data.
 	 *
-	 * Keeps the same selection if there was one.
+	 * Keeps the same selection if there was one.  Updates the status bar main
+	 * info.
 	 */
 	void quickRefresh()
 	{
@@ -266,6 +267,8 @@ class ServerTable
 			selectedIps_[ip] = index;
 			table_.select(index);
 		}
+
+		updateStatusBar();
 	}
 
 	/**
@@ -274,6 +277,8 @@ class ServerTable
 	 * unconditionally), it also updates the cvar and player tables to show
 	 * information for the selected servers, or clears them if there are no
 	 * servers selected.
+	 *
+	 * Also updates the status bar main info.
 	 */
 	void fullRefresh()
 	{
@@ -302,11 +307,16 @@ class ServerTable
 			playerTable.clear();
 			cvarTable.clear();
 		}
+
+		updateStatusBar();
 	}
 
 	/// Select one or more servers, replacing the current selection.
 	void setSelection(int[] indices, bool takeFocus=false)
 	{
+		if (table_.isDisposed())
+			return;
+
 		assert(indices.length);
 
 		selectedIps_.clear();
@@ -334,6 +344,29 @@ class ServerTable
 			table_.setFocus();
 	}
 
+	/**
+	 * Updates the status main status bar info to show the current number of
+	 * servers and players.
+	 *
+	 * Any method that alters the number of visible servers, or the number of
+	 * players on those servers, should call this when it is done making
+	 * changes.
+	 *
+	 * Note:
+	 *     Changes to the player or cvar tables do not affect the status bar,
+	 *     so it's not necessary to call this method in those cases.
+	 */
+	void updateStatusBar()
+	{
+		if (table_.isDisposed())
+			return;
+
+		int itemCount = table_.getItemCount();
+		assert(itemCount == serverList_.filteredLength || itemCount == 0);
+		statusBar.setDefaultStatus(serverList_.totalLength, itemCount, 0,
+		                                       countHumanPlayers(serverList_));
+	}
+
 	/// Empty the server, player, and cvar tables.
 	void clear()
 	{
@@ -345,6 +378,8 @@ class ServerTable
 
 		cvarTable.clear;
 		playerTable.clear;
+
+		updateStatusBar();
 	}
 
 	///
@@ -488,10 +523,9 @@ private:
 						// FIXME: this caching is broken now
 						TextLayout tl = sd.customData;
 						if (tl is null) {
-							auto parsed = parseColors(sd.rawName);
 							tl = new TextLayout(Display.getDefault);
 							tl.setText(sd.server[ServerColumn.NAME]);
-							foreach (r; parsed.ranges)
+							foreach (r; parseColors(sd.rawName).ranges)
 								tl.setStyle(r.style, r.start, r.end);
 
 							sd.customData = tl;  // cache it
@@ -586,6 +620,8 @@ private:
 		menu.setDefaultItem(item);
 		item.addSelectionListener(new class SelectionAdapter {
 			void widgetSelected(SelectionEvent e) {
+				if (stopServerRefresh_ !is null)
+					stopServerRefresh_(true);
 				joinServer(serverList_.gameName,
 				          serverList_.getFiltered(table_.getSelectionIndex()));
 			}
@@ -699,8 +735,6 @@ private:
 				// refresh filtered list and update GUI
 				serverList_.refillFromMaster();
 				fullRefresh();
-				statusBar.setDefaultStatus(0, serverList_.filteredLength, 0,
-				                               countHumanPlayers(serverList_));
 			}
 		}
 	}
