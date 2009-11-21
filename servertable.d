@@ -285,8 +285,8 @@ class ServerTable
 		if(table_.isDisposed())
 			return;
 
-		table_.clearAll();
 		table_.setItemCount(serverList_.filteredLength);
+		table_.clearAll();
 
 		int[] indices;
 		foreach (ip, v; selectedIps_) {
@@ -474,8 +474,8 @@ private:
 
 			table_.setSortDirection(dir);
 			synchronized (serverList_) {
-				table_.clearAll();
 				table_.setItemCount(serverList_.filteredLength());
+				table_.clearAll();
 				// keep the same servers selected
 				foreach (ip, v; selectedIps_)
 					selectedIps_[ip] = serverList_.getFilteredIndex(ip);
