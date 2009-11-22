@@ -182,9 +182,9 @@ class PlayerTable
 		serverList_ = serverList;
 		addCleanPlayerNames();
 
+		sort();
 		table_.setItemCount(players_.length);
 		table_.clearAll();
-		sort();
 	}
 
 	///
