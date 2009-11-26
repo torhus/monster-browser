@@ -226,9 +226,6 @@ class ServerTable
 		return false;
 	}
 
-	///
-	bool refreshInProgress() { return refreshInProgress_ ; }
-
 	/**
 	 * If necessary clears the table and refills it with updated data.
 	 *
