@@ -16,8 +16,7 @@ import dwt.events.SelectionAdapter;
 import dwt.events.SelectionEvent;
 import dwt.events.ShellAdapter;
 import dwt.events.ShellEvent;
-version (icons)
-	import dwt.graphics.Image;
+import dwt.graphics.Image;
 import dwt.graphics.Point;
 import dwt.graphics.Rectangle;
 import dwt.layout.FillLayout;
@@ -28,8 +27,7 @@ import dwt.widgets.Button;
 import dwt.widgets.Combo;
 import dwt.widgets.Composite;
 import dwt.widgets.Display;
-version (icons)
-	import dwt.widgets.Group;
+import dwt.widgets.Group;
 import dwt.widgets.Label;
 import dwt.widgets.ProgressBar;
 import dwt.widgets.Shell;
@@ -56,8 +54,7 @@ MainWindow mainWindow;  ///
 Shell[] subWindows;
 
 // Image objects that needs to be disposed of before shut down.
-version (icons)
-	private Image[] imageList;
+private Image[] imageList;
 
 
 ///
@@ -98,16 +95,12 @@ class MainWindow
 		Composite topComposite = new Composite(shell_, DWT.NONE);
 		auto topData = new GridData(DWT.FILL, DWT.CENTER, true, false, 2, 1);
 		topComposite.setLayoutData(topData);
-		version (icons) {
-			// This layout works better when the buttons have images.
-			auto topLayout = new GridLayout(2, false);
-			topLayout.marginHeight = 0;
-			topLayout.horizontalSpacing = 50;
-			topComposite.setLayout(topLayout);
-		}
-		else {
-			topComposite.setLayout(new FillLayout);
-		}
+
+		// This layout works better when the buttons have images.
+		auto topLayout = new GridLayout(2, false);
+		topLayout.marginHeight = 0;
+		topLayout.horizontalSpacing = 50;
+		topComposite.setLayout(topLayout);
 
 		ToolBar toolBar = createToolbar(topComposite);
 
@@ -165,9 +158,8 @@ class MainWindow
 	void disposeAll()
 	{
 		serverTable.disposeAll();
-		version (icons)
-			foreach (img; imageList)
-				img.dispose();
+		foreach (img; imageList)
+			img.dispose();
 	}
 
 
@@ -374,25 +366,15 @@ private:
 }
 
 
-version (icons)
-	alias Group FilterSuper;
-else
-	alias Composite FilterSuper;
-
 ///
-class FilterBar : FilterSuper
+class FilterBar : Group
 {
 	///
 	this(Composite parent)
 	{
-		version (icons) {
-			super(parent, DWT.SHADOW_NONE);
-			setText("Filters and Game Selection");
-			setLayoutData(new GridData);
-		}
-		else {
-			super(parent, DWT.NONE);
-		}
+		super(parent, DWT.SHADOW_NONE);
+		setText("Filters and Game Selection");
+		setLayoutData(new GridData);
 
 		notEmptyButton_ = new Button(this, DWT.CHECK);
 		notEmptyButton_.setText("Not empty");
@@ -492,18 +474,11 @@ class FilterBar : FilterSuper
 			}
 		});
 
-		version (icons) {
-			auto layout = new RowLayout;
-			layout.fill = true;
-			layout.marginHeight = 2;
-			layout.marginWidth = 2;
-			setLayout(layout);
-		}
-		else {
-			auto layout = new RowLayout;
-			layout.fill = true;
-			setLayout(layout);
-		}
+		auto layout = new RowLayout;
+		layout.fill = true;
+		layout.marginHeight = 2;
+		layout.marginWidth = 2;
+		setLayout(layout);
 	}
 
 
@@ -592,8 +567,7 @@ ToolBar createToolbar(Composite parent) ///
 
 	auto button1 = new ToolItem(toolBar, DWT.PUSH);
 	button1.setText("Check for New");
-	version (icons)
-		button1.setImage(loadImage!("box_download_32.png"));
+	button1.setImage(loadImage!("box_download_32.png"));
 	button1.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{
@@ -604,8 +578,7 @@ ToolBar createToolbar(Composite parent) ///
 	new ToolItem(toolBar, DWT.SEPARATOR);
 	ToolItem button2 = new ToolItem(toolBar, DWT.PUSH);
 	button2.setText("Refresh All");
-	version (icons)
-		button2.setImage(loadImage!("refresh_32.png"));
+	button2.setImage(loadImage!("refresh_32.png"));
 	button2.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{
@@ -617,8 +590,7 @@ ToolBar createToolbar(Composite parent) ///
 
 	auto button3 = new ToolItem(toolBar, DWT.PUSH);
 	button3.setText("    Add...  ");
-	version (icons)
-		button3.setImage(loadImage!("add_32.png"));
+	button3.setImage(loadImage!("add_32.png"));
 	button3.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{
@@ -643,8 +615,7 @@ ToolBar createToolbar(Composite parent) ///
 
 	auto button5 = new ToolItem(toolBar, DWT.PUSH);
 	button5.setText("Settings...");
-	version (icons)
-		button5.setImage(loadImage!("spanner_32.png"));
+	button5.setImage(loadImage!("spanner_32.png"));
 	button5.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{
@@ -658,16 +629,14 @@ ToolBar createToolbar(Composite parent) ///
 }
 
 
-version (icons) {
-	private Image loadImage(char[] name)()
-	{
-		return _loadImage(cast(byte[])import(name));
-	}
+private Image loadImage(char[] name)()
+{
+	return _loadImage(cast(byte[])import(name));
+}
 
-	private Image _loadImage(byte[] data)
-	{
-		Image img = new Image(Display.getDefault, new ByteArrayInputStream(data));
-		imageList ~= img;
-		return img;
-	}
+private Image _loadImage(byte[] data)
+{
+	Image img = new Image(Display.getDefault, new ByteArrayInputStream(data));
+	imageList ~= img;
+	return img;
 }
