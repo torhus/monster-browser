@@ -131,6 +131,7 @@ void switchToGame(in char[] name)
 			serverTable.serverList.sort();
 			serverTable.forgetSelection();
 			serverTable.fullRefresh();
+			statusBar.setLeft("Ready");
 		}
 
 		return null;
@@ -323,7 +324,7 @@ void delegate() checkForNewServers()
 			// address list.
 			if (threadManager.abort) {
 				Display.getDefault().syncExec(dgRunnable( {
-					statusBar.hideProgress();
+					statusBar.hideProgress("Interrupted");
 				}));
 				return;
 			}
@@ -368,10 +369,9 @@ void delegate() checkForNewServers()
 			if (count == 0) {
 				// FIXME: what to do when there are no servers?
 				Display.getDefault.asyncExec(dgRunnable( {
-					statusBar.hideProgress();
+					statusBar.hideProgress("There were no new servers");
 					serverTable.fullRefresh;
 					serverTable.notifyRefreshEnded;
-					statusBar.setLeft("There were no new servers.");
 				}));
 			}
 			else {
@@ -530,12 +530,14 @@ class ServerRetrievalController
 			}
 
 			Display.getDefault.syncExec(dgRunnable( {
-				if (!threadManager.abort || wasStopped_)
-					done;
-				else
+				if (threadManager.abort || wasStopped_) {
+					statusBar.hideProgress("Interrupted");
 					serverTable.notifyRefreshEnded;
-
-				statusBar.hideProgress();
+				}
+				else {
+					statusBar.hideProgress("Done");
+					done;
+				}
 			}));
 		}
 		catch(Exception e) {
