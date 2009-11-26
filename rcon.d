@@ -24,8 +24,8 @@ import tango.core.Array;
 import tango.core.Exception;
 import tango.core.Thread;
 import tango.io.selector.Selector;
-import tango.net.DatagramConduit;
 import tango.net.InternetAddress;
+import tango.net.device.Datagram;
 import tango.text.Util;
 import tango.text.convert.Format;
 import Integer = tango.text.convert.Integer;
@@ -310,7 +310,7 @@ private class Rcon
 	this(in char[] address, in char[] password)
 	{
 		address_ = address;
-		conn_ = new DatagramConduit;
+		conn_ = new Datagram;
 		conn_.connect(new InternetAddress(address_));
 		this.password = password;
 
@@ -378,7 +378,7 @@ private class Rcon
 	}
 
 	private {
-		DatagramConduit conn_;
+		Datagram conn_;
 		char[] address_;
 		bool stop_ = false;
 		void delegate(char[]) output_;
