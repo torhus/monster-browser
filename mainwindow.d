@@ -149,7 +149,6 @@ class MainWindow
 		auto statusData = new GridData(DWT.FILL, DWT.CENTER, true, false);
 		statusData.horizontalSpan = 2;
 		statusBar.setLayoutData(statusData);
-		statusBar.setLeft(APPNAME ~ " is ready.");
 	}
 
 	Shell handle() { return shell_; }  ///
@@ -321,12 +320,12 @@ class StatusBar : Composite
 	}
 
 
-	void hideProgress()
+	void hideProgress(in char[] text="")
 	{
 		if (isDisposed())
 			return;
-		progressLabel_.setText("Ready");
 		progressBar_.setVisible(false);
+		setLeft(text);
 	}
 
 
