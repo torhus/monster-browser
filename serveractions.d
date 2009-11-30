@@ -325,6 +325,7 @@ void delegate() checkForNewServers()
 			if (threadManager.abort) {
 				Display.getDefault().syncExec(dgRunnable( {
 					statusBar.hideProgress("Aborted");
+					serverTable.notifyRefreshEnded();
 				}));
 				return;
 			}
