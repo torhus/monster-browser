@@ -324,7 +324,7 @@ void delegate() checkForNewServers()
 			// address list.
 			if (threadManager.abort) {
 				Display.getDefault().syncExec(dgRunnable( {
-					statusBar.hideProgress("Interrupted");
+					statusBar.hideProgress("Aborted");
 				}));
 				return;
 			}
@@ -531,7 +531,7 @@ class ServerRetrievalController
 
 			Display.getDefault.syncExec(dgRunnable( {
 				if (threadManager.abort || wasStopped_) {
-					statusBar.hideProgress("Interrupted");
+					statusBar.hideProgress("Aborted");
 					serverTable.notifyRefreshEnded;
 				}
 				else {
