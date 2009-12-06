@@ -4,6 +4,7 @@ module mainwindow;
 
 version = icons;
 
+import tango.math.Math : max;
 import tango.text.Util;
 import Integer = tango.text.convert.Integer;
 import tango.text.convert.Format;
@@ -506,35 +507,24 @@ class FilterBar : Group
 	/// Set the contents of the game name drop-down list.
 	void setGames(char[][] list)
 	{
-		int sel, n, height;
-		Point p;
-		char[][] items;
-
 		if (list is null)
 			return;
+		
+		char[][] items = gamesCombo_.getItems();
 
-		sel = gamesCombo_.getSelectionIndex();
-		items = gamesCombo_.getItems();
 		foreach (s; list) {
 			if (findString(items, s) == -1) {
 				gamesCombo_.add(s);
 			}
 		}
-		n = gamesCombo_.getItemCount();
-		if (n > 10) {
-			n = 10;
-		}
-		p = gamesCombo_.getSize();
-		height = gamesCombo_.getItemHeight() * n;
-		// FIXME: setSize doesn't seem to do anything here :(
-		gamesCombo_.setSize(p.x, height);
 
-		if (sel == -1) {
-			gamesCombo_.select(0);
-		}
-		else {
-			gamesCombo_.select(sel);
-		}
+		int n = gamesCombo_.getItemCount();
+		if (n > 8)
+			n = 8;
+		gamesCombo_.setVisibleItemCount(max(n, 5));
+
+		int selected = gamesCombo_.getSelectionIndex();
+		gamesCombo_.select(selected == -1 ? 0 : selected);
 	}
 
 
