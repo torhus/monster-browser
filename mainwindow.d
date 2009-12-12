@@ -1,8 +1,6 @@
-/** The main window and related stuff. */
+/** The main window, including tool bar and status bar. */
 
 module mainwindow;
-
-version = icons;
 
 import tango.math.Math : max;
 import tango.text.Util;
