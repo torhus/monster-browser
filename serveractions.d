@@ -286,6 +286,7 @@ void delegate() refreshAll()
 			contr.progressLabel =
 			              Format("Retrying {} previously unresponsive servers",
 			                                                addresses2.length);
+			contr.interruptedMessage = "Ready";
 			contr.run();
 		}
 	}
@@ -324,7 +325,7 @@ void delegate() checkForNewServers()
 			// address list.
 			if (threadManager.abort) {
 				Display.getDefault().syncExec(dgRunnable( {
-					statusBar.hideProgress("Aborted");
+					statusBar.hideProgress("Ready");
 					serverTable.notifyRefreshEnded();
 				}));
 				return;
@@ -396,6 +397,7 @@ void delegate() checkForNewServers()
 					contr = new ServerRetrievalController(retriever);
 					contr.progressLabel = Format("Extended check, {} servers",
 					                                        addresses2.length);
+					contr.interruptedMessage = "Ready";
 					contr.run();
 				}
 			}
@@ -437,8 +439,15 @@ class ServerRetrievalController
 	 *
 	 * Set before calling run() if you don't want the default to be used.
 	 */
-
 	char[] progressLabel = "Querying servers";
+	
+
+	/**
+	 * Status message shown if interrupted by the user or otherwise.
+	 *
+	 * Set before calling run() if you don't want the default to be used.
+	 */
+	char[] interruptedMessage = "Aborted";
 
 
 	/**
@@ -532,7 +541,7 @@ class ServerRetrievalController
 
 			Display.getDefault.syncExec(dgRunnable( {
 				if (threadManager.abort || wasStopped_) {
-					statusBar.hideProgress("Aborted");
+					statusBar.hideProgress(interruptedMessage);
 					serverTable.notifyRefreshEnded;
 				}
 				else {
