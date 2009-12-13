@@ -279,7 +279,7 @@ void delegate() refreshAll()
 			contr.run();
 		}
 
-		if (addresses2.length) {
+		if (addresses2.length && !threadManager.abort) {
 			auto retriever = new QstatServerRetriever(game.name, master,
 			                                                 addresses2, true);
 			auto contr = new ServerRetrievalController(retriever);
@@ -390,7 +390,7 @@ void delegate() checkForNewServers()
 				                                             addresses.length);
 				contr.run();
 
-				if (addresses2.length) {
+				if (addresses2.length && !threadManager.abort) {
 					retriever = new QstatServerRetriever(game.name,
 					                                 master, addresses2, true);
 					contr = new ServerRetrievalController(retriever);
