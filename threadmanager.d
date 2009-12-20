@@ -14,13 +14,25 @@ ThreadManager threadManager;
 
 
 /**
- * Stores a pointer to a function, and calls it only when the previous one has
- * terminated.
+ * Utility class for serialized execution of code in a secondary thread.
+ *
+ * The stored function or delegate will only be executed after the previously
+ * started one has finished.  It will be executed in a thread controlled by
+ * this class.
  */
 class ThreadManager
 {
-
-	bool abort;  ///
+	/**
+	 * This can be checked by the function or delegate given to run to see if
+	 * it should exit prematurely, to give the next function or delegate a
+	 * chance to start sooner.
+	 *
+	 * The ThreadManager class does not read the value of this property, it
+	 * only sets it.  The run method sets it to true, and it is set to false
+	 * just before calling the stored function or delegate.  Using this
+	 * property is purely optional.
+	 */
+	bool abort;
 
 
 	///
@@ -34,36 +46,29 @@ class ThreadManager
 
 
 	/**
-	 * Store a function to be called after the current secondary thread has
+	 * Store a function or delegate to be called after the previous one has
 	 * terminated.
 	 *
-	 * The return value of fp is a delegate that will be called in a new
-	 * thread.  If fp returns null, no new thread is started.
+	 * Only one function or delegate at a time can be stored, calling run again
+	 * before the previous one has been started will replace it.
 	 *
-	 * This method sets the abort property to true.
-	 *
-	 * Note: This will set the function pointer stored by runSecond to null.
+	 * These methods sets the abort property to true.
 	 */
-	synchronized void run(void delegate() function() fp)
+	synchronized void run(void function() fp)
 	{
 		abort = true;
 		fp_ = fp;
-		fp2_ = null;
+		dg_ = null;
 		semaphore_.notify();
 	}
 
 
-	/**
-	 * Stores a function to be called after the one given to run() has ended.
-	 *
-	 * If the secondary thread is running, fp is not called until after it is
-	 * finished.
-	 *
-	 * This method does not change the abort property.
-	 */
-	synchronized void runSecond(void delegate() function() fp)  ///
+	/// ditto
+	synchronized void run(void delegate() dg)
 	{
-		fp2_ = fp;
+		abort = true;
+		dg_ = dg;
+		fp_ = null;
 		semaphore_.notify();
 	}
 
@@ -85,44 +90,42 @@ class ThreadManager
 
 	private void dispatch()
 	{
-		while (true) {
-			void delegate() inSecondaryThread;
+		void function() fpCopy;
+		void delegate() dgCopy;
 
+		while (true) {
 			sleeping_ = true;
 			semaphore_.wait();
 			sleeping_ = false;
 			if (shutdown_)
 				break;
 
-			synchronized (this) assert(fp_ !is null || fp2_ !is null);
+			synchronized (this) assert(fp_ !is null || dg_ !is null);
 
 			killServerBrowser();
 
-			Display.getDefault.syncExec(dgRunnable( (ThreadManager outer_) {
-				void delegate() function() inGuiThread;
-				synchronized (outer_) {
-					if (fp_ !is null) {
-						inGuiThread = fp_;
-						fp_ = null;
-					}
-					else if (fp2_ !is null) {
-						inGuiThread = fp2_;
-						fp2_ = null;
-					}
-					abort = false;
-				}
-				inSecondaryThread = inGuiThread();
-			}, this));
+			synchronized (this) {
+				fpCopy = fp_;
+				fp_ = null;
+				dgCopy = dg_;
+				dg_ = null;
+			}
 
-			if (!abort && inSecondaryThread !is null)
-				inSecondaryThread();
+			if (fpCopy !is null) {
+				abort = false;
+				fpCopy();
+			}
+			if (dgCopy !is null) {
+				abort = false;
+				dgCopy();
+			}
 		}
 	}
 
 
 	private {
-		void delegate() function() fp_= null;
-		void delegate() function() fp2_= null;
+		void function() fp_= null;
+		void delegate() dg_= null;
 		Thread thread_;
 		Semaphore semaphore_;
 		bool shutdown_ = false;

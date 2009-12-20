@@ -52,7 +52,7 @@ void switchToGame(in char[] name)
 {
 	static char[] gameName;
 
-	static void delegate() f() {
+	void f() {
 		ServerList serverList;
 		bool needRefresh;
 
@@ -100,9 +100,9 @@ void switchToGame(in char[] name)
 		if (needRefresh) {
 			GameConfig game = getGameConfig(gameName);
 			if (arguments.fromfile)
-				threadManager.runSecond(&loadSavedList);
+				threadManager.run(&loadSavedList);
 			else if (common.haveGslist && game.useGslist)
-				threadManager.runSecond(&checkForNewServers);
+				threadManager.run(&checkForNewServers);
 			else {
 				// try to refresh if we can, otherwise get a new list
 				MasterList master = serverList.master;
@@ -122,9 +122,9 @@ void switchToGame(in char[] name)
 				}
 
 				if (canRefresh)
-					threadManager.runSecond(&refreshAll);
+					threadManager.run(&refreshAll);
 				else
-					threadManager.runSecond(&checkForNewServers);
+					threadManager.run(&checkForNewServers);
 			}
 		}
 		else {
@@ -133,23 +133,24 @@ void switchToGame(in char[] name)
 			serverTable.fullRefresh();
 			statusBar.setLeft("Ready");
 		}
-
-		return null;
 	}
 
 	gameName = name;
-	threadManager.run(&f);
+	threadManager.run({ Display.getDefault().syncExec(dgRunnable(&f)); });
 }
 
 
 /** Loads the list from disk.  To be called through ThreadManager.run(). */
-void delegate() loadSavedList()
+void loadSavedList()
 {
 	ServerList serverList = serverTable.serverList;
 	MasterList master = serverList.master;
 
-	serverTable.clear();
-	serverList.clear();
+	Display.getDefault().syncExec(dgRunnable({
+		serverTable.clear();
+		serverList.clear();
+	}));
+
 	GC.collect();
 
 	GameConfig game = getGameConfig(serverList.gameName);
@@ -157,13 +158,14 @@ void delegate() loadSavedList()
 		auto retriever = new MasterListServerRetriever(game, master);
 		auto contr = new ServerRetrievalController(retriever);
 		contr.disableQueue();
-		statusBar.setLeft("Loading saved server list...");
-		return &contr.run;
+		Display.getDefault().syncExec(dgRunnable({
+			statusBar.setLeft("Loading saved server list...");
+		}));
+		contr.run();
 	}
 	else {
 		statusBar.setLeft(
 		                "Unable to find a file for this game's master server");
-		return null;
 	}
 }
 
@@ -187,7 +189,7 @@ void queryServers(in char[][] addresses, bool replace=false, bool select=false)
 	static char[][] addresses_;
 	static bool replace_, select_;
 
-	static void delegate() f() {
+	static void f() {
 		char[] gameName = serverTable.serverList.gameName;
 		MasterList master = serverTable.serverList.master;
 
@@ -199,7 +201,7 @@ void queryServers(in char[][] addresses, bool replace=false, bool select=false)
 		if (select_)
 			contr.autoSelect = addresses_;
 
-		return &contr.run;
+		contr.run();
 	}
 
 	if (!addresses.length)
@@ -221,7 +223,7 @@ void queryServers(in char[][] addresses, bool replace=false, bool select=false)
  *
  * Note: To be called through ThreadManager.run().
  */
-void delegate() refreshAll()
+void refreshAll()
 {
 	ServerList serverList = serverTable.serverList;
 	MasterList master = serverList.master;
@@ -260,16 +262,13 @@ void delegate() refreshAll()
 	log(Format("Added {} extra servers, skipping {} duplicates.",
 	                                        delta, extraServers.length-delta));
 
-	serverTable.clear();
-	serverList.clear();
+	Display.getDefault().syncExec(dgRunnable({
+		serverTable.clear();
+		serverList.clear();
+	}));
 	GC.collect();
 
-	void f()
-	{
-		ServerList serverList = serverTable.serverList;
-		MasterList master = serverList.master;
-		GameConfig game = getGameConfig(serverList.gameName);
-
+	if (addresses.length || addresses2.length) {
 		if (addresses.length) {
 			auto retriever = new QstatServerRetriever(game.name, master,
 			                                                  addresses, true);
@@ -290,13 +289,10 @@ void delegate() refreshAll()
 			contr.run();
 		}
 	}
-
-	if (addresses.length || addresses2.length) {
-		return &f;
-	}
 	else {
-		statusBar.setLeft("No servers were found for this game");
-		return null;
+		Display.getDefault().syncExec(dgRunnable({
+			statusBar.setLeft("No servers were found for this game");
+		}));
 	}
 }
 
@@ -306,120 +302,118 @@ void delegate() refreshAll()
  *
  * Note: To be called through ThreadManager.run().
  */
-void delegate() checkForNewServers()
+void checkForNewServers()
 {
-	void f()
-	{
-		try {
-			ServerList serverList = serverTable.serverList;
-			MasterList master = serverList.master;
-			GameConfig game = getGameConfig(serverList.gameName);
-
-			Display.getDefault().syncExec(dgRunnable( {
-				statusBar.showProgress("Getting new list from master", true);
-			}));
-
-			Set!(char[]) addresses = browserGetNewList(game);
-
-			// Make sure we don't start removing servers based on an incomplete
-			// address list.
-			if (threadManager.abort) {
-				Display.getDefault().syncExec(dgRunnable( {
-					statusBar.hideProgress("Ready");
-					serverTable.notifyRefreshEnded();
-				}));
-				return;
-			}
-
-			size_t total = addresses.length;
-			int removed = 0;
-			Set!(char[]) addresses2;
-
-			// Exclude servers that are already known to run the right mod, and
-			// delete servers from the master list that's missing from the
-			// master server.
-			foreach (sh; master) {
-				ServerData sd = master.getServerData(sh);
-				char[] address = sd.server[ServerColumn.ADDRESS];
-				if (address in addresses) {
-					addresses.remove(address);
-					if (!matchMod(&sd, game.mod))
-						addresses2.add(address);
-				}
-				else if (!sd.persistent) {
-					setEmpty(&sd);
-					master.setServerData(sh, sd);
-					removed++;
-				}
-			}
-
-			log(Format("Got {} servers from {}, including {} new.",
-			                      total, game.masterServer, addresses.length));
-
-			if (removed > 0) {
-				Display.getDefault().syncExec(dgRunnable( {
-					serverList.refillFromMaster();
-					serverTable.fullRefresh();
-				}));
-
-				log(Format("Removed {} servers that were missing from master.",
-				                                                     removed));
-			}
-
-			size_t count = addresses.length + addresses2.length;
-
-			if (count == 0) {
-				// FIXME: what to do when there are no servers?
-				Display.getDefault.asyncExec(dgRunnable( {
-					statusBar.hideProgress("There were no new servers");
-					serverTable.fullRefresh;
-					serverTable.notifyRefreshEnded;
-				}));
-			}
-			else {
-				// if it's only a few servers, do it all in one go
-				if (count < 100 || addresses.length == 0) {
-					foreach (addr; addresses2)
-						addresses.add(addr);
-					addresses2.clear();
-				}
-
-				auto retriever = new QstatServerRetriever(game.name, master,
-				                                              addresses, true);
-				auto contr = new ServerRetrievalController(retriever);
-				contr.progressLabel = Format("Checking {} servers",
-				                                             addresses.length);
-				contr.run();
-
-				if (addresses2.length && !threadManager.abort) {
-					retriever = new QstatServerRetriever(game.name,
-					                                 master, addresses2, true);
-					contr = new ServerRetrievalController(retriever);
-					contr.progressLabel = Format("Extended check, {} servers",
-					                                        addresses2.length);
-					contr.interruptedMessage = "Ready";
-					contr.run();
-				}
-			}
-		}
-		catch(Exception e) {
-			logx(__FILE__, __LINE__, e);
-		}
-
-	}
-
 	ServerList serverList = serverTable.serverList;
+
 	if (serverList.master.length > 0) {
 		log("Checking for new servers for " ~ serverList.gameName ~ "...");
 	}
 	else {
 		log("Getting new server list for " ~ serverList.gameName ~ "...");
 	}
-	serverTable.notifyRefreshStarted((bool) { threadManager.abort = true; });
+	Display.getDefault().syncExec(dgRunnable({
+		serverTable.notifyRefreshStarted((bool) {
+			threadManager.abort = true;
+		});
+	}));
 
 	GC.collect();
 
-	return &f;
+	try {
+		MasterList master = serverList.master;
+		GameConfig game = getGameConfig(serverList.gameName);
+
+		Display.getDefault().syncExec(dgRunnable( {
+			statusBar.showProgress("Getting new list from master", true);
+		}));
+
+		Set!(char[]) addresses = browserGetNewList(game);
+
+		// Make sure we don't start removing servers based on an incomplete
+		// address list.
+		if (threadManager.abort) {
+			Display.getDefault().syncExec(dgRunnable( {
+				statusBar.hideProgress("Ready");
+				serverTable.notifyRefreshEnded();
+			}));
+			return;
+		}
+
+		size_t total = addresses.length;
+		int removed = 0;
+		Set!(char[]) addresses2;
+
+		// Exclude servers that are already known to run the right mod, and
+		// delete servers from the master list that's missing from the
+		// master server.
+		foreach (sh; master) {
+			ServerData sd = master.getServerData(sh);
+			char[] address = sd.server[ServerColumn.ADDRESS];
+			if (address in addresses) {
+				addresses.remove(address);
+				if (!matchMod(&sd, game.mod))
+					addresses2.add(address);
+			}
+			else if (!sd.persistent) {
+				setEmpty(&sd);
+				master.setServerData(sh, sd);
+				removed++;
+			}
+		}
+
+		log(Format("Got {} servers from {}, including {} new.",
+		                          total, game.masterServer, addresses.length));
+
+		if (removed > 0) {
+			Display.getDefault().syncExec(dgRunnable( {
+				serverList.refillFromMaster();
+				serverTable.fullRefresh();
+			}));
+
+			log(Format("Removed {} servers that were missing from master.",
+			                                                         removed));
+		}
+
+		size_t count = addresses.length + addresses2.length;
+
+		if (count == 0) {
+			// FIXME: what to do when there are no servers?
+			Display.getDefault.asyncExec(dgRunnable( {
+				statusBar.hideProgress("There were no new servers");
+				serverTable.fullRefresh;
+				serverTable.notifyRefreshEnded;
+			}));
+		}
+		else {
+			// if it's only a few servers, do it all in one go
+			if (count < 100 || addresses.length == 0) {
+				foreach (addr; addresses2)
+					addresses.add(addr);
+				addresses2.clear();
+			}
+
+			auto retriever = new QstatServerRetriever(game.name, master,
+			                                                  addresses, true);
+			auto contr = new ServerRetrievalController(retriever);
+			contr.progressLabel = Format("Checking {}  servers",
+			                                                 addresses.length);
+			contr.run();
+
+			if (addresses2.length && !threadManager.abort) {
+				retriever = new QstatServerRetriever(game.name,
+				                                     master, addresses2, true);
+				contr = new ServerRetrievalController(retriever);
+				contr.progressLabel = Format("Extended check, {} servers",
+				                                            addresses2.length);
+				contr.interruptedMessage = "Ready";
+				contr.run();
+			}
+		}
+	}
+	catch(Exception e) {
+		logx(__FILE__, __LINE__, e);
+	}
 }
 
 
