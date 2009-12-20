@@ -10,6 +10,7 @@ import tango.core.Thread;
 debug import tango.core.stacktrace.TraceExceptions;
 import tango.io.Console;
 import tango.io.Path;
+import tango.io.FilePath;
 import tango.io.device.BitBucket;
 import tango.io.device.File;
 import tango.sys.Environment;
@@ -190,7 +191,13 @@ private void _main(char[][] args)
  */
 private void detectDirectories(in char[] firstArg)
 {
-	appDir = normalize(Environment.exePath(firstArg).path);
+	FilePath path = FilePath(firstArg);
+
+	if (path.isAbsolute)
+		appDir = normalize(path.path);
+	else
+		appDir = normalize(Environment.exePath(path.toString()).path);
+
 	if (appDir[$-1] != '/')
 		appDir ~= '/';
 
