@@ -196,7 +196,7 @@ class MainWindow
 		void shellClosed(ShellEvent e)  ///
 		{
 			serverTable.stopRefresh(false);
-			threadManager.shutdown();
+			threadManager.shutDown();
 			statusBar.setLeft("Exiting...");
 			log("Shutting down...");
 			killServerBrowser();
