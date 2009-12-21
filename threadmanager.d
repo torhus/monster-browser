@@ -28,9 +28,7 @@ class ThreadManager
 	 * chance to start sooner.
 	 *
 	 * The ThreadManager class does not read the value of this property, it
-	 * only sets it.  The run method sets it to true, and it is set to false
-	 * just before calling the stored function or delegate.  Using this
-	 * property is purely optional.
+	 * only sets it.  Using this property is purely optional.
 	 */
 	bool abort;
 
@@ -52,7 +50,9 @@ class ThreadManager
 	 * Only one function or delegate at a time can be stored, calling run again
 	 * before the previous one has been started will replace it.
 	 *
-	 * These methods sets the abort property to true.
+	 * These methods sets the abort property to true.  Just before the stored
+	 * function or delegate is called, and unless shutDown has been called,
+	 * abort is set to false again.
 	 */
 	synchronized void run(void function() fp)
 	{
@@ -63,7 +63,7 @@ class ThreadManager
 	}
 
 
-	/// ditto
+	/// Ditto
 	synchronized void run(void delegate() dg)
 	{
 		abort = true;
@@ -74,9 +74,14 @@ class ThreadManager
 
 
 	/**
-	 * Tell the secondary thread to stop what it's doing and exit.
+	 * Tell the secondary thread to exit.
+	 *
+	 * The currently running stored function or delegate will be allowed to run
+	 * to completion first.
+	 *
+	 * Sets the abort property to true.
 	 */
-	void shutdown()
+	synchronized void shutDown()
 	{
 		abort = true;
 		shutdown_ = true;
@@ -100,8 +105,6 @@ class ThreadManager
 			if (shutdown_)
 				break;
 
-			synchronized (this) assert(fp_ !is null || dg_ !is null);
-
 			killServerBrowser();
 
 			synchronized (this) {
@@ -109,16 +112,17 @@ class ThreadManager
 				fp_ = null;
 				dgCopy = dg_;
 				dg_ = null;
+
+				if (!shutdown_)
+					abort = false;
 			}
 
-			if (fpCopy !is null) {
-				abort = false;
+			assert ((dgCopy is null) != (fpCopy is null));
+
+			if (fpCopy !is null)
 				fpCopy();
-			}
-			if (dgCopy !is null) {
-				abort = false;
+			if (dgCopy !is null)
 				dgCopy();
-			}
 		}
 	}
 
