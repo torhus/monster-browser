@@ -564,21 +564,25 @@ class ServerRetrievalController
 	}
 
 
-	private bool deliver(ServerHandle sh, bool replied, bool matched)
+	private bool deliver(ServerHandle sh, bool replied)
 	{
+		assert(sh != InvalidServerHandle);
+		
+		ServerData sd = serverList_.master.getServerData(sh);
+		GameConfig game = getGameConfig(serverList_.gameName);
+		bool matched;
+		
 		counter_++;
 
-		assert(sh != InvalidServerHandle);
-
-		if (!replied) {
-			ServerData sd = serverList_.master.getServerData(sh);
+		if (replied) {
+			matched = matchMod(&sd, game.mod);
+		}
+		else {
 			if (sd.failCount <= maxTimeouts_) {
 				timedOut_++;
 				// Try to match using the old data, since we still want to
 				// display the server if we know it runs the right mod.
-				assert(!matched);  // assure we don't do this needlessly
-				matched =
-				        matchMod(&sd, getGameConfig(serverList_.gameName).mod);
+				matched = matchMod(&sd, game.mod);
 			}
 			else {
 				setEmpty(&sd);

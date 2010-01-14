@@ -116,8 +116,7 @@ interface IServerRetriever
 	 *
 	 * If deliver returns false, the server retrieval process is aborted.
 	 */
-	void retrieve(bool delegate(ServerHandle, bool replied, bool matched)
-	                                                                  deliver);
+	void retrieve(bool delegate(ServerHandle, bool replied) deliver);
 
 }
 
@@ -161,8 +160,7 @@ final class MasterListServerRetriever : IServerRetriever
 
 
 	///
-	void retrieve(bool delegate(ServerHandle sh, bool replied, bool matched)
-	                                                                   deliver)
+	void retrieve(bool delegate(ServerHandle sh, bool replied) deliver)
 	{
 		foreach (sh; master_) {
 			ServerData sd = master_.getServerData(sh);
@@ -170,7 +168,7 @@ final class MasterListServerRetriever : IServerRetriever
 			static if (!MOD_ONLY)
 				keep = true;
 			if (keep)
-				deliver(sh, true, true);
+				deliver(sh, true);
 		}
 	}
 
@@ -255,14 +253,13 @@ final class QstatServerRetriever : IServerRetriever
 
 
 	///
-	void retrieve(bool delegate(ServerHandle sh, bool replied, bool matched)
-	                                                                   deliver)
+	void retrieve(bool delegate(ServerHandle sh, bool replied) deliver)
 	{
 		scope iter = new Lines!(char)(proc.stdout);
 		// FIXME: verify that everything is initialized correctly, and that
 		// stdout is valid
 
-		bool _deliver(ServerData* sd, bool replied, bool matched)
+		bool _deliver(ServerData* sd, bool replied)
 		{
 			ServerHandle sh;
 
@@ -275,7 +272,7 @@ final class QstatServerRetriever : IServerRetriever
 				sh = master_.addServer(*sd);
 			}
 
-			return deliver(sh, replied, matched);
+			return deliver(sh, replied);
 		}
 
 		qstat.parseOutput(game_.mod, iter, &_deliver);
