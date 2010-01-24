@@ -175,8 +175,9 @@ debug private void checkTime(ref StopWatch t, char[] name)
  *
  * Params:
  *     line     = String to parse.
- *     sd       = Output, only sd.cvars and sd.server are changed.  sd.rawName
- *                is used for error reporting, but not written to.
+ *     sd       = Output, only sd.cvars, sd.server, and sd.protocolVersion are
+ *                changed.  sd.rawName is used for error reporting, but not
+ *                written to.
  *     gtypes   = Game type names, indexed with the value of the 'gametype'
  *                cvar to find the value of sd.server's Game type column.  If
  *                gametype >= gtypes.length, the number is used instead.
@@ -214,6 +215,9 @@ body {
 					sd.server[ServerColumn.PASSWORDED] = PASSWORD_NO;
 				else
 					sd.server[ServerColumn.PASSWORDED] = PASSWORD_YES;
+				break;
+			case "protocol":
+				sd.protocolVersion = cvar[1];
 				break;
 			default:
 				break;

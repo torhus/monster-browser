@@ -109,7 +109,8 @@ void switchToGame(in char[] name)
 				bool canRefresh = master.length > 0;
 				if (!canRefresh) {
 					try {
-						canRefresh = master.load() && master.length > 0;
+						canRefresh = master.load(game.protocolVersion)
+						                                  && master.length > 0;
 					}
 					catch (IOException e) {
 						error("There was an error reading " ~ master.fileName
@@ -128,7 +129,9 @@ void switchToGame(in char[] name)
 			}
 		}
 		else {
-			serverTable.serverList.sort();
+			// refill the list, in case servers where removed in the mean time
+			serverTable.serverList.refillFromMaster();
+
 			serverTable.forgetSelection();
 			serverTable.fullRefresh();
 			statusBar.setLeft("Ready");
@@ -231,6 +234,7 @@ void refreshAll()
 
 	assert(master.length > 0);
 
+	// static to save some memory
 	static Set!(char[]) addresses, addresses2;
 
 	// reset static variables
@@ -239,11 +243,12 @@ void refreshAll()
 
 	foreach (sh; master) {
 		ServerData sd = master.getServerData(sh);
-		bool matched = matchMod(&sd, game.mod);
+		bool matched = matchGame(&sd, game);
 
 		if (matched)
 			addresses.add(sd.server[ServerColumn.ADDRESS]);
-		else if (timedOut(&sd) && sd.failCount < 2)
+		else if (timedOut(&sd) && sd.failCount < 2  &&
+		                            sd.protocolVersion == game.protocolVersion)
 			// retry previously unresponsive servers
 			addresses2.add(sd.server[ServerColumn.ADDRESS]);
 	}
@@ -349,10 +354,18 @@ void checkForNewServers()
 		// master server.
 		foreach (sh; master) {
 			ServerData sd = master.getServerData(sh);
+
+			// Prevent servers with a different protocol version from being
+			// removed.  This also causes the server to remain in addresses if
+			// it has switched protocol versions, causing it to be queried in
+			// the first batch of servers instead of the second.
+			if (sd.protocolVersion != game.protocolVersion)
+				continue;
+
 			char[] address = sd.server[ServerColumn.ADDRESS];
 			if (address in addresses) {
 				addresses.remove(address);
-				if (!matchMod(&sd, game.mod))
+				if (!matchGame(&sd, game))
 					addresses2.add(address);
 			}
 			else if (!sd.persistent) {
@@ -575,14 +588,22 @@ class ServerRetrievalController
 		counter_++;
 
 		if (replied) {
-			matched = matchMod(&sd, game.mod);
+			matched = matchGame(&sd, game);
 		}
 		else {
 			if (sd.failCount <= maxTimeouts_) {
 				timedOut_++;
+				if (sd.protocolVersion.length == 0) {
+					// This can happen when checking for new servers.  Just set
+					// the most likely protocol version, so the server gets
+					// included in refreshAll()'s requery of unresponsive
+					// servers.
+					sd.protocolVersion = game.protocolVersion;
+					serverList_.master.setServerData(sh, sd);
+				}
 				// Try to match using the old data, since we still want to
-				// display the server if we know it runs the right mod.
-				matched = matchMod(&sd, game.mod);
+				// display the server if we know it runs the right game.
+				matched = matchGame(&sd, game);
 			}
 			else {
 				setEmpty(&sd);

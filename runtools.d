@@ -5,15 +5,11 @@
 module runtools;
 
 import tango.core.Exception : IOException, ProcessException;
-import Path = tango.io.Path;
 import tango.io.device.File;
-import tango.io.model.IConduit : InputStream;
 import tango.io.stream.Lines;
-import tango.io.stream.TextFile;
 import tango.sys.Process;
 import tango.text.convert.Format;
 import Integer = tango.text.convert.Integer;
-debug import tango.util.log.Trace;
 
 import common;
 import messageboxes;
@@ -143,7 +139,7 @@ final class MasterListServerRetriever : IServerRetriever
 		bool error = false;
 
 		try {
-			if (master_.length == 0 && !master_.load())
+			if (master_.length == 0 && !master_.load(game_.protocolVersion))
 				error = true;
 		}
 		catch (IOException o) {
@@ -164,7 +160,7 @@ final class MasterListServerRetriever : IServerRetriever
 	{
 		foreach (sh; master_) {
 			ServerData sd = master_.getServerData(sh);
-			bool keep = matchMod(&sd, game_.mod);
+			bool keep = matchGame(&sd, game_);
 			static if (!MOD_ONLY)
 				keep = true;
 			if (keep)

@@ -183,13 +183,17 @@ final class MasterList
 	 * Returns: false if the file didn't exist, true if the contents were
 	 *          successfully read.
 	 *
+	 * Params:
+	 *     defaultProtocolVersion = Used for servers that have a missing or
+	 *                              empty protocol_version attribute.
+	 *
 	 * Throws: IOException if an error occurred during reading.
 	 *         XmlException for XML syntax errors.
 	 *
 	 * Note: After calling this, all ServerHandles that were obtained before
 	 *       calling it should be be considered invalid.
 	 */
-	bool load()
+	bool load(in char[] defaultProtocolVersion)
 	{
 		if (!Path.exists(dataDir ~ fileName_))
 			return false;
@@ -202,7 +206,7 @@ final class MasterList
 		char[] content = cast(char[])File.get(dataDir ~ fileName_);
 		GC.setAttr(content.ptr, GC.BlkAttr.NO_SCAN);
 		auto parser = new SaxParser!(char);
-		auto handler = new MySaxHandler!(char);
+		auto handler = new MySaxHandler!(char)(defaultProtocolVersion);
 
 		parser.setSaxHandler(handler);
 		parser.setContent(content);
@@ -306,6 +310,7 @@ private final class XmlDumper
 		output_.format(`  <server name="{}"`, sd.rawName)
 		       .format(` country_code="{}"`,  sd.server[ServerColumn.COUNTRY])
 		       .format(` address="{}"`,       sd.server[ServerColumn.ADDRESS])
+		       .format(` protocol_version="{}"`, sd.protocolVersion)
 		       .format(` ping="{}"`,          sd.server[ServerColumn.PING])
 		       .format(` player_count="{}"`,  sd.server[ServerColumn.PLAYERS])
 		       .format(` map="{}"`,           sd.server[ServerColumn.MAP])
@@ -359,6 +364,13 @@ private final class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 {
 	ServerData[] servers;
 
+	private char[] defaultProtocolVersion_;
+
+
+	this(in char[] defaultProtocolVersion)
+	{
+		defaultProtocolVersion_ = defaultProtocolVersion;
+	}
 
 	override void startElement(Ch[] uri, Ch[] localName, Ch[] qName,
 	                                               Attribute!(Ch)[] attributes)
@@ -394,6 +406,8 @@ private final class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 				sd.server[ServerColumn.COUNTRY] = attr.value.dup;
 			else if (attr.localName == "address")
 				sd.server[ServerColumn.ADDRESS] = attr.value.dup;
+			else if (attr.localName == "protocol_version")
+				sd.protocolVersion = attr.value.dup;
 			else if (attr.localName == "ping")
 				sd.server[ServerColumn.PING] = attr.value.dup;
 			else if (attr.localName == "player_count")
@@ -405,7 +419,13 @@ private final class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 			else if (attr.localName == "fail_count")
 				sd.failCount = Integer.convert(attr.value);
 		}
-
+		
+		// Make sure there's a protocol version.  This makes it less likely the
+		// server is being 'forgotten' and never queried or deleted.
+		// It also takes care of upgrading from the old XML files, where there
+		// were no protocol_version attribute.
+		if (sd.protocolVersion.length == 0)
+			sd.protocolVersion = defaultProtocolVersion_;
 		servers ~= sd;
 	}
 
