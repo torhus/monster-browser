@@ -124,7 +124,7 @@ final class ServerList
 	 */
 	synchronized void refillFromMaster()
 	{
-		char[] mod = getGameConfig(gameName_).mod;
+		GameConfig game = getGameConfig(gameName_);
 		auto newHash = new typeof(ipHash_);
 
 		filteredList.length = 0;
@@ -132,7 +132,7 @@ final class ServerList
 			ServerData sd = master_.getServerData(sh);
 			char[] address = sd.server[ServerColumn.ADDRESS];
 
-			if (address in ipHash_ && matchMod(&sd, mod)) {
+			if (address in ipHash_ && matchGame(&sd, game)) {
 				newHash[address] = -1;
 				if (!isFilteredOut(&sd))
 					filteredList ~= sh;

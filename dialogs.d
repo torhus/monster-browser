@@ -316,7 +316,7 @@ class SpecifyServerDialog
 					ServerData sd = master.getServerData(sh);
 					GameConfig game = getGameConfig(serverList.gameName);
 
-					if (matchMod(&sd, game.mod)) {
+					if (matchGame(&sd, game)) {
 						info("That server is already on the list.  If you "
 						         "can't see it, try turning off the filters.");
 						int i = serverList.getFilteredIndex(address);

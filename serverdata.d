@@ -10,6 +10,7 @@ debug import tango.util.log.Trace;
 import dwt.graphics.TextLayout;
 
 import common;
+import settings;
 
 
 /** Stores all data for a server. */
@@ -31,6 +32,8 @@ struct ServerData {
 	int failCount = 0;  ///
 
 	bool persistent;  ///
+
+	char[] protocolVersion;  ///
 
 
 	///
@@ -139,35 +142,27 @@ bool isEmpty(in ServerData* sd)
 
 
 /**
- * Does this server run the given mod?
+ * Does this server match the given game configuration?
  *
  * Also returns false if there is no data to match against.
- *
- * If not null, hasMatchData will be true or false depending on whether there
- * was any data to match the mod name against.
  */
-bool matchMod(in ServerData* sd, in char[] mod, bool* hasMatchData=null)
+bool matchGame(in ServerData* sd, in GameConfig game)
 {
-	bool hasData = false;
-	bool matched = false;
+	if (sd.protocolVersion != game.protocolVersion)
+		return false;
 
+	// FIXME: use binary search?
 	foreach (cvar; sd.cvars) {
 		if (cvar[0] == "game" || cvar[0] == "gamename") {
-			hasData = true;
-			if (icompare(cvar[1], mod) == 0)
-				matched = true;
+			if (icompare(cvar[1], game.mod) == 0)
+				return true;
 		}
 	}
 
-	static if (!MOD_ONLY) {
-		hasData = true;
-		matched = true;
-	}
-
-	if (hasMatchData)
-		*hasMatchData = hasData;
-
-	return matched;
+	static if (MOD_ONLY)
+		return false;
+	else
+		return true;
 }
 
 
