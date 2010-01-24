@@ -47,7 +47,8 @@ Set!(char[]) browserGetNewList(in GameConfig game)
 	// use gslist's server-sider filtering
 	// Note: gslist returns no servers if filtering on "baseq3"
 	if (gslist && MOD_ONLY && game.mod != "baseq3")
-		cmdLine ~= " -f \"(gametype = \'" ~ game.mod ~ "\'\")";
+		cmdLine ~= " -f \"(gametype='" ~ game.mod ~ "')"
+		           " AND (protocol=" ~ game.protocolVersion ~ ")\"";
 
 	try {
 		proc = new Process(true, cmdLine);
