@@ -178,7 +178,7 @@ class ServerTable
 		synchronized (serverList_) {
 			bool reversed = table_.getSortDirection() == DWT.DOWN;
 			serverList_.sort(sortCol, reversed, false);
-			serverList_.setFilters(filterBar.filterState);
+			serverList_.setFilters(filterBar.filterState, false);
 		}
 	}
 

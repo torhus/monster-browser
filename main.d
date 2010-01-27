@@ -175,8 +175,9 @@ private void _main(char[][] args)
 	saveSettings();
 
 	log("Saving server lists...");
-	foreach (master; masterLists)
-		master.save();
+	foreach (entry; masterLists)
+		if (entry.save)
+			entry.masterList.save();
 
 	log("Exit.");
 	shutDownLogging;
