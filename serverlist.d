@@ -273,15 +273,19 @@ final class ServerList
 
 	/**
 	 * Sets filters and updates the filtered list accordingly.
+	 *
+	 * If autoRefill is true, calls refillFromMaster if the new filters differ
+	 * from the old.
 	 */
-	void setFilters(Filter newFilters)
+	void setFilters(Filter newFilters, bool autoRefill=true)
 	{
 		if (newFilters == filters_)
 			return;
 
 		synchronized (this) {
 			filters_ = newFilters;
-			refillFromMaster();
+			if (autoRefill)
+				refillFromMaster();
 		}
 	}
 

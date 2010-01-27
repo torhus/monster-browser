@@ -31,11 +31,17 @@ import settings;
 import threadmanager;
 
 
-/// Master server lists indexed by server domain name and port number.
-MasterList[char[]] masterLists;
+///
+struct MasterListCacheEntry
+{
+	MasterList masterList;  ///
+	bool save = true;  ///
+}
 
-/// ServerList cache indexed by mod name.
-// FIXME: needs to be index by mod + game name instead.
+/// Master server lists indexed by server domain name and port number.
+MasterListCacheEntry[char[]] masterLists;
+
+/// ServerList cache indexed by game config name.
 ServerList[char[]] serverListCache;
 
 
@@ -45,8 +51,6 @@ ServerList[char[]] serverListCache;
  * Takes care of everything, updating the GUI as necessary, querying servers or
  * a master server if there's no pre-existing data for the game, etc.  Most of
  * the work is done in a new thread.
- *
- * FIXME: simplify this messy function
  */
 void switchToGame(in char[] name)
 {
@@ -54,6 +58,8 @@ void switchToGame(in char[] name)
 
 	void f() {
 		ServerList serverList;
+		GameConfig game = getGameConfig(gameName);
+		bool gslist = haveGslist && game.useGslist;
 		bool needRefresh;
 
 		// make sure we have a ServerList object
@@ -62,16 +68,18 @@ void switchToGame(in char[] name)
 			needRefresh = !serverList.complete;
 		}
 		else {
-			char[] masterName = getGameConfig(gameName).masterServer;
+			char[] masterName = gslist ? "gslist-" ~ gameName :
+			                                                 game.masterServer;
 			MasterList master;
 
 			// make sure we have a MasterList object
 			if (auto m = masterName in masterLists) {
-				master = *m;
+				master = (*m).masterList;;
 			}
 			else {
 				master = new MasterList(masterName);
-				masterLists[masterName] = master;
+				masterLists[masterName] =
+				                         MasterListCacheEntry(master, !gslist);
 			}
 
 			serverList = new ServerList(gameName, master);
@@ -79,7 +87,7 @@ void switchToGame(in char[] name)
 			needRefresh = true;
 
 			// Add servers from the extra servers file, if found.
-			auto file = getGameConfig(gameName).extraServersFile;
+			auto file = game.extraServersFile;
 			try {
 				if (Path.exists(file)) {
 					auto input = new TextFileInput(file);
@@ -95,13 +103,14 @@ void switchToGame(in char[] name)
 		}
 
 		serverTable.setServerList(serverList);
+		// refill the list, in case servers where removed in the mean time
+		serverTable.serverList.refillFromMaster();
 		serverTable.clear();
 
 		if (needRefresh) {
-			GameConfig game = getGameConfig(gameName);
 			if (arguments.fromfile)
 				threadManager.run(&loadSavedList);
-			else if (common.haveGslist && game.useGslist)
+			else if (gslist)
 				threadManager.run(&checkForNewServers);
 			else {
 				// try to refresh if we can, otherwise get a new list
@@ -129,9 +138,6 @@ void switchToGame(in char[] name)
 			}
 		}
 		else {
-			// refill the list, in case servers where removed in the mean time
-			serverTable.serverList.refillFromMaster();
-
 			serverTable.forgetSelection();
 			serverTable.fullRefresh();
 			statusBar.setLeft("Ready");
@@ -254,8 +260,7 @@ void refreshAll()
 	}
 
 	log("Refreshing server list for " ~ game.name ~ "...");
-	log(Format("Found {} servers, master is {}.", addresses.length,
-	                                                          master.address));
+	log(Format("Found {} servers.", addresses.length));
 
 	// merge in the extra servers
 	Set!(char[]) extraServers = serverList.extraServers;
