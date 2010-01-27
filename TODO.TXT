@@ -1,5 +1,3 @@
-- problems when both glist and qstat are used to retrieve master lists from the
-  same master server
 [01:28]	<Aelf>	btw -- it would be nice to be able to follow a teamgame (color the player's lines according to the team they are in -> red or blue --- and another field where it shows red and blue score)
 [01:29]	<Aelf>	that's actually the only feature i am missing in monsterbrowser right now
 [01:30]	<Aelf>	in qxmon it looks like this e.g. : http://www.qxmon.net/q3mon-spy.pl?91.121.106.200:7777
