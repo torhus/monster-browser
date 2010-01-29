@@ -4,11 +4,11 @@
 
 module serveractions;
 
+import tango.core.Array;
 import tango.core.Exception;
 import tango.core.Memory;
 import Path = tango.io.Path;
 import tango.io.stream.TextFile;
-import tango.text.Util;
 import tango.text.convert.Format;
 import Integer = tango.text.convert.Integer;
 import tango.util.log.Trace;
@@ -36,10 +36,13 @@ struct MasterListCacheEntry
 {
 	MasterList masterList;  ///
 	bool save = true;  ///
+
+	/// List of protocol versions for which not to retry unresponsive servers.
+	Set!(char[]) noRetry;
 }
 
-/// Master server lists indexed by server domain name and port number.
-MasterListCacheEntry[char[]] masterLists;
+/// Master server lists indexed by master list names.
+MasterListCacheEntry*[char[]] masterLists;
 
 /// ServerList cache indexed by game config name.
 ServerList[char[]] serverListCache;
@@ -74,11 +77,14 @@ void switchToGame(in char[] name)
 
 			// make sure we have a MasterList object
 			if (auto m = masterName in masterLists) {
-				master = (*m).masterList;;
+				master = (*m).masterList;
 			}
 			else {
 				master = new MasterList(masterName);
-				masterLists[masterName] =
+				masterLists[masterName] = new MasterListCacheEntry;
+				// struct limitation workaround
+				// see http://d.puremagic.com/issues/show_bug.cgi?id=1860
+				*masterLists[masterName] =
 				                         MasterListCacheEntry(master, !gslist);
 			}
 
@@ -237,6 +243,7 @@ void refreshAll()
 	ServerList serverList = serverTable.serverList;
 	MasterList master = serverList.master;
 	GameConfig game = getGameConfig(serverList.gameName);
+	bool noRetry = game.protocolVersion in masterLists[master.name].noRetry;
 
 	assert(master.length > 0);
 
@@ -254,7 +261,7 @@ void refreshAll()
 		if (matched)
 			addresses.add(sd.server[ServerColumn.ADDRESS]);
 		else if (timedOut(&sd) && sd.failCount < 2  &&
-		                            sd.protocolVersion == game.protocolVersion)
+		                sd.protocolVersion == game.protocolVersion && !noRetry)
 			// retry previously unresponsive servers
 			addresses2.add(sd.server[ServerColumn.ADDRESS]);
 	}
@@ -416,6 +423,7 @@ void checkForNewServers()
 			auto contr = new ServerRetrievalController(retriever);
 			contr.progressLabel = Format("Checking {}  servers",
 			                                                 addresses.length);
+			masterLists[master.name].noRetry.remove(game.protocolVersion);
 			contr.run();
 
 			if (addresses2.length && !threadManager.abort) {
@@ -555,6 +563,12 @@ class ServerRetrievalController
 				if (threadManager.abort || wasStopped_) {
 					statusBar.hideProgress(interruptedMessage);
 					serverTable.notifyRefreshEnded;
+
+					// disable refreshAll's automatic requerying of
+					// unresponsive servers
+					GameConfig game = getGameConfig(serverList_.gameName);
+					char[] masterName = serverList_.master.name;
+					masterLists[masterName].noRetry.add(game.protocolVersion);
 				}
 				else {
 					statusBar.hideProgress("Done");
