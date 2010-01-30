@@ -244,15 +244,9 @@ void refreshAll()
 	MasterList master = serverList.master;
 	GameConfig game = getGameConfig(serverList.gameName);
 	bool noRetry = game.protocolVersion in masterLists[master.name].noRetry;
+	Set!(char[]) addresses, addresses2;
 
 	assert(master.length > 0);
-
-	// static to save some memory
-	static Set!(char[]) addresses, addresses2;
-
-	// reset static variables
-	addresses.clear();
-	addresses2.clear();
 
 	foreach (sh; master) {
 		ServerData sd = master.getServerData(sh);
