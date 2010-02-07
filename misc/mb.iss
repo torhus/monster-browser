@@ -8,9 +8,9 @@
 AppId={{E5D3BD22-CD4C-4823-A383-3971BCE0052C}
 AppName=Monster Browser
 AppVerName=Monster Browser 0.6a
-AppPublisherURL=http://monsterbrowser.googlepages.com/
-AppSupportURL=http://monsterbrowser.googlepages.com/
-AppUpdatesURL=http://monsterbrowser.googlepages.com/
+AppPublisherURL=http://sites.google.com/site/monsterbrowser/
+AppSupportURL=http://sites.google.com/site/monsterbrowser/
+AppUpdatesURL=http://sites.google.com/site/monsterbrowser/
 DefaultDirName={pf}\Monster Browser
 DefaultGroupName=Monster Browser
 AllowNoIcons=yes
@@ -38,7 +38,7 @@ Source: "qstat.exe"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\Monster Browser"; Filename: "{app}\MonsterBrowser.exe";
-Name: "{group}\{cm:ProgramOnTheWeb,Monster Browser}"; Filename: "http://monsterbrowser.googlepages.com/"
+Name: "{group}\{cm:ProgramOnTheWeb,Monster Browser}"; Filename: "http://sites.google.com/site/monsterbrowser/"
 Name: "{group}\{cm:UninstallProgram,Monster Browser}"; Filename: "{uninstallexe}"
 Name: "{commondesktop}\Monster Browser"; Filename: "{app}\MonsterBrowser.exe"; Tasks: desktopicon
 Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\Monster Browser"; Filename: "{app}\MonsterBrowser.exe"; Tasks: quicklaunchicon
