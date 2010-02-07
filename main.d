@@ -122,6 +122,7 @@ private void _main(char[][] args)
 			switch (e.keyCode) {
 				case DWT.ESC:
 					if ((e.stateMask & DWT.MODIFIER_MASK) == 0) {
+						userAbort = true;
 						serverTable.stopRefresh(true);
 						e.type = DWT.None;
 					}
