@@ -5,10 +5,6 @@
 
 - should optimize countHumanPlayers?  Profile it.
 
-- Display better message when aborting Check for new servers.
-
-- Selection bug when clicking on a server, then pressing Ctrl+A right after.
-
 - When interrupting a check for new servers, the press of Refresh all won't
   query the servers the were not tried already.
 
@@ -17,8 +13,6 @@
 - Make the infinity sign for timed out servers more visible?
 
 - Colored text in rcon output?
-
-- Server count in status bar is wrong after deleting a server.
 
 - How does 'Never remove this server automatically' relate to automatic hiding
   of servers with too high timeout count?
