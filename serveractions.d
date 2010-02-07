@@ -8,7 +8,6 @@ import tango.core.Exception;
 import tango.core.Memory;
 import Path = tango.io.Path;
 import tango.io.stream.TextFile;
-import tango.text.Util;
 import tango.text.convert.Format;
 import Integer = tango.text.convert.Integer;
 import tango.util.log.Trace;
@@ -36,10 +35,11 @@ struct MasterListCacheEntry
 {
 	MasterList masterList;  ///
 	bool save = true;  ///
+	Set!(char[]) retryProtocols;  ///
 }
 
-/// Master server lists indexed by server domain name and port number.
-MasterListCacheEntry[char[]] masterLists;
+/// Master server lists indexed by master list name.
+MasterListCacheEntry*[char[]] masterLists;
 
 /// ServerList cache indexed by game config name.
 ServerList[char[]] serverListCache;
@@ -74,12 +74,15 @@ void switchToGame(in char[] name)
 
 			// make sure we have a MasterList object
 			if (auto m = masterName in masterLists) {
-				master = (*m).masterList;;
+				master = (*m).masterList;
 			}
 			else {
 				master = new MasterList(masterName);
-				masterLists[masterName] =
-				                         MasterListCacheEntry(master, !gslist);
+				auto entry = new MasterListCacheEntry;
+				// see http://d.puremagic.com/issues/show_bug.cgi?id=1860
+				entry.masterList = master;
+				entry.save = !gslist;
+				masterLists[masterName] = entry;
 			}
 
 			serverList = new ServerList(gameName, master);
@@ -238,6 +241,8 @@ void refreshAll()
 	MasterList master = serverList.master;
 	GameConfig game = getGameConfig(serverList.gameName);
 	Set!(char[]) addresses, addresses2;
+	auto entry = masterLists[master.name];
+	auto retry = game.protocolVersion in entry.retryProtocols;
 
 	assert(master.length > 0);
 
@@ -247,7 +252,7 @@ void refreshAll()
 
 		if (matched)
 			addresses.add(sd.server[ServerColumn.ADDRESS]);
-		else if (timedOut(&sd) && sd.failCount < 2  &&
+		else if (retry && timedOut(&sd) && sd.failCount < 2  &&
 		                            sd.protocolVersion == game.protocolVersion)
 			// retry previously unresponsive servers
 			addresses2.add(sd.server[ServerColumn.ADDRESS]);
@@ -405,6 +410,8 @@ void checkForNewServers()
 				addresses2.clear();
 			}
 
+			masterLists[master.name].retryProtocols.add(game.protocolVersion);
+
 			auto retriever = new QstatServerRetriever(game.name, master,
 			                                                  addresses, true);
 			auto contr = new ServerRetrievalController(retriever);
@@ -530,6 +537,7 @@ class ServerRetrievalController
 					statusBar.showProgress(progressLabel);
 				}));
 
+				userAbort = false;
 				serverRetriever_.retrieve(&deliver);
 				serverList_.complete = !threadManager.abort;
 
@@ -549,6 +557,14 @@ class ServerRetrievalController
 				if (threadManager.abort || wasStopped_) {
 					statusBar.hideProgress(interruptedMessage);
 					serverTable.notifyRefreshEnded;
+
+					if (userAbort) {
+						// disable refreshAll's autoretry
+						MasterList master = serverList_.master;
+						GameConfig game = getGameConfig(serverList_.gameName);
+						auto masterItem = masterLists[master.name];
+						masterItem.retryProtocols.remove(game.protocolVersion);
+					}
 				}
 				else {
 					statusBar.hideProgress("Done");

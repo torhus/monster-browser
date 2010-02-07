@@ -69,6 +69,10 @@ else {
 Clipboard clipboard;
 StopWatch globalTimer;
 
+///
+bool userAbort = false;
+
+
 // Add dispose() methods etc. to this array, and they will be called at
 // shutdown.
 void delegate()[] callAtShutdown;

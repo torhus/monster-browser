@@ -31,9 +31,15 @@ final class MasterList
 	this(char[] name)
 	{
 		assert(name.length > 0);
+		name_ = name;
 		fileName_ = replace(name ~ ".xml", ':', '_');
 	}
 
+	
+	/// Name, as given to the constructor.
+	char[] name() { return name_; }
+	
+	
 	/// The name of the file this master server's data is stored in.
 	char[] fileName() { return fileName_; }
 
@@ -140,14 +146,6 @@ final class MasterList
 
 	/// Total number of servers.
 	size_t length() { return servers_.length; }
-
-
-	/**
-	 * Clear the server list.
-	 *
-	 * Calling this invalidates all ServerHandles.
-	 **/
-	void clear() { delete servers_; }
 
 
 	/**
@@ -266,6 +264,7 @@ final class MasterList
 
 
 	private {
+		char[] name_;
 		char[] fileName_;
 		ServerData[] servers_;
 	}
