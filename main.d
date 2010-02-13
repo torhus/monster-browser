@@ -171,7 +171,6 @@ private void _main(char[][] args)
 			entry.masterList.save();
 
 	log("Exit.");
-	shutDownLogging;
 }
 
 
