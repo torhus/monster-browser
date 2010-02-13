@@ -203,10 +203,10 @@ debug void print(ref ServerData sd, char[] file=null, long line=-1)
 debug void print(char[] prefix, ref ServerData sd, char[] file=null, long line=-1)
 {
 	if (file)
-		Trace.format(prefix ~ " ====== {}({}) ======", file, line);
+		Trace.formatln(prefix ~ " ====== {}({}) ======", file, line);
 	else
-		Trace.format(prefix ~ " ====================");
-	Trace.formatln(" thread: {} address: {}", cast(void*)Thread.getThis(), &sd);
+		Trace.formatln(prefix ~ " ====================");
+	Trace.formatln("thread: {} address: {}", cast(void*)Thread.getThis(), &sd);
 	Trace.formatln("rawName({}): {}", sd.rawName.ptr, sd.rawName);
 	Trace.formatln("server ping({}): {}", sd.server[ServerColumn.PING].ptr, sd.server[ServerColumn.PING]);
 	Trace.formatln("server gametype({}): {}", sd.server[ServerColumn.GAMETYPE].ptr, sd.server[ServerColumn.GAMETYPE]);
@@ -219,5 +219,4 @@ debug void print(char[] prefix, ref ServerData sd, char[] file=null, long line=-
 
 	Trace.formatln("=============================");
 	Trace.formatln("");
-	Trace.flush();
 }
