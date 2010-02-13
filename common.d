@@ -161,8 +161,6 @@ void logx(char[] file, int line, Exception e)
 	// output stack trace
 	e.writeOut((char[] s) { logString(s); });
 
-	version(redirect) {}
-	else Trace.flush();
 	if (logfile)
 		logfile.flush();
 }
@@ -172,7 +170,7 @@ void logx(char[] file, int line, Exception e)
 private void logString(char[] s)
 {
 	version(redirect) {}
-	else Trace.format(s);
+	else Log.root.info(s);
 
 	assert(logfile !is null);
 	if (logfile)
