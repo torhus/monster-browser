@@ -255,7 +255,7 @@ final class MasterList
 			foreach (i, sd; servers_) {
 				char[] address = sd.server[ServerColumn.ADDRESS];
 				if (!isValidIpAddress(address)) {
-					Trace.formatln("Address: ({}) {}", i, address);
+					Log.formatln("Address: ({}) {}", i, address);
 					assert(0, "MasterList: invalid address");
 				}
 			}

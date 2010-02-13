@@ -5,7 +5,7 @@ import tango.stdc.ctype;
 import tango.text.Ascii;
 import tango.text.Util;
 import Integer = tango.text.convert.Integer;
-debug import tango.util.log.Trace;
+debug import tango.util.log.Log;
 
 import dwt.graphics.TextLayout;
 
@@ -203,20 +203,20 @@ debug void print(ref ServerData sd, char[] file=null, long line=-1)
 debug void print(char[] prefix, ref ServerData sd, char[] file=null, long line=-1)
 {
 	if (file)
-		Trace.formatln(prefix ~ " ====== {}({}) ======", file, line);
+		Log.formatln(prefix ~ " ====== {}({}) ======", file, line);
 	else
-		Trace.formatln(prefix ~ " ====================");
-	Trace.formatln("thread: {} address: {}", cast(void*)Thread.getThis(), &sd);
-	Trace.formatln("rawName({}): {}", sd.rawName.ptr, sd.rawName);
-	Trace.formatln("server ping({}): {}", sd.server[ServerColumn.PING].ptr, sd.server[ServerColumn.PING]);
-	Trace.formatln("server gametype({}): {}", sd.server[ServerColumn.GAMETYPE].ptr, sd.server[ServerColumn.GAMETYPE]);
-	Trace.formatln("server map({}): {}", sd.server[ServerColumn.MAP].ptr, sd.server[ServerColumn.MAP]);
-	Trace.formatln("server address({}): {}", sd.server[ServerColumn.ADDRESS].ptr, sd.server[ServerColumn.ADDRESS]);
+		Log.formatln(prefix ~ " ====================");
+	Log.formatln("thread: {} address: {}", cast(void*)Thread.getThis(), &sd);
+	Log.formatln("rawName({}): {}", sd.rawName.ptr, sd.rawName);
+	Log.formatln("server ping({}): {}", sd.server[ServerColumn.PING].ptr, sd.server[ServerColumn.PING]);
+	Log.formatln("server gametype({}): {}", sd.server[ServerColumn.GAMETYPE].ptr, sd.server[ServerColumn.GAMETYPE]);
+	Log.formatln("server map({}): {}", sd.server[ServerColumn.MAP].ptr, sd.server[ServerColumn.MAP]);
+	Log.formatln("server address({}): {}", sd.server[ServerColumn.ADDRESS].ptr, sd.server[ServerColumn.ADDRESS]);
 	foreach (cvar; sd.cvars)
-		Trace.formatln("cvar ({}){}: ({}){}", cvar[0].ptr, cvar[0], cvar[1].ptr, cvar[1]);
+		Log.formatln("cvar ({}){}: ({}){}", cvar[0].ptr, cvar[0], cvar[1].ptr, cvar[1]);
 	foreach (player; sd.players)
-		Trace.formatln("player({}) : {} score({}): {} ping({}): {}", player[3].ptr, player[3], player[1].ptr, player[1], player[2].ptr, player[2]);
+		Log.formatln("player({}) : {} score({}): {} ping({}): {}", player[3].ptr, player[3], player[1].ptr, player[1], player[2].ptr, player[2]);
 
-	Trace.formatln("=============================");
-	Trace.formatln("");
+	Log.formatln("=============================");
+	Log.formatln("");
 }

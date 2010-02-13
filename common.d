@@ -15,7 +15,8 @@ import Integer = tango.text.convert.Integer;
 import tango.io.stream.Iterator;
 import tango.time.StopWatch;
 import tango.time.Time;
-import tango.util.log.Trace;
+import tango.util.log.AppendConsole;
+import tango.util.log.Log;
 
 import dwt.DWT;
 import dwt.dnd.Clipboard;
@@ -106,6 +107,8 @@ void initLogging(char[] name="LOG.TXT")
 	assert(logDir);
 	char[] path = logDir ~ name;
 
+	Log.root.add(new AppendConsole(new LayoutConsole));
+
 	if (Path.exists(path) && Path.fileSize(path) < MAX_LOG_SIZE)
 		logfile = new File(path, WriteAppendingShared);
 	else
@@ -139,7 +142,7 @@ void log(char[] file, int line, char[] msg)
 void log(char[] s)
 {
 	version(redirect) {}
-	else Trace.formatln("LOG: {}", s);
+	else Log.formatln(s);
 
 	assert(logfile !is null);
 	if (logfile) {
@@ -475,5 +478,21 @@ void parseCmdLine(char[][] args)
 				log("UNRECOGNIZED ARGUMENT: " ~ arg);
 				break;
 		}
+	}
+}
+
+/// Controls log event layout.
+class LayoutConsole : Appender.Layout
+{
+	void format (LogEvent event, size_t delegate(void[]) dg)
+	{
+		/*dg (event.levelName);
+		dg (" [");
+		dg (event.name);
+		dg ("] ");
+		dg (event.host.context.label);*
+		dg ("- ");*/
+		dg("LOG: ");
+		dg(event.toString);
 	}
 }
