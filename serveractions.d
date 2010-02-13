@@ -10,7 +10,7 @@ import Path = tango.io.Path;
 import tango.io.stream.TextFile;
 import tango.text.convert.Format;
 import Integer = tango.text.convert.Integer;
-import tango.util.log.Trace;
+import tango.util.log.Log;
 
 import dwt.dwthelper.Runnable;
 import dwt.widgets.Display;
@@ -544,7 +544,7 @@ class ServerRetrievalController
 				// a benchmarking tool
 				if (arguments.quit) {
 					Display.getDefault.syncExec(dgRunnable( {
-						Trace.formatln("Time since startup: {} seconds.",
+						Log.formatln("Time since startup: {} seconds.",
 						                                   globalTimer.stop());
 						mainWindow.close;
 					}));

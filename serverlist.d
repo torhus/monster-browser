@@ -10,7 +10,7 @@ import Integer = tango.text.convert.Integer;
 import tango.stdc.string : memmove;
 import tango.time.StopWatch;
 import tango.util.container.HashMap;
-debug import tango.util.log.Trace;
+debug import tango.util.log.Log;
 
 import common;
 import geoip;
@@ -534,13 +534,13 @@ private:
 	/// Prints the filtered list and its length to stdout.
 	debug void printFiltered()
 	{
-		Trace.formatln("printFiltered(): {} elements in filteredList.",
+		Log.formatln("printFiltered(): {} elements in filteredList.",
 		                filteredList.length);
 		foreach (i, sh; filteredList) {
 			ServerData sd = master_.getServerData(sh);
-			Trace.formatln(/*i, ": ",*/ sd.server[ServerColumn.NAME]);
+			Log.formatln(/*i, ": ",*/ sd.server[ServerColumn.NAME]);
 		}
-		Trace.formatln("");
+		Log.formatln("");
 	}
 }
 
