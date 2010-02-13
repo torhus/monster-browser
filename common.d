@@ -16,6 +16,7 @@ import tango.io.stream.Iterator;
 import tango.time.StopWatch;
 import tango.time.Time;
 import tango.util.log.AppendConsole;
+import tango.util.log.AppendFile;
 import tango.util.log.Log;
 
 import dwt.DWT;
@@ -85,17 +86,8 @@ const File.Style WriteAppendingShared =
                       { File.Access.Write, File.Open.Append, File.Share.Read };
 
 
-private {
-	const int MAX_LOG_SIZE = 100 * 1024;
-	File logfile;
-}
-
-
 /**
- * Open a log file.
- *
- * Will write a startup message including the current date and time to it if it
- * was successfully opened.
+ * Initialize logging.
  *
  * Throws: IOException.
  */
@@ -109,25 +101,18 @@ void initLogging(char[] name="LOG.TXT")
 
 	Log.root.add(new AppendConsole(new LayoutConsole));
 
-	if (Path.exists(path) && Path.fileSize(path) < MAX_LOG_SIZE)
-		logfile = new File(path, WriteAppendingShared);
-	else
-		logfile = new File(path, WriteCreateShared);
+	// limit file size
+	if (Path.exists(path) && Path.fileSize(path) > 1024 * 100)
+		Path.remove(path);
 
+	// add a startup message
 	time_t t = time(null);
 	char[] timestamp = ctime(&t)[0..24];
-	logfile.write(newline ~ sep ~ newline ~ APPNAME ~ " " ~ VERSION ~
+	char[] msg = Format(newline ~ sep ~ newline ~ APPNAME ~ " " ~ VERSION ~
 	                     " started at " ~ timestamp ~ newline ~ sep ~ newline);
-}
+	File.append(path, msg);
 
-
-/// Flush and close log file.
-void shutDownLogging()
-{
-	if (logfile) {
-		logfile.flush.close;
-		logfile = null;
-	}
+	Log.root.add(new AppendFile(path, new LayoutFile));
 }
 
 
@@ -141,14 +126,7 @@ void log(char[] file, int line, char[] msg)
 /// ditto
 void log(char[] s)
 {
-	version(redirect) {}
-	else Log.formatln(s);
-
-	assert(logfile !is null);
-	if (logfile) {
-		logfile.write(s);
-		logfile.write(newline);
-	}
+	Log.formatln(s);
 }
 
 
@@ -162,22 +140,7 @@ void logx(char[] file, int line, Exception e)
 	                         threadManager.sleeping ? "sleeping" : "working"));
 
 	// output stack trace
-	e.writeOut((char[] s) { logString(s); });
-
-	if (logfile)
-		logfile.flush();
-}
-
-
-// same as log(), but doesn't print newline
-private void logString(char[] s)
-{
-	version(redirect) {}
-	else Log.root.info(s);
-
-	assert(logfile !is null);
-	if (logfile)
-		logfile.write(s);
+	e.writeOut((char[] s) { Log.root.info(s); });
 }
 
 
@@ -481,6 +444,7 @@ void parseCmdLine(char[][] args)
 	}
 }
 
+
 /// Controls log event layout.
 class LayoutConsole : Appender.Layout
 {
@@ -493,6 +457,22 @@ class LayoutConsole : Appender.Layout
 		dg (event.host.context.label);*
 		dg ("- ");*/
 		dg("LOG: ");
+		dg(event.toString);
+	}
+}
+
+
+/// Controls log event layout.
+class LayoutFile : Appender.Layout
+{
+	void format (LogEvent event, size_t delegate(void[]) dg)
+	{
+		/*dg (event.levelName);
+		dg (" [");
+		dg (event.name);
+		dg ("] ");
+		dg (event.host.context.label);*
+		dg ("- ");*/
 		dg(event.toString);
 	}
 }
