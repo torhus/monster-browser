@@ -178,7 +178,7 @@ class ServerTable
 		synchronized (serverList_) {
 			bool reversed = table_.getSortDirection() == SWT.DOWN;
 			serverList_.sort(sortCol, reversed, false);
-			serverList_.setFilters(filterBar.filterState);
+			serverList_.setFilters(filterBar.filterState, false);
 		}
 	}
 
@@ -225,9 +225,6 @@ class ServerTable
 		}
 		return false;
 	}
-
-	///
-	bool refreshInProgress() { return refreshInProgress_ ; }
 
 	/**
 	 * If necessary clears the table and refills it with updated data.
@@ -285,8 +282,8 @@ class ServerTable
 		if(table_.isDisposed())
 			return;
 
-		table_.clearAll();
 		table_.setItemCount(serverList_.filteredLength);
+		table_.clearAll();
 
 		int[] indices;
 		foreach (ip, v; selectedIps_) {
@@ -474,8 +471,8 @@ private:
 
 			table_.setSortDirection(dir);
 			synchronized (serverList_) {
-				table_.clearAll();
 				table_.setItemCount(serverList_.filteredLength());
+				table_.clearAll();
 				// keep the same servers selected
 				foreach (ip, v; selectedIps_)
 					selectedIps_[ip] = serverList_.getFilteredIndex(ip);

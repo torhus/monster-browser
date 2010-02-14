@@ -1,9 +1,8 @@
-/** The main window and related stuff. */
+/** The main window, including tool bar and status bar. */
 
 module mainwindow;
 
-version = icons;
-
+import tango.math.Math : max;
 import tango.text.Util;
 import Integer = tango.text.convert.Integer;
 import tango.text.convert.Format;
@@ -16,8 +15,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.ShellAdapter;
 import org.eclipse.swt.events.ShellEvent;
-version (icons)
-	import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
@@ -28,8 +26,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-version (icons)
-	import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.ProgressBar;
 import org.eclipse.swt.widgets.Shell;
@@ -56,8 +53,7 @@ MainWindow mainWindow;  ///
 Shell[] subWindows;
 
 // Image objects that needs to be disposed of before shut down.
-version (icons)
-	private Image[] imageList;
+private Image[] imageList;
 
 
 ///
@@ -98,16 +94,12 @@ class MainWindow
 		Composite topComposite = new Composite(shell_, SWT.NONE);
 		auto topData = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
 		topComposite.setLayoutData(topData);
-		version (icons) {
-			// This layout works better when the buttons have images.
-			auto topLayout = new GridLayout(2, false);
-			topLayout.marginHeight = 0;
-			topLayout.horizontalSpacing = 50;
-			topComposite.setLayout(topLayout);
-		}
-		else {
-			topComposite.setLayout(new FillLayout);
-		}
+
+		// This layout works better when the buttons have images.
+		auto topLayout = new GridLayout(2, false);
+		topLayout.marginHeight = 0;
+		topLayout.horizontalSpacing = 50;
+		topComposite.setLayout(topLayout);
 
 		ToolBar toolBar = createToolbar(topComposite);
 
@@ -149,7 +141,6 @@ class MainWindow
 		auto statusData = new GridData(SWT.FILL, SWT.CENTER, true, false);
 		statusData.horizontalSpan = 2;
 		statusBar.setLayoutData(statusData);
-		statusBar.setLeft(APPNAME ~ " is ready.");
 	}
 
 	Shell handle() { return shell_; }  ///
@@ -166,9 +157,8 @@ class MainWindow
 	void disposeAll()
 	{
 		serverTable.disposeAll();
-		version (icons)
-			foreach (img; imageList)
-				img.dispose();
+		foreach (img; imageList)
+			img.dispose();
 	}
 
 
@@ -206,7 +196,7 @@ class MainWindow
 		void shellClosed(ShellEvent e)  ///
 		{
 			serverTable.stopRefresh(false);
-			threadManager.shutdown();
+			threadManager.shutDown();
 			statusBar.setLeft("Exiting...");
 			log("Shutting down...");
 			killServerBrowser();
@@ -321,12 +311,12 @@ class StatusBar : Composite
 	}
 
 
-	void hideProgress()
+	void hideProgress(in char[] text="")
 	{
 		if (isDisposed())
 			return;
-		progressLabel_.setText("Ready");
 		progressBar_.setVisible(false);
+		setLeft(text);
 	}
 
 
@@ -375,25 +365,15 @@ private:
 }
 
 
-version (icons)
-	alias Group FilterSuper;
-else
-	alias Composite FilterSuper;
-
 ///
-class FilterBar : FilterSuper
+class FilterBar : Group
 {
 	///
 	this(Composite parent)
 	{
-		version (icons) {
-			super(parent, SWT.SHADOW_NONE);
-			setText("Filters and Game Selection");
-			setLayoutData(new GridData);
-		}
-		else {
-			super(parent, SWT.NONE);
-		}
+		super(parent, SWT.SHADOW_NONE);
+		setText("Filters and Game Selection");
+		setLayoutData(new GridData);
 
 		notEmptyButton_ = new Button(this, SWT.CHECK);
 		notEmptyButton_.setText("Not empty");
@@ -493,18 +473,11 @@ class FilterBar : FilterSuper
 			}
 		});
 
-		version (icons) {
-			auto layout = new RowLayout;
-			layout.fill = true;
-			layout.marginHeight = 2;
-			layout.marginWidth = 2;
-			setLayout(layout);
-		}
-		else {
-			auto layout = new RowLayout;
-			layout.fill = true;
-			setLayout(layout);
-		}
+		auto layout = new RowLayout;
+		layout.fill = true;
+		layout.marginHeight = 2;
+		layout.marginWidth = 2;
+		setLayout(layout);
 	}
 
 
@@ -532,35 +505,24 @@ class FilterBar : FilterSuper
 	/// Set the contents of the game name drop-down list.
 	void setGames(char[][] list)
 	{
-		int sel, n, height;
-		Point p;
-		char[][] items;
-
 		if (list is null)
 			return;
+		
+		char[][] items = gamesCombo_.getItems();
 
-		sel = gamesCombo_.getSelectionIndex();
-		items = gamesCombo_.getItems();
 		foreach (s; list) {
 			if (findString(items, s) == -1) {
 				gamesCombo_.add(s);
 			}
 		}
-		n = gamesCombo_.getItemCount();
-		if (n > 10) {
-			n = 10;
-		}
-		p = gamesCombo_.getSize();
-		height = gamesCombo_.getItemHeight() * n;
-		// FIXME: setSize doesn't seem to do anything here :(
-		gamesCombo_.setSize(p.x, height);
 
-		if (sel == -1) {
-			gamesCombo_.select(0);
-		}
-		else {
-			gamesCombo_.select(sel);
-		}
+		int n = gamesCombo_.getItemCount();
+		if (n > 8)
+			n = 8;
+		gamesCombo_.setVisibleItemCount(max(n, 5));
+
+		int selected = gamesCombo_.getSelectionIndex();
+		gamesCombo_.select(selected == -1 ? 0 : selected);
 	}
 
 
@@ -593,8 +555,7 @@ ToolBar createToolbar(Composite parent) ///
 
 	auto button1 = new ToolItem(toolBar, SWT.PUSH);
 	button1.setText("Check for New");
-	version (icons)
-		button1.setImage(loadImage!("box_download_32.png"));
+	button1.setImage(loadImage!("box_download_32.png"));
 	button1.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{
@@ -605,8 +566,7 @@ ToolBar createToolbar(Composite parent) ///
 	new ToolItem(toolBar, SWT.SEPARATOR);
 	ToolItem button2 = new ToolItem(toolBar, SWT.PUSH);
 	button2.setText("Refresh All");
-	version (icons)
-		button2.setImage(loadImage!("refresh_32.png"));
+	button2.setImage(loadImage!("refresh_32.png"));
 	button2.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{
@@ -618,8 +578,7 @@ ToolBar createToolbar(Composite parent) ///
 
 	auto button3 = new ToolItem(toolBar, SWT.PUSH);
 	button3.setText("    Add...  ");
-	version (icons)
-		button3.setImage(loadImage!("add_32.png"));
+	button3.setImage(loadImage!("add_32.png"));
 	button3.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{
@@ -644,8 +603,7 @@ ToolBar createToolbar(Composite parent) ///
 
 	auto button5 = new ToolItem(toolBar, SWT.PUSH);
 	button5.setText("Settings...");
-	version (icons)
-		button5.setImage(loadImage!("spanner_32.png"));
+	button5.setImage(loadImage!("spanner_32.png"));
 	button5.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
 		{
@@ -659,16 +617,14 @@ ToolBar createToolbar(Composite parent) ///
 }
 
 
-version (icons) {
-	private Image loadImage(char[] name)()
-	{
-		return _loadImage(cast(byte[])import(name));
-	}
+private Image loadImage(char[] name)()
+{
+	return _loadImage(cast(byte[])import(name));
+}
 
-	private Image _loadImage(byte[] data)
-	{
-		Image img = new Image(Display.getDefault, new ByteArrayInputStream(data));
-		imageList ~= img;
-		return img;
-	}
+private Image _loadImage(byte[] data)
+{
+	Image img = new Image(Display.getDefault, new ByteArrayInputStream(data));
+	imageList ~= img;
+	return img;
 }

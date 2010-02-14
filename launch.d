@@ -4,12 +4,11 @@ module launch;
 
 import tango.io.FilePath;
 import tango.stdc.stringz;
+import tango.sys.Common;
 version (Windows) {
 	import tango.sys.win32.CodePage;
 	import tango.sys.win32.UserGdi;
 }
-import tango.text.Util : replace;
-import Integer = tango.text.convert.Integer;
 
 import org.eclipse.swt.SWT;
 
@@ -35,20 +34,12 @@ void joinServer(in char[] gameName, ServerData sd)
 	char[] address = sd.server[ServerColumn.ADDRESS];
 	GameConfig game = getGameConfig(gameName);
 	char[] pathString = game.exePath;
-	FilePath path;
 	bool launch = true;
 	bool showDialog = false;
 
 	if (!pathString) {
 		error("No path found for " ~ gameName ~
 		                                      ", please check your settings.");
-		return;
-	}
-
-	path = FilePath(replace(pathString, '\\', '/'));
-	if (!path.exists || path.isFolder) {
-		error(path.toString ~ " was not found or is not a file, "
-		                                        "please check your settings.");
 		return;
 	}
 
@@ -75,23 +66,16 @@ void joinServer(in char[] gameName, ServerData sd)
 
 	if (launch) {
 		version (Windows) {
-			PROCESS_INFORMATION info;
-			STARTUPINFO startup;
-
-			GetStartupInfoA(&startup);
-			startup.dwFlags = STARTF_USESTDHANDLES;
-
+			FilePath path = FilePath(pathString);
 			char buf[MAX_PATH];
-			char[] ansiDir = CodePage.into(path.path, buf);
-			char[] ansiPath = ansiDir ~ path.file;
+			char[] ansiDir = CodePage.into(path.path, buf).dup;
+			char[] ansiPath = ansiDir ~ CodePage.into(path.file, buf);
 
-			int r = CreateProcessA(null, toStringz(ansiPath ~ " " ~ argv),
-			                     null, null, true, 0, null, toStringz(ansiDir),
-			                                                  &startup, &info);
-			if (!r) {
-				int e = GetLastError();
-				db("CreatProcessA returned " ~ Integer.toString(r));
-				db("GetLastError returned " ~ Integer.toString(e));
+			int r = cast(int)ShellExecuteA(null, "open", toStringz(ansiPath),
+			                     toStringz(argv), toStringz(ansiDir), SW_SHOW);
+			if (r <= 32) {
+				error("Unable to execute \"{}\".\n\nError {}: {}",
+				                  path, SysError.lastCode, SysError.lastMsg());
 			}
 			else if (getSetting("minimizeOnGameLaunch") == "true") {
 				mainWindow.minimized = true;

@@ -1,20 +1,14 @@
 module main;
 
-// Workaround for a bug in dmd < 1.041.
-// http://d.puremagic.com/issues/show_bug.cgi?id=2673
-static if (__VERSION__ < 1041) {
-	debug import tango.core.stacktrace.StackTrace;
-	debug version = bug2673;
-}
 import tango.core.Thread;
-debug import tango.core.stacktrace.TraceExceptions;
+debug import tango.core.tools.TraceExceptions;
 import tango.io.Console;
 import tango.io.Path;
+import tango.io.FilePath;
 import tango.io.device.BitBucket;
 import tango.io.device.File;
 import tango.sys.Environment;
 import tango.sys.win32.SpecialPath;
-import tango.util.PathUtil;
 
 import java.io.ByteArrayInputStream;
 import org.eclipse.swt.SWT;
@@ -40,9 +34,6 @@ import threadmanager;
 void main(char[][] args) ///
 {
 	Thread.getThis().name = "main";
-
-	version (bug2673)
-		rt_setTraceHandler(&basicTracer);
 
 	try	{
 		_main(args);
@@ -121,6 +112,7 @@ private void _main(char[][] args)
 			switch (e.keyCode) {
 				case SWT.ESC:
 					if ((e.stateMask & SWT.MODIFIER_MASK) == 0) {
+						userAbort = true;
 						serverTable.stopRefresh(true);
 						e.type = SWT.None;
 					}
@@ -174,11 +166,11 @@ private void _main(char[][] args)
 	saveSettings();
 
 	log("Saving server lists...");
-	foreach (master; masterLists)
-		master.save();
+	foreach (entry; masterLists)
+		if (entry.save)
+			entry.masterList.save();
 
 	log("Exit.");
-	shutDownLogging;
 }
 
 
@@ -190,7 +182,13 @@ private void _main(char[][] args)
  */
 private void detectDirectories(in char[] firstArg)
 {
-	appDir = normalize(Environment.exePath(firstArg).path);
+	FilePath path = FilePath(firstArg);
+
+	if (path.isAbsolute)
+		appDir = normalize(path.path);
+	else
+		appDir = normalize(Environment.exePath(path.toString()).path);
+
 	if (appDir[$-1] != '/')
 		appDir ~= '/';
 
