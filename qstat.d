@@ -41,7 +41,7 @@ private enum Field {
  * Throws: when outputFileName is given: IOException.
  */
 bool parseOutput(in char[] modName, Lines!(char) iter,
-                bool delegate(ServerData*, bool replied, bool matched) deliver)
+                bool delegate(ServerData*, bool replied) deliver)
 {
 	char[][] gtypes;
 	scope BufferedOutput outfile = null;
@@ -111,9 +111,7 @@ bool parseOutput(in char[] modName, Lines!(char) iter,
 					outfile.write(newline);
 				}
 
-				char[] matchMod = (icompare(fields[Field.GAME], modName) == 0)
-				                                              ? null : modName;
-				bool matches = parseCvars(line, &sd, matchMod, gtypes);
+				parseCvars(line, &sd, gtypes);
 
 				sortStringArray(sd.cvars);
 
@@ -138,13 +136,13 @@ bool parseOutput(in char[] modName, Lines!(char) iter,
 				sd.server[ServerColumn.NAME] = stripColorCodes(sd.rawName);
 
 				debug checkTime(timer2, "3");
-				keepGoing = deliver(&sd, true, matches);
+				keepGoing = deliver(&sd, true);
 				debug checkTime(timer2, "4");
 			}
 			else { // server didn't respond
 				debug checkTime(timer2, "3x");
 				sd.server[ServerColumn.PING] = TIMEOUT;
-				keepGoing = deliver(&sd, false, false);
+				keepGoing = deliver(&sd, false);
 				debug checkTime(timer2, "4x");
 			}
 			if (outfile) {
@@ -177,35 +175,26 @@ debug private void checkTime(ref StopWatch t, char[] name)
  *
  * Params:
  *     line     = String to parse.
- *     sd       = Output, only sd.cvars and sd.server are changed.  sd.rawName
- *                is used for error reporting, but not written to.
- *     matchMod = If not null, the 'game' and 'gamename' cvars are matched
- *                against this.  If they are different, the function aborts
- *                parsing and returns false immediately.
+ *     sd       = Output, only sd.cvars, sd.server, and sd.protocolVersion are
+ *                changed.  sd.rawName is used for error reporting, but not
+ *                written to.
  *     gtypes   = Game type names, indexed with the value of the 'gametype'
  *                cvar to find the value of sd.server's Game type column.  If
  *                gametype >= gtypes.length, the number is used instead.
- *
- * Returns: false if the server doesn't match matchMod, otherwise true.  Always
- *          returns true when matchMod is null.
- *
  */
-private bool parseCvars(in char[] line, ServerData* sd,
-                        in char[] matchMod=null, in char[][] gtypes=null)
+private void parseCvars(in char[] line, ServerData* sd,
+                                                       in char[][] gtypes=null)
 in {
 	assert(ServerColumn.GAMETYPE < sd.server.length &&
 	                               ServerColumn.PASSWORDED < sd.server.length);
 }
 body {
 	char[][] temp = split(line.dup, FIELDSEP);
-	bool keepServer = matchMod.length ? false : true;
-
-	if (!MOD_ONLY)
-		keepServer = true;
 
 	foreach (char[] s; temp) {
 		char[][] cvar = new char[][2];
 		cvar[0] = head(s, "=", cvar[1]);
+
 		switch (cvar[0]) {
 			case "gametype":
 				uint ate;
@@ -221,37 +210,21 @@ body {
 					sd.server[ServerColumn.GAMETYPE] = toString(gt);
 				}
 				break;
-			case "game":  // not sure if this is right, risk getting too many servers
-				if (!keepServer &&
-				          icompare(cvar[1], matchMod) == 0) {
-					keepServer = true;
-				}
-				break;
-			case "gamename":  // has to come after case "game"
-				if (!keepServer &&
-				          icompare(cvar[1], matchMod) == 0) {
-					keepServer = true;
-				}
-
-				// Since qstat's 'game' pseudo cvar always is listed before
-				// 'gamename', it's safe to abort parsing here in the case
-				// that keep_server still is false.
-				if (!keepServer)
-					return false;
-				break;
 			case "g_needpass":
 				if (cvar[1] == "0")
 					sd.server[ServerColumn.PASSWORDED] = PASSWORD_NO;
 				else
 					sd.server[ServerColumn.PASSWORDED] = PASSWORD_YES;
 				break;
+			case "protocol":
+				sd.protocolVersion = cvar[1];
+				break;
 			default:
 				break;
 		}
+
 		sd.cvars ~= cvar;
 	}
-
-	return keepServer;
 }
 
 

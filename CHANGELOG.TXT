@@ -1,9 +1,12 @@
 Latest changes
 --------------
 - New: Improved status bar.
+- New: Can now use .bat or .lnk files instead of an .exe when launching a game.
 - Change: Settings and data are now stored in a user-specific location, instead
   of the installation folder.  The installer will move your files to this
   location so you don't lose your current settings or server lists.
+- Fix: Using multiple protocol versions with the same master server didn't work
+  properly.
 - Fix: The button for opening the game configuration now works on Vista.
 
 

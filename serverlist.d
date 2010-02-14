@@ -10,7 +10,7 @@ import Integer = tango.text.convert.Integer;
 import tango.stdc.string : memmove;
 import tango.time.StopWatch;
 import tango.util.container.HashMap;
-debug import tango.util.log.Trace;
+debug import tango.util.log.Log;
 
 import common;
 import geoip;
@@ -124,7 +124,7 @@ final class ServerList
 	 */
 	synchronized void refillFromMaster()
 	{
-		char[] mod = getGameConfig(gameName_).mod;
+		GameConfig game = getGameConfig(gameName_);
 		auto newHash = new typeof(ipHash_);
 
 		filteredList.length = 0;
@@ -132,7 +132,7 @@ final class ServerList
 			ServerData sd = master_.getServerData(sh);
 			char[] address = sd.server[ServerColumn.ADDRESS];
 
-			if (address in ipHash_ && matchMod(&sd, mod)) {
+			if (address in ipHash_ && matchGame(&sd, game)) {
 				newHash[address] = -1;
 				if (!isFilteredOut(&sd))
 					filteredList ~= sh;
@@ -273,15 +273,19 @@ final class ServerList
 
 	/**
 	 * Sets filters and updates the filtered list accordingly.
+	 *
+	 * If autoRefill is true, calls refillFromMaster if the new filters differ
+	 * from the old.
 	 */
-	void setFilters(Filter newFilters)
+	void setFilters(Filter newFilters, bool autoRefill=true)
 	{
 		if (newFilters == filters_)
 			return;
 
 		synchronized (this) {
 			filters_ = newFilters;
-			refillFromMaster();
+			if (autoRefill)
+				refillFromMaster();
 		}
 	}
 
@@ -530,13 +534,13 @@ private:
 	/// Prints the filtered list and its length to stdout.
 	debug void printFiltered()
 	{
-		Trace.formatln("printFiltered(): {} elements in filteredList.",
+		Log.formatln("printFiltered(): {} elements in filteredList.",
 		                filteredList.length);
 		foreach (i, sh; filteredList) {
 			ServerData sd = master_.getServerData(sh);
-			Trace.formatln(/*i, ": ",*/ sd.server[ServerColumn.NAME]);
+			Log.formatln(/*i, ": ",*/ sd.server[ServerColumn.NAME]);
 		}
-		Trace.formatln("");
+		Log.formatln("");
 	}
 }
 

@@ -314,7 +314,7 @@ class SpecifyServerDialog
 					ServerData sd = master.getServerData(sh);
 					GameConfig game = getGameConfig(serverList.gameName);
 
-					if (matchMod(&sd, game.mod)) {
+					if (matchGame(&sd, game)) {
 						info("That server is already on the list.  If you "
 						         "can't see it, try turning off the filters.");
 						int i = serverList.getFilteredIndex(address);
@@ -383,16 +383,16 @@ class SettingsDialog
 
 		// simultaneousQueries
 		auto sqComposite = new Composite(mainComposite, SWT.NONE);
-		sqComposite.setLayout(new RowLayout);
+		sqComposite.setLayout(new GridLayout(2, false));
 		Label sqLabel = new Label(sqComposite, SWT.WRAP);
 		sqLabel.setText("Number of servers to query\n"
-		                "simultaneously, default is 20:");
+		                "simultaneously, default is 10:");
 		sqSpinner_ = new Spinner(sqComposite, SWT.BORDER);
 		sqSpinner_.setMinimum(1);
 		sqSpinner_.setMaximum(99);
 		uint ate;
 		int val = Integer.convert(getSetting("simultaneousQueries"), 10, &ate);
-		sqSpinner_.setSelection(ate > 0 ? val : 20);
+		sqSpinner_.setSelection(ate > 0 ? val : 10);
 
 		// games button
 		Button gamesButton = new Button(mainComposite, SWT.PUSH);

@@ -5,11 +5,12 @@ import tango.stdc.ctype;
 import tango.text.Ascii;
 import tango.text.Util;
 import Integer = tango.text.convert.Integer;
-debug import tango.util.log.Trace;
+debug import tango.util.log.Log;
 
 import org.eclipse.swt.graphics.TextLayout;
 
 import common;
+import settings;
 
 
 /** Stores all data for a server. */
@@ -31,6 +32,8 @@ struct ServerData {
 	int failCount = 0;  ///
 
 	bool persistent;  ///
+
+	char[] protocolVersion;  ///
 
 
 	///
@@ -139,35 +142,27 @@ bool isEmpty(in ServerData* sd)
 
 
 /**
- * Does this server run the given mod?
+ * Does this server match the given game configuration?
  *
  * Also returns false if there is no data to match against.
- *
- * If not null, hasMatchData will be true or false depending on whether there
- * was any data to match the mod name against.
  */
-bool matchMod(in ServerData* sd, in char[] mod, bool* hasMatchData=null)
+bool matchGame(in ServerData* sd, in GameConfig game)
 {
-	bool hasData = false;
-	bool matched = false;
+	if (sd.protocolVersion != game.protocolVersion)
+		return false;
 
+	// FIXME: use binary search?
 	foreach (cvar; sd.cvars) {
 		if (cvar[0] == "game" || cvar[0] == "gamename") {
-			hasData = true;
-			if (icompare(cvar[1], mod) == 0)
-				matched = true;
+			if (icompare(cvar[1], game.mod) == 0)
+				return true;
 		}
 	}
 
-	static if (!MOD_ONLY) {
-		hasData = true;
-		matched = true;
-	}
-
-	if (hasMatchData)
-		*hasMatchData = hasData;
-
-	return matched;
+	static if (MOD_ONLY)
+		return false;
+	else
+		return true;
 }
 
 
@@ -208,21 +203,20 @@ debug void print(ref ServerData sd, char[] file=null, long line=-1)
 debug void print(char[] prefix, ref ServerData sd, char[] file=null, long line=-1)
 {
 	if (file)
-		Trace.format(prefix ~ " ====== {}({}) ======", file, line);
+		Log.formatln(prefix ~ " ====== {}({}) ======", file, line);
 	else
-		Trace.format(prefix ~ " ====================");
-	Trace.formatln(" thread: {} address: {}", cast(void*)Thread.getThis(), &sd);
-	Trace.formatln("rawName({}): {}", sd.rawName.ptr, sd.rawName);
-	Trace.formatln("server ping({}): {}", sd.server[ServerColumn.PING].ptr, sd.server[ServerColumn.PING]);
-	Trace.formatln("server gametype({}): {}", sd.server[ServerColumn.GAMETYPE].ptr, sd.server[ServerColumn.GAMETYPE]);
-	Trace.formatln("server map({}): {}", sd.server[ServerColumn.MAP].ptr, sd.server[ServerColumn.MAP]);
-	Trace.formatln("server address({}): {}", sd.server[ServerColumn.ADDRESS].ptr, sd.server[ServerColumn.ADDRESS]);
+		Log.formatln(prefix ~ " ====================");
+	Log.formatln("thread: {} address: {}", cast(void*)Thread.getThis(), &sd);
+	Log.formatln("rawName({}): {}", sd.rawName.ptr, sd.rawName);
+	Log.formatln("server ping({}): {}", sd.server[ServerColumn.PING].ptr, sd.server[ServerColumn.PING]);
+	Log.formatln("server gametype({}): {}", sd.server[ServerColumn.GAMETYPE].ptr, sd.server[ServerColumn.GAMETYPE]);
+	Log.formatln("server map({}): {}", sd.server[ServerColumn.MAP].ptr, sd.server[ServerColumn.MAP]);
+	Log.formatln("server address({}): {}", sd.server[ServerColumn.ADDRESS].ptr, sd.server[ServerColumn.ADDRESS]);
 	foreach (cvar; sd.cvars)
-		Trace.formatln("cvar ({}){}: ({}){}", cvar[0].ptr, cvar[0], cvar[1].ptr, cvar[1]);
+		Log.formatln("cvar ({}){}: ({}){}", cvar[0].ptr, cvar[0], cvar[1].ptr, cvar[1]);
 	foreach (player; sd.players)
-		Trace.formatln("player({}) : {} score({}): {} ping({}): {}", player[3].ptr, player[3], player[1].ptr, player[1], player[2].ptr, player[2]);
+		Log.formatln("player({}) : {} score({}): {} ping({}): {}", player[3].ptr, player[3], player[1].ptr, player[1], player[2].ptr, player[2]);
 
-	Trace.formatln("=============================");
-	Trace.formatln("");
-	Trace.flush();
+	Log.formatln("=============================");
+	Log.formatln("");
 }

@@ -5,15 +5,11 @@
 module runtools;
 
 import tango.core.Exception : IOException, ProcessException;
-import Path = tango.io.Path;
 import tango.io.device.File;
-import tango.io.model.IConduit : InputStream;
 import tango.io.stream.Lines;
-import tango.io.stream.TextFile;
 import tango.sys.Process;
 import tango.text.convert.Format;
 import Integer = tango.text.convert.Integer;
-debug import tango.util.log.Trace;
 
 import common;
 import messageboxes;
@@ -51,7 +47,8 @@ Set!(char[]) browserGetNewList(in GameConfig game)
 	// use gslist's server-sider filtering
 	// Note: gslist returns no servers if filtering on "baseq3"
 	if (gslist && MOD_ONLY && game.mod != "baseq3")
-		cmdLine ~= " -f \"(gametype = \'" ~ game.mod ~ "\'\")";
+		cmdLine ~= " -f \"(gametype='" ~ game.mod ~ "')"
+		           " AND (protocol=" ~ game.protocolVersion ~ ")\"";
 
 	try {
 		proc = new Process(true, cmdLine);
@@ -116,8 +113,7 @@ interface IServerRetriever
 	 *
 	 * If deliver returns false, the server retrieval process is aborted.
 	 */
-	void retrieve(bool delegate(ServerHandle, bool replied, bool matched)
-	                                                                  deliver);
+	void retrieve(bool delegate(ServerHandle, bool replied) deliver);
 
 }
 
@@ -144,7 +140,7 @@ final class MasterListServerRetriever : IServerRetriever
 		bool error = false;
 
 		try {
-			if (master_.length == 0 && !master_.load())
+			if (master_.length == 0 && !master_.load(game_.protocolVersion))
 				error = true;
 		}
 		catch (IOException o) {
@@ -161,16 +157,15 @@ final class MasterListServerRetriever : IServerRetriever
 
 
 	///
-	void retrieve(bool delegate(ServerHandle sh, bool replied, bool matched)
-	                                                                   deliver)
+	void retrieve(bool delegate(ServerHandle sh, bool replied) deliver)
 	{
 		foreach (sh; master_) {
 			ServerData sd = master_.getServerData(sh);
-			bool keep = matchMod(&sd, game_.mod);
+			bool keep = matchGame(&sd, game_);
 			static if (!MOD_ONLY)
 				keep = true;
 			if (keep)
-				deliver(sh, true, true);
+				deliver(sh, true);
 		}
 	}
 
@@ -255,14 +250,13 @@ final class QstatServerRetriever : IServerRetriever
 
 
 	///
-	void retrieve(bool delegate(ServerHandle sh, bool replied, bool matched)
-	                                                                   deliver)
+	void retrieve(bool delegate(ServerHandle sh, bool replied) deliver)
 	{
 		scope iter = new Lines!(char)(proc.stdout);
 		// FIXME: verify that everything is initialized correctly, and that
 		// stdout is valid
 
-		bool _deliver(ServerData* sd, bool replied, bool matched)
+		bool _deliver(ServerData* sd, bool replied)
 		{
 			ServerHandle sh;
 
@@ -275,7 +269,7 @@ final class QstatServerRetriever : IServerRetriever
 				sh = master_.addServer(*sd);
 			}
 
-			return deliver(sh, replied, matched);
+			return deliver(sh, replied);
 		}
 
 		qstat.parseOutput(game_.mod, iter, &_deliver);
