@@ -577,7 +577,7 @@ ToolBar createToolbar(Composite parent) ///
 	new ToolItem(toolBar, DWT.SEPARATOR);
 
 	auto button3 = new ToolItem(toolBar, DWT.PUSH);
-	button3.setText("    Add...  ");
+	button3.setText("   Add... ");
 	button3.setImage(loadImage!("add_32.png"));
 	button3.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
@@ -602,7 +602,7 @@ ToolBar createToolbar(Composite parent) ///
 	new ToolItem(toolBar, DWT.SEPARATOR);
 
 	auto button5 = new ToolItem(toolBar, DWT.PUSH);
-	button5.setText("Settings...");
+	button5.setText(" Settings");
 	button5.setImage(loadImage!("spanner_32.png"));
 	button5.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
