@@ -33,7 +33,7 @@ Keyboard shortcuts
 ------------------
 F4     - Check for new servers
 F5     - Refresh list
-F10    - Open remote console
+F9     - Open remote console
 Enter  - Join server
 Ctrl+R - Refresh selected server(s)
 Ctrl+C - Copy the addresses of selected server(s) to the clipboard
