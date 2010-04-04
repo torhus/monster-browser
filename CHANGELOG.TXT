@@ -5,6 +5,9 @@ Latest changes
 - Change: Settings and data are now stored in a user-specific location, instead
   of the installation folder.  The installer will move your files to this
   location so you don't lose your current settings or server lists.
+- Change: The key for opening a remote console window is now F9, as F10 is the
+  standard key for opening the menu on Windows.  F10 will still work, at least
+  in this version.
 - Fix: Using multiple protocol versions with the same master server didn't work
   properly.
 - Fix: The button for opening the game configuration now works on Vista.

@@ -570,7 +570,9 @@ private:
 		public void keyPressed (KeyEvent e)
 		{
 			switch (e.keyCode) {
-				case DWT.F10:
+				case DWT.F9: case DWT.F10:
+					// F10 is deprecated, as it is the standard key for opening
+					// the menu on Windows.
 					if ((e.stateMask & DWT.MODIFIER_MASK) == 0)
 						onRemoteConsole();
 					break;
@@ -655,7 +657,7 @@ private:
 		new MenuItem(menu, DWT.SEPARATOR);
 
 		item = new MenuItem(menu, DWT.PUSH);
-		item.setText("Remote console\tF10");
+		item.setText("Remote console\tF9");
 		item.addSelectionListener(new class SelectionAdapter {
 			void widgetSelected(SelectionEvent e) { onRemoteConsole(); }
 		});
