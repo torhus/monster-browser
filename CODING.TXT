@@ -6,15 +6,7 @@ Useful links
 ------------
 D compiler:
 http://digitalmars.com/d/1.0/dcompiler.html
-
-Compiler versions that are know to work or not work with this project:
-DMD 1.025-1.027 WORKS
-DMD 1.033 WORKS
-DMD 1.037 WORKS
-DMD 1.051 WORKS
-DMD 1.055 WORKS
-DMD 1.056 WORKS
-Currently I'm using 1.056.
+Currently I'm using DMD 1.056.
 
 D docs:
 Language: http://www.digitalmars.com/d/1.0/lex.html
