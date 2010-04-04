@@ -549,7 +549,13 @@ private:
 }
 
 
-ToolBar createToolbar(Composite parent) ///
+/**
+ * Note: Toolbars and ToolItems do not participate in tab traversal.  And as
+ *       ToolItems are not Controls, it is not possible to use
+ *       Composite.setTabList in this case.  A more involved solution would be
+ *       needed.
+ */
+private ToolBar createToolbar(Composite parent)
 {
 	auto toolBar = new ToolBar(parent, DWT.HORIZONTAL);
 
