@@ -398,7 +398,7 @@ class SettingsDialog
 
 		// games button
 		Button gamesButton = new Button(mainComposite, DWT.PUSH);
-		gamesButton.setText("Games...");
+		gamesButton.setText("Games");
 		gamesButton.setLayoutData(new GridData(BUTTON_SIZE));
 		gamesButton.addSelectionListener(new class SelectionAdapter {
 			public void widgetSelected(SelectionEvent e)
