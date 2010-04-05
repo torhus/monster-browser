@@ -81,6 +81,7 @@ fromfile  - Get servers from disk instead of through the network.
 norefresh - Don't refresh the server table GUI while receiving servers.
 quit      - Print time since startup and then quit, after loading the server
             list from disk.
+colortest - Enable extended color codes for Smokin' Guns (ET style, 31 colors).
 
 
 -----------
