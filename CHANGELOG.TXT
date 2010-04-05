@@ -1,5 +1,5 @@
-Latest changes
---------------
+v0.7 - 2010-05-05
+-----------------
 - New: Improved status bar.
 - New: Can now use .bat or .lnk files instead of an .exe when launching a game.
 - Change: Settings and data are now stored in a user-specific location, instead
