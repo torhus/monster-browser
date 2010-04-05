@@ -26,7 +26,7 @@ If you have more than a couple of servers to add, it's easier to add them direct
 
 Remote Console
 --------------
-The remote console (rcon) lets you send commands to a game server.  It's an advanced feature primarily useful for server administrators.  To open a remote console window, select a server and press F10, or use the context menu.  The up and down arrow keys access the command history, while page up and page down scroll the output window.  Pressing Esc closes the window.
+The remote console (rcon) lets you send commands to a game server.  It's an advanced feature primarily useful for server administrators.  To open a remote console window, select a server and press F9, or use the context menu.  The up and down arrow keys access the command history, while page up and page down scroll the output window.  Pressing Esc closes the window.
 
 
 Keyboard shortcuts
