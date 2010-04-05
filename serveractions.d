@@ -85,7 +85,7 @@ void switchToGame(in char[] name)
 				masterLists[masterName] = entry;
 			}
 
-			serverList = new ServerList(gameName, master);
+			serverList = new ServerList(gameName, master, game.useEtColors);
 			serverListCache[gameName] = serverList;
 			needRefresh = true;
 

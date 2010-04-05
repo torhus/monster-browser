@@ -94,6 +94,13 @@ struct GameConfig
 		return r ? (r == "true") : true;
 	}
 
+	/// Enable Enemy Territory-style extended color codes (31 colors)?
+	bool useEtColors()
+	{
+		// just testing for now
+		return arguments.colortest && mod == "smokinguns";
+	}
+
 	private char[] name_;
 	private IniSection section;
 }

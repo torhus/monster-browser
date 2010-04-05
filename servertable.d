@@ -3,6 +3,7 @@ module servertable;
 import tango.stdc.math : ceil;
 import tango.text.Util;
 import Integer = tango.text.convert.Integer;
+debug import tango.text.convert.Format;
 import tango.util.container.HashMap;
 
 import dwt.DWT;
@@ -522,7 +523,9 @@ private:
 						if (tl is null) {
 							tl = new TextLayout(Display.getDefault);
 							tl.setText(sd.server[ServerColumn.NAME]);
-							foreach (r; parseColors(sd.rawName).ranges)
+							bool useEtColors = serverList_.useEtColors;
+							auto name = parseColors(sd.rawName, useEtColors);
+							foreach (r; name.ranges)
 								tl.setStyle(r.style, r.start, r.end);
 
 							sd.customData = tl;  // cache it
@@ -575,6 +578,20 @@ private:
 					// the menu on Windows.
 					if ((e.stateMask & DWT.MODIFIER_MASK) == 0)
 						onRemoteConsole();
+					break;
+				case DWT.F12:
+					// print raw (with color codes) server and player names
+					if ((e.stateMask & DWT.MODIFIER_MASK) == 0) {
+						int i = table_.getSelectionIndex();
+						if (i != -1) {
+							auto sd = serverList_.getFiltered(i);
+							log("-------------------------------------------");
+							log(sd.rawName);
+							foreach (p; sd.players)
+								log(p[PlayerColumn.RAWNAME]);
+							log("-------------------------------------------");
+						}
+					}
 					break;
 				case DWT.DEL:
 					if ((e.stateMask & DWT.MODIFIER_MASK) == 0)

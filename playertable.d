@@ -82,7 +82,9 @@ class PlayerTable
 					scope tl = new TextLayout(Display.getDefault);
 
 					tl.setText(data[PlayerColumn.NAME]);
-					foreach (r; parseColors(data[PlayerColumn.RAWNAME]).ranges)
+					char[] rawName = data[PlayerColumn.RAWNAME];
+					bool useEtColors = serverList_.useEtColors;
+					foreach (r; parseColors(rawName, useEtColors).ranges)
 						tl.setStyle(r.style, r.start, r.end);
 
 					if (e.detail & DWT.SELECTED)
