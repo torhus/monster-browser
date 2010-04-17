@@ -55,13 +55,11 @@ private void _main(char[][] args)
 	version (redirect)
 		redirectOutput(logDir ~ "CONSOLE.OUT");
 
-	if (!testConsole()) {
+	haveConsole = testConsole();
+	if (!haveConsole) {
 		// Avoid getting IOExceptions all over the place.
 		Cout.output = new BitBucket;
 		Cerr.output = Cout.output;
-	}
-	else {
-		Cout(APPNAME ~ " " ~ VERSION).newline.flush;
 	}
 
 	try
@@ -208,6 +206,17 @@ private void detectDirectories(in char[] firstArg)
 		if (!exists(logDir))
 			createFolder(logDir);
 	}
+}
+
+
+/// Is there a console available for output?
+private bool testConsole()
+{
+	try
+		Cout(APPNAME ~ " " ~ VERSION).newline.flush;
+	catch (IOException e)
+		return false;
+	return true;
 }
 
 
