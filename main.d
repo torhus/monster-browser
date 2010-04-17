@@ -55,10 +55,13 @@ private void _main(char[][] args)
 	version (redirect)
 		redirectOutput(logDir ~ "CONSOLE.OUT");
 
-	if (!consoleOutputOk()) {
+	if (!testConsole()) {
 		// Avoid getting IOExceptions all over the place.
 		Cout.output = new BitBucket;
 		Cerr.output = Cout.output;
+	}
+	else {
+		Cout(APPNAME ~ " " ~ VERSION).newline.flush;
 	}
 
 	try
@@ -227,14 +230,4 @@ private bool redirectOutput(char[] file)
 		warning(e.toString);
 		return false;
 	}
-}
-
-
-private bool consoleOutputOk()
-{
-	try
-		Cout(APPNAME ~ " " ~ VERSION).newline.flush;
-	catch (IOException e)
-		return false;
-	return true;
 }
