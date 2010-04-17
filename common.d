@@ -76,6 +76,9 @@ StopWatch globalTimer;
 ///
 bool userAbort = false;
 
+/// Is there a console available for output?
+bool haveConsole;
+
 
 // Add dispose() methods etc. to this array, and they will be called at
 // shutdown.
@@ -143,17 +146,6 @@ void logx(char[] file, int line, Exception e)
 
 	// output stack trace
 	e.writeOut((char[] s) { Log.root.info(s); });
-}
-
-
-///  Is there a console available for output?
-bool testConsole()
-{
-	try
-		Cout.flush();
-	catch (IOException e)
-		return false;
-	return true;
 }
 
 

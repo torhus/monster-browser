@@ -39,6 +39,7 @@ import geoip;
 import launch;
 import mainwindow;
 import masterlist;
+import messageboxes;
 import playertable;
 import rcon;
 import serveractions;
@@ -590,12 +591,22 @@ private:
 					if ((e.stateMask & DWT.MODIFIER_MASK) == 0) {
 						int i = table_.getSelectionIndex();
 						if (i != -1) {
+							char[][] s;
 							auto sd = serverList_.getFiltered(i);
+
 							log("-------------------------------------------");
 							log(sd.rawName);
-							foreach (p; sd.players)
+							log("");
+							s ~= sd.rawName;
+							s ~= "";
+							foreach (p; sd.players) {
 								log(p[PlayerColumn.RAWNAME]);
+								s ~= p[PlayerColumn.RAWNAME];
+							}
 							log("-------------------------------------------");
+
+							if (!haveConsole)
+								db("{}", join(s, newline));
 						}
 					}
 					break;
