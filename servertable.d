@@ -15,6 +15,7 @@ import dwt.events.MenuDetectListener;
 import dwt.events.SelectionAdapter;
 import dwt.events.SelectionListener;
 import dwt.events.SelectionEvent;
+import dwt.graphics.Color;
 import dwt.graphics.Image;
 import dwt.graphics.ImageData;
 import dwt.graphics.Rectangle;
@@ -129,6 +130,8 @@ class ServerTable
 		padlockImage_ = new Image(Display.getDefault, data.scaledTo(12, 12));
 
 		selectedIps_ = new HashMap!(char[], int);
+		
+		timeOutColor_ = Display.getDefault().getSystemColor(DWT.COLOR_RED);
 	}
 
 
@@ -400,6 +403,7 @@ private:
 	MenuItem refreshSelected_;
 	void delegate(bool) stopServerRefresh_;
 	bool refreshInProgress_ = false;
+	Color timeOutColor_;
 
 	class SetDataListener : Listener {
 		void handleEvent(Event e)
@@ -413,8 +417,10 @@ private:
 			for (int i = ServerColumn.COUNTRY + 1; i <= ServerColumn.max; i++)
 				item.setText(i, sd.server[i]);
 
-			if (timedOut(&sd))
+			if (timedOut(&sd)) {
 				item.setText(ServerColumn.PING, "\&infin;");
+				item.setForeground(ServerColumn.PING, timeOutColor_);
+			}
 		}
 	}
 
