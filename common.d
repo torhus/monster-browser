@@ -3,6 +3,7 @@ module common;
 import tango.core.Array;
 import tango.core.Thread;
 import tango.core.Version;
+import tango.io.Console;
 import tango.io.device.File;
 import Path = tango.io.Path;
 import tango.stdc.ctype;
@@ -92,13 +93,13 @@ const File.Style WriteAppendingShared =
  *
  * Throws: IOException.
  */
-void initLogging(char[] name="LOG.TXT")
+void initLogging(char[] fileName="LOG.TXT")
 {
 	const char[] sep =
 	           "-------------------------------------------------------------";
 	char[] error = null;
 	assert(logDir);
-	char[] path = logDir ~ name;
+	char[] path = logDir ~ fileName;
 
 	Log.root.add(new AppendConsole(new LayoutConsole));
 
@@ -125,9 +126,9 @@ void log(char[] file, int line, char[] msg)
 
 
 /// ditto
-void log(char[] s)
+void log(char[] msg)
 {
-	Log.formatln(s);
+	Log.formatln(msg);
 }
 
 
@@ -145,6 +146,18 @@ void logx(char[] file, int line, Exception e)
 }
 
 
+///  Is there a console available for output?
+bool testConsole()
+{
+	try
+		Cout.flush();
+	catch (IOException e)
+		return false;
+	return true;
+}
+
+
+/// Platform-specific _newline sequence
 version (Windows)
 	const char[] newline = "\r\n";
 else
