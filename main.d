@@ -8,7 +8,7 @@ import tango.io.FilePath;
 import tango.io.device.BitBucket;
 import tango.io.device.File;
 import tango.sys.Environment;
-import tango.sys.win32.SpecialPath;
+version (Windows) import tango.sys.win32.SpecialPath;
 
 import dwt.DWT;
 import dwt.dnd.Clipboard;
@@ -21,8 +21,7 @@ import dwt.widgets.Listener;
 
 import colorednames : disposeNameColors;
 import common;
-version (Windows)
-	import link;
+import link;
 import mainwindow;
 import messageboxes;
 import serveractions;

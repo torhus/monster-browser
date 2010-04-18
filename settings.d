@@ -68,7 +68,7 @@ struct GameConfig
 		char[] exeName = section["exeName"];
 		bool badRegKey = false;
 
-		if (regKey && exeName) {
+		version (Windows) if (regKey && exeName) {
 			try {
 				if (char[] dir = getRegistryStringValue(regKey))
 					path = dir ~ '\\' ~ exeName;
@@ -498,7 +498,7 @@ private char[] autodetectQuake3Path()
  *
  * Sample return: "C:\Program Files".
  */
-private char[] getProgramFilesDirectory()
+version (Windows) private char[] getProgramFilesDirectory()
 {
 	char[] path = getSpecialPath(CSIDL_PROGRAM_FILES);
 	assert(path.length);
