@@ -334,7 +334,9 @@ private:
 	Filter filters_ = Filter.NONE;
 
 
-	invariant()
+	// invariant + synchronized doesn't work with dmd on linux
+	// see http://d.puremagic.com/issues/show_bug.cgi?id=235
+	version (Windows) invariant()
 	{
 		synchronized (this) {
 			/*if (filteredList.length > list.length) {
