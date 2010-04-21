@@ -30,7 +30,7 @@ import settings;
 import threadmanager;
 
 
-void main(char[][] args) ///
+int main(char[][] args) ///
 {
 	Thread.getThis().name = "main";
 
@@ -41,7 +41,9 @@ void main(char[][] args) ///
 		logx(__FILE__, __LINE__, e);
 		version (redirect)
 			error(e.classinfo.name ~ "\n" ~ e.toString());
+		return 1;
 	}
+	return 0;
 }
 
 
