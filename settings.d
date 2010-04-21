@@ -313,14 +313,19 @@ void loadSettings()
 		}
 	}
 
-	version (Windows) {
-		// make sure we have a path for quake3.exe
-		sec = settingsIni["Settings"];
-		if (!sec.getValue("gamePath")) {
-			char[] path = autodetectQuake3Path();
-			sec.setValue("gamePath", path);
-			log("Set gamePath to '" ~ path ~ "'.");
+	// make sure we have a path for quake3.exe
+	sec = settingsIni["Settings"];
+	if (!sec.getValue("gamePath")) {
+		char[] path;
+		version (Windows) {	
+			path = autodetectQuake3Path();			
 		}
+		else {
+			// FIXME: need linux default
+			path = "~/dev/test";
+		}
+		sec.setValue("gamePath", path);
+		log("Set gamePath to '" ~ path ~ "'.");
 	}
 
 	loadSessionState();
