@@ -145,7 +145,10 @@ void logx(char[] file, int line, Exception e)
 	                         threadManager.sleeping ? "sleeping" : "working"));
 
 	// output stack trace
-	e.writeOut((char[] s) { Log.root.info(s); });
+	char[] buf;
+	// FIXME: should probably avoid allocating memory here.
+	e.writeOut((char[] s) { buf ~= s; });
+	Log.root.info(buf);
 }
 
 
