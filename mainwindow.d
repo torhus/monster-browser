@@ -44,6 +44,11 @@ import servertable;
 import settings;
 import threadmanager;
 
+// For the Windows 7 taskbar progress feature
+version (Windows) {
+	import mswindows.taskbarprogress;
+	import mswindows.util;
+}
 
 StatusBar statusBar;  ///
 FilterBar filterBar;  ///
@@ -252,6 +257,10 @@ class StatusBar : Composite
 		playerLabel_ = new Label(this, DWT.NONE);
 		auto playerData = new GridData(DWT.CENTER, DWT.CENTER, false, false);
 		playerLabel_.setLayoutData(playerData);
+
+		version (Windows) {
+			initTaskbarProgress();
+		}
 	}
 
 	void setLeft(char[] text)  ///
@@ -304,6 +313,14 @@ class StatusBar : Composite
 			progressBar_.moveBelow(progressLabel_);
 			layout();
 		}
+
+		if (useWin7Taskbar_) {
+			if (indeterminate)
+				tbProgress_.setProgressState(TBPF_INDETERMINATE);
+			else
+				tbProgress_.setProgressValue(0, 100);
+		}
+
 		setProgressLabel(label);
 		progressBar_.setSelection(0);
 		progressLabel_.setVisible(true);
@@ -316,6 +333,8 @@ class StatusBar : Composite
 		if (isDisposed())
 			return;
 		progressBar_.setVisible(false);
+		if (useWin7Taskbar_)
+				tbProgress_.setProgressState(TBPF_NOPROGRESS);
 		setLeft(text);
 	}
 
@@ -330,8 +349,14 @@ class StatusBar : Composite
 	{
 		if (progressBar_.isDisposed())
 			return;
+
 		progressBar_.setMaximum(total);
 		progressBar_.setSelection(current);
+
+		if (useWin7Taskbar_) {
+			if (!(progressBar_.getStyle() & DWT.INDETERMINATE))
+				tbProgress_.setProgressValue(current, total);
+		}
 	}
 
 
@@ -357,11 +382,35 @@ class StatusBar : Composite
 	}
 
 
+	// For the Windows 7 taskbar.	
+	version (Windows) private void initTaskbarProgress()
+	{
+		if (!isWindows7OrLater) {
+			useWin7Taskbar_ = false;
+			return;
+		}
+
+		try
+			tbProgress_ = new TaskbarProgress(parent.getShell().handle);
+		catch (Exception e)
+			logx(__FILE__, __LINE__, e);
+
+		useWin7Taskbar_ = tbProgress_ ! is null;
+	}
+
+
 private:
 	Label serverLabel_;
 	Label playerLabel_;
 	Label progressLabel_;
 	ProgressBar progressBar_;
+	version (Windows) {
+		TaskbarProgress tbProgress_;
+		bool useWin7Taskbar_;
+	}
+	else {
+		enum { useWin7Taskbar_ = false };
+	}
 }
 
 
@@ -507,7 +556,7 @@ class FilterBar : Group
 	{
 		if (list is null)
 			return;
-		
+
 		char[][] items = gamesCombo_.getItems();
 
 		foreach (s; list) {
