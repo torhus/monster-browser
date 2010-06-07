@@ -1,5 +1,6 @@
 module mswindows.taskbarprogress;
 
+import tango.sys.win32.Macros;
 import tango.sys.win32.Types;
 public import mswindows.taskbarlist;
 
@@ -19,23 +20,23 @@ class TaskbarProgress
 	{
 		assert(handle);
 
-		HRESULT hr;
-
 		handle_ = handle;
 
-		CoInitialize(NULL);
-		hr = CoCreateInstance(&CLSID_TaskbarList,
-		                      NULL,
-		                      CLSCTX_INPROC_SERVER,
-		                      &IID_ITaskbarList3,
-		                      cast(void**)&taskbarList_);
-		if (hr < 0) {
+		if (FAILED(CoInitialize(NULL)))
+			throw new Exception("TaskbarProgress :: failed to initialize COM");
+
+		HRESULT hr = CoCreateInstance(&CLSID_TaskbarList,
+		                              NULL,
+		                              CLSCTX_INPROC_SERVER,
+		                              &IID_ITaskbarList3,
+		                              cast(void**)&taskbarList_);
+		if (FAILED(hr)) {
 			CoUninitialize();
 			throw new Exception(
 			     "TaskbarProgress :: failed to create TaskbarList COM object");
 		}
-		if (taskbarList_.HrInit() < 0) {
-			taskbarList_.Release();
+		if (taskbarList_.HrInit() != S_OK) {
+			taskbarList_.Release() && assert(0);
 			CoUninitialize();
 			throw new Exception(
 			                 "TaskbarProgress :: TaskbarList.HrInit() failed");
@@ -49,8 +50,8 @@ class TaskbarProgress
 	{
 		taskbarList_.SetProgressValue(handle_, completed, total);
 	}
-	
-	
+
+
 	/// Wrapper around ITaskbarList3.SetProgressState.
 	void setProgressState(int flag)
 	{
@@ -61,7 +62,7 @@ class TaskbarProgress
 	///  Call this to clean up when this object is no lenger needed.
 	void dispose()
 	{
-		taskbarList_.Release();
+		taskbarList_.Release() && assert(0);
 		CoUninitialize();
 	}
 

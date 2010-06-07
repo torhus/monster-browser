@@ -394,8 +394,11 @@ class StatusBar : Composite
 			tbProgress_ = new TaskbarProgress(parent.getShell().handle);
 		catch (Exception e)
 			logx(__FILE__, __LINE__, e);
+			
+		if (tbProgress_)
+			callAtShutdown ~= &tbProgress_.dispose;
 
-		useWin7Taskbar_ = tbProgress_ ! is null;
+		useWin7Taskbar_ = tbProgress_ !is null;
 	}
 
 
