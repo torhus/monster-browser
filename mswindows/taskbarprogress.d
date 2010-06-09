@@ -22,26 +22,18 @@ class TaskbarProgress
 
 		handle_ = handle;
 
-		if (FAILED(CoInitialize(NULL)))
-			throw new Exception("TaskbarProgress :: failed to initialize COM");
+		check(SUCCEEDED(CoInitialize(NULL)), "failed to initialize COM");
+		scope (failure) CoUninitialize();
 
-		HRESULT hr = CoCreateInstance(&CLSID_TaskbarList,
+		check(SUCCEEDED(CoCreateInstance(&CLSID_TaskbarList,
 		                              NULL,
 		                              CLSCTX_INPROC_SERVER,
 		                              &IID_ITaskbarList3,
-		                              cast(void**)&taskbarList_);
-		if (FAILED(hr)) {
-			CoUninitialize();
-			throw new Exception(
-			     "TaskbarProgress :: failed to create TaskbarList COM object");
-		}
-		if (taskbarList_.HrInit() != S_OK) {
-			taskbarList_.Release() && assert(0);
-			CoUninitialize();
-			throw new Exception(
-			                 "TaskbarProgress :: TaskbarList.HrInit() failed");
-		}
+		                              cast(void**)&taskbarList_)),
+		                            "failed to create TaskbarList COM object");
+		scope (failure) (taskbarList_.Release() == 0) || assert(0);
 
+		check(taskbarList_.HrInit() == S_OK, "TaskbarList.HrInit() failed");
 	}
 
 
@@ -62,8 +54,16 @@ class TaskbarProgress
 	///  Call this to clean up when this object is no lenger needed.
 	void dispose()
 	{
-		taskbarList_.Release() && assert(0);
+		(taskbarList_.Release() == 0) || assert(0);
 		CoUninitialize();
+	}
+
+
+	/// Check condition, throw exception if false.
+	private void check(int condition, lazy char[] message)
+	{
+		if (!condition)
+			throw new Exception("TaskbarProgress :: " ~ message);
 	}
 
 
