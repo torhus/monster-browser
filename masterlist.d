@@ -9,7 +9,6 @@ import tango.text.Ascii;
 import tango.text.Util;
 import tango.text.convert.Format;
 import Integer = tango.text.convert.Integer;
-import tango.time.StopWatch;
 import tango.text.xml.SaxParser;
 
 import colorednames;
@@ -189,7 +188,7 @@ final class MasterList
 
 		log(Format("Opening '{}'...", fileName_));
 
-		StopWatch timer;
+		Timer timer;
 		timer.start();
 
 		char[] content = cast(char[])File.get(dataDir ~ fileName_);
@@ -203,7 +202,7 @@ final class MasterList
 		delete content;
 
 		log(Format("Loaded {} servers in {} seconds.", handler.servers.length,
-		                                                        timer.stop()));
+		                                                       timer.seconds));
 
 		synchronized (this) {
 			delete servers_;
@@ -221,7 +220,7 @@ final class MasterList
 	 */
 	void save()
 	{
-		StopWatch timer;
+		Timer timer;
 		timer.start();
 
 		scope dumper = new XmlDumper(dataDir ~ fileName_);
@@ -234,7 +233,7 @@ final class MasterList
 		}
 
 		dumper.close();
-		log(Format("Saved {} in {} seconds.", fileName_, timer.stop()));
+		log("Saved %s in %s seconds.", fileName_, timer.seconds);
 	}
 
 

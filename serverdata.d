@@ -1,11 +1,9 @@
 module serverdata;
 
-debug import tango.core.Thread;
-import tango.stdc.ctype;
-import tango.text.Ascii;
-import tango.text.Util;
-import Integer = tango.text.convert.Integer;
-debug import tango.util.log.Log;
+debug import core.Thread;
+import core.stdc.ctype;
+import std.conv;
+import std.string;
 
 import org.eclipse.swt.graphics.TextLayout;
 
@@ -16,16 +14,16 @@ import settings;
 /** Stores all data for a server. */
 struct ServerData {
 	/// server name, with any color codes intact
-	char[] rawName;
+	string rawName;
 	/// name (without color codes), ping, playercount, map, etc.
 	/// Note: If this is a zero-length array, this object is considered to be
 	/// empty, and can be deleted.
-	char[][] server;
+	string[] server;
 	/// list of players, with country, name, score, ping, and raw name (with color
 	/// codes) for each.
-	char[][][] players;
+	string[][] players;
 	/// list of cvars, with key and value for each
-	char[][][] cvars;
+	string[][] cvars;
 
 	TextLayout customData = null;  ///
 
@@ -33,15 +31,13 @@ struct ServerData {
 
 	bool persistent;  ///
 
-	char[] protocolVersion;  ///
+	string protocolVersion;  ///
 
 
 	///
 	void setPlayersColumn(int humans, int bots, int maxClients)
 	{
-		server[ServerColumn.PLAYERS] = Integer.toString(humans) ~ "+" ~
-		                               Integer.toString(bots) ~ "/" ~
-		                               Integer.toString(maxClients);
+		server[ServerColumn.PLAYERS] = text(humans, "+", bots, "/", maxClients);
 	}
 
 	/*
@@ -51,41 +47,38 @@ struct ServerData {
 	 */
 	int humanCount()
 	{
-		auto r = Integer.convert(server[ServerColumn.PLAYERS]);
-		assert(r >= 0 && r <= int.max);
-		return r;
+		string s = server[ServerColumn.PLAYERS];
+		if (s.length > 0 && isdigit(s[0]))
+			return parse!int(s);
+		return 0;
 	}
 
 	/// ditto
 	int botCount()
 	{
-		char[] s = server[ServerColumn.PLAYERS];
-		auto plus = locate(s, '+');
+		string s = server[ServerColumn.PLAYERS];
+		int plus = IndexOf(s, '+');
 
-		if (plus != s.length) {
-			auto r = Integer.convert(s[plus+1 .. $]);
-			assert(r >= 0 && r <= int.max);
-			return r;
+		if (plus != -1) {
+			string t = s[plus+1 .. $];
+			if (isdigit(t[0]))
+				return parse!int(t);
 		}
-		else {
-			return 0;
-		}
+		return 0;
 	}
 
 	/// ditto
 	int maxClients()
 	{
-		char[] s = server[ServerColumn.PLAYERS];
-		auto slash = locate(s, '/');
+		string s = server[ServerColumn.PLAYERS];
+		int slash = indexOf(s, '/');
 
-		if (slash != s.length) {
-			auto r = Integer.convert(s[slash+1 .. $]);
-			assert(r >= 0 && r <= int.max);
-			return r;
+		if (slash != -1) {
+			string t = s[slash+1 .. $];
+			if (isdigit(t[0]))
+				return parse!int(t);
 		}
-		else {
-			return 0;
-		}
+		return 0;
 	}
 
 	/*
@@ -95,16 +88,18 @@ struct ServerData {
 	 */
 	bool hasHumans()
 	{
-		char[] players = server[ServerColumn.PLAYERS];
+		string players = server[ServerColumn.PLAYERS];
 		return  players.length && players[0] != '0';
 	}
 
 	/// ditto
 	bool hasBots()
 	{
-		char[] s = server[ServerColumn.PLAYERS];
-		auto plus = locate(s, '+');
-		return ((plus + 1) < s.length) && (s[plus+1] != '0');
+		string s = server[ServerColumn.PLAYERS];
+		int plus = indexOf(s, '+');
+		if (plus != -1)
+			return ((plus + 1) < s.length) && (s[plus+1] != '0');
+		return false;
 	}
 }
 
@@ -117,8 +112,8 @@ enum ServerColumn {
 };
 
 
-const char[] PASSWORD_YES = "X";  ///
-const char[] PASSWORD_NO  = "";  ///
+string PASSWORD_YES = "X";  ///
+string PASSWORD_NO  = "";  ///
 
 ///
 const char[] TIMEOUT = "9999";
@@ -154,7 +149,7 @@ bool matchGame(in ServerData* sd, in GameConfig game)
 	// FIXME: use binary search?
 	foreach (cvar; sd.cvars) {
 		if (cvar[0] == "game" || cvar[0] == "gamename") {
-			if (icompare(cvar[1], game.mod) == 0)
+			if (icmp(cvar[1], game.mod) == 0)
 				return true;
 		}
 	}
@@ -169,18 +164,17 @@ bool matchGame(in ServerData* sd, in GameConfig game)
 /// Did this server time out when last queried?
 bool timedOut(in ServerData* sd)
 {
-	char[] ping = sd.server[ServerColumn.PING];
-	return ping == TIMEOUT;
+	return sd.server[ServerColumn.PING] == TIMEOUT;
 }
 
 
 ///
-const char[][] defaultGameTypes = ["FFA", "1v1", "SP", "TDM", "CTF",
-                                   /* "OFCTF", "Overload", "Harvester", */
-                                  ];
+string[] defaultGameTypes = ["FFA", "1v1", "SP", "TDM", "CTF",
+                             /* "OFCTF", "Overload", "Harvester", */
+                            ];
 
 ///
-char[][][char[]] gameTypes;
+string[][string] gameTypes;
 
 
 static this() {
@@ -194,15 +188,15 @@ static this() {
 
 
 /// Print contents of sd to stdout.  Debugging tool.
-debug void print(ref ServerData sd, char[] file=null, long line=-1)
+debug void print(ref ServerData sd, string file=null, long line=-1)
 {
 	print(null, sd, file, line);
 }
 
 /// ditto
-debug void print(char[] prefix, ref ServerData sd, char[] file=null, long line=-1)
+debug void print(string prefix, ref ServerData sd, string file=null, long line=-1)
 {
-	if (file)
+/*	if (file)
 		Log.formatln(prefix ~ " ====== {}({}) ======", file, line);
 	else
 		Log.formatln(prefix ~ " ====================");
@@ -219,4 +213,5 @@ debug void print(char[] prefix, ref ServerData sd, char[] file=null, long line=-
 
 	Log.formatln("=============================");
 	Log.formatln("");
+*/
 }

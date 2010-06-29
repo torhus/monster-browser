@@ -1,12 +1,12 @@
 module threadmanager;
 
-import tango.core.Thread;
-import tango.core.sync.Semaphore;
+import core.Thread;
+//import core.sync.Semaphore;
 
 import java.lang.Runnable;
 import org.eclipse.swt.widgets.Display;
 
-import runtools : killServerBrowser;
+import runtools;// : killServerBrowser;
 
 
 /// Global instance.

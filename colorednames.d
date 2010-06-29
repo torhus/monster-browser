@@ -4,8 +4,8 @@
 
 module colorednames;
 
-import tango.stdc.ctype;
-import tango.stdc.stdio;
+import core.stdc.ctype;
+import core.stdc.stdio;
 
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.TextStyle;

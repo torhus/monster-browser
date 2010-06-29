@@ -1,24 +1,12 @@
 module common;
 
-import tango.core.Array;
-import tango.core.Thread;
-import tango.core.Version;
-import tango.io.Console;
-import tango.io.device.File;
-import Path = tango.io.Path;
-import tango.stdc.ctype;
-import tango.stdc.string;
-import tango.stdc.time;
-import tango.text.Ascii;
-import tango.text.Util;
-import tango.text.convert.Format;
-import Integer = tango.text.convert.Integer;
-import tango.io.stream.Iterator;
-import tango.time.StopWatch;
-import tango.time.Time;
-import tango.util.log.AppendConsole;
-import tango.util.log.AppendFile;
-import tango.util.log.Log;
+import core.Thread;
+import core.stdc.ctype;
+import core.stdc.string;
+import core.stdc.time;
+import std.conv;
+import std.date;
+import std.string;
 
 import java.lang.wrappers;
 import org.eclipse.swt.SWT;
@@ -46,32 +34,31 @@ static:
 }
 
 
-char[] appDir;  /// Absolute path to where the application is installed.
-char[] dataDir;  /// Absolute path to where settings and data is stored.
-char[] logDir;  /// Absolute path to where the log file is.
+string appDir;  /// Absolute path to where the application is installed.
+string dataDir;  /// Absolute path to where settings and data is stored.
+string logDir;  /// Absolute path to where the log file is.
 
 bool haveGslist;  /// Will be true if gslist was found during startup.
 
 
-const char[] APPNAME = "Monster Browser";
+string APPNAME = "Monster Browser";
 
-const char[] SVN = import("svnversion.txt");
+string SVN = import("svnversion.txt");
 
-const char[] FINAL_VERSION = "0.7";
+string FINAL_VERSION = "0.7";
 
 debug {
-	const char[] VERSION = __DATE__ ~
-	                                 " (svnversion " ~ SVN ~ ") *DEBUG BUILD*";
+	string VERSION = __DATE__ ~ " (svnversion " ~ SVN ~ ") *DEBUG BUILD*";
 }
 else {
 	version (Final)
-		const char[] VERSION = FINAL_VERSION;
+		string VERSION = FINAL_VERSION;
 	else
-		const char[] VERSION = __DATE__ ~  " (svnversion " ~ SVN ~ ")";
+		string VERSION = __DATE__ ~  " (svnversion " ~ SVN ~ ")";
 }
 
 Clipboard clipboard;
-StopWatch globalTimer;
+Timer globalTimer;
 
 ///
 bool userAbort = false;
@@ -84,85 +71,90 @@ bool haveConsole;
 // shutdown.
 void delegate()[] callAtShutdown;
 
-// Custom file open modes, since Tango doesn't have sharing enabled by default
-const File.Style WriteCreateShared =
-                      { File.Access.Write, File.Open.Create, File.Share.Read };
-const File.Style WriteAppendingShared =
-                      { File.Access.Write, File.Open.Append, File.Share.Read };
+
+private {
+	File logFile;
+}
 
 
 /**
  * Initialize logging.
  *
- * Throws: IOException.
+ * Throws: StdioException.
  */
-void initLogging(char[] fileName="LOG.TXT")
+void initLogging(string fileName="LOG.TXT")
 {
-	const char[] sep =
+	const string sep =
 	           "-------------------------------------------------------------";
-	char[] error = null;
 	assert(logDir);
-	char[] path = logDir ~ fileName;
-
-	Log.root.add(new AppendConsole(new LayoutConsole));
+	string path = logDir ~ fileName;
 
 	// limit file size
-	if (Path.exists(path) && Path.fileSize(path) > 1024 * 100)
-		Path.remove(path);
+	if (exists(path) && getSize(path) > 1024 * 100)
+		remove(path);
 
-	// add a startup message
+	// open file and add a startup message
 	time_t t = time(null);
 	char[] timestamp = ctime(&t)[0..24];
-	char[] msg = Format(newline ~ sep ~ newline ~ APPNAME ~ " " ~ VERSION ~
-	                     " started at " ~ timestamp ~ newline ~ sep ~ newline);
-	File.append(path, msg);
-
-	Log.root.add(new AppendFile(path, new LayoutFile));
+	logFile = File(path, "a");
+	logFile.writeln(newline ~ sep ~ newline ~ APPNAME ~ " " ~ VERSION ~
+	                     " started at " ~ timestamp ~ newline ~ sep);
 }
 
 
-/// Logging.
-void log(char[] file, int line, char[] msg)
+/// Logging, with formatting support.
+/*void log(in char[] file, int line, in char[] msg)
 {
-	log(file ~ "(" ~ Integer.toString(line) ~ "): " ~ msg);
+	log(file, "(", line, "): ", msg);
+}*/
+
+
+/// ditto
+void log(T...)(T args)
+{
+	logFile.writefln(args);
 }
 
 
 /// ditto
-void log(char[] msg)
-{
-	Log.formatln(msg);
-}
-
-
-/// ditto
-void logx(char[] file, int line, Exception e)
+void logx(in char[] file, int line, Exception e)
 {
 	log(file, line, e.classinfo.name ~ ": " ~ e.toString());
-	log(Format("{} threads, currently in '{}'.", Thread.getAll().length,
-	                                                   Thread.getThis().name));
-	log(Format("ThreadManager's thread is {}.",
-	                         threadManager.sleeping ? "sleeping" : "working"));
+	log("%s threads, currently in '%s'.", Thread.getAll().length,
+	                                                    Thread.getThis().name);
+	log("ThreadManager's thread is %s.",
+	                          threadManager.sleeping ? "sleeping" : "working");
 
 	// output stack trace
-	char[] buf;
+	/*char[] buf;
 	// FIXME: should probably avoid allocating memory here.
 	e.writeOut((char[] s) { buf ~= s; });
-	Log.root.info(buf);
+	Log.root.info(buf);*/
 }
 
 
 /// Platform-specific _newline sequence
 version (Windows)
-	const char[] newline = "\r\n";
+	string newline = "\r\n";
 else
-	const char[] newline = "\n";
+	string newline = "\n";
+
+
+///
+struct Timer
+{
+	void start() { time_ = std.date.getUTCtime();	}  ///
+	private d_time raw() { return std.date.getUTCtime() - time_; }  ///
+	long millis() { return raw * (1000 / TicksPerSecond); }  ///
+	double seconds() { return cast(double) raw / TicksPerSecond; }  ///
+	private d_time time_;  ///
+}
 
 
 /**
  * Transfer a string to the system clipboard.
  */
-void copyToClipboard(char[] s)
+void copyToClipboard(in char[] s)
 {
 	Object obj = new ArrayWrapperString(s);
 	TextTransfer textTransfer = TextTransfer.getInstance();
@@ -187,7 +179,7 @@ void copyToClipboard(char[] s)
 // workaround, see http://dsource.org/projects/tango/ticket/956
 bool isValidIpAddress(in char[] address)
 {
-	uint skipDigits(ref char[] s, uint maxDigits=uint.max) {
+	uint skipDigits(ref const(char)[] s, uint maxDigits=uint.max) {
 		size_t i = 0;
 		while (i < s.length && isdigit(s[i]) && i < maxDigits)
 			i++;
@@ -231,10 +223,10 @@ bool isValidIpAddress(in char[] address)
  *
  * Returns: the index where it was found, or -1 if it was not found.
  */
-int findString(char[][] array, char[] str)
+int findString(in char[][] array, in char[] str)
 {
-	foreach (int i, char[] s; array) {
-		if (icompare(str, s) == 0)
+	foreach (int i, s; array) {
+		if (icmp(str, s) == 0)
 			return i;
 	}
 	return -1;
@@ -245,10 +237,10 @@ int findString(char[][] array, char[] str)
  * Like the above findString, but search in a given _column of a
  * 3-dimensional _array.
  */
-int findString(char[][][] array, char[] str, int column)
+int findString(in char[][][] array, in char[] str, int column)
 {
 	foreach (int i, char[][] s; array) {
-		if (icompare(str, s[column]) == 0)
+		if (icmp(str, s[column]) == 0)
 			return i;
 	}
 	return -1;
@@ -264,10 +256,10 @@ int findString(char[][][] array, char[] str, int column)
  *     numerical  = Set to true to get a numerical sort instead of an
  *                  alphabetical one.
  */
-void sortStringArray(char[][][] arr, int column=0, bool reverse=false,
+void sortStringArray(in char[][][] arr, int column=0, bool reverse=false,
                                                           bool numerical=false)
 {
-	bool less(char[][] a, char[][] b)
+	bool less(in char[][] a, in char[][] b)
 	{
 		int result;
 
@@ -367,19 +359,9 @@ int[] parseIntList(in char[] str, size_t forcedLength=0, int defaultVal=0)
 /**
  * Turn an array into a string of a series of comma-separated values (1,2,3).
  */
-char[] toCsv(T)(T[] a)
+string toCsv(T)(T[] a)
 {
-	char[] s = Format("{}", a);
-
-	static if (Tango.Major == 0 && Tango.Minor < 997) {
-		assert(s[0..2] == "[ " && s[$-2..$] == " ]");
-		return s[2..$-2];
-	}
-	else {
-		assert(s[0..1] == "[" && s[$-1..$] == "]");
-		assert(!isspace(s[1]) && !isspace(s[$-2]));
-		return s[1..$-1];
-	}
+	return to!string(a, null, ", ", null);
 }
 
 
@@ -409,9 +391,9 @@ int[] getColumnWidths(Table table)
  *
  * Throws: Whatever iter's opApply throws.
  */
-Set!(char[]) collectIpAddresses(Iterator!(char) iter, uint start=0)
+Set!(string) collectIpAddresses(Iterator!(char) iter, uint start=0)
 {
-	Set!(char[]) addresses;
+	Set!(string) addresses;
 
 	foreach (char[] line; iter) {
 		if (start >= line.length)
@@ -419,7 +401,7 @@ Set!(char[]) collectIpAddresses(Iterator!(char) iter, uint start=0)
 
 		line = line[start..$];
 		if (isValidIpAddress(line))
-			addresses.add(line.dup);
+			addresses.add(line.idup);
 	}
 
 	return addresses;
@@ -427,7 +409,7 @@ Set!(char[]) collectIpAddresses(Iterator!(char) iter, uint start=0)
 
 
 /// Sets the values of the common.arguments struct.
-void parseCmdLine(char[][] args)
+void parseCmdLine(in char[][] args)
 {
 	foreach (arg; args[1..$]) {
 		switch (arg) {
@@ -453,38 +435,5 @@ void parseCmdLine(char[][] args)
 				log("UNRECOGNIZED ARGUMENT: " ~ arg);
 				break;
 		}
-	}
-}
-
-
-/// Controls log event layout.
-class LayoutConsole : Appender.Layout
-{
-	void format (LogEvent event, size_t delegate(void[]) dg)
-	{
-		/*dg (event.levelName);
-		dg (" [");
-		dg (event.name);
-		dg ("] ");
-		dg (event.host.context.label);*
-		dg ("- ");*/
-		dg("LOG: ");
-		dg(event.toString);
-	}
-}
-
-
-/// Controls log event layout.
-class LayoutFile : Appender.Layout
-{
-	void format (LogEvent event, size_t delegate(void[]) dg)
-	{
-		/*dg (event.levelName);
-		dg (" [");
-		dg (event.name);
-		dg ("] ");
-		dg (event.host.context.label);*
-		dg ("- ");*/
-		dg(event.toString);
 	}
 }

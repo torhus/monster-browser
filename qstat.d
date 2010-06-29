@@ -4,7 +4,6 @@
 
 module qstat;
 
-import tango.core.Exception;
 import tango.io.device.File;
 import tango.io.model.IConduit : OutputStream;
 import tango.io.stream.Buffered;
@@ -15,7 +14,6 @@ import tango.text.Util;
 import Float = tango.text.convert.Float;
 debug import tango.text.convert.Format;
 import tango.text.convert.Integer;
-import tango.time.StopWatch;
 
 import colorednames;
 import common;
@@ -45,7 +43,7 @@ bool parseOutput(in char[] modName, Lines!(char) iter,
 {
 	char[][] gtypes;
 	scope BufferedOutput outfile = null;
-	debug StopWatch timer2;
+	debug Timer timer2;
 	debug timer2.start();
 	bool keepGoing = true;
 
@@ -155,11 +153,11 @@ bool parseOutput(in char[] modName, Lines!(char) iter,
 }
 
 
-debug private void checkTime(ref StopWatch t, char[] name)
+debug private void checkTime(ref Timer t, string name)
 {
-	auto time = t.stop();
+	auto time = t.seconds;
 	if (time >= 2)
-		log(Format("qstat timer {}: {}", name, time));
+		log("qstat timer %s: %s", name, time);
 	t.start();
 }
 

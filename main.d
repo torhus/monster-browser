@@ -1,14 +1,10 @@
 module main;
 
-import tango.core.Thread;
-debug import tango.core.tools.TraceExceptions;
-import tango.io.Console;
-import tango.io.Path;
-import tango.io.FilePath;
-import tango.io.device.BitBucket;
-import tango.io.device.File;
-import tango.sys.Environment;
-version (Windows) import tango.sys.win32.SpecialPath;
+import core.Thread;
+//debug import tango.core.tools.TraceExceptions;
+import std.file;
+import std.path;
+//version (Windows) import tango.sys.win32.SpecialPath;
 
 import java.io.ByteArrayInputStream;
 import org.eclipse.swt.SWT;
@@ -59,13 +55,13 @@ private void _main(char[][] args)
 	haveConsole = testConsole();
 	if (!haveConsole) {
 		// Avoid getting IOExceptions all over the place.
-		Cout.output = new BitBucket;
-		Cerr.output = Cout.output;
+		/*Cout.output = new BitBucket;
+		Cerr.output = Cout.output;*/
 	}
 
 	try
 		initLogging();
-	catch (IOException e)
+	catch (StdioException e)
 		debug warning(e.toString());
 
 	log("Data path is '" ~ dataDir ~ "'.");
@@ -184,12 +180,7 @@ private void _main(char[][] args)
  */
 private void detectDirectories(in char[] firstArg)
 {
-	FilePath path = FilePath(firstArg);
-
-	if (path.isAbsolute)
-		appDir = normalize(path.path);
-	else
-		appDir = normalize(Environment.exePath(path.toString()).path);
+	appDir = dirname(rel2abs(firstArg));
 
 	if (appDir[$-1] != '/')
 		appDir ~= '/';
@@ -199,13 +190,14 @@ private void detectDirectories(in char[] firstArg)
 	}
 	else {
 		version (Windows) {
-			dataDir = getSpecialPath(CSIDL_APPDATA) ~ '/' ~ APPNAME ~ '/';
-			logDir = getSpecialPath(CSIDL_LOCAL_APPDATA) ~ '/' ~ APPNAME ~ '/';
+			assert(0);
+			//dataDir = getSpecialPath(CSIDL_APPDATA) ~ '/' ~ APPNAME ~ '/';
+			//logDir = getSpecialPath(CSIDL_LOCAL_APPDATA) ~ '/' ~ APPNAME ~ '/';
 		}
 		if (!exists(dataDir))
-			createFolder(dataDir);
+			mkdir(dataDir);
 		if (!exists(logDir))
-			createFolder(logDir);
+			mkdir(logDir);
 	}
 }
 
@@ -213,10 +205,10 @@ private void detectDirectories(in char[] firstArg)
 /// Is there a console available for output?
 private bool testConsole()
 {
-	try
+	/*try
 		Cout(APPNAME ~ " " ~ VERSION).newline.flush;
 	catch (IOException e)
-		return false;
+		return false;*/
 	return true;
 }
 
@@ -229,7 +221,7 @@ private bool testConsole()
  */
 private bool redirectOutput(char[] file)
 {
-	try {
+	/*try {
 		Cerr.output = new File(file, WriteCreateShared);
 		Cerr("Cerr is redirected to this file.").newline.flush;
 		Cout.output = Cerr.output;
@@ -239,5 +231,6 @@ private bool redirectOutput(char[] file)
 	catch (IOException e) {
 		warning(e.toString);
 		return false;
-	}
+	}*/
+	return true;
 }
