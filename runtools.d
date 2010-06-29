@@ -4,12 +4,10 @@
 
 module runtools;
 
-import tango.core.Exception : IOException, ProcessException;
-import tango.io.device.File;
-import tango.io.stream.Lines;
-import tango.sys.Process;
-import tango.text.convert.Format;
-import Integer = tango.text.convert.Integer;
+import std.conv;
+import std.stdio;
+
+import lib.process;
 
 import common;
 import messageboxes;
@@ -20,6 +18,9 @@ import set;
 import settings;
 
 
+// workaround for process.d bug
+extern(C) extern char **_environ;
+
 private Process proc;
 
 
@@ -29,10 +30,10 @@ private Process proc;
  *
  * Returns: A set containing the IP addresses of the servers.
  */
-Set!(char[]) browserGetNewList(in GameConfig game)
+Set!(string) browserGetNewList(in GameConfig game)
 {
 	char[] cmdLine;
-	Set!(char[]) addresses;
+	Set!(string) addresses;
 	bool gslist = common.haveGslist && game.useGslist;
 
 	version (linux)
@@ -51,11 +52,15 @@ Set!(char[]) browserGetNewList(in GameConfig game)
 		           " AND (protocol=" ~ game.protocolVersion ~ ")\"";
 
 	try {
-		proc = new Process(true, cmdLine);
-		proc.workDir = appDir;
-		proc.gui = true;
+		proc = new Process;
+			// bug workaround
+		for (int i = 0; _environ[i]; i++) {
+			proc.addEnv(std.string.toString(_environ[i]).dup);
+		}
+		//proc.workDir = appDir;
+		//proc.gui = true;
 		log("Executing '" ~ cmdLine ~ "'.");
-		proc.execute();
+		proc.execute(cmdLine);
 	}
 	catch (ProcessException e) {
 		char[] s = gslist ? "gslist" : "qstat";
@@ -70,12 +75,12 @@ Set!(char[]) browserGetNewList(in GameConfig game)
 			size_t start = gslist ? 0 : "q3s ".length;
 			addresses = collectIpAddresses(lineIter, start);
 		}
-		catch (IOException e) {
+		catch (PipeException e) {
 			//logx(__FILE__, __LINE__, e);
 		}
 		catch(Exception e) {
 			logx(__FILE__, __LINE__,e);
-			error(__FILE__ ~ Integer.toString(__LINE__) ~
+			error(__FILE__ ~ to!string(__LINE__) ~
 			                 ": Unexpected exception: " ~ e.classinfo.name ~
 			                 ": " ~ e.toString());
 		}
@@ -224,21 +229,17 @@ final class QstatServerRetriever : IServerRetriever
 			proc.execute();
 
 			if (arguments.dumplist)
-				dumpFile = new File("refreshlist.tmp", File.WriteCreate);
+				dumpFile.open("refreshlist.tmp", "w");
 
 			foreach (address; addresses_) {
 				proc.stdin.write(address);
 				proc.stdin.write(newline);
-				if (dumpFile) {
-					dumpFile.write(address);
-					dumpFile.write(newline);
+				if (dumpFile.isOpen) {
+					dumpFile.writeln(address);
 				}
 			}
 			proc.stdin.flush.close;
-			log(Format("Fed {} addresses to qstat.", addresses_.length));
-
-			scope (exit) if (dumpFile)
-				dumpFile.flush.close;
+			log("Fed %s addresses to qstat.", addresses_.length);
 		}
 		catch (ProcessException e) {
 			error("qstat not found! Please reinstall " ~ APPNAME ~ ".");

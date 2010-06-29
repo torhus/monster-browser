@@ -4,8 +4,8 @@
 
 module messageboxes;
 
-import tango.text.Util;
-import tango.text.convert.Format;
+import std.format;
+import std.utf;
 
 import java.lang.Runnable;
 import org.eclipse.swt.SWT;
@@ -17,7 +17,7 @@ import mainwindow;
 
 
 /// Displays a message box.
-void messageBox(char[] msg, char[] title, int style)
+void messageBox(in char[] msg, in char[] title, int style)
 {
 	Display.getDefault().syncExec(dgRunnable({
 		scope MessageBox mb;
@@ -34,9 +34,11 @@ void messageBox(char[] msg, char[] title, int style)
 }
 
 
-void _messageBox(char[] title, int style)(char[] fmt, ...)
+void _messageBox(char[] title, int style)(in char[] fmt, ...)
 {
-	char[] msg = Format.convert(_arguments, _argptr, fmt);
+	char[] msg;
+	void f(dchar c) { encode(msg, c); }
+	doFormat(&f, _arguments, _argptr);
 	messageBox(msg, title, style);
 }
 
@@ -54,7 +56,8 @@ alias _messageBox!("Error", SWT.ICON_ERROR) error;        /// ditto
 void db(in char[] fmt, ...)
 {
 	debug {
-		char[] msg = Format.convert(_arguments, _argptr, fmt);
+		void f(dchar c) { encode(msg, c); }
+		doFormat(&f, _arguments, _argptr);
 		messageBox(msg, "Debug", SWT.NONE);
 	}
 }

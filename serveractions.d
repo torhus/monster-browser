@@ -19,7 +19,7 @@ import common;
 import masterlist;
 import mainwindow;
 import messageboxes;
-import qstat;
+//import qstat;
 import runtools;
 import serverdata;
 import serverlist;
@@ -545,7 +545,7 @@ class ServerRetrievalController
 				if (arguments.quit) {
 					Display.getDefault.syncExec(dgRunnable( {
 						Log.formatln("Time since startup: {} seconds.",
-						                                   globalTimer.stop());
+						                                  globalTimer.seconds);
 						mainWindow.close;
 					}));
 				}

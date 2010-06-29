@@ -1,16 +1,9 @@
 module serverlist;
 
-import tango.core.Array;
-import tango.core.Exception : IOException;
-import Path = tango.io.Path;
-import tango.text.Ascii;
-import tango.text.Util;
-import tango.text.convert.Format;
-import Integer = tango.text.convert.Integer;
-import tango.stdc.string : memmove;
-import tango.time.StopWatch;
-import tango.util.container.HashMap;
-debug import tango.util.log.Log;
+import core.stdc.string : memmove;
+import std.conv;
+//import tango.util.container.HashMap;
+//debug import tango.util.log.Log;
 
 import common;
 import geoip;
@@ -43,7 +36,7 @@ final class ServerList
 
 
 	///
-	this(in char[] gameName, MasterList master, bool useEtColors)
+	this(string gameName, MasterList master, bool useEtColors)
 	in {
 		assert(gameName.length > 0);
 		assert(master !is null);
@@ -52,12 +45,11 @@ final class ServerList
 		gameName_ = gameName;
 		master_ = master;
 		useEtColors_ = useEtColors;
-		ipHash_ = new HashMap!(char[], int);
 	}
 
 
 	///
-	char[] gameName() { return gameName_; }
+	string gameName() { return gameName_; }
 
 	///
 	MasterList master() { return master_; }
@@ -128,7 +120,7 @@ final class ServerList
 	synchronized void refillFromMaster()
 	{
 		GameConfig game = getGameConfig(gameName_);
-		auto newHash = new typeof(ipHash_);
+		typeof(ipHash_) newHash;
 
 		filteredList.length = 0;
 		synchronized (master_) foreach (sh; master_) {
@@ -170,7 +162,7 @@ final class ServerList
 	 *
 	 * Returns: the server's index, or -1 if unknown or not found.
 	 */
-	int getFilteredIndex(char[] ipAndPort, bool* found=null)
+	int getFilteredIndex(string ipAndPort, bool* found=null)
 	{
 		int result = -1;
 		bool wasFound = false;
@@ -219,7 +211,8 @@ final class ServerList
 		synchronized (this) {
 			disposeCustomData();
 			filteredList.length = 0;
-			ipHash_.clear();
+			//ipHash_.clear();
+			ipHash_ = null;
 			isSorted_ = true;
 			complete = false;
 		}
@@ -232,14 +225,14 @@ final class ServerList
 	 * Useful for servers that are not on the master server's list.  Multiple
 	 * servers can be added this way.
 	 */
-	void addExtraServer(in char[] address)
+	synchronized void addExtraServer(string address)
 	{
-		synchronized (this) extraServers_.add(address);
+		extraServers_.add(address);
 	}
 
 
 	/// Returns the list of extra servers.
-	Set!(char[]) extraServers() { synchronized (this) return extraServers_; }
+	synchronized Set!(string) extraServers() { return extraServers_; }
 
 
 	/**
@@ -248,11 +241,9 @@ final class ServerList
 	 * Uses the previously selected _sort order, or the default
 	 * if there is none.
 	 */
-	void sort()
+	synchronized void sort()
 	{
-		synchronized (this) {
-			_sort();
-		}
+		_sort();
 	}
 
 
@@ -320,10 +311,11 @@ final class ServerList
 private:
 	ServerHandle[] filteredList;
 	// maps addresses to indices into the filtered list
-	HashMap!(char[], int) ipHash_;
+	//HashMap!(char[], int) ipHash_;
+	int[string] ipHash_;
 	bool ipHashValid_ = false;  // true if the values (indices) are up to date
-	Set!(char[]) extraServers_;
-	char[] gameName_;
+	Set!(string) extraServers_;
+	string gameName_;
 	MasterList master_;
 	bool useEtColors_;
 
@@ -380,7 +372,7 @@ private:
 	void _sort()
 	{
 		debug {
-			StopWatch timer;
+			Timer timer;
 			timer.start();
 		}
 
@@ -400,8 +392,7 @@ private:
 			ipHashValid_ = false;
 		}
 
-		debug log("ServerList._sort() took " ~
-		          Integer.toString(timer.microsec / 1000) ~ " milliseconds.");
+		debug log("ServerList._sort() took ", timer.millis, " milliseconds.");
 	}
 
 	/**
