@@ -3,6 +3,7 @@ module common;
 import tango.core.Array;
 import tango.core.Thread;
 import tango.core.Version;
+import tango.io.Console;
 import tango.io.device.File;
 import Path = tango.io.Path;
 import tango.stdc.ctype;
@@ -41,6 +42,7 @@ static:
 	bool fromfile  = false;  ///
 	bool norefresh = false;  ///
 	bool quit      = false;  ///
+	bool colortest = false;  ///
 }
 
 
@@ -55,7 +57,7 @@ const char[] APPNAME = "Monster Browser";
 
 const char[] SVN = import("svnversion.txt");
 
-const char[] FINAL_VERSION = "0.6";
+const char[] FINAL_VERSION = "0.7";
 
 debug {
 	const char[] VERSION = __DATE__ ~
@@ -74,6 +76,9 @@ StopWatch globalTimer;
 ///
 bool userAbort = false;
 
+/// Is there a console available for output?
+bool haveConsole;
+
 
 // Add dispose() methods etc. to this array, and they will be called at
 // shutdown.
@@ -91,13 +96,13 @@ const File.Style WriteAppendingShared =
  *
  * Throws: IOException.
  */
-void initLogging(char[] name="LOG.TXT")
+void initLogging(char[] fileName="LOG.TXT")
 {
 	const char[] sep =
 	           "-------------------------------------------------------------";
 	char[] error = null;
 	assert(logDir);
-	char[] path = logDir ~ name;
+	char[] path = logDir ~ fileName;
 
 	Log.root.add(new AppendConsole(new LayoutConsole));
 
@@ -124,9 +129,9 @@ void log(char[] file, int line, char[] msg)
 
 
 /// ditto
-void log(char[] s)
+void log(char[] msg)
 {
-	Log.formatln(s);
+	Log.formatln(msg);
 }
 
 
@@ -140,10 +145,14 @@ void logx(char[] file, int line, Exception e)
 	                         threadManager.sleeping ? "sleeping" : "working"));
 
 	// output stack trace
-	e.writeOut((char[] s) { Log.root.info(s); });
+	char[] buf;
+	// FIXME: should probably avoid allocating memory here.
+	e.writeOut((char[] s) { buf ~= s; });
+	Log.root.info(buf);
 }
 
 
+/// Platform-specific _newline sequence
 version (Windows)
 	const char[] newline = "\r\n";
 else
@@ -436,6 +445,9 @@ void parseCmdLine(char[][] args)
 				break;
 			case "quit":
 				arguments.quit = true;
+				break;
+			case "colortest":
+				arguments.colortest = true;
 				break;
 			default:
 				log("UNRECOGNIZED ARGUMENT: " ~ arg);

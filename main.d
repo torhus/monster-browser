@@ -8,7 +8,7 @@ import tango.io.FilePath;
 import tango.io.device.BitBucket;
 import tango.io.device.File;
 import tango.sys.Environment;
-import tango.sys.win32.SpecialPath;
+version (Windows) import tango.sys.win32.SpecialPath;
 
 import java.io.ByteArrayInputStream;
 import org.eclipse.swt.SWT;
@@ -21,8 +21,7 @@ import org.eclipse.swt.widgets.Listener;
 
 import colorednames : disposeNameColors;
 import common;
-version (Windows)
-	import link;
+import link;
 import mainwindow;
 import messageboxes;
 import serveractions;
@@ -31,7 +30,7 @@ import settings;
 import threadmanager;
 
 
-void main(char[][] args) ///
+int main(char[][] args) ///
 {
 	Thread.getThis().name = "main";
 
@@ -42,7 +41,9 @@ void main(char[][] args) ///
 		logx(__FILE__, __LINE__, e);
 		version (redirect)
 			error(e.classinfo.name ~ "\n" ~ e.toString());
+		return 1;
 	}
+	return 0;
 }
 
 
@@ -55,7 +56,8 @@ private void _main(char[][] args)
 	version (redirect)
 		redirectOutput(logDir ~ "CONSOLE.OUT");
 
-	if (!consoleOutputOk()) {
+	haveConsole = testConsole();
+	if (!haveConsole) {
 		// Avoid getting IOExceptions all over the place.
 		Cout.output = new BitBucket;
 		Cerr.output = Cout.output;
@@ -208,6 +210,17 @@ private void detectDirectories(in char[] firstArg)
 }
 
 
+/// Is there a console available for output?
+private bool testConsole()
+{
+	try
+		Cout(APPNAME ~ " " ~ VERSION).newline.flush;
+	catch (IOException e)
+		return false;
+	return true;
+}
+
+
 /*
  * Redirect stdout and stderr (Cout and Cerr) to a file.
  *
@@ -227,14 +240,4 @@ private bool redirectOutput(char[] file)
 		warning(e.toString);
 		return false;
 	}
-}
-
-
-private bool consoleOutputOk()
-{
-	try
-		Cout(APPNAME ~ " " ~ VERSION).newline.flush;
-	catch (IOException e)
-		return false;
-	return true;
 }

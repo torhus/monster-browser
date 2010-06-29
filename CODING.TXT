@@ -6,17 +6,7 @@ Useful links
 ------------
 D compiler:
 http://digitalmars.com/d/1.0/dcompiler.html
-
-Compiler versions that are know to work or not work with this project:
-DMD 1.025-1.027 WORKS
-DMD 1.033 WORKS
-DMD 1.037 WORKS
-DMD 1.038-1.040 DON'T WORK
-DMD 1.041 WORKS
-DMD 1.051 WORKS
-DMD 1.055 WORKS
-DMD 1.056 WORKS
-Currently I'm using 1.056.
+Currently I'm using DMD 1.061.
 
 D docs:
 Language: http://www.digitalmars.com/d/1.0/lex.html
@@ -98,6 +88,7 @@ fromfile  - Get servers from disk instead of through the network.
 norefresh - Don't refresh the server table GUI while receiving servers.
 quit      - Print time since startup and then quit, after loading the server
             list from disk.
+colortest - Enable extended color codes for Smokin' Guns (ET style, 31 colors).
 
 
 -----------

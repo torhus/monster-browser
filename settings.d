@@ -68,7 +68,7 @@ struct GameConfig
 		char[] exeName = section["exeName"];
 		bool badRegKey = false;
 
-		if (regKey && exeName) {
+		version (Windows) if (regKey && exeName) {
 			try {
 				if (char[] dir = getRegistryStringValue(regKey))
 					path = dir ~ '\\' ~ exeName;
@@ -92,6 +92,13 @@ struct GameConfig
 	{
 		char[] r = section["useGslist"];
 		return r ? (r == "true") : true;
+	}
+
+	/// Enable Enemy Territory-style extended color codes (31 colors)?
+	bool useEtColors()
+	{
+		// just testing for now
+		return arguments.colortest && mod == "smokinguns";
 	}
 
 	private char[] name_;
@@ -306,14 +313,19 @@ void loadSettings()
 		}
 	}
 
-	version (Windows) {
-		// make sure we have a path for quake3.exe
-		sec = settingsIni["Settings"];
-		if (!sec.getValue("gamePath")) {
-			char[] path = autodetectQuake3Path();
-			sec.setValue("gamePath", path);
-			log("Set gamePath to '" ~ path ~ "'.");
+	// make sure we have a path for quake3.exe
+	sec = settingsIni["Settings"];
+	if (!sec.getValue("gamePath")) {
+		char[] path;
+		version (Windows) {	
+			path = autodetectQuake3Path();			
 		}
+		else {
+			// FIXME: need linux default
+			path = "~/dev/test";
+		}
+		sec.setValue("gamePath", path);
+		log("Set gamePath to '" ~ path ~ "'.");
 	}
 
 	loadSessionState();
@@ -491,7 +503,7 @@ private char[] autodetectQuake3Path()
  *
  * Sample return: "C:\Program Files".
  */
-private char[] getProgramFilesDirectory()
+version (Windows) private char[] getProgramFilesDirectory()
 {
 	char[] path = getSpecialPath(CSIDL_PROGRAM_FILES);
 	assert(path.length);
