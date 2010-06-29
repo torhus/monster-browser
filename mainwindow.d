@@ -44,6 +44,11 @@ import servertable;
 import settings;
 import threadmanager;
 
+// For the Windows 7 taskbar progress feature
+version (Windows) {
+	import mswindows.taskbarprogress;
+	import mswindows.util;
+}
 
 StatusBar statusBar;  ///
 FilterBar filterBar;  ///
@@ -252,6 +257,10 @@ class StatusBar : Composite
 		playerLabel_ = new Label(this, SWT.NONE);
 		auto playerData = new GridData(SWT.CENTER, SWT.CENTER, false, false);
 		playerLabel_.setLayoutData(playerData);
+
+		version (Windows) {
+			initTaskbarProgress();
+		}
 	}
 
 	void setLeft(char[] text)  ///
@@ -304,6 +313,14 @@ class StatusBar : Composite
 			progressBar_.moveBelow(progressLabel_);
 			layout();
 		}
+
+		if (useWin7Taskbar_) {
+			if (indeterminate)
+				tbProgress_.setProgressState(TBPF_INDETERMINATE);
+			else
+				tbProgress_.setProgressValue(0, 100);
+		}
+
 		setProgressLabel(label);
 		progressBar_.setSelection(0);
 		progressLabel_.setVisible(true);
@@ -316,6 +333,8 @@ class StatusBar : Composite
 		if (isDisposed())
 			return;
 		progressBar_.setVisible(false);
+		if (useWin7Taskbar_)
+				tbProgress_.setProgressState(TBPF_NOPROGRESS);
 		setLeft(text);
 	}
 
@@ -330,8 +349,14 @@ class StatusBar : Composite
 	{
 		if (progressBar_.isDisposed())
 			return;
+
 		progressBar_.setMaximum(total);
 		progressBar_.setSelection(current);
+
+		if (useWin7Taskbar_) {
+			if (!(progressBar_.getStyle() & SWT.INDETERMINATE))
+				tbProgress_.setProgressValue(current, total);
+		}
 	}
 
 
@@ -357,11 +382,38 @@ class StatusBar : Composite
 	}
 
 
+	// For the Windows 7 taskbar.	
+	version (Windows) private void initTaskbarProgress()
+	{
+		if (!isWindows7OrLater) {
+			useWin7Taskbar_ = false;
+			return;
+		}
+
+		try
+			tbProgress_ = new TaskbarProgress(parent.getShell().handle);
+		catch (Exception e)
+			logx(__FILE__, __LINE__, e);
+			
+		if (tbProgress_)
+			callAtShutdown ~= &tbProgress_.dispose;
+
+		useWin7Taskbar_ = tbProgress_ !is null;
+	}
+
+
 private:
 	Label serverLabel_;
 	Label playerLabel_;
 	Label progressLabel_;
 	ProgressBar progressBar_;
+	version (Windows) {
+		TaskbarProgress tbProgress_;
+		bool useWin7Taskbar_;
+	}
+	else {
+		enum { useWin7Taskbar_ = false };
+	}
 }
 
 
@@ -507,7 +559,7 @@ class FilterBar : Group
 	{
 		if (list is null)
 			return;
-		
+
 		char[][] items = gamesCombo_.getItems();
 
 		foreach (s; list) {
@@ -549,7 +601,13 @@ private:
 }
 
 
-ToolBar createToolbar(Composite parent) ///
+/**
+ * Note: Toolbars and ToolItems do not participate in tab traversal.  And as
+ *       ToolItems are not Controls, it is not possible to use
+ *       Composite.setTabList in this case.  A more involved solution would be
+ *       needed.
+ */
+private ToolBar createToolbar(Composite parent)
 {
 	auto toolBar = new ToolBar(parent, SWT.HORIZONTAL);
 
@@ -577,7 +635,7 @@ ToolBar createToolbar(Composite parent) ///
 	new ToolItem(toolBar, SWT.SEPARATOR);
 
 	auto button3 = new ToolItem(toolBar, SWT.PUSH);
-	button3.setText("    Add...  ");
+	button3.setText("   Add... ");
 	button3.setImage(loadImage!("add_32.png"));
 	button3.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
@@ -602,7 +660,7 @@ ToolBar createToolbar(Composite parent) ///
 	new ToolItem(toolBar, SWT.SEPARATOR);
 
 	auto button5 = new ToolItem(toolBar, SWT.PUSH);
-	button5.setText("Settings...");
+	button5.setText(" Settings");
 	button5.setImage(loadImage!("spanner_32.png"));
 	button5.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)

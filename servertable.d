@@ -3,6 +3,7 @@ module servertable;
 import tango.stdc.math : ceil;
 import tango.text.Util;
 import Integer = tango.text.convert.Integer;
+debug import tango.text.convert.Format;
 import tango.util.container.HashMap;
 
 import java.io.ByteArrayInputStream;
@@ -15,6 +16,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.graphics.TextLayout;
@@ -37,6 +39,7 @@ import geoip;
 import launch;
 import mainwindow;
 import masterlist;
+import messageboxes;
 import playertable;
 import rcon;
 import serveractions;
@@ -128,6 +131,8 @@ class ServerTable
 		padlockImage_ = new Image(Display.getDefault, data.scaledTo(12, 12));
 
 		selectedIps_ = new HashMap!(char[], int);
+		
+		timeOutColor_ = Display.getDefault().getSystemColor(SWT.COLOR_RED);
 	}
 
 
@@ -399,6 +404,7 @@ private:
 	MenuItem refreshSelected_;
 	void delegate(bool) stopServerRefresh_;
 	bool refreshInProgress_ = false;
+	Color timeOutColor_;
 
 	class SetDataListener : Listener {
 		void handleEvent(Event e)
@@ -412,8 +418,10 @@ private:
 			for (int i = ServerColumn.COUNTRY + 1; i <= ServerColumn.max; i++)
 				item.setText(i, sd.server[i]);
 
-			if (timedOut(&sd))
+			if (timedOut(&sd)) {
 				item.setText(ServerColumn.PING, "\&infin;");
+				item.setForeground(ServerColumn.PING, timeOutColor_);
+			}
 		}
 	}
 
@@ -522,7 +530,9 @@ private:
 						if (tl is null) {
 							tl = new TextLayout(Display.getDefault);
 							tl.setText(sd.server[ServerColumn.NAME]);
-							foreach (r; parseColors(sd.rawName).ranges)
+							bool useEtColors = serverList_.useEtColors;
+							auto name = parseColors(sd.rawName, useEtColors);
+							foreach (r; name.ranges)
 								tl.setStyle(r.style, r.start, r.end);
 
 							sd.customData = tl;  // cache it
@@ -570,9 +580,35 @@ private:
 		public void keyPressed (KeyEvent e)
 		{
 			switch (e.keyCode) {
-				case SWT.F10:
+				case SWT.F9: case SWT.F10:
+					// F10 is deprecated, as it is the standard key for opening
+					// the menu on Windows.
 					if ((e.stateMask & SWT.MODIFIER_MASK) == 0)
 						onRemoteConsole();
+					break;
+				case SWT.F12:
+					// print raw (with color codes) server and player names
+					if ((e.stateMask & SWT.MODIFIER_MASK) == 0) {
+						int i = table_.getSelectionIndex();
+						if (i != -1) {
+							char[][] s;
+							auto sd = serverList_.getFiltered(i);
+
+							log("-------------------------------------------");
+							log(sd.rawName);
+							log("");
+							s ~= sd.rawName;
+							s ~= "";
+							foreach (p; sd.players) {
+								log(p[PlayerColumn.RAWNAME]);
+								s ~= p[PlayerColumn.RAWNAME];
+							}
+							log("-------------------------------------------");
+
+							if (!haveConsole)
+								db("{}", join(s, newline));
+						}
+					}
 					break;
 				case SWT.DEL:
 					if ((e.stateMask & SWT.MODIFIER_MASK) == 0)
@@ -655,7 +691,7 @@ private:
 		new MenuItem(menu, SWT.SEPARATOR);
 
 		item = new MenuItem(menu, SWT.PUSH);
-		item.setText("Remote console\tF10");
+		item.setText("Remote console\tF9");
 		item.addSelectionListener(new class SelectionAdapter {
 			void widgetSelected(SelectionEvent e) { onRemoteConsole(); }
 		});

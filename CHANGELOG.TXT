@@ -1,10 +1,21 @@
 Latest changes
 --------------
+- New: Infinity signs changed to use red font, to make it easier to see servers
+  that timed out.
+
+
+v0.7 - 2010-05-05
+-----------------
 - New: Improved status bar.
 - New: Can now use .bat or .lnk files instead of an .exe when launching a game.
 - Change: Settings and data are now stored in a user-specific location, instead
   of the installation folder.  The installer will move your files to this
   location so you don't lose your current settings or server lists.
+  If you want to keep it all in one directory, create an empty file called
+  'portable.txt' in the directory where MonsterBrowser.exe is located.
+- Change: The key for opening a remote console window is now F9, as F10 is the
+  standard key for opening the menu on Windows.  F10 will still work, at least
+  in this version.
 - Fix: Using multiple protocol versions with the same master server didn't work
   properly.
 - Fix: The button for opening the game configuration now works on Vista.

@@ -26,14 +26,19 @@ If you have more than a couple of servers to add, it's easier to add them direct
 
 Remote Console
 --------------
-The remote console (rcon) lets you send commands to a game server.  It's an advanced feature primarily useful for server administrators.  To open a remote console window, select a server and press F10, or use the context menu.  The up and down arrow keys access the command history, while page up and page down scroll the output window.  Pressing Esc closes the window.
+The remote console (rcon) lets you send commands to a game server.  It's an advanced feature primarily useful for server administrators.  To open a remote console window, select a server and press F9, or use the context menu.  The up and down arrow keys access the command history, while page up and page down scroll the output window.  Pressing Esc closes the window.
+
+
+Portable Monster Browser
+------------------------
+If you create an (empty or not) file called 'portable.txt' in the directory where Monster Browser is installed, Monster Browser will save all its files in that directory.  Useful for USB stick installs, or if you want multiple independent installations.  Versions prior to 0.7 worked this way by default.
 
 
 Keyboard shortcuts
 ------------------
 F4     - Check for new servers
 F5     - Refresh list
-F10    - Open remote console
+F9     - Open remote console
 Enter  - Join server
 Ctrl+R - Refresh selected server(s)
 Ctrl+C - Copy the addresses of selected server(s) to the clipboard

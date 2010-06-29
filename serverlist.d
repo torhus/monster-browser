@@ -43,7 +43,7 @@ final class ServerList
 
 
 	///
-	this(in char[] gameName, MasterList master)
+	this(in char[] gameName, MasterList master, bool useEtColors)
 	in {
 		assert(gameName.length > 0);
 		assert(master !is null);
@@ -51,6 +51,7 @@ final class ServerList
 	body {
 		gameName_ = gameName;
 		master_ = master;
+		useEtColors_ = useEtColors;
 		ipHash_ = new HashMap!(char[], int);
 	}
 
@@ -58,9 +59,11 @@ final class ServerList
 	///
 	char[] gameName() { return gameName_; }
 
-
 	///
 	MasterList master() { return master_; }
+
+	///
+	bool useEtColors() { return useEtColors_; }
 
 
 	/**
@@ -322,6 +325,7 @@ private:
 	Set!(char[]) extraServers_;
 	char[] gameName_;
 	MasterList master_;
+	bool useEtColors_;
 
 	int sortColumn_ = ServerColumn.NAME;
 	bool reversed_ = false;
@@ -330,7 +334,9 @@ private:
 	Filter filters_ = Filter.NONE;
 
 
-	invariant()
+	// invariant + synchronized doesn't work with dmd on linux
+	// see http://d.puremagic.com/issues/show_bug.cgi?id=235
+	version (Windows) invariant()
 	{
 		synchronized (this) {
 			/*if (filteredList.length > list.length) {
