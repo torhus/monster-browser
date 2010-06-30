@@ -22,29 +22,30 @@ version (Windows) {
 
 
 /// Configuration for a game.
+// FIXME: avoid using cast(string) here, fix ini.d instead?
 struct GameConfig
 {
-	char[] name() /// Section name in the game config file.
+	string name() /// Section name in the game config file.
 	{
 		return name_;
 	}
 
-	char[] mod()  /// Quake 3 gamename, like "baseq3".  Defaults to name.
+	string mod()  /// Quake 3 gamename, like "baseq3".  Defaults to name.
 	{
-		return section.getValue("mod", name);
+		return cast(string)section.getValue("mod", name);
 	}
 
-	char[] masterServer()  /// Like "master3.idsoftware.com".
-	{
-		return section.getValue("masterServer", "master3.idsoftware.com");
+	string masterServer()  /// Like "master3.idsoftware.com".
+	{		
+		return cast(string)section.getValue("masterServer", "master3.idsoftware.com");
 	}
 
-	char[] protocolVersion()  /// Defaults to 68.
+	string protocolVersion()  /// Defaults to 68.
 	{
-		return section.getValue("protocolVersion", "68");
+		return cast(string)section.getValue("protocolVersion", "68");
 	}
 
-	char[] extraServersFile() /// Like "baseq3.extra".
+	string extraServersFile() /// Like "baseq3.extra".
 	{
 		return appDir ~ mod ~ ".extra";  // FIXME: check dataDir too?
 	}
@@ -58,7 +59,7 @@ struct GameConfig
 	 *      $(LI _exePath from the game configuration)
 	 *      $(LI gamePath from settings.ini))
 	 */
-	char[] exePath()
+	string exePath()
 	{
 		char[] path = null;
 		char[] regKey = section["regKey"];
@@ -67,7 +68,7 @@ struct GameConfig
 
 		version (Windows) if (regKey && exeName) {
 			try {
-				if (char[] dir = getRegistryStringValue(regKey))
+				if (string dir = getRegistryStringValue(regKey))
 					path = dir ~ '\\' ~ exeName;
 				else
 					log("regKey not found: " ~ regKey);
@@ -81,7 +82,7 @@ struct GameConfig
 		if (!path && !badRegKey)
 			path = section["exePath"];
 
-		return path ? path : !(regKey || exeName) ? getSetting("gamePath") :
+		return path ? cast(string)path : !(regKey || exeName) ? getSetting("gamePath") :
 		                                                                  null;
 	}
 
@@ -98,7 +99,7 @@ struct GameConfig
 		return arguments.colortest && mod == "smokinguns";
 	}
 
-	private char[] name_;
+	private string name_;
 	private IniSection section;
 }
 
@@ -167,8 +168,8 @@ useGslist=false
 	Ini gamesIni;
 
 	struct Setting {
-		char[] name;
-		char[] value;
+		string name;
+		string value;
 	}
 	Setting[] defaults = [{"coloredNames", "true"},
 	                      {"lastMod", "Smokin' Guns"},
@@ -348,14 +349,14 @@ void saveSettings()
  *
  * Will assert in debug mode if a non-existent key is given.
  */
-char[] getSetting(in char[] key)
+string getSetting(in char[] key)
 {
 	assert(settingsIni && settingsIni.sections.length > 0);
 	IniSection sec = settingsIni["Settings"];
 
 	assert(sec[key], key ~ " not found.\n\n"
 	                  "All settings need to have a default.");
-	return sec[key];
+	return cast(string)sec[key];
 }
 
 
@@ -364,7 +365,7 @@ char[] getSetting(in char[] key)
  *
  * Will assert in debug mode if a non-existent key is given.
  */
-void setSetting(char[] key, char[] value)
+void setSetting(string key, string value)
 {
 	assert(settingsIni && settingsIni.sections.length > 0);
 	IniSection sec = settingsIni["Settings"];

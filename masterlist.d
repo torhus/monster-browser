@@ -4,6 +4,7 @@ import core.memory;
 import std.file;
 import std.path;
 import std.stdio;
+import std.string;
 import tango.text.xml.SaxParser;
 
 import colorednames;
@@ -22,20 +23,20 @@ const ServerHandle InvalidServerHandle = ServerHandle.max;
 final class MasterList
 {
 	///
-	this(char[] name)
+	this(string name)
 	{
 		assert(name.length > 0);
 		name_ = name;
-		fileName_ = replace(name ~ ".xml", ':', '_');
+		fileName_ = replace(name ~ ".xml", ":", "_");
 	}
 
 	
 	/// Name, as given to the constructor.
-	char[] name() { return name_; }
+	string name() { return name_; }
 	
 	
 	/// The name of the file this master server's data is stored in.
-	char[] fileName() { return fileName_; }
+	string fileName() { return fileName_; }
 
 
 	/// Add a server, and return its ServerHandle.
@@ -63,7 +64,7 @@ final class MasterList
 	ServerHandle updateServer(ServerData sd)
 	{
 		synchronized (this) {
-			char[] address = sd.server[ServerColumn.ADDRESS];
+			string address = sd.server[ServerColumn.ADDRESS];
 			debug isValid(&sd);
 			ServerHandle sh = findServer(address);
 

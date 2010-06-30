@@ -6,6 +6,7 @@ module serveractions;
 
 import core.memory;
 import std.conv;
+import std.file;
 import std.stream;
 
 import java.lang.Runnable;
@@ -446,7 +447,7 @@ class ServerRetrievalController
 	 *
 	 * Set before calling run() if you don't want the default to be used.
 	 */
-	char[] progressLabel = "Querying servers";
+	string progressLabel = "Querying servers";
 	
 
 	/**
@@ -454,7 +455,7 @@ class ServerRetrievalController
 	 *
 	 * Set before calling run() if you don't want the default to be used.
 	 */
-	char[] interruptedMessage = "Aborted";
+	string interruptedMessage = "Aborted";
 
 
 	/**
@@ -464,7 +465,7 @@ class ServerRetrievalController
 	 *
 	 * Note: Set before calling run().
 	 */
-	char[][] autoSelect = null;
+	string[] autoSelect = null;
 
 
 	/**

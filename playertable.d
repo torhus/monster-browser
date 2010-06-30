@@ -30,7 +30,7 @@ import settings;
 PlayerTable playerTable;  ///
 
 // should correspond to serverlist.PlayerColumn
-char[][] playerHeaders = ["Name", "Score", "Ping"];
+string[] playerHeaders = ["Name", "Score", "Ping"];
 
 
 ///
