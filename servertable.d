@@ -1,10 +1,8 @@
 module servertable;
 
-import tango.stdc.math : ceil;
+import std.math;
 import tango.text.Util;
 import Integer = tango.text.convert.Integer;
-debug import tango.text.convert.Format;
-import tango.util.container.HashMap;
 
 import java.io.ByteArrayInputStream;
 import org.eclipse.swt.SWT;
@@ -51,7 +49,7 @@ import settings;
 ServerTable serverTable;  ///
 
 // should correspond to serverlist.ServerColumn
-char[][] serverHeaders =
+string[] serverHeaders =
                    [" ", "Name", "PW", "Ping", "Players", "Game", "Map", "IP"];
 
 
@@ -130,8 +128,6 @@ class ServerTable
 		auto data = new ImageData(stream);
 		padlockImage_ = new Image(Display.getDefault, data.scaledTo(12, 12));
 
-		selectedIps_ = new HashMap!(char[], int);
-		
 		timeOutColor_ = Display.getDefault().getSystemColor(SWT.COLOR_RED);
 	}
 
@@ -321,7 +317,7 @@ class ServerTable
 
 		assert(indices.length);
 
-		selectedIps_.clear();
+		selectedIps_ = null;
 		int[] validIndices;
 		foreach (i; indices) {
 			if (i != -1) {
@@ -387,7 +383,7 @@ class ServerTable
 	///
 	void forgetSelection()
 	{
-		selectedIps_.reset();
+		selectedIps_ = null;
 	}
 
 
@@ -398,7 +394,7 @@ private:
 	Table table_;
 	Composite parent_;
 	ServerList serverList_;
-	HashMap!(char[], int) selectedIps_;
+	int[string] selectedIps_;
 	bool showFlags_, coloredNames_;
 	Image padlockImage_;
 	MenuItem refreshSelected_;
@@ -428,7 +424,7 @@ private:
 	class MySelectionListener : SelectionListener {
 		void widgetSelected(SelectionEvent e)
 		{
-			selectedIps_.clear();
+			selectedIps_ = null;
 
 			synchronized (serverList_) {
 				int[] indices = table_.getSelectionIndices;
@@ -484,7 +480,7 @@ private:
 				// keep the same servers selected
 				foreach (ip, v; selectedIps_)
 					selectedIps_[ip] = serverList_.getFilteredIndex(ip);
-				table_.setSelection(selectedIps_.toArray());
+				table_.setSelection(selectedIps_.values);
 			}
 		}
 	}
@@ -712,7 +708,7 @@ private:
 	{
 		char[][] addresses;
 
-		if (selectedIps_.size == 0)
+		if (selectedIps_.length == 0)
 			return;
 
 		foreach (ip, v; selectedIps_)
@@ -762,7 +758,7 @@ private:
 					ServerData sd = master.getServerData(sh);
 					setEmpty(&sd);
 					master.setServerData(sh, sd);
-					selectedIps_.removeKey(ip);
+					selectedIps_.remove(ip);
 				}
 
 				// refresh filtered list and update GUI
@@ -818,7 +814,7 @@ private:
 
 	void onSelectAll()
 	{
-		selectedIps_.clear();
+		selectedIps_ = null;
 
 		synchronized (serverList_) {
 			int[] indices;

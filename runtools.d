@@ -71,9 +71,8 @@ Set!(string) browserGetNewList(in GameConfig game)
 
 	if (proc) {
 		try {
-			auto lineIter= new Lines!(char)(proc.stdout);
 			size_t start = gslist ? 0 : "q3s ".length;
-			addresses = collectIpAddresses(lineIter, start);
+			addresses = collectIpAddresses(proc.stdout, start);
 		}
 		catch (PipeException e) {
 			//logx(__FILE__, __LINE__, e);
@@ -222,23 +221,22 @@ final class QstatServerRetriever : IServerRetriever
 
 			cmdLine ~= " -maxsim " ~ getSetting("simultaneousQueries");
 
-			proc = new Process(true, cmdLine);
-			proc.workDir = appDir;
-			proc.gui = true;
+			proc = new Process;
+			//proc.workDir = appDir;
+			//proc.gui = true;
 			log("Executing '" ~ cmdLine ~ "'.");
-			proc.execute();
+			proc.execute(cmdLine);
 
 			if (arguments.dumplist)
 				dumpFile.open("refreshlist.tmp", "w");
 
 			foreach (address; addresses_) {
-				proc.stdin.write(address);
-				proc.stdin.write(newline);
+				proc.stdin.writeln(address);
 				if (dumpFile.isOpen) {
 					dumpFile.writeln(address);
 				}
 			}
-			proc.stdin.flush.close;
+			proc.stdin.close();
 			log("Fed %s addresses to qstat.", addresses_.length);
 		}
 		catch (ProcessException e) {
@@ -253,10 +251,6 @@ final class QstatServerRetriever : IServerRetriever
 	///
 	void retrieve(bool delegate(ServerHandle sh, bool replied) deliver)
 	{
-		scope iter = new Lines!(char)(proc.stdout);
-		// FIXME: verify that everything is initialized correctly, and that
-		// stdout is valid
-
 		bool _deliver(ServerData* sd, bool replied)
 		{
 			ServerHandle sh;
@@ -273,7 +267,7 @@ final class QstatServerRetriever : IServerRetriever
 			return deliver(sh, replied);
 		}
 
-		qstat.parseOutput(game_.mod, iter, &_deliver);
+		qstat.parseOutput(game_.mod, proc.stdout, &_deliver);
 	}
 
 

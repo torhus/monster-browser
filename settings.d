@@ -2,18 +2,15 @@
 
 module settings;
 
-import tango.core.Exception;
-import Path = tango.io.Path;
-import tango.text.Ascii;
-import tango.text.Util;
-import Integer = tango.text.convert.Integer;
-import tango.stdc.stdio;
+import core.stdc.stdio;
+import std.contracts;
+import std.path;
 
 import common;
 import ini;
 
 version (Windows) {
-	import tango.stdc.stringz;
+	import std.string;
 	import tango.sys.win32.CodePage;
 	import tango.sys.win32.SpecialPath;
 	import tango.sys.win32.UserGdi;
@@ -75,7 +72,7 @@ struct GameConfig
 				else
 					log("regKey not found: " ~ regKey);
 			}
-			catch (IllegalArgumentException e) {
+			catch (Exception e) {
 				log(e.toString());
 				badRegKey = true;
 			}
@@ -503,22 +500,22 @@ private char[] autodetectQuake3Path()
  *
  * Sample return: "C:\Program Files".
  */
-version (Windows) private char[] getProgramFilesDirectory()
+version (Windows) private string getProgramFilesDirectory()
 {
-	char[] path = getSpecialPath(CSIDL_PROGRAM_FILES);
+	string path = getSpecialPath(CSIDL_PROGRAM_FILES);
 	assert(path.length);
-	return path.length ? path : "C:\\Program Files".dup;
+	return path.length ? path : "C:\\Program Files";
 }
 
 
 /**
  * Returns the value of a registry key, or null if there was an error.
 
- * Throws: IllegalArgumentException if the argument is not a valid key.
+ * Throws: Exception if the argument is not a valid key.
  *
  * BUGS: Doesn't convert arguments to ANSI.
  */
-version (Windows) private char[] getRegistryStringValue(in char[] key)
+version (Windows) private string getRegistryStringValue(in char[] key)
 {
 	HKEY hKey;
 	DWORD dwType = REG_SZ;
@@ -530,7 +527,7 @@ version (Windows) private char[] getRegistryStringValue(in char[] key)
 
 	char[][] parts = split(key, "\\");
 	if (parts.length < 3)
-		throw new IllegalArgumentException("Invalid registry key: " ~ key);
+		throw new Exception("Invalid registry key: " ~ key);
 
 	HKEY keyConst = hkeyFromString(parts[0]);
 	char[] subKey = join(parts[1..$-1], "\\");
@@ -560,11 +557,11 @@ version (Windows) private char[] getRegistryStringValue(in char[] key)
 		RegCloseKey(hKey);
 	}
 
-	return (status == ERROR_SUCCESS) ? retval : null;
+	return (status == ERROR_SUCCESS) ? assumeUnique!retval : null;
 }
 
 
-/// Throws: IllegalArgumentException.
+/// Throws: Exception.
 version (Windows) private HKEY hkeyFromString(in char[] s)
 {
 	if (icompare(s, "HKEY_CLASSES_ROOT") == 0)
@@ -574,5 +571,5 @@ version (Windows) private HKEY hkeyFromString(in char[] s)
 	if (icompare(s, "HKEY_LOCAL_MACHINE") == 0)
 		return HKEY_LOCAL_MACHINE;
 
-	throw new IllegalArgumentException("Invalid HKEY: " ~ s);
+	throw new Exception("Invalid HKEY: " ~ s);
 }

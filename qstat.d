@@ -4,15 +4,10 @@
 
 module qstat;
 
-import tango.io.device.File;
-import tango.io.model.IConduit : OutputStream;
-import tango.io.stream.Buffered;
-import tango.io.stream.Lines;
-import tango.stdc.ctype : isdigit;
+import std.stdio;
+import std.stream : InputStream;
 import tango.text.Ascii;
 import tango.text.Util;
-import Float = tango.text.convert.Float;
-debug import tango.text.convert.Format;
 import tango.text.convert.Integer;
 
 import colorednames;
@@ -38,11 +33,11 @@ private enum Field {
  *
  * Throws: when outputFileName is given: IOException.
  */
-bool parseOutput(in char[] modName, Lines!(char) iter,
-                bool delegate(ServerData*, bool replied) deliver)
+bool parseOutput(in char[] modName, InputStream input,
+                 bool delegate(ServerData*, bool replied) deliver)
 {
 	char[][] gtypes;
-	scope BufferedOutput outfile = null;
+	File outfile;
 	debug Timer timer2;
 	debug timer2.start();
 	bool keepGoing = true;
@@ -51,19 +46,12 @@ bool parseOutput(in char[] modName, Lines!(char) iter,
 
 	if (arguments.dumpqstat) {
 		try {
-			outfile = new BufferedOutput(new File(
-			                                   "qstat.out", WriteCreateShared));
+			outfile = File("qstat.out", "w");
 		}
-		catch (IOException e) {
+		catch (StdioException e) {
 			error("Unable to create file, qstat output will not be saved "
 			                                                       "to disk.");
-			outfile = null;
 		}
-	}
-
-	scope (exit) {
-		if (outfile)
-			outfile.flush.close;
 	}
 
 	if (modName in gameTypes) {
@@ -73,17 +61,15 @@ bool parseOutput(in char[] modName, Lines!(char) iter,
 		gtypes = defaultGameTypes;
 	}
 
-	while (keepGoing) {
+	while (keepGoing && !input.eof()) {
 		debug checkTime(timer2, "1");
-		char[] line = iter.next();
+		char[] line = input.readline();
 		debug checkTime(timer2, "2");
 		if (!line)
 			break;
 
-		if (outfile) {
-			outfile.write(line);
-			outfile.write(newline);
-		}
+		if (outfile.isOpen)
+			outfile.writeln(line);
 
 		if (line.length >= 3 && line[0..3] == "Q3S") {
 			char[][] fields = split(line.dup, FIELDSEP);
@@ -103,11 +89,9 @@ bool parseOutput(in char[] modName, Lines!(char) iter,
 				sd.server[ServerColumn.MAP] = fields[Field.MAP];
 
 				// cvar line
-				line = iter.next();
-				if (outfile) {
-					outfile.write(line);
-					outfile.write(newline);
-				}
+				line = input.readline();
+				if (outfile.isOpen)
+					outfile.writeln(line);
 
 				parseCvars(line, &sd, gtypes);
 
@@ -115,7 +99,7 @@ bool parseOutput(in char[] modName, Lines!(char) iter,
 
 				// parse players
 				int humans;
-				sd.players = parsePlayers(iter, &humans, outfile);
+				sd.players = parsePlayers(input, &humans, outfile);
 
 				// 'Players' column contents
 				uint ate;
@@ -143,8 +127,8 @@ bool parseOutput(in char[] modName, Lines!(char) iter,
 				keepGoing = deliver(&sd, false);
 				debug checkTime(timer2, "4x");
 			}
-			if (outfile) {
-				outfile.write(newline);
+			if (outfile.isOpen) {
+				outfile.writeln();
 			}
 		}
 	}
@@ -221,28 +205,28 @@ body {
 				break;
 		}
 
-		sd.cvars ~= cvar;
+		// FIXME: avoid this cast
+		sd.cvars ~= cast(string[])cvar;
 	}
 }
 
 
-private char[][][] parsePlayers(Lines!(char) lineIter,
-                                int* humanCount=null, OutputStream output=null)
+private string[][] parsePlayers(InputStream input, int* humanCount,
+                                                                   File output)
 {
-	char[][][] players;
+	string[][] players;
 	char[] line;
 	int humans = 0;
 
-	while ((line = lineIter.next()) !is null && line.length) {
-		if (output) {
-			output.write(line);
-			output.write(newline);
-		}
+	while (!input.eof() && (line = input.readline(line))) {
+		if (output.isOpen)
+			output.writeln(line);
+		// FIXME: use phobos splitting, to avoid assumeUnique?
 		char[][] s = split(line.dup, FIELDSEP);
-		char player[][] = new char[][PlayerColumn.max + 1];
-		player[PlayerColumn.RAWNAME] = s[0];
-		player[PlayerColumn.SCORE]   = s[1];
-		player[PlayerColumn.PING]    = s[2];
+		string[] player = new string[PlayerColumn.max + 1];
+		player[PlayerColumn.RAWNAME] = assumeUnique!s[0];
+		player[PlayerColumn.SCORE]   = assumeUnique!s[1];
+		player[PlayerColumn.PING]    = assumeUnique!s[2];
 		player[PlayerColumn.NAME]    = null;
 		players ~= player;
 

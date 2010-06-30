@@ -34,7 +34,7 @@ void messageBox(in char[] msg, in char[] title, int style)
 }
 
 
-void _messageBox(char[] title, int style)(in char[] fmt, ...)
+void _messageBox(string title, int style)(in char[] fmt, ...)
 {
 	char[] msg;
 	void f(dchar c) { encode(msg, c); }

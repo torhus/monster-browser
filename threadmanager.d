@@ -1,7 +1,7 @@
 module threadmanager;
 
-import core.Thread;
-//import core.sync.Semaphore;
+import core.thread;
+import core.sync.semaphore;
 
 import java.lang.Runnable;
 import org.eclipse.swt.widgets.Display;

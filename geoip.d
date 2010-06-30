@@ -4,8 +4,9 @@
 
 module geoip;
 
-import tango.stdc.stringz;
-import tango.sys.SharedLib;
+import std.conv;
+import std.loader;
+import std.string;
 import tango.text.Ascii;
 
 import java.io.ByteArrayInputStream;
@@ -17,10 +18,10 @@ import common;
 import flagdata;
 
 
-private {
+private __gshared {
 	GeoIP* gi;
 	Display display;
-	Image[char[]] flagCache;
+	Image[string] flagCache;
 }
 
 private void bindFunc(alias funcPtr)(SharedLib lib)
@@ -32,32 +33,33 @@ private void bindFunc(alias funcPtr)(SharedLib lib)
 ///
 bool initGeoIp()
 {
-	SharedLib geoIpLib;
+	ExeModule geoIpLib;
 
 	assert(gi is null, "Can't call initGeoIp() more than once.");
 
-	display = Display.getDefault;
+	display = Display.getDefault();
 
 	try {
-		geoIpLib = SharedLib.load("GeoIP.dll");
+		geoIpLib = new ExeModule("GeoIP.dll");
 		bindFunc!(GeoIP_open)(geoIpLib);
 		bindFunc!(GeoIP_delete)(geoIpLib);
 		bindFunc!(GeoIP_database_info)(geoIpLib);
 		bindFunc!(GeoIP_country_code_by_addr)(geoIpLib);
 		bindFunc!(GeoIP_country_name_by_addr)(geoIpLib);
 	}
-	catch (SharedLibException e) {
+	catch (ExeModuleException e) {
 		log("Error when loading GeoIP.dll, flags will not be shown.");
+		geoIpLib.close();
 		return false;
 	}
 
 	gi = GeoIP_open(toStringz(appDir ~ "GeoIP.dat"), GEOIP_MEMORY_CACHE);
 	if (gi is null) {
 		log("GeoIP.dat was not found, flags will not be shown.");
-		geoIpLib.unload;
+		geoIpLib.close();
 	}
 	else {
-		char[] info = fromStringz(GeoIP_database_info(gi));
+		string info = to!string(GeoIP_database_info(gi));
 
 		log("Loaded GeoIP database: " ~ info);
 		initFlagFiles;
@@ -65,7 +67,7 @@ bool initGeoIp()
 			log("No flag data was found.");
 			GeoIP_delete(gi);
 			gi = null;
-			geoIpLib.unload;
+			geoIpLib.close();
 		}
 	}
 
@@ -74,7 +76,7 @@ bool initGeoIp()
 
 
 ///
-char[] countryCodeByAddr(in char[] addr)
+string countryCodeByAddr(in char[] addr)
 {
 	if (gi is null)
 		return null;
@@ -85,15 +87,15 @@ char[] countryCodeByAddr(in char[] addr)
 		return null;
 	}
 	else {
-		char[] s = fromStringz(code);
+		string s = to!string(code);
 		assert(s.length == 2);
-		return toLower(s.dup);
+		return toLowerInPlace(s);
 	}
 }
 
 
 ///
-char[] countryNameByAddr(in char[] addr)
+string countryNameByAddr(in char[] addr)
 {
 	if (gi is null)
 		return null;
@@ -104,7 +106,7 @@ char[] countryNameByAddr(in char[] addr)
 		return null;
 	}
 	else {
-		return fromStringz(name);
+		return to!string(name);
 	}
 }
 
@@ -172,7 +174,7 @@ enum /*GeoIPOptions*/ {
 	GEOIP_MMAP_CACHE = 8,
 }
 
-extern (C) {
+extern (C) __gshared {
 	GeoIP* function(in char* filename, int flags) GeoIP_open;
 	void function(GeoIP* gi) GeoIP_delete;
 	char* function(GeoIP* gi) GeoIP_database_info;

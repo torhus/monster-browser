@@ -4,13 +4,9 @@
 
 module serveractions;
 
-import tango.core.Exception;
-import tango.core.Memory;
-import Path = tango.io.Path;
-import tango.io.stream.TextFile;
-import tango.text.convert.Format;
-import Integer = tango.text.convert.Integer;
-import tango.util.log.Log;
+import core.memory;
+import std.conv;
+import std.stream;
 
 import java.lang.Runnable;
 import org.eclipse.swt.widgets.Display;
@@ -19,7 +15,6 @@ import common;
 import masterlist;
 import mainwindow;
 import messageboxes;
-//import qstat;
 import runtools;
 import serverdata;
 import serverlist;
@@ -52,9 +47,9 @@ ServerList[char[]] serverListCache;
  * a master server if there's no pre-existing data for the game, etc.  Most of
  * the work is done in a new thread.
  */
-void switchToGame(in char[] name)
+void switchToGame(string name)
 {
-	static char[] gameName;
+	static string gameName;
 
 	void f() {
 		ServerList serverList;
@@ -68,7 +63,7 @@ void switchToGame(in char[] name)
 			needRefresh = !serverList.complete;
 		}
 		else {
-			char[] masterName = gslist ? "gslist-" ~ gameName :
+			string masterName = gslist ? "gslist-" ~ gameName :
 			                                                 game.masterServer;
 			MasterList master;
 
@@ -92,15 +87,15 @@ void switchToGame(in char[] name)
 			// Add servers from the extra servers file, if found.
 			auto file = game.extraServersFile;
 			try {
-				if (Path.exists(file)) {
-					auto input = new TextFileInput(file);
+				if (exists(file)) {
+					auto input = new BufferedFile(file);
 					auto addresses = collectIpAddresses(input);
-					input.close;
+					input.close();
 					foreach (addr; addresses)
 						serverList.addExtraServer(addr);
 				}
 			}
-			catch (IOException e) {
+			catch (StreamException e) {
 				log("Error when reading \"" ~ file ~ "\".");
 			}
 		}
@@ -124,7 +119,7 @@ void switchToGame(in char[] name)
 						canRefresh = master.load(game.protocolVersion)
 						                                  && master.length > 0;
 					}
-					catch (IOException e) {
+					catch (FileException e) {
 						error("There was an error reading " ~ master.fileName
 						                    ~ "\nPress OK to get a new list.");
 					}
@@ -166,7 +161,7 @@ void loadSavedList()
 	GC.collect();
 
 	GameConfig game = getGameConfig(serverList.gameName);
-	if (Path.exists(dataDir ~ master.fileName)) {
+	if (exists(dataDir ~ master.fileName)) {
 		auto retriever = new MasterListServerRetriever(game, master);
 		auto contr = new ServerRetrievalController(retriever);
 		contr.disableQueue();
@@ -196,9 +191,9 @@ void loadSavedList()
  *     select  = Select the newly added or refreshed servers.
  *
  */
-void queryServers(in char[][] addresses, bool replace=false, bool select=false)
+void queryServers(string[] addresses, bool replace=false, bool select=false)
 {
-	static char[][] addresses_;
+	static string[] addresses_;
 	static bool replace_, select_;
 
 	static void f() {
@@ -206,9 +201,9 @@ void queryServers(in char[][] addresses, bool replace=false, bool select=false)
 		MasterList master = serverTable.serverList.master;
 
 		auto retriever = new QstatServerRetriever(gameName, master,
-		                                   Set!(char[])(addresses_), replace_);
+		                                   Set!(string)(addresses_), replace_);
 		auto contr = new ServerRetrievalController(retriever, replace_);
-		contr.progressLabel = Format("Querying {} servers", addresses_.length);
+		contr.progressLabel = Format("Querying %s servers", addresses_.length);
 
 		if (select_)
 			contr.autoSelect = addresses_;
@@ -240,7 +235,7 @@ void refreshAll()
 	ServerList serverList = serverTable.serverList;
 	MasterList master = serverList.master;
 	GameConfig game = getGameConfig(serverList.gameName);
-	Set!(char[]) addresses, addresses2;
+	Set!(string) addresses, addresses2;
 	auto entry = masterLists[master.name];
 	auto retry = game.protocolVersion in entry.retryProtocols;
 
@@ -259,7 +254,7 @@ void refreshAll()
 	}
 
 	log("Refreshing server list for " ~ game.name ~ "...");
-	log(Format("Found {} servers.", addresses.length));
+	log("Found %s servers.", addresses.length);
 
 	// merge in the extra servers
 	Set!(char[]) extraServers = serverList.extraServers;
@@ -268,7 +263,7 @@ void refreshAll()
 		addresses.add(server);
 
 	auto delta = addresses.length - oldLength;
-	log(Format("Added {} extra servers, skipping {} duplicates.",
+	log(Format("Added %s extra servers, skipping %s duplicates.",
 	                                        delta, extraServers.length-delta));
 
 	Display.getDefault().syncExec(dgRunnable({
@@ -282,8 +277,8 @@ void refreshAll()
 			auto retriever = new QstatServerRetriever(game.name, master,
 			                                                  addresses, true);
 			auto contr = new ServerRetrievalController(retriever);
-			contr.progressLabel = Format("Refreshing {} servers",
-			                                                 addresses.length);
+			contr.progressLabel = text("Refreshing ", addresses.length,
+			                           " servers");
 			contr.run();
 		}
 
@@ -291,9 +286,8 @@ void refreshAll()
 			auto retriever = new QstatServerRetriever(game.name, master,
 			                                                 addresses2, true);
 			auto contr = new ServerRetrievalController(retriever);
-			contr.progressLabel =
-			              Format("Retrying {} previously unresponsive servers",
-			                                                addresses2.length);
+			contr.progressLabel = text("Retrying ", addresses2.length,
+			                            " previously unresponsive servers");
 			contr.interruptedMessage = "Ready";
 			contr.run();
 		}
@@ -337,7 +331,7 @@ void checkForNewServers()
 			statusBar.showProgress("Getting new list from master", true);
 		}));
 
-		Set!(char[]) addresses = browserGetNewList(game);
+		Set!(string) addresses = browserGetNewList(game);
 
 		// Make sure we don't start removing servers based on an incomplete
 		// address list.
@@ -351,7 +345,7 @@ void checkForNewServers()
 
 		size_t total = addresses.length;
 		int removed = 0;
-		Set!(char[]) addresses2;
+		Set!(string) addresses2;
 
 		// Exclude servers that are already known to run the right mod, and
 		// delete servers from the master list that's missing from the
@@ -379,7 +373,7 @@ void checkForNewServers()
 			}
 		}
 
-		log(Format("Got {} servers from {}, including {} new.",
+		log(Format("Got %s servers from %s, including %s new.",
 		                          total, game.masterServer, addresses.length));
 
 		if (removed > 0) {
@@ -388,7 +382,7 @@ void checkForNewServers()
 				serverTable.fullRefresh();
 			}));
 
-			log(Format("Removed {} servers that were missing from master.",
+			log(Format("Removed %s servers that were missing from master.",
 			                                                         removed));
 		}
 
@@ -415,7 +409,7 @@ void checkForNewServers()
 			auto retriever = new QstatServerRetriever(game.name, master,
 			                                                  addresses, true);
 			auto contr = new ServerRetrievalController(retriever);
-			contr.progressLabel = Format("Checking {}  servers",
+			contr.progressLabel = Format("Checking %s  servers",
 			                                                 addresses.length);
 			contr.run();
 
@@ -423,7 +417,7 @@ void checkForNewServers()
 				retriever = new QstatServerRetriever(game.name,
 				                                     master, addresses2, true);
 				contr = new ServerRetrievalController(retriever);
-				contr.progressLabel = Format("Extended check, {} servers",
+				contr.progressLabel = Format("Extended check, %s servers",
 				                                            addresses2.length);
 				contr.interruptedMessage = "Ready";
 				contr.run();
@@ -489,7 +483,7 @@ class ServerRetrievalController
 
 		try
 			maxTimeouts_ = Integer.toInt(getSetting("maxTimeouts"));
-		catch (IllegalArgumentException e)
+		catch (ConvError e)
 			maxTimeouts_ = 3;  // FIXME: use the actual default
 
 		Display.getDefault.syncExec(dgRunnable( {
@@ -544,7 +538,7 @@ class ServerRetrievalController
 				// a benchmarking tool
 				if (arguments.quit) {
 					Display.getDefault.syncExec(dgRunnable( {
-						Log.formatln("Time since startup: {} seconds.",
+						log("Time since startup: %s seconds.",
 						                                  globalTimer.seconds);
 						mainWindow.close;
 					}));

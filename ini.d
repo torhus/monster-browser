@@ -1,14 +1,14 @@
 /*
 	Copyright (C) 2004-2006 Christopher E. Miller
-
+	
 	This software is provided 'as-is', without any express or implied
 	warranty.  In no event will the authors be held liable for any damages
 	arising from the use of this software.
-
+	
 	Permission is granted to anyone to use this software for any purpose,
 	including commercial applications, and to alter it and redistribute it
 	freely, subject to the following restrictions:
-
+	
 	1. The origin of this software must not be misrepresented; you must not
 	   claim that you wrote the original software. If you use this software
 	   in a product, an acknowledgment in the product documentation would be
@@ -20,14 +20,13 @@
 
 /*
 
-This file was modified 19 March 2009 by torhu (tango port).
+Modified for D 2/Phobos compatibility by torhu.
 
 Update:
 The Ini object no longer saves in the destructor because if it is the
 garbage collector deleting it, some value or section object could have
 been destructed first, resulting in undefined behavior, such as an
 access violation. Solution: save() before you exit the program.
-
 
 Portable module for reading and writing INI files of the format:
 
@@ -54,20 +53,17 @@ Differences with Windows' profile (INI) functions:
 
 
 
-/// Module for reading and writing _INI files. _ini.d version 0.5
+/// Portable module for reading and writing _INI files. _ini.d version 0.6
 module ini;
 
-import tango.io.device.File;
-import tango.io.stream.TextFile;
-import tango.stdc.stringz;
-import tango.text.Ascii;
-import tango.text.Util;
+private import std.file, std.string, std.stream;
+
 
 //debug = INI; //show file being parsed
 
 
 debug(INI)
-	import tango.io.Stdout;
+	private import std.cstream;
 
 
 private class IniLine
@@ -75,10 +71,10 @@ private class IniLine
 	~this()
 	{
 		debug(PRINT_DTORS)
-			Stdout("~IniLine").newline;
+			printf("~IniLine\n");
 	}
-
-
+	
+	
 private:
 	char[] data;
 }
@@ -98,12 +94,12 @@ protected:
 	{
 		_name = name;
 	}
-
-
+	
+	
 	~this()
 	{
 		debug(PRINT_DTORS)
-			Stdout.formatln("~IniKey '{}'", _name);
+			printf("~IniKey '%.*s'\n", _name);
 	}
 
 
@@ -137,12 +133,12 @@ protected:
 		_ini = ini;
 		_name = name;
 	}
-
-
+	
+	
 	~this()
 	{
 		debug(PRINT_DTORS)
-			Stdout.formatln("~IniSection '{}'", _name);
+			printf("~IniSection '%.*s'\n", _name);
 	}
 
 
@@ -163,7 +159,7 @@ public:
 
 
 	/// foreach key.
-	int opApply(int delegate(inout IniKey) dg)
+	int opApply(int delegate(ref IniKey) dg)
 	{
 		int result = 0;
 		uint i;
@@ -229,21 +225,21 @@ public:
 		}
 		value(ikey, newValue);
 	}
-
-
+	
+	
 	/+
 	///
 	alias setValue value;
 	+/
-
-
+	
+	
 	/// Same as setValue(ikey, newValue).
 	void value(IniKey ikey, char[] newValue)
 	{
 		return setValue(ikey, newValue);
 	}
-
-
+	
+	
 	/// Same as setValue(keyName, newValue).
 	void value(char[] keyName, char[] newValue)
 	{
@@ -261,10 +257,10 @@ public:
 		}
 		return defaultValue; //didn't find it
 	}
-
-
+	
+	
 	// /// Returns: _value of the existing key keyName, or null if not present.
-	/// Same as setValue(keyName, null).
+	/// Same as getValue(keyName, null).
 	char[] value(char[] keyName)
 	{
 		return getValue(keyName, null);
@@ -283,8 +279,8 @@ public:
 	{
 		value(keyName, newValue);
 	}
-
-
+	
+	
 	/// _Remove key keyName.
 	void remove(char[] keyName)
 	{
@@ -322,16 +318,16 @@ protected:
 	void parse()
 	{
 		debug(INI)
-			Stdout.formatln("INI parsing file '{}'\n", _file);
+			printf("INI parsing file '%.*s'\n", _file);
 
 		char[] data;
 		int i = -1;
 		IniSection isec;
-		uint lineStartIndex = 0;
+		uint lineStartIndex = 0; 
 
 		try
 		{
-			data = cast(char[])File.get(_file);
+			data = cast(char[])std.file.read(_file);
 			/+
 			File f = new File(_file, FileMode.In);
 			data = f.readString(f.size());
@@ -341,13 +337,13 @@ protected:
 		catch(Object o)
 		{
 			debug(INI)
-				Stdout("INI no file to parse").newline;
+				std.cstream.dout.writeString("INI no file to parse\n");
 			return;
 		}
 		if(!data.length)
 		{
 			debug(INI)
-				Stdout("INI nothing to parse").newline;
+				std.cstream.dout.writeString("INI nothing to parse\n");
 			return;
 		}
 
@@ -366,8 +362,8 @@ protected:
 			assert(i > 0);
 			i--;
 		}
-
-
+		
+		
 		void reset()
 		{
 			lineStartIndex = i + 1;
@@ -379,7 +375,7 @@ protected:
 			IniLine iline = new IniLine;
 			iline.data = data[lineStartIndex .. i];
 			debug(INI)
-				Stdout.formatln("INI line: '{}'", substitute(substitute(substitute(iline.data, "\\", "\\\\"), "\r", "\\r"), "\n", "\\n"));
+				printf("INI line: '%.*s'\n", std.string.replace(std.string.replace(std.string.replace(iline.data, "\\", "\\\\"), "\r", "\\r"), "\n", "\\n"));
 			isec.lines ~= iline;
 		}
 
@@ -416,7 +412,7 @@ protected:
 					if(!isecs[0].lines)
 						isecs = isecs[1 .. isecs.length];
 					debug(INI)
-						Stdout("INI done parsing").newline.newline;
+						std.cstream.dout.writeString("INI done parsing\n\n");
 					return;
 
 				case ' ':
@@ -424,7 +420,7 @@ protected:
 				case '\v':
 				case '\f':
 					break;
-
+				
 				case ';': //comments
 				case '#':
 					done_comment:
@@ -440,20 +436,20 @@ protected:
 									ungetc();
 								reset();
 								break done_comment;
-
+							
 							case '\n':
 								eol();
 								reset();
 								break done_comment;
-
+							
 							case 0: //eof
 								goto ini_eof;
-
+							
 							default: ;
 						}
 					}
 					break;
-
+				
 				default:
 					if(ch == secStart) // '['
 					{
@@ -486,7 +482,7 @@ protected:
 										isecs ~= isec;
 										isec = new IniSection(this, data[i2 .. i]);
 										debug(INI)
-											Stdout.formatln("INI section: '{}'", isec._name);
+											printf("INI section: '%.*s'\n", isec._name);
 										for(;;)
 										{
 											ch2 = getc();
@@ -498,16 +494,16 @@ protected:
 												case '\f':
 													//ignore whitespace
 													break;
-
+		
 												case '\r':
 													ch2 = getc();
 													if(ch2 != '\n')
 														ungetc();
 													break done_sec;
-
+		
 												case '\n':
 													break done_sec;
-
+		
 												default:
 													//just treat junk after the ] as the next line
 													ungetc();
@@ -537,35 +533,35 @@ protected:
 										ungetc();
 									reset();
 									break done_default;
-
+								
 								case '\n':
 									eol();
 									reset();
 									break done_default;
-
+								
 								case 0: //eof
 									goto ini_eof;
-
+								
 								case ' ':
 								case '\t':
 								case '\v':
 								case '\f':
 									break;
-
+								
 								case '=':
 									IniKey ikey;
-
-
+	
+	
 									void addKey()
 									{
 										ikey.data = data[lineStartIndex .. i];
 										ikey._value = data[i2 .. i];
 										isec.lines ~= ikey;
 										debug(INI)
-											Stdout.formatln("INI key: '{}' = '{}'", ikey._name, ikey._value);
+											printf("INI key: '%.*s' = '%.*s'\n", ikey._name, ikey._value);
 									}
-
-
+									
+									
 									ikey = new IniKey(data[i2 .. i]);
 									i2 = i + 1; //after =
 									for(;;) //get key value
@@ -580,22 +576,22 @@ protected:
 													ungetc();
 												reset();
 												break done_default;
-
+											
 											case '\n':
 												addKey();
 												reset();
 												break done_default;
-
+											
 											case 0: //eof
 												addKey();
 												reset();
 												goto ini_eof;
-
+											
 											default: ;
 										}
 									}
 									break done_default;
-
+								
 								default: ;
 							}
 						}
@@ -603,12 +599,12 @@ protected:
 			}
 		}
 	}
-
-
+	
+	
 	void firstOpen(char[] file)
 	{
 		//null terminated just to make it easier for the implementation
-		_file = toStringz(file.dup)[0 .. file.length];
+		_file = toStringz(file)[0 .. file.length];
 		parse();
 	}
 
@@ -619,7 +615,7 @@ public:
 	{
 		this.secStart = secStart;
 		this.secEnd = secEnd;
-
+		
 		firstOpen(file);
 	}
 
@@ -634,8 +630,8 @@ public:
 	~this()
 	{
 		debug(PRINT_DTORS)
-			Stdout.formatln("~Ini '{}'", _file);
-
+			printf("~Ini '%.*s'\n", _file);
+		
 		// The reason this is commented is explained above.
 		/+
 		if(_modified)
@@ -647,7 +643,7 @@ public:
 	/// Comparison function for section and key names. Override to change behavior.
 	bool match(char[] s1, char[] s2)
 	{
-		return !icompare(s1, s2);
+		return !std.string.icmp(s1, s2);
 	}
 
 
@@ -659,7 +655,7 @@ public:
 			save();
 		_modified = false;
 		isecs = null;
-
+		
 		firstOpen(file);
 	}
 
@@ -686,10 +682,11 @@ public:
 	{
 		return _modified;
 	}
-
-
-	/// Write contents to disk, even if no changes were made. It is common to do if(modified)save();
-	void save()
+	
+	
+	/// Params:
+	/// f = an opened-for-write stream; save() uses BufferedFile by default. Override save() to change stream.
+	protected final void saveToStream(Stream f)
 	{
 		_modified = false;
 
@@ -699,9 +696,10 @@ public:
 		IniKey ikey;
 		IniSection isec;
 		uint i = 0, j;
-		scope TextFileOutput f = new TextFileOutput(_file);
-		scope (exit)
-			f.flush.close;
+		//auto File f = new File;
+
+		//f.create(_file, FileMode.Out);
+		assert(f.writeable);
 
 		if(isecs[0]._name.length)
 			goto write_name;
@@ -711,7 +709,7 @@ public:
 		for(; i != isecs.length; i++)
 		{
 			write_name:
-			f(secStart)(isecs[i]._name)(secEnd).newline;
+			f.printf("%c%.*s%c\r\n", secStart, isecs[i]._name, secEnd);
 			after_name:
 			isec = isecs[i];
 			for(j = 0; j != isec.lines.length; j++)
@@ -722,13 +720,31 @@ public:
 					if(ikey)
 						ikey.data = ikey._name ~ "=" ~ ikey._value;
 				}
-				f(isec.lines[j].data).newline;
+				f.writeString(isec.lines[j].data);
+				f.writeString("\r\n");
 			}
 		}
 	}
 
 
-	/// Finds a _section; returns null one named name does not exist.
+	/// Write contents to disk, even if no changes were made. It is common to do if(modified)save();
+	void save()
+	{
+		BufferedFile f = new BufferedFile;
+		f.create(_file);
+		try
+		{
+			saveToStream(f);
+			f.flush();
+		}
+		finally
+		{
+			f.close();
+		}
+	}
+
+
+	/// Finds a _section; returns null if one named name does not exist.
 	IniSection section(char[] name)
 	{
 		foreach(IniSection isec; isecs)
@@ -763,7 +779,7 @@ public:
 
 
 	/// foreach section.
-	int opApply(int delegate(inout IniSection) dg)
+	int opApply(int delegate(ref IniSection) dg)
 	{
 		int result = 0;
 		foreach(IniSection isec; isecs)
@@ -781,8 +797,8 @@ public:
 	{
 		return isecs;
 	}
-
-
+	
+	
 	/// _Remove section named sectionName.
 	void remove(char[] sectionName)
 	{
@@ -843,7 +859,7 @@ unittest
 	assert(ini["FOO"]["Bar"] == "wee!");
 	assert(ini["55"] is null);
 	assert(ini["hello"]["Yes"] is null);
-
+	
 	ini.open(inifile);
 	ini["bar"].remove("notta");
 	ini["foo"].remove("bar");

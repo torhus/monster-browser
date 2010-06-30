@@ -1,14 +1,9 @@
 module masterlist;
 
-import tango.core.Memory;
-import Path = tango.io.Path;
-import tango.io.device.File;
-import tango.io.stream.Buffered;
-import tango.io.stream.Format;
-import tango.text.Ascii;
-import tango.text.Util;
-import tango.text.convert.Format;
-import Integer = tango.text.convert.Integer;
+import core.memory;
+import std.file;
+import std.path;
+import std.stdio;
 import tango.text.xml.SaxParser;
 
 import colorednames;
@@ -175,7 +170,7 @@ final class MasterList
 	 *     defaultProtocolVersion = Used for servers that have a missing or
 	 *                              empty protocol_version attribute.
 	 *
-	 * Throws: IOException if an error occurred during reading.
+	 * Throws: FileException if an error occurred during reading.
 	 *         XmlException for XML syntax errors.
 	 *
 	 * Note: After calling this, all ServerHandles that were obtained before
@@ -183,15 +178,15 @@ final class MasterList
 	 */
 	bool load(in char[] defaultProtocolVersion)
 	{
-		if (!Path.exists(dataDir ~ fileName_))
+		if (!exists(dataDir ~ fileName_))
 			return false;
 
-		log(Format("Opening '{}'...", fileName_));
+		log("Opening '%s'...", fileName_);
 
 		Timer timer;
 		timer.start();
 
-		char[] content = cast(char[])File.get(dataDir ~ fileName_);
+		char[] content = cast(char[])read(dataDir ~ fileName_);
 		GC.setAttr(content.ptr, GC.BlkAttr.NO_SCAN);
 		auto parser = new SaxParser!(char);
 		auto handler = new MySaxHandler!(char)(defaultProtocolVersion);
@@ -201,8 +196,8 @@ final class MasterList
 		parser.parse;
 		delete content;
 
-		log(Format("Loaded {} servers in {} seconds.", handler.servers.length,
-		                                                       timer.seconds));
+		log("Loaded %s servers in %s seconds.", handler.servers.length,
+		                                                        timer.seconds);
 
 		synchronized (this) {
 			delete servers_;
@@ -216,7 +211,7 @@ final class MasterList
 	/**
 	 * Save all data.
 	 *
-	 * Throws: IOException.
+	 * Throws: StdioException.
 	 */
 	void save()
 	{
@@ -277,73 +272,71 @@ private final class XmlDumper
 	///
 	this(in char[] fileName)
 	{
-		auto file = new BufferedOutput(new File(fileName, File.WriteCreate));
-		output_ = new FormatOutput!(char)(file);
-		output_.formatln(`<?xml version="1.0" encoding="UTF-8"?>`);
-		output_.formatln("<masterserver>");
+		output_ = File(fileName, "w");
+		output_.writeln(`<?xml version="1.0" encoding="UTF-8"?>`);
+		output_.writeln("<masterserver>");
 	}
 
 
 	///
 	void close()
 	{
-		output_.formatln("</masterserver>");
-		output_.flush().close();
+		output_.writeln("</masterserver>");
+		output_.close();
 	}
 
 
 	///
 	void serverToXml(in ServerData* sd)
 	{
-		output_.format(`  <server name="{}"`, sd.rawName)
-		       .format(` country_code="{}"`,  sd.server[ServerColumn.COUNTRY])
-		       .format(` address="{}"`,       sd.server[ServerColumn.ADDRESS])
-		       .format(` protocol_version="{}"`, sd.protocolVersion)
-		       .format(` ping="{}"`,          sd.server[ServerColumn.PING])
-		       .format(` player_count="{}"`,  sd.server[ServerColumn.PLAYERS])
-		       .format(` map="{}"`,           sd.server[ServerColumn.MAP])
-		       .format(` persistent="{}"`,    sd.persistent ? "true" : "false")
-		       .format(` fail_count="{}"`,    sd.failCount)
-		       .formatln(">");
+		output_.writef(`  <server name="%s"`, sd.rawName)
+		       .writef(` country_code="%s"`,  sd.server[ServerColumn.COUNTRY])
+		       .writef(` address="%s"`,       sd.server[ServerColumn.ADDRESS])
+		       .writef(` protocol_version="%s"`, sd.protocolVersion)
+		       .writef(` ping="%s"`,          sd.server[ServerColumn.PING])
+		       .writef(` player_count="%s"`,  sd.server[ServerColumn.PLAYERS])
+		       .writef(` map="%s"`,           sd.server[ServerColumn.MAP])
+		       .writef(` persistent="%s"`,    sd.persistent ? "true" : "false")
+		       .writef(` fail_count="%s"`,    sd.failCount)
+		       .writeln(">");
 
 		if (sd.cvars.length) {
-			output_.formatln("    <cvars>");
+			output_.writeln("    <cvars>");
 			cvarsToXml(sd);
-			output_.formatln("    </cvars>");
+			output_.writeln("    </cvars>");
 		}
 
 		if (sd.players.length) {
-			output_.formatln("    <players>");
+			output_.writeln("    <players>");
 			playersToXml(sd);
-			output_.formatln("    </players>");
+			output_.writeln("    </players>");
 		}
 
-		output_.formatln("  </server>");
+		output_.writeln("  </server>");
 	}
 
 
 	private void cvarsToXml(in ServerData* sd)
 	{
 		foreach (cvar; sd.cvars)
-			output_.format(`      <cvar key="{}" value="{}"/>`,
-			                                         cvar[0], cvar[1]).newline;
+			output_.writefln(`      <cvar key="%s" value="%s"/>`,
+			                                                 cvar[0], cvar[1]);
 	}
 
 
 	private void playersToXml(in ServerData* sd)
 	{
 		foreach (player; sd.players) {
-			output_.format(`      <player name="{}" score="{}" ping="{}"/>`,
+			output_.writefln(`      <player name="%s" score="%s" ping="%s"/>`,
                                                player[PlayerColumn.RAWNAME],
 											   player[PlayerColumn.SCORE],
 											   player[PlayerColumn.PING]);
-			output_.newline;
 		}
 	}
 
 
 	private {
-		FormatOutput!(char) output_;
+		File output_;
 	}
 }
 

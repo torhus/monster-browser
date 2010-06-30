@@ -2,7 +2,6 @@
 
 module dialogs;
 
-import tango.io.device.File;
 import tango.text.Util;
 
 import org.eclipse.swt.SWT;
