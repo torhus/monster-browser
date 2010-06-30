@@ -1,6 +1,6 @@
 module serverdata;
 
-debug import core.Thread;
+debug import core.thread;
 import core.stdc.ctype;
 import std.conv;
 import std.string;

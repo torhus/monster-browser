@@ -2,9 +2,8 @@
 
 module launch;
 
-import tango.io.FilePath;
-import tango.stdc.stringz;
-import tango.sys.Common;
+import std.path;
+//import tango.sys.Common;
 version (Windows) {
 	import tango.sys.win32.CodePage;
 	import tango.sys.win32.UserGdi;
@@ -68,14 +67,14 @@ void joinServer(in char[] gameName, ServerData sd)
 		version (Windows) {
 			FilePath path = FilePath(pathString);
 			char buf[MAX_PATH];
-			char[] ansiDir = CodePage.into(path.path, buf).dup;
-			char[] ansiPath = ansiDir ~ CodePage.into(path.file, buf);
+			string ansiDir = CodePage.into(dirname(pathString), buf).idup;
+			string ansiPath = ansiDir ~ CodePage.into(basename(pathString), buf);
 
 			int r = cast(int)ShellExecuteA(null, "open", toStringz(ansiPath),
 			                     toStringz(argv), toStringz(ansiDir), SW_SHOW);
 			if (r <= 32) {
-				error("Unable to execute \"{}\".\n\nError {}: {}",
-				                  path, SysError.lastCode, SysError.lastMsg());
+				error("Unable to execute \"{}\"."/*"\n\nError {}: {}"*/,
+				                  path/*, SysError.lastCode, SysError.lastMsg()*/);
 			}
 			else if (getSetting("minimizeOnGameLaunch") == "true") {
 				mainWindow.minimized = true;

@@ -2,10 +2,9 @@
 
 module mainwindow;
 
-import tango.math.Math : max;
-import tango.text.Util;
-import Integer = tango.text.convert.Integer;
-import tango.text.convert.Format;
+import std.algorithm : max;
+import std.conv;
+import std.string;
 
 import java.io.ByteArrayInputStream;
 import java.lang.Runnable;
@@ -75,8 +74,8 @@ class MainWindow
 
 		// restore window size and state
 		char[] size = getSetting("windowSize");
-		uint x = locate(size, 'x');
-		if (x < size.length)
+		int x = indexOf(size, 'x');
+		if (x != -1)
 			shell_.setSize(Integer.convert(size[0..x]),
 			               Integer.convert(size[x+1..length]));
 		if (getSetting("windowMaximized") == "true")
@@ -184,8 +183,8 @@ class MainWindow
 			Point pos = shell_.getLocation();
 			setSessionState("windowPosition", toCsv([pos.x, pos.y]));
 
-			char[] width  = Integer.toString(shell_.getSize().x);
-			char[] height = Integer.toString(shell_.getSize().y);
+			string width  = to!string(shell_.getSize().x);
+			string height = to!string(shell_.getSize().y);
 			setSetting("windowSize", width ~ "x" ~ height);
 		}
 
@@ -279,20 +278,15 @@ class StatusBar : Composite
 
 		setRedraw(false);
 
-		char[] fmt;
+		string s;
 
 		if (shownServers != totalServers)
-			fmt = "{1} of {0} servers";
+			s = text(shownServers, " of ", totalServers, " servers");
 		else
-			fmt = "{1} servers";
+			s = text(shownServers, " servers");
 
-		/*if (noReply > 0)
-			fmt ~= " ({2} did not reply)";*/
-
-		char[] s = Format(fmt, totalServers, shownServers, noReply);
 		serverLabel_.setText(s);
-
-		playerLabel_.setText(Format("{} human players", humans));
+		playerLabel_.setText(text(humans, " human players"));
 
 		layout();
 		setRedraw(true);
@@ -382,7 +376,7 @@ class StatusBar : Composite
 	}
 
 
-	// For the Windows 7 taskbar.	
+	// For the Windows 7 taskbar.
 	version (Windows) private void initTaskbarProgress()
 	{
 		if (!isWindows7OrLater) {
@@ -394,7 +388,7 @@ class StatusBar : Composite
 			tbProgress_ = new TaskbarProgress(parent.getShell().handle);
 		catch (Exception e)
 			logx(__FILE__, __LINE__, e);
-			
+
 		if (tbProgress_)
 			callAtShutdown ~= &tbProgress_.dispose;
 
@@ -555,12 +549,12 @@ class FilterBar : Group
 
 
 	/// Set the contents of the game name drop-down list.
-	void setGames(char[][] list)
+	void setGames(string[] list)
 	{
 		if (list is null)
 			return;
 
-		char[][] items = gamesCombo_.getItems();
+		string[] items = gamesCombo_.getItems();
 
 		foreach (s; list) {
 			if (findString(items, s) == -1) {
@@ -596,7 +590,7 @@ class FilterBar : Group
 
 private:
 	Button notEmptyButton_, hasHumansButton_;
-	char[] lastSelectedGame_;
+	string lastSelectedGame_;
 	Combo gamesCombo_;
 }
 

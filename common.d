@@ -1,11 +1,13 @@
 module common;
 
-import core.Thread;
+import core.thread;
 import core.stdc.ctype;
 import core.stdc.string;
 import core.stdc.time;
 import std.conv;
 import std.date;
+import std.stdio;
+import std.stream : InputStream;
 import std.string;
 
 import java.lang.wrappers;
@@ -121,7 +123,7 @@ void logx(in char[] file, int line, Exception e)
 {
 	log(file, line, e.classinfo.name ~ ": " ~ e.toString());
 	log("%s threads, currently in '%s'.", Thread.getAll().length,
-	                                                    Thread.getThis().name);
+	                                                   Thread.getThis().name);
 	log("ThreadManager's thread is %s.",
 	                          threadManager.sleeping ? "sleeping" : "working");
 
@@ -148,6 +150,16 @@ struct Timer
 	long millis() { return raw * (1000 / TicksPerSecond); }  ///
 	double seconds() { return cast(double) raw / TicksPerSecond; }  ///
 	private d_time time_;  ///
+}
+
+
+/// Temporary replacement for Tango's Format.
+string Format(in char[] fmt, ...)
+{
+	char[] s;
+	void f(dchar c) { encode(s, c); }
+	doFormat(&f, _arguments, _argptr);
+	return cast(string)s;
 }
 
 
@@ -389,13 +401,13 @@ int[] getColumnWidths(Table table)
  *
  * Returns: A set of strings containing the IP and port of each server.
  *
- * Throws: Whatever iter's opApply throws.
+ * Throws: Whatever stream's opApply throws.
  */
-Set!(string) collectIpAddresses(Iterator!(char) iter, uint start=0)
+Set!(string) collectIpAddresses(InputStream stream, uint start=0)
 {
 	Set!(string) addresses;
 
-	foreach (char[] line; iter) {
+	foreach (char[] line; stream) {
 		if (start >= line.length)
 			continue;
 
