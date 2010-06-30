@@ -85,7 +85,7 @@ class PasswordDialog
 	 *
 	 * The default is an empty password, and yes to saving it.
 	 */
-	char[] password = "";
+	const(char)[] password = "";
 	bool savePassword = true;  /// ditto
 
 	/**
@@ -333,7 +333,7 @@ class SpecifyServerDialog
 	private {
 		Shell parent_, shell_;
 		Button okButton_, cancelButton_, saveButton_;
-		char[] address = "";
+		const(char)[] address = "";
 		Text addressText_;
 		int result_ = SWT.CANCEL;
 	}
