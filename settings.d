@@ -3,8 +3,9 @@
 module settings;
 
 import core.stdc.stdio;
-import std.contracts;
-import std.path;
+import std.conv;
+import std.file;
+import std.string;
 
 import common;
 import ini;
@@ -22,7 +23,6 @@ version (Windows) {
 
 
 /// Configuration for a game.
-// FIXME: avoid using cast(string) here, fix ini.d instead?
 struct GameConfig
 {
 	string name() /// Section name in the game config file.
@@ -32,17 +32,17 @@ struct GameConfig
 
 	string mod()  /// Quake 3 gamename, like "baseq3".  Defaults to name.
 	{
-		return cast(string)section.getValue("mod", name);
+		return section.getValue("mod", name);
 	}
 
 	string masterServer()  /// Like "master3.idsoftware.com".
 	{		
-		return cast(string)section.getValue("masterServer", "master3.idsoftware.com");
+		return section.getValue("masterServer", "master3.idsoftware.com");
 	}
 
 	string protocolVersion()  /// Defaults to 68.
 	{
-		return cast(string)section.getValue("protocolVersion", "68");
+		return section.getValue("protocolVersion", "68");
 	}
 
 	string extraServersFile() /// Like "baseq3.extra".
@@ -61,9 +61,9 @@ struct GameConfig
 	 */
 	string exePath()
 	{
-		char[] path = null;
-		char[] regKey = section["regKey"];
-		char[] exeName = section["exeName"];
+		string path = null;
+		string regKey = section["regKey"];
+		string exeName = section["exeName"];
 		bool badRegKey = false;
 
 		version (Windows) if (regKey && exeName) {
@@ -82,13 +82,13 @@ struct GameConfig
 		if (!path && !badRegKey)
 			path = section["exePath"];
 
-		return path ? cast(string)path : !(regKey || exeName) ? getSetting("gamePath") :
+		return path ? path : !(regKey || exeName) ? getSetting("gamePath") :
 		                                                                  null;
 	}
 
 	bool useGslist() /// Use gslist instead of qstat when querying master?
 	{
-		char[] r = section["useGslist"];
+		string r = section["useGslist"];
 		return r ? (r == "true") : true;
 	}
 
@@ -104,13 +104,13 @@ struct GameConfig
 }
 
 
-char[][] gameNames;  /// The names of all games loaded from the config file.
-char[] gamesFileName;  /// Name of the file containing options for each game.
+string[] gameNames;  /// The names of all games loaded from the config file.
+string gamesFileName;  /// Name of the file containing options for each game.
 
 private {
-	char[] settingsFileName;
+	string settingsFileName;
 
-	const char[] defaultGamesFile =
+	string defaultGamesFile =
 `; Monster Browser game configuration
 ;
 ; Just put each game in square brackets, then you can list options under it.
@@ -208,7 +208,7 @@ useGslist=false
  * Throws: Exception if no config was found.
  *
  */
-GameConfig getGameConfig(in char[] name)
+GameConfig getGameConfig(string name)
 {
 	IniSection section = gamesIni[name];
 
@@ -225,7 +225,7 @@ GameConfig getGameConfig(in char[] name)
  * Throws: Exception if config was already there for this game.
  *
  */
-GameConfig createGameConfig(in char[] name)
+GameConfig createGameConfig(string name)
 {
 	if (gamesIni[name] !is null)
 		throw new Exception("createGameConfig: preexistant game  '" ~
@@ -248,7 +248,7 @@ void loadGamesFile()
 {
 	assert(gamesFileName.length);
 
-	if (!Path.exists(gamesFileName))
+	if (!exists(gamesFileName))
 		writeDefaultGamesFile();
 
 	delete gamesIni;
@@ -273,10 +273,10 @@ void loadGamesFile()
 
 private void writeDefaultGamesFile()
 {
-	char[] text = defaultGamesFile;
+	string text = defaultGamesFile;
 
 	version (Windows)
-		text = substitute(text, "%ProgramFiles%", getProgramFilesDirectory());
+		text = replace(text, "%ProgramFiles%", getProgramFilesDirectory());
 
 	// Use C IO to get line ending translation.
 	FILE* f = fopen((gamesFileName ~ '\0').ptr, "w");
@@ -314,7 +314,7 @@ void loadSettings()
 	// make sure we have a path for quake3.exe
 	sec = settingsIni["Settings"];
 	if (!sec.getValue("gamePath")) {
-		char[] path;
+		string path;
 		version (Windows) {	
 			path = autodetectQuake3Path();			
 		}
@@ -356,7 +356,7 @@ string getSetting(in char[] key)
 
 	assert(sec[key], key ~ " not found.\n\n"
 	                  "All settings need to have a default.");
-	return cast(string)sec[key];
+	return sec[key];
 }
 
 
@@ -382,7 +382,7 @@ void setSetting(string key, string value)
  *
  * Returns: The password, or an empty string if none was found.
  */
-char[] getPassword(in char[] ip)
+string getPassword(in char[] ip)
 {
 	IniSection sec = settingsIni.section("Passwords");
 	if (sec is null)
@@ -392,7 +392,7 @@ char[] getPassword(in char[] ip)
 
 
 /// Stores server passwords for later retrieval by getPassword().
-void setPassword(char[] ip, char[] password)
+void setPassword(string ip, string password)
 {
 	IniSection sec = settingsIni.addSection("Passwords");
 	sec.setValue(ip, password);
@@ -400,7 +400,7 @@ void setPassword(char[] ip, char[] password)
 
 
 /// Removes the password stored for a server.
-void removePassword(char[] ip)
+void removePassword(in char[] ip)
 {
 	IniSection sec = settingsIni.section("Passwords");
 	if (sec !is null)
@@ -415,7 +415,7 @@ void removePassword(char[] ip)
  *
  * Returns: The password, or an empty string if none was found.
  */
-char[] getRconPassword(in char[] ip)
+string getRconPassword(in char[] ip)
 {
 	IniSection sec = settingsIni.section("RconPasswords");
 	if (sec is null)
@@ -425,7 +425,7 @@ char[] getRconPassword(in char[] ip)
 
 
 /// Stores rcon passwords for later retrieval by getRconPassword().
-void setRconPassword(char[] ip, char[] password)
+void setRconPassword(string ip, string password)
 {
 	IniSection sec = settingsIni.addSection("RconPasswords");
 	sec.setValue(ip, password);
@@ -450,7 +450,7 @@ private void loadSessionState()
  *
  * Will assert in debug mode if a non-existent key is given.
  */
-char[] getSessionState(in char[] key)
+string getSessionState(in char[] key)
 {
 	IniSection sec = settingsIni.section("Session");
 	assert(sec !is null);
@@ -465,7 +465,7 @@ char[] getSessionState(in char[] key)
  *
  * Will assert in debug mode if a non-existent key is given.
  */
-void setSessionState(in char[] key, in char[] value)
+void setSessionState(in char[] key, string value)
 {
 	assert(settingsIni && settingsIni.sections.length > 0);
 	IniSection sec = settingsIni.section("Session");
@@ -475,20 +475,19 @@ void setSessionState(in char[] key, in char[] value)
 }
 
 
-private char[] autodetectQuake3Path()
+private string autodetectQuake3Path()
 {
 	version (Windows) {
-		char[] q3path = getRegistryStringValue("HKEY_LOCAL_MACHINE\\"
+		string q3path = getRegistryStringValue("HKEY_LOCAL_MACHINE\\"
 		                      "SOFTWARE\\Id\\Quake III Arena\\INSTALLEXEPATH");
 		if (!q3path) {
 			log("Quake 3's installation path was not found in the registry, "
 		                                   "falling back to a default value.");
 			// use a sensible default value
-			q3path = getProgramFilesDirectory;
+			q3path = getProgramFilesDirectory();
 			q3path ~= "\\Quake III Arena\\quake3.exe";
 		}
 		return q3path;
-
 	}
 	else {
 		assert(0, "autodetectQuake3Path");
@@ -526,30 +525,31 @@ version (Windows) private string getRegistryStringValue(in char[] key)
 	LONG status;
 	char[] retval;
 
-	char[][] parts = split(key, "\\");
+	const(char)[][] parts = split(key, "\\");
 	if (parts.length < 3)
-		throw new Exception("Invalid registry key: " ~ key);
+		throw new Exception("Invalid registry key: " ~ cast(string)key);
 
 	HKEY keyConst = hkeyFromString(parts[0]);
-	char[] subKey = join(parts[1..$-1], "\\");
-	char[] name = parts[$-1];
+	// cast here because join takes immutable instead of const
+	const(char)[] subKey = join(cast(string[])parts[1..$-1], "\\");
+	const(char)[] name = parts[$-1];
 
-	status = RegOpenKeyExA(keyConst, toStringz(subKey), 0, KEY_ALL_ACCESS,
-	                                                                    &hKey);
+	status = RegOpenKeyExA(keyConst, cast(char*)toStringz(subKey), 0,
+	                                                   KEY_ALL_ACCESS, &hKey);
 
 	if (status == ERROR_SUCCESS) {
-		status = RegQueryValueExA(hKey, toStringz(name), NULL, &dwType, lpData,
-		                                                              &dwSize);
+		status = RegQueryValueExA(hKey, cast(char*)toStringz(name), NULL,
+		                                             &dwType, lpData, &dwSize);
 
 		if (status == ERROR_MORE_DATA) {
 			lpData = (new BYTE[dwSize]).ptr;
-			status = RegQueryValueExA(hKey, toStringz(name), NULL, &dwType,
-			                                                  lpData, &dwSize);
+			status = RegQueryValueExA(hKey, cast(char*)toStringz(name), NULL,
+			                                         &dwType, lpData, &dwSize);
 		}
 
 		if (status == ERROR_SUCCESS) {
 			retval.length = dwSize * 2;
-			retval = CodePage.from(fromStringz(cast(char*)lpData), retval);
+			retval = CodePage.from(to!string(cast(char*)lpData), retval);
 		}
 
 		if (dwSize > buf.length)
@@ -558,19 +558,19 @@ version (Windows) private string getRegistryStringValue(in char[] key)
 		RegCloseKey(hKey);
 	}
 
-	return (status == ERROR_SUCCESS) ? assumeUnique!retval : null;
+	return (status == ERROR_SUCCESS) ? cast(string)retval : null;
 }
 
 
 /// Throws: Exception.
 version (Windows) private HKEY hkeyFromString(in char[] s)
 {
-	if (icompare(s, "HKEY_CLASSES_ROOT") == 0)
+	if (icmp(s, "HKEY_CLASSES_ROOT") == 0)
 		return HKEY_CLASSES_ROOT;
-	if (icompare(s, "HKEY_CURRENT_USER") == 0)
+	if (icmp(s, "HKEY_CURRENT_USER") == 0)
 		return HKEY_CURRENT_USER;
-	if (icompare(s, "HKEY_LOCAL_MACHINE") == 0)
+	if (icmp(s, "HKEY_LOCAL_MACHINE") == 0)
 		return HKEY_LOCAL_MACHINE;
 
-	throw new Exception("Invalid HKEY: " ~ s);
+	throw new Exception("Invalid HKEY: " ~ cast(string)s);
 }
