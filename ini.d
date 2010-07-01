@@ -20,7 +20,7 @@
 
 /*
 
-Modified for D 2/Phobos compatibility by torhu.
+Modified for D 2 compatibility by torhu.
 
 Update:
 The Ini object no longer saves in the destructor because if it is the
@@ -76,7 +76,7 @@ private class IniLine
 	
 	
 private:
-	char[] data;
+	string data;
 }
 
 
@@ -86,11 +86,11 @@ class IniKey: IniLine
 protected:
 	//these are slices in data if unmodified
 	//if modified, data is set to null
-	char[] _name;
-	char[] _value;
+	string _name;
+	string _value;
 
 
-	this(char[] name)
+	this(string name)
 	{
 		_name = name;
 	}
@@ -105,14 +105,14 @@ protected:
 
 public:
 	/// Property: get key _name.
-	char[] name()
+	string name()
 	{
 		return _name;
 	}
 
 
 	/// Property: get key _value.
-	char[] value()
+	string value()
 	{
 		return _value;
 	}
@@ -124,11 +124,11 @@ class IniSection
 {
 protected:
 	Ini _ini;
-	char[] _name;
+	string _name;
 	IniLine[] lines;
 
 
-	this(Ini ini, char[] name)
+	this(Ini ini, string name)
 	{
 		_ini = ini;
 		_name = name;
@@ -144,14 +144,14 @@ protected:
 
 public:
 	/// Property: get section _name.
-	char[] name()
+	string name()
 	{
 		return _name;
 	}
 
 
 	/// Property: set section _name.
-	void name(char[] newName)
+	void name(string newName)
 	{
 		_ini._modified = true;
 		_name = newName;
@@ -193,7 +193,7 @@ public:
 
 
 	/// Returns: _key matching keyName, or null if not present.
-	IniKey key(char[] keyName)
+	IniKey key(in char[] keyName)
 	{
 		foreach(IniKey ikey; this)
 		{
@@ -205,7 +205,7 @@ public:
 
 
 	/// Set an existing key's value.
-	void setValue(IniKey ikey, char[] newValue)
+	void setValue(IniKey ikey, string newValue)
 	{
 		ikey._value = newValue;
 		_ini._modified = true;
@@ -214,12 +214,12 @@ public:
 
 
 	/// Find or create key keyName and set its _value to newValue.
-	void setValue(char[] keyName, char[] newValue)
+	void setValue(in char[] keyName, string newValue)
 	{
 		IniKey ikey = key(keyName);
 		if(!ikey)
 		{
-			ikey = new IniKey(keyName);
+			ikey = new IniKey(keyName.idup);
 			lines ~= ikey;
 			//_ini._modified = true; //next call does this
 		}
@@ -234,21 +234,21 @@ public:
 	
 	
 	/// Same as setValue(ikey, newValue).
-	void value(IniKey ikey, char[] newValue)
+	void value(IniKey ikey, string newValue)
 	{
 		return setValue(ikey, newValue);
 	}
 	
 	
 	/// Same as setValue(keyName, newValue).
-	void value(char[] keyName, char[] newValue)
+	void value(in char[] keyName, string newValue)
 	{
 		return setValue(keyName, newValue);
 	}
 
 
 	/// Returns: value of the existing key keyName, or defaultValue if not present.
-	char[] getValue(char[] keyName, char[] defaultValue = null)
+	string getValue(in char[] keyName, string defaultValue = null)
 	{
 		foreach(IniKey ikey; this)
 		{
@@ -261,28 +261,28 @@ public:
 	
 	// /// Returns: _value of the existing key keyName, or null if not present.
 	/// Same as getValue(keyName, null).
-	char[] value(char[] keyName)
+	string value(in char[] keyName)
 	{
 		return getValue(keyName, null);
 	}
 
 
 	/// Shortcut for getValue(keyName).
-	char[] opIndex(char[] keyName)
+	string opIndex(in char[] keyName)
 	{
 		return value(keyName);
 	}
 
 
 	/// Shortcut for setValue(keyName, newValue).
-	void opIndexAssign(char[] newValue, char[] keyName)
+	void opIndexAssign(string newValue, in char[] keyName)
 	{
 		value(keyName, newValue);
 	}
 	
 	
 	/// _Remove key keyName.
-	void remove(char[] keyName)
+	void remove(in char[] keyName)
 	{
 		uint i;
 		IniKey ikey;
@@ -309,7 +309,7 @@ public:
 class Ini
 {
 protected:
-	char[] _file;
+	string _file;
 	bool _modified = false;
 	IniSection[] isecs;
 	char secStart = '[', secEnd = ']';
@@ -373,7 +373,7 @@ protected:
 		void eol()
 		{
 			IniLine iline = new IniLine;
-			iline.data = data[lineStartIndex .. i];
+			iline.data = cast(string)data[lineStartIndex .. i];
 			debug(INI)
 				printf("INI line: '%.*s'\n", std.string.replace(std.string.replace(std.string.replace(iline.data, "\\", "\\\\"), "\r", "\\r"), "\n", "\\n"));
 			isec.lines ~= iline;
@@ -480,7 +480,7 @@ protected:
 									if(ch2 == secEnd) // ']'
 									{
 										isecs ~= isec;
-										isec = new IniSection(this, data[i2 .. i]);
+										isec = new IniSection(this, cast(string)data[i2 .. i]);
 										debug(INI)
 											printf("INI section: '%.*s'\n", isec._name);
 										for(;;)
@@ -554,15 +554,15 @@ protected:
 	
 									void addKey()
 									{
-										ikey.data = data[lineStartIndex .. i];
-										ikey._value = data[i2 .. i];
+										ikey.data = cast(string)data[lineStartIndex .. i];
+										ikey._value = cast(string)data[i2 .. i];
 										isec.lines ~= ikey;
 										debug(INI)
 											printf("INI key: '%.*s' = '%.*s'\n", ikey._name, ikey._value);
 									}
 									
 									
-									ikey = new IniKey(data[i2 .. i]);
+									ikey = new IniKey(cast(string)data[i2 .. i]);
 									i2 = i + 1; //after =
 									for(;;) //get key value
 									{
@@ -601,17 +601,17 @@ protected:
 	}
 	
 	
-	void firstOpen(char[] file)
+	void firstOpen(in char[] file)
 	{
 		//null terminated just to make it easier for the implementation
-		_file = toStringz(file)[0 .. file.length];
+		_file = toStringz(file)[0 .. file.length].idup;
 		parse();
 	}
 
 
 public:
 	// Use different section name delimiters; not recommended.
-	this(char[] file, char secStart, char secEnd)
+	this(in char[] file, char secStart, char secEnd)
 	{
 		this.secStart = secStart;
 		this.secEnd = secEnd;
@@ -621,7 +621,7 @@ public:
 
 
 	/// Construct a new INI _file.
-	this(char[] file)
+	this(in char[] file)
 	{
 		firstOpen(file);
 	}
@@ -641,7 +641,7 @@ public:
 
 
 	/// Comparison function for section and key names. Override to change behavior.
-	bool match(char[] s1, char[] s2)
+	bool match(in char[] s1, in char[] s2)
 	{
 		return !std.string.icmp(s1, s2);
 	}
@@ -709,7 +709,7 @@ public:
 		for(; i != isecs.length; i++)
 		{
 			write_name:
-			f.printf("%c%.*s%c\r\n", secStart, isecs[i]._name, secEnd);
+			f.printf(cast(char[])"%c%.*s%c\r\n", secStart, isecs[i]._name, secEnd);
 			after_name:
 			isec = isecs[i];
 			for(j = 0; j != isec.lines.length; j++)
@@ -745,7 +745,7 @@ public:
 
 
 	/// Finds a _section; returns null if one named name does not exist.
-	IniSection section(char[] name)
+	IniSection section(in char[] name)
 	{
 		foreach(IniSection isec; isecs)
 		{
@@ -757,7 +757,7 @@ public:
 
 
 	/// Shortcut for section(sectionName).
-	IniSection opIndex(char[] sectionName)
+	IniSection opIndex(in char[] sectionName)
 	{
 		return section(sectionName);
 	}
@@ -765,7 +765,7 @@ public:
 
 	/// The section is created if one named name does not exist.
 	/// Returns: Section named name.
-	IniSection addSection(char[] name)
+	IniSection addSection(string name)
 	{
 		IniSection isec = section(name);
 		if(!isec)
@@ -800,7 +800,7 @@ public:
 	
 	
 	/// _Remove section named sectionName.
-	void remove(char[] sectionName)
+	void remove(in char[] sectionName)
 	{
 		uint i;
 		for(i = 0; i != isecs.length; i++)
