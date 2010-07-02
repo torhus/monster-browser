@@ -38,7 +38,7 @@ class CvarTable
 
 	Table getTable() { return table_; }  ///
 
-	void setItems(char[][][] items)  ///
+	void setItems(string[][] items)  ///
 	{
 		table_.setRedraw(false);
 		table_.setItemCount(0);

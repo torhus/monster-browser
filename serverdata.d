@@ -45,7 +45,7 @@ struct ServerData {
 	 *
 	 * Default to zero when there is no info available.
 	 */
-	int humanCount()
+	int humanCount() const
 	{
 		string s = server[ServerColumn.PLAYERS];
 		if (s.length > 0 && isdigit(s[0]))
@@ -54,7 +54,7 @@ struct ServerData {
 	}
 
 	/// ditto
-	int botCount()
+	int botCount() const
 	{
 		string s = server[ServerColumn.PLAYERS];
 		int plus = IndexOf(s, '+');
@@ -68,7 +68,7 @@ struct ServerData {
 	}
 
 	/// ditto
-	int maxClients()
+	int maxClients() const
 	{
 		string s = server[ServerColumn.PLAYERS];
 		int slash = indexOf(s, '/');
@@ -86,14 +86,14 @@ struct ServerData {
 	 *
 	 * Default to false when there is no info available.
 	 */
-	bool hasHumans()
+	bool hasHumans() const
 	{
 		string players = server[ServerColumn.PLAYERS];
 		return  players.length && players[0] != '0';
 	}
 
 	/// ditto
-	bool hasBots()
+	bool hasBots() const
 	{
 		string s = server[ServerColumn.PLAYERS];
 		int plus = indexOf(s, '+');
@@ -116,7 +116,7 @@ string PASSWORD_YES = "X";  ///
 string PASSWORD_NO  = "";  ///
 
 ///
-const char[] TIMEOUT = "9999";
+string TIMEOUT = "9999";
 
 
 /// Set sd to the empty state.
@@ -194,7 +194,7 @@ debug void print(ref ServerData sd, string file=null, long line=-1)
 }
 
 /// ditto
-debug void print(string prefix, ref ServerData sd, string file=null, long line=-1)
+debug void print(string prefix, ref const ServerData sd, string file=null, long line=-1)
 {
 /*	if (file)
 		Log.formatln(prefix ~ " ====== {}({}) ======", file, line);

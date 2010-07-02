@@ -53,9 +53,9 @@ Set!(string) browserGetNewList(in GameConfig game)
 
 	try {
 		proc = new Process;
-			// bug workaround
+		// bug workaround
 		for (int i = 0; _environ[i]; i++) {
-			proc.addEnv(std.string.toString(_environ[i]).dup);
+			proc.addEnv(to!string(_environ[i]).dup);
 		}
 		//proc.workDir = appDir;
 		//proc.gui = true;
@@ -63,7 +63,7 @@ Set!(string) browserGetNewList(in GameConfig game)
 		proc.execute(cmdLine);
 	}
 	catch (ProcessException e) {
-		char[] s = gslist ? "gslist" : "qstat";
+		string s = gslist ? "gslist" : "qstat";
 		error(s ~ " not found! Please reinstall " ~ APPNAME ~ ".");
 		logx(__FILE__, __LINE__, e);
 		proc = null;
@@ -72,7 +72,7 @@ Set!(string) browserGetNewList(in GameConfig game)
 	if (proc) {
 		try {
 			size_t start = gslist ? 0 : "q3s ".length;
-			addresses = collectIpAddresses(proc.stdout, start);
+			addresses = collectIpAddresses(proc, start);
 		}
 		catch (PipeException e) {
 			//logx(__FILE__, __LINE__, e);
@@ -192,7 +192,7 @@ final class QstatServerRetriever : IServerRetriever
 	*    replace   = Try to replace servers in the master, instead of adding.
 	*                Servers that are not present in the master will be added.
 	*/
-	this(in char[] game, MasterList master, Set!(char[]) addresses,
+	this(in char[] game, MasterList master, Set!string addresses,
 	                                                        bool replace=false)
 	{
 		game_ = getGameConfig(game);
@@ -224,6 +224,11 @@ final class QstatServerRetriever : IServerRetriever
 			proc = new Process;
 			//proc.workDir = appDir;
 			//proc.gui = true;
+			// bug workaround
+			for (int i = 0; _environ[i]; i++) {
+				proc.addEnv(to!string(_environ[i]).dup);
+			}
+
 			log("Executing '" ~ cmdLine ~ "'.");
 			proc.execute(cmdLine);
 
@@ -231,12 +236,11 @@ final class QstatServerRetriever : IServerRetriever
 				dumpFile.open("refreshlist.tmp", "w");
 
 			foreach (address; addresses_) {
-				proc.stdin.writeln(address);
+				proc.writeLine(address);
 				if (dumpFile.isOpen) {
 					dumpFile.writeln(address);
 				}
 			}
-			proc.stdin.close();
 			log("Fed %s addresses to qstat.", addresses_.length);
 		}
 		catch (ProcessException e) {
@@ -267,12 +271,12 @@ final class QstatServerRetriever : IServerRetriever
 			return deliver(sh, replied);
 		}
 
-		qstat.parseOutput(game_.mod, proc.stdout, &_deliver);
+		qstat.parseOutput(game_.mod, proc, &_deliver);
 	}
 
 
 	private {
-		Set!(char[]) addresses_;
+		Set!string addresses_;
 		GameConfig game_;
 		MasterList master_;
 		bool replace_;
@@ -287,7 +291,7 @@ final class QstatServerRetriever : IServerRetriever
  */
 bool killServerBrowser()
 {
-	if (proc is null || !proc.isRunning)
+	if (proc is null /*|| !proc.isRunning*/)
 		return false;
 
 	try {

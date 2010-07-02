@@ -1,7 +1,8 @@
 module servertable;
 
+import std.conv;
 import std.math;
-import tango.text.Util;
+import std.string;
 import Integer = tango.text.convert.Integer;
 
 import java.io.ByteArrayInputStream;
@@ -103,9 +104,9 @@ class ServerTable
 		}
 
 		// restore sort order from previous session
-		char[] s = getSessionState("serverSortOrder");
+		string s = getSessionState("serverSortOrder");
 		uint ate;
-		int sortCol = Integer.convert(s, 10, &ate);
+		int sortCol = cast(int)Integer.convert(s, 10, &ate);
 		bool reversed = (s.length > ate && s[ate] == 'r');
 		if (sortCol >= serverHeaders.length)
 			sortCol = 0;
@@ -143,23 +144,23 @@ class ServerTable
 	///  Saves the session state.
 	void saveState()
 	{
-		char[] serverOrder = Integer.toString(serverTable.sortColumn);
+		string serverOrder = to!string(serverTable.sortColumn);
 		if (serverTable.sortReversed)
 			serverOrder ~= "r";
 		setSessionState("serverSortOrder", serverOrder);
 
-		char[] playerOrder = Integer.toString(playerTable.sortColumn);
+		string playerOrder = to!string(playerTable.sortColumn);
 		if (playerTable.sortReversed)
 			playerOrder ~= "r";
 		setSessionState("playerSortOrder", playerOrder);
 
-		char[] cvarWidth = toCsv(getColumnWidths(cvarTable.getTable()));
+		string cvarWidth = toCsv(getColumnWidths(cvarTable.getTable()));
 		setSessionState("cvarColumnWidths", cvarWidth);
 
-		char[] playerWidth = toCsv(getColumnWidths(playerTable.getTable()));
+		string playerWidth = toCsv(getColumnWidths(playerTable.getTable()));
 		setSessionState("playerColumnWidths", playerWidth);
 
-		char[] serverWidth = toCsv(getColumnWidths(serverTable.getTable()));
+		string serverWidth = toCsv(getColumnWidths(serverTable.getTable()));
 		setSessionState("serverColumnWidths", serverWidth);
 	}
 
@@ -322,7 +323,7 @@ class ServerTable
 		foreach (i; indices) {
 			if (i != -1) {
 				validIndices ~= i;
-				char[] address =
+				string address =
 				       serverList_.getFiltered(i).server[ServerColumn.ADDRESS];
 				selectedIps_[address] = i;
 			}
@@ -509,7 +510,7 @@ private:
 
 			switch (e.index) {
 				case ServerColumn.COUNTRY:
-					char[] country = sd.server[ServerColumn.COUNTRY];
+					string country = sd.server[ServerColumn.COUNTRY];
 					if (showFlags_ && country.length) {
 						if (Image flag = getFlagImage(country))
 							// could cache the flag Image here
@@ -555,16 +556,15 @@ private:
 
 	class MouseMoveListener : Listener {
 		void handleEvent(Event event) {
-			char[] text = null;
+			string text = null;
 			scope point = new Point(event.x, event.y);
 			TableItem item = table_.getItem(point);
 			if (item && item.getBounds(ServerColumn.COUNTRY).contains(point)) {
 				int i = table_.indexOf(item);
 				ServerData sd = serverList_.getFiltered(i);
 				if (sd.server[ServerColumn.COUNTRY].length) {
-					char[] ip = sd.server[ServerColumn.ADDRESS];
-					auto colon = locate(ip, ':');
-					text = countryNameByAddr(ip[0..colon]);
+					string ip = sd.server[ServerColumn.ADDRESS];
+					text = countryNameByAddr(ip[0..findChar(ip, ':')]);
 				}
 			}
 			if (table_.getToolTipText() != text)
@@ -587,7 +587,7 @@ private:
 					if ((e.stateMask & SWT.MODIFIER_MASK) == 0) {
 						int i = table_.getSelectionIndex();
 						if (i != -1) {
-							char[][] s;
+							string[] s;
 							auto sd = serverList_.getFiltered(i);
 
 							log("-------------------------------------------");
@@ -697,7 +697,7 @@ private:
 
 	void onCopyAddresses()
 	{
-		char[][] addresses;
+		string[] addresses;
 		foreach (ip, v; selectedIps_)
 			addresses ~= ip;
 		if (addresses.length)
@@ -706,7 +706,7 @@ private:
 
 	void onRefreshSelected()
 	{
-		char[][] addresses;
+		string[] addresses;
 
 		if (selectedIps_.length == 0)
 			return;
@@ -719,7 +719,7 @@ private:
 	void onRemoveSelected()
 	{
 		MasterList master = serverList_.master;
-		char[][] toRemove;
+		string[] toRemove;
 
 		// find all servers that are both selected and not filtered out
 		foreach (ip, index; selectedIps_) {
@@ -739,20 +739,20 @@ private:
 				mb.setText("Remove server");
 				int index = selectedIps_[toRemove[0]];
 				ServerData sd = serverList_.getFiltered(index);
-				char[] name = sd.server[ServerColumn.NAME];
+				string name = sd.server[ServerColumn.NAME];
 				mb.setMessage("Are you sure you want to remove \"" ~ name ~
 				                                                        "\"?");
 			}
 			else {
 				mb.setText("Remove servers");
-				char[] count = Integer.toString(toRemove.length);
+				string count = to!string(toRemove.length);
 				mb.setMessage("Are you sure you want to remove these " ~
 				                                          count ~ " servers?");
 			}
 
 			if (mb.open() == SWT.YES) {
 				// do the actual removal
-				foreach (char[] ip; toRemove) {
+				foreach (string ip; toRemove) {
 					int index = selectedIps_[ip];
 					ServerHandle sh = serverList_.getServerHandle(index);
 					ServerData sd = master.getServerData(sh);
@@ -776,8 +776,8 @@ private:
 			return;
 
 		ServerData sd = serverList_.getFiltered(index);
-		char[] address = sd.server[ServerColumn.ADDRESS];
-		char[] message =
+		string address = sd.server[ServerColumn.ADDRESS];
+		string message =
 		            "Set the password to be used when joining the server.\n"
 		            "The password will be saved on disk.\n\n"
 		            "To delete the stored password, clear the password field\n"
@@ -797,9 +797,9 @@ private:
 			return;
 
 		ServerData sd = serverList_.getFiltered(index);
-		char[] name = sd.server[ServerColumn.NAME];
-		char[] address = sd.server[ServerColumn.ADDRESS];
-		char[] pw = getRconPassword(address);
+		string name = sd.server[ServerColumn.NAME];
+		string address = sd.server[ServerColumn.ADDRESS];
+		string pw = getRconPassword(address);
 
 		if (pw.length > 0) {
 			openRconWindow(name, address, pw);

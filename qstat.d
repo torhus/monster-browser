@@ -4,11 +4,12 @@
 
 module qstat;
 
+import std.conv;
 import std.stdio;
-import std.stream : InputStream;
-import tango.text.Ascii;
-import tango.text.Util;
+import std.string;
 import tango.text.convert.Integer;
+
+import lib.process;
 
 import colorednames;
 import common;
@@ -33,10 +34,10 @@ private enum Field {
  *
  * Throws: when outputFileName is given: IOException.
  */
-bool parseOutput(in char[] modName, InputStream input,
+bool parseOutput(in char[] modName, Process input,
                  bool delegate(ServerData*, bool replied) deliver)
 {
-	char[][] gtypes;
+	string[] gtypes;
 	File outfile;
 	debug Timer timer2;
 	debug timer2.start();
@@ -63,7 +64,7 @@ bool parseOutput(in char[] modName, InputStream input,
 
 	while (keepGoing && !input.eof()) {
 		debug checkTime(timer2, "1");
-		char[] line = input.readline();
+		string line = cast(string)input.readLine();
 		debug checkTime(timer2, "2");
 		if (!line)
 			break;
@@ -72,7 +73,7 @@ bool parseOutput(in char[] modName, InputStream input,
 			outfile.writeln(line);
 
 		if (line.length >= 3 && line[0..3] == "Q3S") {
-			char[][] fields = split(line.dup, FIELDSEP);
+			string[] fields = split(line, FIELDSEP);
 			ServerData sd;
 
 			assert(fields.length >= 3);
@@ -89,7 +90,7 @@ bool parseOutput(in char[] modName, InputStream input,
 				sd.server[ServerColumn.MAP] = fields[Field.MAP];
 
 				// cvar line
-				line = input.readline();
+				line = cast(string)input.readLine();
 				if (outfile.isOpen)
 					outfile.writeln(line);
 
@@ -103,7 +104,7 @@ bool parseOutput(in char[] modName, InputStream input,
 
 				// 'Players' column contents
 				uint ate;
-				int total = parse(fields[Field.PLAYER_COUNT], 10, &ate);
+				int total = cast(int)parse(fields[Field.PLAYER_COUNT], 10, &ate);
 
 				if (ate < fields[Field.PLAYER_COUNT].length)
 					invalidInteger(sd.rawName, fields[Field.PLAYER_COUNT]);
@@ -113,7 +114,7 @@ bool parseOutput(in char[] modName, InputStream input,
 					bots = 0;
 
 				sd.setPlayersColumn(humans, bots,
-				                           convert(fields[Field.MAX_PLAYERS]));
+				                  cast(int)convert(fields[Field.MAX_PLAYERS]));
 
 				sd.server[ServerColumn.NAME] = stripColorCodes(sd.rawName);
 
@@ -152,8 +153,8 @@ debug private void checkTime(ref Timer t, string name)
  * cvars are appended to sd.cvars.  The gametype and password fields of
  * sd.server are also set.
  *
- * The strings that are the output of this function will be slices into an
- * heap-allocated copy of the line parameter.
+ * The strings that are the output of this function will be slices into the
+ * line parameter.
  *
  * Params:
  *     line     = String to parse.
@@ -164,23 +165,27 @@ debug private void checkTime(ref Timer t, string name)
  *                cvar to find the value of sd.server's Game type column.  If
  *                gametype >= gtypes.length, the number is used instead.
  */
-private void parseCvars(in char[] line, ServerData* sd,
-                                                       in char[][] gtypes=null)
+private void parseCvars(string line, ServerData* sd, string[] gtypes=null)
 in {
 	assert(ServerColumn.GAMETYPE < sd.server.length &&
 	                               ServerColumn.PASSWORDED < sd.server.length);
 }
 body {
-	char[][] temp = split(line.dup, FIELDSEP);
+	string[] temp = split(line, FIELDSEP);
 
-	foreach (char[] s; temp) {
-		char[][] cvar = new char[][2];
-		cvar[0] = head(s, "=", cvar[1]);
+	foreach (string s; temp) {
+		int i = indexOf(s, '=');
+		if (i == -1)
+			continue;
+
+		string[] cvar = new string[2];
+		cvar[0] = s[0..i];
+		cvar[1] = s[i+1..$];
 
 		switch (cvar[0]) {
 			case "gametype":
 				uint ate;
-				int gt = parse(cvar[1], 10, &ate);
+				int gt = cast(int)parse(cvar[1], 10, &ate);
 				if (ate < cvar[1].length) {
 					invalidInteger(sd.rawName, cvar[1]);
 					sd.server[ServerColumn.GAMETYPE] = "???";
@@ -189,7 +194,7 @@ body {
 					sd.server[ServerColumn.GAMETYPE] = gtypes[gt];
 				}
 				else {
-					sd.server[ServerColumn.GAMETYPE] = toString(gt);
+					sd.server[ServerColumn.GAMETYPE] = to!string(gt);
 				}
 				break;
 			case "g_needpass":
@@ -205,28 +210,26 @@ body {
 				break;
 		}
 
-		// FIXME: avoid this cast
-		sd.cvars ~= cast(string[])cvar;
+		sd.cvars ~= cvar;
 	}
 }
 
 
-private string[][] parsePlayers(InputStream input, int* humanCount,
-                                                                   File output)
+private string[][] parsePlayers(Process input, int* humanCount, File output)
 {
 	string[][] players;
-	char[] line;
+	string line;
 	int humans = 0;
 
-	while (!input.eof() && (line = input.readline(line))) {
+	while (!input.eof() && (line = cast(string)input.readLine()) !is null) {
 		if (output.isOpen)
 			output.writeln(line);
-		// FIXME: use phobos splitting, to avoid assumeUnique?
-		char[][] s = split(line.dup, FIELDSEP);
+
+		string[] s = split(line, FIELDSEP);
 		string[] player = new string[PlayerColumn.max + 1];
-		player[PlayerColumn.RAWNAME] = assumeUnique!s[0];
-		player[PlayerColumn.SCORE]   = assumeUnique!s[1];
-		player[PlayerColumn.PING]    = assumeUnique!s[2];
+		player[PlayerColumn.RAWNAME] = s[0];
+		player[PlayerColumn.SCORE]   = s[1];
+		player[PlayerColumn.PING]    = s[2];
 		player[PlayerColumn.NAME]    = null;
 		players ~= player;
 

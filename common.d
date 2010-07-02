@@ -6,9 +6,15 @@ import core.stdc.string;
 import core.stdc.time;
 import std.conv;
 import std.date;
+import std.file;
 import std.stdio;
 import std.stream : InputStream;
 import std.string;
+import tango.core.Array;
+import Integer = tango.text.convert.Integer;
+import tango.text.Util : delimiters;
+
+import lib.process;
 
 import java.lang.wrappers;
 import org.eclipse.swt.SWT;
@@ -45,7 +51,7 @@ bool haveGslist;  /// Will be true if gslist was found during startup.
 
 string APPNAME = "Monster Browser";
 
-string SVN = import("svnversion.txt");
+const SVN = import("svnversion.txt");
 
 string FINAL_VERSION = "0.7";
 
@@ -135,31 +141,33 @@ void logx(in char[] file, int line, Exception e)
 }
 
 
-/// Platform-specific _newline sequence
-version (Windows)
-	string newline = "\r\n";
-else
-	string newline = "\n";
-
-
 ///
 struct Timer
 {
 	void start() { time_ = std.date.getUTCtime();	}  ///
 	private d_time raw() { return std.date.getUTCtime() - time_; }  ///
-	long millis() { return raw * (1000 / TicksPerSecond); }  ///
-	double seconds() { return cast(double) raw / TicksPerSecond; }  ///
+	long millis() { return raw * (1000 / ticksPerSecond); }  ///
+	double seconds() { return cast(double)raw / ticksPerSecond; }  ///
 	private d_time time_;  ///
 }
 
 
-/// Temporary replacement for Tango's Format.
-string Format(in char[] fmt, ...)
+/**
+ * Find c in s and return the index, or if not found return s.length.
+ *
+ * Made to behave like tango.text.Util.locate.  Only works when c is ASCII.
+ */
+size_t findChar(in char[] s, char c)
 {
-	char[] s;
-	void f(dchar c) { encode(s, c); }
-	doFormat(&f, _arguments, _argptr);
-	return cast(string)s;
+	assert(c <= 0x7f);
+	
+	// IIRC, pointers are faster with DMD
+	const(char)* p = s.ptr;
+	const(char)* end = s.ptr + s.length;
+	for (; p != end; p++)
+		if (*p == c)
+			break;
+	return p - s.ptr;
 }
 
 
@@ -189,7 +197,7 @@ void copyToClipboard(in char[] s)
 }*/
 
 // workaround, see http://dsource.org/projects/tango/ticket/956
-bool isValidIpAddress(in char[] address)
+bool isValidIpAddress(const(char)[] address)
 {
 	uint skipDigits(ref const(char)[] s, uint maxDigits=uint.max) {
 		size_t i = 0;
@@ -249,9 +257,9 @@ int findString(in char[][] array, in char[] str)
  * Like the above findString, but search in a given _column of a
  * 3-dimensional _array.
  */
-int findString(in char[][][] array, in char[] str, int column)
+int findString(const(char)[][][] array, in char[] str, int column)
 {
-	foreach (int i, char[][] s; array) {
+	foreach (int i, const(char)[][] s; array) {
 		if (icmp(str, s[column]) == 0)
 			return i;
 	}
@@ -268,7 +276,7 @@ int findString(in char[][][] array, in char[] str, int column)
  *     numerical  = Set to true to get a numerical sort instead of an
  *                  alphabetical one.
  */
-void sortStringArray(in char[][][] arr, int column=0, bool reverse=false,
+void sortStringArray(const(char)[][][] arr, int column=0, bool reverse=false,
                                                           bool numerical=false)
 {
 	bool less(in char[][] a, in char[][] b)
@@ -276,9 +284,10 @@ void sortStringArray(in char[][][] arr, int column=0, bool reverse=false,
 		int result;
 
 		if (numerical)
-			result = Integer.parse(a[column]) - Integer.parse(b[column]);
+			result = cast(int)Integer.parse(a[column]) -
+			         cast(int)Integer.parse(b[column]);
 		else
-			result = icompare(a[column], b[column]);
+			result = icmp(a[column], b[column]);
 
 		return reverse ? result >= 0 : result < 0;
 	}
@@ -350,9 +359,9 @@ int[] parseIntList(in char[] str, size_t forcedLength=0, int defaultVal=0)
 {
 	int[] r = null;
 
-	foreach (s; delimiters(str, ", \t")) {
+	foreach (s; delimiters(str, cast(const(char[]))", \t")) {
 		if (s.length > 0) {
-			int val = Integer.parse(s);
+			int val = cast(int)Integer.parse(s);
 			r ~= val;
 		}
 	}
@@ -373,7 +382,7 @@ int[] parseIntList(in char[] str, size_t forcedLength=0, int defaultVal=0)
  */
 string toCsv(T)(T[] a)
 {
-	return to!string(a, null, ", ", null);
+	return to!string(a, "", ", ", "");
 }
 
 
@@ -415,6 +424,30 @@ Set!(string) collectIpAddresses(InputStream stream, uint start=0)
 		if (isValidIpAddress(line))
 			addresses.add(line.idup);
 	}
+
+	return addresses;
+}
+
+
+/// ditto
+Set!(string) collectIpAddresses(Process stream, uint start=0)
+{
+	Set!(string) addresses;
+
+	try {
+		for (;;) {
+			char[] line = stream.readLine();
+			if (start >= line.length)
+				continue;
+
+			line = line[start..$];
+			if (isValidIpAddress(line))
+				addresses.add(line.idup);
+		}
+	}
+	catch (PipeException e) {
+		// ignore the exception
+	}	
 
 	return addresses;
 }

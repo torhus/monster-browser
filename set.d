@@ -20,7 +20,7 @@ struct Set(T) {
 	size_t length() { return data_.length; } ///
 	void rehash() { data_.rehash; } ///
 	void clear() { data_ = null; } ///
-	T[] toArray() { return data_.keys; } ///
+	//T[] toArray() { return data_.keys; } ///
 
 	///
 	static Set!(T) opCall(T[] values=null)
@@ -32,7 +32,7 @@ struct Set(T) {
 	}
 
 	///
-	int opApply(int delegate(ref T) dg)
+	int opApply(int delegate(const ref T) dg)
 	{
 		int result = 0;
 		foreach (key, val; data_) {

@@ -8,6 +8,8 @@ import core.memory;
 import std.conv;
 import std.file;
 import std.stream;
+import std.string;
+import tango.text.xml.SaxParser : XmlException;
 
 import java.lang.Runnable;
 import org.eclipse.swt.widgets.Display;
@@ -31,7 +33,7 @@ struct MasterListCacheEntry
 {
 	MasterList masterList;  ///
 	bool save = true;  ///
-	Set!(char[]) retryProtocols;  ///
+	Set!(string) retryProtocols;  ///
 }
 
 /// Master server lists indexed by master list name.
@@ -198,13 +200,13 @@ void queryServers(string[] addresses, bool replace=false, bool select=false)
 	static bool replace_, select_;
 
 	static void f() {
-		char[] gameName = serverTable.serverList.gameName;
+		string gameName = serverTable.serverList.gameName;
 		MasterList master = serverTable.serverList.master;
 
 		auto retriever = new QstatServerRetriever(gameName, master,
 		                                   Set!(string)(addresses_), replace_);
 		auto contr = new ServerRetrievalController(retriever, replace_);
-		contr.progressLabel = Format("Querying %s servers", addresses_.length);
+		contr.progressLabel = format("Querying %s servers", addresses_.length);
 
 		if (select_)
 			contr.autoSelect = addresses_;
@@ -258,14 +260,14 @@ void refreshAll()
 	log("Found %s servers.", addresses.length);
 
 	// merge in the extra servers
-	Set!(char[]) extraServers = serverList.extraServers;
+	Set!(string) extraServers = serverList.extraServers;
 	auto oldLength = addresses.length;
 	foreach (server; extraServers)
 		addresses.add(server);
 
 	auto delta = addresses.length - oldLength;
-	log(Format("Added %s extra servers, skipping %s duplicates.",
-	                                        delta, extraServers.length-delta));
+	log("Added %s extra servers, skipping %s duplicates.",
+	                                         delta, extraServers.length-delta);
 
 	Display.getDefault().syncExec(dgRunnable({
 		serverTable.clear();
@@ -361,7 +363,7 @@ void checkForNewServers()
 			if (sd.protocolVersion != game.protocolVersion)
 				continue;
 
-			char[] address = sd.server[ServerColumn.ADDRESS];
+			string address = sd.server[ServerColumn.ADDRESS];
 			if (address in addresses) {
 				addresses.remove(address);
 				if (!matchGame(&sd, game))
@@ -374,8 +376,8 @@ void checkForNewServers()
 			}
 		}
 
-		log(Format("Got %s servers from %s, including %s new.",
-		                          total, game.masterServer, addresses.length));
+		log("Got %s servers from %s, including %s new.",
+		                           total, game.masterServer, addresses.length);
 
 		if (removed > 0) {
 			Display.getDefault().syncExec(dgRunnable( {
@@ -383,8 +385,7 @@ void checkForNewServers()
 				serverTable.fullRefresh();
 			}));
 
-			log(Format("Removed %s servers that were missing from master.",
-			                                                         removed));
+			log("Removed %s servers that were missing from master.", removed);
 		}
 
 		size_t count = addresses.length + addresses2.length;
@@ -410,7 +411,7 @@ void checkForNewServers()
 			auto retriever = new QstatServerRetriever(game.name, master,
 			                                                  addresses, true);
 			auto contr = new ServerRetrievalController(retriever);
-			contr.progressLabel = Format("Checking %s  servers",
+			contr.progressLabel = format("Checking %s servers",
 			                                                 addresses.length);
 			contr.run();
 
@@ -418,7 +419,7 @@ void checkForNewServers()
 				retriever = new QstatServerRetriever(game.name,
 				                                     master, addresses2, true);
 				contr = new ServerRetrievalController(retriever);
-				contr.progressLabel = Format("Extended check, %s servers",
+				contr.progressLabel = format("Extended check, %s servers",
 				                                            addresses2.length);
 				contr.interruptedMessage = "Ready";
 				contr.run();
