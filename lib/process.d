@@ -177,7 +177,7 @@ version(linux) {
 class ProcessException : Exception
 {
 	version(Windows) {
-		this(char[] msg) { super(msg ~ ": " ~ sysErrorString(GetLastError())); }
+		this(string msg) { super(msg ~ ": " ~ sysErrorString(GetLastError())); }
 	}
 	version(linux) {
 		//for some reason getErrno does not link for me?

@@ -1,9 +1,10 @@
 module main;
 
-import core.Thread;
+import core.thread;
 //debug import tango.core.tools.TraceExceptions;
 import std.file;
 import std.path;
+import std.stdio;
 //version (Windows) import tango.sys.win32.SpecialPath;
 
 import java.io.ByteArrayInputStream;
@@ -26,7 +27,7 @@ import settings;
 import threadmanager;
 
 
-int main(char[][] args) ///
+int main(string[] args) ///
 {
 	Thread.getThis().name = "main";
 
@@ -43,7 +44,7 @@ int main(char[][] args) ///
 }
 
 
-private void _main(char[][] args)
+private void _main(string[] args)
 {
 	globalTimer.start();
 
@@ -72,7 +73,7 @@ private void _main(char[][] args)
 
 	// FIXME: make function for this
 	// check for presence of Gslist
-	char[] gslistExe;
+	string gslistExe;
 	version (Windows) {
 		gslistExe = appDir ~ "gslist.exe";
 	}
@@ -178,7 +179,7 @@ private void _main(char[][] args)
  *
  * The argument is args[0], as received by main().
  */
-private void detectDirectories(in char[] firstArg)
+private void detectDirectories(string firstArg)
 {
 	appDir = dirname(rel2abs(firstArg));
 

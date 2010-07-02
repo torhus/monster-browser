@@ -73,11 +73,11 @@ class MainWindow
 		shell_.addShellListener(new MyShellListener);
 
 		// restore window size and state
-		char[] size = getSetting("windowSize");
+		string size = getSetting("windowSize");
 		int x = indexOf(size, 'x');
 		if (x != -1)
-			shell_.setSize(Integer.convert(size[0..x]),
-			               Integer.convert(size[x+1..length]));
+			shell_.setSize(cast(int)Integer.convert(size[0..x]),
+			               cast(int)Integer.convert(size[x+1..$]));
 		if (getSetting("windowMaximized") == "true")
 			shell_.setMaximized(true);
 
@@ -262,7 +262,7 @@ class StatusBar : Composite
 		}
 	}
 
-	void setLeft(char[] text)  ///
+	void setLeft(string text)  ///
 	{
 		if (progressLabel_.isDisposed())
 			return;
@@ -293,7 +293,7 @@ class StatusBar : Composite
 	}
 
 
-	void showProgress(in char[] label, bool indeterminate=false)
+	void showProgress(string label, bool indeterminate=false)
 	{
 		if (isDisposed())
 			return;
@@ -322,7 +322,7 @@ class StatusBar : Composite
 	}
 
 
-	void hideProgress(in char[] text="")
+	void hideProgress(string text="")
 	{
 		if (isDisposed())
 			return;
@@ -333,7 +333,7 @@ class StatusBar : Composite
 	}
 
 
-	private void setProgressLabel(in char[] text)
+	private void setProgressLabel(string text)
 	{
 		setLeft(text ~ "...");
 	}
@@ -473,7 +473,7 @@ class FilterBar : Group
 		gamesCombo_ = new Combo(this, SWT.DROP_DOWN);
 		setGames(settings.gameNames);
 		if (getSetting("startWithLastMod") == "true") {
-			char[] s = getSetting("lastMod");
+			string s = getSetting("lastMod");
 			int i = findString(settings.gameNames, s);
 			if (i == -1) {
 				gamesCombo_.add(s);
@@ -498,7 +498,7 @@ class FilterBar : Group
 
 			public void widgetDefaultSelected(SelectionEvent e)
 			{
-				char[] s = trim((cast(Combo)e.widget).getText());
+				string s = strip((cast(Combo)e.widget).getText());
 				if (s.length == 0)
 					return;
 
@@ -528,7 +528,7 @@ class FilterBar : Group
 
 
 	/// The last selected game name.
-	char[] selectedGame()
+	string selectedGame()
 	{
 		return lastSelectedGame_;
 	}
@@ -576,7 +576,7 @@ class FilterBar : Group
 	private void saveState()
 	{
 		setSetting("lastMod", lastSelectedGame_);
-		setSessionState("filterState", Integer.toString(filterState));
+		setSessionState("filterState", Integer.to!string(filterState));
 	}
 
 
@@ -669,7 +669,7 @@ private ToolBar createToolbar(Composite parent)
 }
 
 
-private Image loadImage(char[] name)()
+private Image loadImage(string name)()
 {
 	return _loadImage(cast(byte[])import(name));
 }

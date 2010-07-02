@@ -25,27 +25,27 @@ version (Windows) {
 /// Configuration for a game.
 struct GameConfig
 {
-	string name() /// Section name in the game config file.
+	string name() const /// Section name in the game config file.
 	{
 		return name_;
 	}
 
-	string mod()  /// Quake 3 gamename, like "baseq3".  Defaults to name.
+	string mod() const  /// Quake 3 gamename, like "baseq3".  Defaults to name.
 	{
 		return section.getValue("mod", name);
 	}
 
-	string masterServer()  /// Like "master3.idsoftware.com".
+	string masterServer() const  /// Like "master3.idsoftware.com".
 	{		
 		return section.getValue("masterServer", "master3.idsoftware.com");
 	}
 
-	string protocolVersion()  /// Defaults to 68.
+	string protocolVersion() const  /// Defaults to 68.
 	{
 		return section.getValue("protocolVersion", "68");
 	}
 
-	string extraServersFile() /// Like "baseq3.extra".
+	string extraServersFile() const /// Like "baseq3.extra".
 	{
 		return appDir ~ mod ~ ".extra";  // FIXME: check dataDir too?
 	}
@@ -59,7 +59,7 @@ struct GameConfig
 	 *      $(LI _exePath from the game configuration)
 	 *      $(LI gamePath from settings.ini))
 	 */
-	string exePath()
+	string exePath() const
 	{
 		string path = null;
 		string regKey = section["regKey"];
@@ -86,14 +86,15 @@ struct GameConfig
 		                                                                  null;
 	}
 
-	bool useGslist() /// Use gslist instead of qstat when querying master?
+	/// Use gslist instead of qstat when querying master?
+	bool useGslist() const
 	{
 		string r = section["useGslist"];
 		return r ? (r == "true") : true;
 	}
 
 	/// Enable Enemy Territory-style extended color codes (31 colors)?
-	bool useEtColors()
+	bool useEtColors() const
 	{
 		// just testing for now
 		return arguments.colortest && mod == "smokinguns";

@@ -19,6 +19,8 @@ ThreadManager threadManager;
  * The stored function or delegate will only be executed after the previously
  * started one has finished.  It will be executed in a thread controlled by
  * this class.
+ *
+ * FIXME: this class should probably be declared as synchronized.
  */
 class ThreadManager
 {
@@ -54,22 +56,26 @@ class ThreadManager
 	 * function or delegate is called, and unless shutDown has been called,
 	 * abort is set to false again.
 	 */
-	synchronized void run(void function() fp)
+	void run(void function() fp)
 	{
-		abort = true;
-		fp_ = fp;
-		dg_ = null;
-		semaphore_.notify();
+		synchronized (this) {
+			abort = true;
+			fp_ = fp;
+			dg_ = null;
+			semaphore_.notify();
+		}
 	}
 
 
 	/// Ditto
-	synchronized void run(void delegate() dg)
+	void run(void delegate() dg)
 	{
-		abort = true;
-		dg_ = dg;
-		fp_ = null;
-		semaphore_.notify();
+		synchronized (this) {
+			abort = true;
+			dg_ = dg;
+			fp_ = null;
+			semaphore_.notify();
+		}
 	}
 
 
@@ -81,11 +87,13 @@ class ThreadManager
 	 *
 	 * Sets the abort property to true.
 	 */
-	synchronized void shutDown()
+	void shutDown()
 	{
-		abort = true;
-		shutdown_ = true;
-		semaphore_.notify();
+		synchronized (this) {
+			abort = true;
+			shutdown_ = true;
+			semaphore_.notify();
+		}
 	}
 
 

@@ -5,6 +5,7 @@
 module messageboxes;
 
 import std.format;
+import std.string;
 import std.utf;
 
 import java.lang.Runnable;
@@ -17,7 +18,7 @@ import mainwindow;
 
 
 /// Displays a message box.
-void messageBox(in char[] msg, in char[] title, int style)
+void messageBox(string msg, string title, int style)
 {
 	Display.getDefault().syncExec(dgRunnable({
 		scope MessageBox mb;
@@ -39,7 +40,7 @@ void _messageBox(string title, int style)(in char[] fmt, ...)
 	char[] msg;
 	void f(dchar c) { encode(msg, c); }
 	doFormat(&f, _arguments, _argptr);
-	messageBox(msg, title, style);
+	messageBox(cast(string)msg, title, style);
 }
 
 /**
@@ -56,15 +57,16 @@ alias _messageBox!("Error", SWT.ICON_ERROR) error;        /// ditto
 void db(in char[] fmt, ...)
 {
 	debug {
+		char[] msg;
 		void f(dchar c) { encode(msg, c); }
 		doFormat(&f, _arguments, _argptr);
-		messageBox(msg, "Debug", SWT.NONE);
+		messageBox(cast(string)msg, "Debug", SWT.NONE);
 	}
 }
 
 
 /// Display a multi-line debug message in a dialog box.
-void db(char[][] array)
+void db(string[] array)
 {
 	debug db(join(array, "\n"));
 }

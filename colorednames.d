@@ -16,7 +16,7 @@ import org.eclipse.swt.widgets.Display;
 // The first eight colors are the same as for Quake 3.
 private TextStyle[32] etColors;
 
-private const char[] Q3_DEFAULT_NAME = "UnnamedPlayer";
+private string Q3_DEFAULT_NAME = "UnnamedPlayer";
 
 
 static this() {
@@ -104,7 +104,7 @@ void disposeNameColors() {
 /** A parsed colored name. */
 // FIXME: ColoredName.cleanName is not being used anywhere.
 struct ColoredName {
-	char[] cleanName;     ///  The string in question, stripped of color codes.
+	string cleanName;     ///  The string in question, stripped of color codes.
 	ColorRange[] ranges;  ///
 }
 
@@ -178,7 +178,7 @@ unittest {
 /**
  *  Strip the color codes from a string.
  */
-char[] stripColorCodes(in char[] s)
+string stripColorCodes(in char[] s)
 {
 	char[] name;
 
@@ -190,8 +190,5 @@ char[] stripColorCodes(in char[] s)
 		name ~= s[i];
 	}
 
-	if (name.length == 0)
-		name = Q3_DEFAULT_NAME;
-
-	return name;
+	return (name.length > 0) ? cast(string)name : Q3_DEFAULT_NAME;
 }

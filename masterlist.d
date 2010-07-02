@@ -5,6 +5,7 @@ import std.file;
 import std.path;
 import std.stdio;
 import std.string;
+import Integer = tango.text.convert.Integer;
 import tango.text.xml.SaxParser;
 
 import colorednames;
@@ -146,18 +147,20 @@ final class MasterList
 	/**
 	* Foreach support.  Skips servers for which isEmpty(sd) returns true.
 	*/
-	synchronized int opApply(int delegate(ref ServerHandle) dg)
+	int opApply(int delegate(ref ServerHandle) dg)
 	{
-		int result = 0;
+		synchronized (this) {
+			int result = 0;
 
-		foreach (sh, sd; servers_) {
-			if (isEmpty(&sd))
-				continue;
-			result = dg(cast(ServerHandle)sh);
-			if (result)
-				break;
+			foreach (sh, sd; servers_) {
+				if (isEmpty(&sd))
+					continue;
+				result = dg(cast(ServerHandle)sh);
+				if (result)
+					break;
+			}
+			return result;
 		}
-		return result;
 	}
 
 
@@ -177,7 +180,7 @@ final class MasterList
 	 * Note: After calling this, all ServerHandles that were obtained before
 	 *       calling it should be be considered invalid.
 	 */
-	bool load(in char[] defaultProtocolVersion)
+	bool load(string defaultProtocolVersion)
 	{
 		if (!exists(dataDir ~ fileName_))
 			return false;
@@ -259,8 +262,8 @@ final class MasterList
 
 
 	private {
-		char[] name_;
-		char[] fileName_;
+		string name_;
+		string fileName_;
 		ServerData[] servers_;
 	}
 }
@@ -271,7 +274,7 @@ private final class XmlDumper
 {
 
 	///
-	this(in char[] fileName)
+	this(string fileName)
 	{
 		output_ = File(fileName, "w");
 		output_.writeln(`<?xml version="1.0" encoding="UTF-8"?>`);
@@ -290,16 +293,16 @@ private final class XmlDumper
 	///
 	void serverToXml(in ServerData* sd)
 	{
-		output_.writef(`  <server name="%s"`, sd.rawName)
-		       .writef(` country_code="%s"`,  sd.server[ServerColumn.COUNTRY])
-		       .writef(` address="%s"`,       sd.server[ServerColumn.ADDRESS])
-		       .writef(` protocol_version="%s"`, sd.protocolVersion)
-		       .writef(` ping="%s"`,          sd.server[ServerColumn.PING])
-		       .writef(` player_count="%s"`,  sd.server[ServerColumn.PLAYERS])
-		       .writef(` map="%s"`,           sd.server[ServerColumn.MAP])
-		       .writef(` persistent="%s"`,    sd.persistent ? "true" : "false")
-		       .writef(` fail_count="%s"`,    sd.failCount)
-		       .writeln(">");
+		output_.writef(`  <server name="%s"`, sd.rawName);
+		output_.writef(` country_code="%s"`,  sd.server[ServerColumn.COUNTRY]);
+		output_.writef(` address="%s"`,       sd.server[ServerColumn.ADDRESS]);
+		output_.writef(` protocol_version="%s"`, sd.protocolVersion);
+		output_.writef(` ping="%s"`,          sd.server[ServerColumn.PING]);
+		output_.writef(` player_count="%s"`,  sd.server[ServerColumn.PLAYERS]);
+		output_.writef(` map="%s"`,           sd.server[ServerColumn.MAP]);
+		output_.writef(` persistent="%s"`,    sd.persistent ? "true" : "false");
+		output_.writef(` fail_count="%s"`,    sd.failCount);
+		output_.writeln(">");
 
 		if (sd.cvars.length) {
 			output_.writeln("    <cvars>");
@@ -346,10 +349,10 @@ private final class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 {
 	ServerData[] servers;
 
-	private char[] defaultProtocolVersion_;
+	private string defaultProtocolVersion_;
 
 
-	this(in char[] defaultProtocolVersion)
+	this(string defaultProtocolVersion)
 	{
 		defaultProtocolVersion_ = defaultProtocolVersion;
 	}
@@ -381,25 +384,25 @@ private final class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 
 		foreach (ref attr; attributes) {
 			if (attr.localName == "name") {
-				sd.rawName = attr.value.dup;
+				sd.rawName = attr.value.idup;
 				sd.server[ServerColumn.NAME] = stripColorCodes(attr.value);
 			}
 			else if (attr.localName == "country_code")
-				sd.server[ServerColumn.COUNTRY] = attr.value.dup;
+				sd.server[ServerColumn.COUNTRY] = attr.value.idup;
 			else if (attr.localName == "address")
-				sd.server[ServerColumn.ADDRESS] = attr.value.dup;
+				sd.server[ServerColumn.ADDRESS] = attr.value.idup;
 			else if (attr.localName == "protocol_version")
-				sd.protocolVersion = attr.value.dup;
+				sd.protocolVersion = attr.value.idup;
 			else if (attr.localName == "ping")
-				sd.server[ServerColumn.PING] = attr.value.dup;
+				sd.server[ServerColumn.PING] = attr.value.idup;
 			else if (attr.localName == "player_count")
-				sd.server[ServerColumn.PLAYERS] = attr.value.dup;
+				sd.server[ServerColumn.PLAYERS] = attr.value.idup;
 			else if (attr.localName == "map")
-				sd.server[ServerColumn.MAP] = attr.value.dup;
+				sd.server[ServerColumn.MAP] = attr.value.idup;
 			else if (attr.localName == "persistent")
 				sd.persistent = attr.value == "true";
 			else if (attr.localName == "fail_count")
-				sd.failCount = Integer.convert(attr.value);
+				sd.failCount = cast(int)Integer.convert(attr.value);
 		}
 		
 		// Make sure there's a protocol version.  This makes it less likely the
@@ -415,18 +418,18 @@ private final class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 	// Add a cvar.
 	private void addCvar(Attribute!(Ch)[] attributes)
 	{
-		char[][] cvar = new char[][2];
+		string[] cvar = new string[2];
 
 		foreach (ref attr; attributes) {
 			if (attr.localName == "key")
-				cvar[0] = attr.value.dup;
+				cvar[0] = attr.value.idup;
 			else if (attr.localName == "value")
-				cvar[1] = attr.value.dup;
+				cvar[1] = attr.value.idup;
 
-			if (icompare(cvar[0], "g_gametype") == 0)
+			if (icmp(cvar[0], "g_gametype") == 0)
 				servers[$-1].server[ServerColumn.GAMETYPE] = cvar[1];
-			else if (icompare(cvar[0], "g_needpass") == 0) {
-				char[] s = cvar[1] == "0" ? PASSWORD_NO : PASSWORD_YES;
+			else if (icmp(cvar[0], "g_needpass") == 0) {
+				string s = cvar[1] == "0" ? PASSWORD_NO : PASSWORD_YES;
 				servers[$-1].server[ServerColumn.PASSWORDED] = s;
 			}
 		}
@@ -438,15 +441,15 @@ private final class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 	// Add a player.
 	private void addPlayer(Attribute!(Ch)[] attributes)
 	{
-		char[][] player = new char[][PlayerColumn.max + 1];
+		string[] player = new string[PlayerColumn.max + 1];
 
 		foreach (ref attr; attributes) {
 			if (attr.localName == "name")
-				player[PlayerColumn.RAWNAME] = attr.value.dup;
+				player[PlayerColumn.RAWNAME] = attr.value.idup;
 			else if (attr.localName == "score")
-				player[PlayerColumn.SCORE] = attr.value.dup;
+				player[PlayerColumn.SCORE] = attr.value.idup;
 			else if (attr.localName == "ping")
-				player[PlayerColumn.PING] = attr.value.dup;
+				player[PlayerColumn.PING] = attr.value.idup;
 		}
 
 		servers[$-1].players ~= player;

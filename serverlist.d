@@ -2,8 +2,11 @@ module serverlist;
 
 import core.stdc.string : memmove;
 import std.conv;
-//import tango.util.container.HashMap;
-//debug import tango.util.log.Log;
+import std.string;
+
+import tango.core.Array;
+import tango.text.Util;
+import Integer = tango.text.convert.Integer;
 
 import common;
 import geoip;
@@ -117,27 +120,29 @@ final class ServerList
 	 * Only servers previously added by calling add() or replace() will be
 	 * considered.
 	 */
-	synchronized void refillFromMaster()
+	void refillFromMaster()
 	{
-		GameConfig game = getGameConfig(gameName_);
-		typeof(ipHash_) newHash;
+		synchronized (this) {
+			GameConfig game = getGameConfig(gameName_);
+			typeof(ipHash_) newHash;
 
-		filteredList.length = 0;
-		synchronized (master_) foreach (sh; master_) {
-			ServerData sd = master_.getServerData(sh);
-			char[] address = sd.server[ServerColumn.ADDRESS];
+			filteredList.length = 0;
+			synchronized (master_) foreach (sh; master_) {
+				ServerData sd = master_.getServerData(sh);
+				string address = sd.server[ServerColumn.ADDRESS];
 
-			if (address in ipHash_ && matchGame(&sd, game)) {
-				newHash[address] = -1;
-				if (!isFilteredOut(&sd))
-					filteredList ~= sh;
+				if (address in ipHash_ && matchGame(&sd, game)) {
+					newHash[address] = -1;
+					if (!isFilteredOut(&sd))
+						filteredList ~= sh;
+				}
 			}
-		}
 
-		ipHash_ = newHash;
-		ipHashValid_ = false;
-		isSorted_ = false;
-		_sort();
+			ipHash_ = newHash;
+			ipHashValid_ = false;
+			isSorted_ = false;
+			_sort();
+		}
 	}
 
 
@@ -162,7 +167,7 @@ final class ServerList
 	 *
 	 * Returns: the server's index, or -1 if unknown or not found.
 	 */
-	int getFilteredIndex(string ipAndPort, bool* found=null)
+	int getFilteredIndex(in char[] ipAndPort, bool* found=null)
 	{
 		int result = -1;
 		bool wasFound = false;
@@ -197,10 +202,10 @@ final class ServerList
 	}
 
 	///
-	synchronized size_t totalLength() { return ipHash_.size; }
+	size_t totalLength() { synchronized (this) return ipHash_.length; }
 
 	///
-	synchronized size_t filteredLength() { return filteredList.length; }
+	size_t filteredLength() { synchronized (this) return filteredList.length; }
 
 
 	/**
@@ -225,14 +230,14 @@ final class ServerList
 	 * Useful for servers that are not on the master server's list.  Multiple
 	 * servers can be added this way.
 	 */
-	synchronized void addExtraServer(string address)
+	void addExtraServer(string address)
 	{
-		extraServers_.add(address);
+		synchronized (this) extraServers_.add(address);
 	}
 
 
 	/// Returns the list of extra servers.
-	synchronized Set!(string) extraServers() { return extraServers_; }
+	Set!(string) extraServers() { synchronized (this) return extraServers_; }
 
 
 	/**
@@ -241,9 +246,9 @@ final class ServerList
 	 * Uses the previously selected _sort order, or the default
 	 * if there is none.
 	 */
-	synchronized void sort()
+	void sort()
 	{
-		_sort();
+		synchronized (this) _sort();
 	}
 
 
@@ -332,20 +337,20 @@ private:
 	{
 		synchronized (this) {
 			/*if (filteredList.length > list.length) {
-				log(Format("filteredlist.length == {}\nlist.length == {}",
-				                            filteredList.length, list.length));
+				log("filteredlist.length == %s\nlist.length == %s",
+				                             filteredList.length, list.length);
 				assert(0, "Details in log file.");
 			}*/
 			/*if (!(filters_ || filteredList.length == list.length ||
 			                       filteredList.length == (list.length - 1))) {
-				log(Format("ServerList invariant broken!"
-				           "\nfilters_ & Filter.HAS_HUMANS: {}"
-				           "\nfilters_ & Filter.NOT_EMPTY: {}"
-				           "\nlist.length: {}"
-				           "\nfilteredList.length: {}",
-				           filters_ & Filter.HAS_HUMANS,
-				           filters_ & Filter.NOT_EMPTY,
-				           list.length, filteredList.length));
+				log("ServerList invariant broken!"
+				    "\nfilters_ & Filter.HAS_HUMANS: %s"
+				    "\nfilters_ & Filter.NOT_EMPTY: %s"
+				    "\nlist.length: %s"
+				    "\nfilteredList.length: %s",
+				    filters_ & Filter.HAS_HUMANS,
+				    filters_ & Filter.NOT_EMPTY,
+				    list.length, filteredList.length));
 				assert(0, "Details in log file.");
 			}*/
 		}
@@ -443,13 +448,12 @@ private:
 				break;
 
 			case ServerColumn.PING:
-				result = Integer.parse(a.server[ServerColumn.PING]) -
-				         Integer.parse(b.server[ServerColumn.PING]);
+				result = cast(int)Integer.parse(a.server[ServerColumn.PING]) -
+				         cast(int)Integer.parse(b.server[ServerColumn.PING]);
 				break;
 
 			default:
-				result = icompare(a.server[sortColumn_],
-				                  b.server[sortColumn_]);
+				result = icmp(a.server[sortColumn_], b.server[sortColumn_]);
 		}
 
 		return (reversed_ ? -result : result);
@@ -487,10 +491,10 @@ private:
 		return true;
 	}
 
-	char[] getCountryCode(in ServerData* sd)
+	string getCountryCode(in ServerData* sd)
 	{
-		char[] address = sd.server[ServerColumn.ADDRESS];
-		char[] code = countryCodeByAddr(address[0..locate(address, ':')]);
+		string address = sd.server[ServerColumn.ADDRESS];
+		string code = countryCodeByAddr(address[0..findChar(address, ':')]);
 
 		return code;
 	}
@@ -531,13 +535,13 @@ private:
 	/// Prints the filtered list and its length to stdout.
 	debug void printFiltered()
 	{
-		Log.formatln("printFiltered(): {} elements in filteredList.",
-		                filteredList.length);
+		log("printFiltered(): %s elements in filteredList.",
+		                                                  filteredList.length);
 		foreach (i, sh; filteredList) {
 			ServerData sd = master_.getServerData(sh);
-			Log.formatln(/*i, ": ",*/ sd.server[ServerColumn.NAME]);
+			log(/*i, ": ",*/ sd.server[ServerColumn.NAME]);
 		}
-		Log.formatln("");
+		log("");
 	}
 }
 
