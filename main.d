@@ -5,7 +5,7 @@ import core.thread;
 import std.file;
 import std.path;
 import std.stdio;
-//version (Windows) import tango.sys.win32.SpecialPath;
+version (Windows) import tango.sys.win32.SpecialPath;
 
 import java.io.ByteArrayInputStream;
 import org.eclipse.swt.SWT;
@@ -184,9 +184,8 @@ private void detectDirectories(string firstArg)
 	}
 	else {
 		version (Windows) {
-			assert(0);
-			//dataDir = getSpecialPath(CSIDL_APPDATA) ~ '/' ~ APPNAME ~ '/';
-			//logDir = getSpecialPath(CSIDL_LOCAL_APPDATA) ~ '/' ~ APPNAME ~ '/';
+			dataDir = getSpecialPath(CSIDL_APPDATA) ~ '/' ~ APPNAME ~ '/';
+			logDir = getSpecialPath(CSIDL_LOCAL_APPDATA) ~ '/' ~ APPNAME ~ '/';
 		}
 		if (!exists(dataDir))
 			mkdir(dataDir);
