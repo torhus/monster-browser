@@ -1,6 +1,6 @@
 module playertable;
 
-import tango.text.Ascii;
+import std.string;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MenuDetectEvent;
@@ -59,7 +59,7 @@ class PlayerTable
 			public void handleEvent(Event e)
 			{
 				TableItem item = cast(TableItem) e.item;
-				char[][] data = players_[table_.indexOf(item)].data;
+				string[] data = players_[table_.indexOf(item)].data;
 				item.setText(data[0 .. table_.getColumnCount()]);
 			}
 		});
@@ -78,11 +78,11 @@ class PlayerTable
 						return;
 
 					TableItem item = cast(TableItem) e.item;
-					char[][] data = players_[table_.indexOf(item)].data;
+					string[] data = players_[table_.indexOf(item)].data;
 					scope tl = new TextLayout(Display.getDefault);
 
 					tl.setText(data[PlayerColumn.NAME]);
-					char[] rawName = data[PlayerColumn.RAWNAME];
+					string rawName = data[PlayerColumn.RAWNAME];
 					bool useEtColors = serverList_.useEtColors;
 					foreach (r; parseColors(rawName, useEtColors).ranges)
 						tl.setStyle(r.style, r.start, r.end);
@@ -122,9 +122,9 @@ class PlayerTable
 		}
 
 		// restore sort order from previous session
-		char[] s = getSessionState("playerSortOrder");
+		string s = getSessionState("playerSortOrder");
 		uint ate;
-		int sortCol = Integer.convert(s, 10, &ate);
+		int sortCol = cast(int)Integer.convert(s, 10, &ate);
 		bool reversed = (s.length > ate && s[ate] == 'r');
 		if (sortCol >= playerHeaders.length)
 			sortCol = 0;
@@ -214,7 +214,7 @@ private:
 				return;
 			}
 
-			char[] text = null;
+			string text = null;
 			scope point = new Point(event.x, event.y);
 			TableItem item = table_.getItem(point);
 
@@ -261,11 +261,11 @@ private:
 			int result;
 
 			if (numerical) {
-				result = Integer.parse(a.data[sortCol]) -
-				         Integer.parse(b.data[sortCol]);
+				result = cast(int)Integer.parse(a.data[sortCol]) -
+				         cast(int)Integer.parse(b.data[sortCol]);
 			}
 			else {
-				result = icompare(a.data[sortCol], b.data[sortCol]);
+				result = icmp(a.data[sortCol], b.data[sortCol]);
 			}
 			return (reverse ? -result <= 0 : result <= 0);
 		}
@@ -286,6 +286,6 @@ private:
 
 
 private struct Player {
-	char[][] data;    // Ordered according to the PlayerColumn enum.
+	string[] data;    // Ordered according to the PlayerColumn enum.
 	int serverIndex;  // Index into the filtered list of servers.
 }

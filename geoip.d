@@ -7,6 +7,7 @@ module geoip;
 import std.conv;
 import std.loader;
 import std.string;
+import std.c.string;
 import tango.text.Ascii;
 
 import java.io.ByteArrayInputStream;
@@ -24,16 +25,16 @@ private __gshared {
 	Image[string] flagCache;
 }
 
-private void bindFunc(alias funcPtr)(SharedLib lib)
+private void bindFunc(alias funcPtr)(ExeModule lib)
 {
-	funcPtr = cast(typeof(funcPtr))lib.getSymbol(funcPtr.stringof.ptr);
+	funcPtr = cast(typeof(funcPtr))lib.getSymbol(funcPtr.stringof);
 }
 
 
 ///
 bool initGeoIp()
 {
-	ExeModule geoIpLib;
+	scope ExeModule geoIpLib;
 
 	assert(gi is null, "Can't call initGeoIp() more than once.");
 
@@ -81,15 +82,16 @@ string countryCodeByAddr(in char[] addr)
 	if (gi is null)
 		return null;
 
-	char* code = GeoIP_country_code_by_addr(gi, toStringz(addr));
+	const(char)* code = GeoIP_country_code_by_addr(gi, toStringz(addr));
 	if (code is null) {
 		log("GeoIP: no country found for " ~ addr ~ ".");
 		return null;
 	}
 	else {
-		string s = to!string(code);
+		char[] s = code[0..strlen(code)].dup;
 		assert(s.length == 2);
-		return toLowerInPlace(s);
+		tolowerInPlace(s);
+		return cast(string)s;
 	}
 }
 

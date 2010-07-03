@@ -50,7 +50,7 @@ version(Windows)
 {
 	class PipeException : Exception
 	{
-		this(char[] msg) { super(msg ~ ": " ~ sysErrorString(GetLastError())); }
+		this(string msg) { super(msg ~ ": " ~ sysErrorString(GetLastError())); }
 	}
 
 	class PipeStream : Stream
