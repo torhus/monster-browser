@@ -576,7 +576,7 @@ class FilterBar : Group
 	private void saveState()
 	{
 		setSetting("lastMod", lastSelectedGame_);
-		setSessionState("filterState", Integer.to!string(filterState));
+		setSessionState("filterState", to!string(filterState));
 	}
 
 

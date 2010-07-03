@@ -159,7 +159,7 @@ public:
 
 
 	/// foreach key.
-	int opApply(int delegate(ref IniKey) dg)
+	int opApply(int delegate(ref IniKey) dg) const
 	{
 		int result = 0;
 		uint i;
@@ -248,7 +248,7 @@ public:
 
 
 	/// Returns: value of the existing key keyName, or defaultValue if not present.
-	string getValue(in char[] keyName, string defaultValue = null)
+	string getValue(in char[] keyName, string defaultValue = null) const
 	{
 		foreach(IniKey ikey; this)
 		{
@@ -261,14 +261,14 @@ public:
 	
 	// /// Returns: _value of the existing key keyName, or null if not present.
 	/// Same as getValue(keyName, null).
-	string value(in char[] keyName)
+	string value(in char[] keyName) const
 	{
 		return getValue(keyName, null);
 	}
 
 
 	/// Shortcut for getValue(keyName).
-	string opIndex(in char[] keyName)
+	string opIndex(in char[] keyName) const
 	{
 		return value(keyName);
 	}
@@ -641,7 +641,7 @@ public:
 
 
 	/// Comparison function for section and key names. Override to change behavior.
-	bool match(in char[] s1, in char[] s2)
+	bool match(in char[] s1, in char[] s2) const
 	{
 		return !std.string.icmp(s1, s2);
 	}

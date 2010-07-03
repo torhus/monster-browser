@@ -40,8 +40,8 @@ enum
 extern (Windows) {
 	HRESULT CoInitialize(LPVOID pvReserved);  ///
 	void    CoUninitialize();  ///
-	HRESULT CoCreateInstance(CLSID *rclsid, IUnknown UnkOuter,
-	                         DWORD dwClsContext, IID* riid, void* ppv);  ///
+	HRESULT CoCreateInstance(const CLSID *rclsid, IUnknown UnkOuter,
+	                      DWORD dwClsContext, const IID* riid, void* ppv);  ///
 }
 
 

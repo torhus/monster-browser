@@ -60,7 +60,7 @@ class TaskbarProgress
 
 
 	/// Check condition, throw exception if false.
-	private void check(int condition, lazy char[] message)
+	private void check(int condition, lazy string message)
 	{
 		if (!condition)
 			throw new Exception("TaskbarProgress :: " ~ message);

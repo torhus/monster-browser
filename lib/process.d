@@ -229,7 +229,7 @@ class Process
 		return perr.readLine();
 	}
 
-	void writeLine(char[] line)
+	void writeLine(in char[] line)
 	{
 		pin.writeLine(line);
 	}
@@ -289,7 +289,7 @@ private:
 				info = new PROCESS_INFORMATION();
 				env = makeBlock(enviroment);
 
-				if (!CreateProcessA(null,std.string.toStringz(command),null,null,true,DETACHED_PROCESS,env,null,&startup,info)) {
+				if (!CreateProcessA(null,(command ~ "\0").ptr,null,null,true,DETACHED_PROCESS,env,null,&startup,info)) {
 					throw new ProcessException("CreateProcess");
 				}
 

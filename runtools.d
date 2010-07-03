@@ -5,6 +5,7 @@
 module runtools;
 
 import std.conv;
+import std.file;
 import std.stdio;
 
 import lib.process;
@@ -147,7 +148,7 @@ final class MasterListServerRetriever : IServerRetriever
 			if (master_.length == 0 && !master_.load(game_.protocolVersion))
 				error = true;
 		}
-		catch (IOException o) {
+		catch (FileException o) {
 			error = true;
 		}
 
@@ -175,7 +176,7 @@ final class MasterListServerRetriever : IServerRetriever
 
 
 	private {
-		GameConfig game_;
+		const GameConfig game_;
 		MasterList master_;
 	}
 }
@@ -192,7 +193,7 @@ final class QstatServerRetriever : IServerRetriever
 	*    replace   = Try to replace servers in the master, instead of adding.
 	*                Servers that are not present in the master will be added.
 	*/
-	this(in char[] game, MasterList master, Set!string addresses,
+	this(string game, MasterList master, Set!string addresses,
 	                                                        bool replace=false)
 	{
 		game_ = getGameConfig(game);
@@ -271,7 +272,12 @@ final class QstatServerRetriever : IServerRetriever
 			return deliver(sh, replied);
 		}
 
-		qstat.parseOutput(game_.mod, proc, &_deliver);
+		try {
+			qstat.parseOutput(game_.mod, proc, &_deliver);
+		}
+		catch (PipeException e) {
+			// exception probably means there was no more output
+		}
 	}
 
 

@@ -484,7 +484,7 @@ class ServerRetrievalController
 		serverList_ = serverTable.serverList;
 
 		try
-			maxTimeouts_ = Integer.toInt(getSetting("maxTimeouts"));
+			maxTimeouts_ = to!int(getSetting("maxTimeouts"));
 		catch (ConvError e)
 			maxTimeouts_ = 3;  // FIXME: use the actual default
 

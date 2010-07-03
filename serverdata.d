@@ -57,7 +57,7 @@ struct ServerData {
 	int botCount() const
 	{
 		string s = server[ServerColumn.PLAYERS];
-		int plus = IndexOf(s, '+');
+		int plus = indexOf(s, '+');
 
 		if (plus != -1) {
 			string t = s[plus+1 .. $];

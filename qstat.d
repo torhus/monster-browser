@@ -62,7 +62,7 @@ bool parseOutput(in char[] modName, Process input,
 		gtypes = defaultGameTypes;
 	}
 
-	while (keepGoing && !input.eof()) {
+	while (keepGoing) {
 		debug checkTime(timer2, "1");
 		string line = cast(string)input.readLine();
 		debug checkTime(timer2, "2");
@@ -221,21 +221,26 @@ private string[][] parsePlayers(Process input, int* humanCount, File output)
 	string line;
 	int humans = 0;
 
-	while (!input.eof() && (line = cast(string)input.readLine()) !is null) {
-		if (output.isOpen)
-			output.writeln(line);
+	try {
+		while ((line = cast(string)input.readLine()) !is null) {
+			if (output.isOpen)
+				output.writeln(line);
 
-		string[] s = split(line, FIELDSEP);
-		string[] player = new string[PlayerColumn.max + 1];
-		player[PlayerColumn.RAWNAME] = s[0];
-		player[PlayerColumn.SCORE]   = s[1];
-		player[PlayerColumn.PING]    = s[2];
-		player[PlayerColumn.NAME]    = null;
-		players ~= player;
+			string[] s = split(line, FIELDSEP);
+			string[] player = new string[PlayerColumn.max + 1];
+			player[PlayerColumn.RAWNAME] = s[0];
+			player[PlayerColumn.SCORE]   = s[1];
+			player[PlayerColumn.PING]    = s[2];
+			player[PlayerColumn.NAME]    = null;
+			players ~= player;
 
-		if (player[PlayerColumn.PING] != "0") {
-			humans++;
+			if (player[PlayerColumn.PING] != "0") {
+				humans++;
+			}
 		}
+	}
+	catch (PipeException e) {
+		// end of input
 	}
 
 	if (humanCount)

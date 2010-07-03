@@ -3,7 +3,8 @@
 module launch;
 
 import std.path;
-//import tango.sys.Common;
+import std.string;
+import std.windows.syserror;
 version (Windows) {
 	import tango.sys.win32.CodePage;
 	import tango.sys.win32.UserGdi;
@@ -27,12 +28,12 @@ import settings;
  *
  * Displays an error message if the game executable was not found.
  */
-void joinServer(in char[] gameName, ServerData sd)
+void joinServer(string gameName, ServerData sd)
 {
-	char[] argv;
-	char[] address = sd.server[ServerColumn.ADDRESS];
+	string argv;
+	string address = sd.server[ServerColumn.ADDRESS];
 	GameConfig game = getGameConfig(gameName);
-	char[] pathString = game.exePath;
+	string pathString = game.exePath;
 	bool launch = true;
 	bool showDialog = false;
 
@@ -49,7 +50,7 @@ void joinServer(in char[] gameName, ServerData sd)
 
 	int i = findString(sd.cvars, "g_needpass", 0);
 	if (i != -1 && sd.cvars[i][1] == "1" && getPassword(address).length == 0) {
-		char[] message = "Join \"" ~ sd.server[ServerColumn.NAME] ~ "\"\n\n" ~
+		string message = "Join \"" ~ sd.server[ServerColumn.NAME] ~ "\"\n\n" ~
 		                          "You need a password to join this server.\n";
 		scope dialog = new ServerPasswordDialog(mainWindow.handle,
 		                          "Join Server", message, address, true, true);
@@ -65,16 +66,16 @@ void joinServer(in char[] gameName, ServerData sd)
 
 	if (launch) {
 		version (Windows) {
-			FilePath path = FilePath(pathString);
-			char buf[MAX_PATH];
-			string ansiDir = CodePage.into(dirname(pathString), buf).idup;
-			string ansiPath = ansiDir ~ CodePage.into(basename(pathString), buf);
+			char[MAX_PATH] buf;
+			char[] ansiDir = CodePage.into(dirname(pathString), buf);
+			char[] ansiPath = ansiDir ~ CodePage.into(basename(pathString), buf);
 
 			int r = cast(int)ShellExecuteA(null, "open", toStringz(ansiPath),
 			                     toStringz(argv), toStringz(ansiDir), SW_SHOW);
 			if (r <= 32) {
-				error("Unable to execute \"{}\"."/*"\n\nError {}: {}"*/,
-				                  path/*, SysError.lastCode, SysError.lastMsg()*/);
+				auto code = GetLastError();
+				error("Unable to execute \"%s\".\n\nError %s: %s",
+				                       pathString, code, sysErrorString(code));
 			}
 			else if (getSetting("minimizeOnGameLaunch") == "true") {
 				mainWindow.minimized = true;

@@ -205,7 +205,10 @@ final class ServerList
 	size_t totalLength() { synchronized (this) return ipHash_.length; }
 
 	///
-	size_t filteredLength() { synchronized (this) return filteredList.length; }
+	size_t filteredLength() const
+	{
+		synchronized (this) return filteredList.length;
+	}
 
 
 	/**
@@ -547,7 +550,7 @@ private:
 
 
 /// Returns the total number of humans players in the filtered list of servers.
-int countHumanPlayers(in ServerList serverList)
+int countHumanPlayers(ServerList serverList)
 {
 	int players = 0;
 	synchronized (serverList) {

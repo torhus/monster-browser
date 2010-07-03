@@ -85,14 +85,14 @@ class PasswordDialog
 	 *
 	 * The default is an empty password, and yes to saving it.
 	 */
-	const(char)[] password = "";
+	string password = "";
 	bool savePassword = true;  /// ditto
 
 	/**
 	 * If pwdMandatory is true, the OK button will be disabled whenever the
 	 * password field is empty.
 	 */
-	this(Shell parent, in char[] title, in char[] message,
+	this(Shell parent, string title, string message,
 	                             bool pwdMandatory=false, bool askToSave=false)
 	{
 		parent_ = parent;
@@ -333,7 +333,7 @@ class SpecifyServerDialog
 	private {
 		Shell parent_, shell_;
 		Button okButton_, cancelButton_, saveButton_;
-		const(char)[] address = "";
+		string address = "";
 		Text addressText_;
 		int result_ = SWT.CANCEL;
 	}
@@ -390,7 +390,7 @@ class SettingsDialog
 		sqSpinner_.setMinimum(1);
 		sqSpinner_.setMaximum(99);
 		uint ate;
-		int val = Integer.convert(getSetting("simultaneousQueries"), 10, &ate);
+		int val = cast(int)Integer.convert(getSetting("simultaneousQueries"), 10, &ate);
 		sqSpinner_.setSelection(ate > 0 ? val : 10);
 
 		// games button
@@ -426,7 +426,7 @@ class SettingsDialog
 			public void handleEvent (Event event)
 			{
 				if (event.widget == okButton_) {
-					char s[];
+					string s;
 					result_ = SWT.OK;
 					setSetting("gamePath", pathText_.getText);
 
@@ -478,7 +478,7 @@ private:
 class ServerPasswordDialog : PasswordDialog
 {
 	///
-	this(Shell parent, in char[] title, in char[] message, in char[] address,
+	this(Shell parent, string title, string message, string address,
 	                             bool pwdMandatory=false, bool askToSave=false)
 	{
 		address_ = address;
@@ -505,7 +505,7 @@ class ServerPasswordDialog : PasswordDialog
 		return result;
 	}
 
-	private char[] address_;
+	private string address_;
 	private bool askToSave_;
 }
 
@@ -517,11 +517,12 @@ class ServerPasswordDialog : PasswordDialog
 class RconPasswordDialog : PasswordDialog
 {
 	///
-	this(Shell parent, in char[] serverName, in char[] address)
+	this(Shell parent, in char[] serverName, string address)
 	{
 		address_ = address;
 		super(parent, "Remote Console",
-		                "Set password for \"" ~ serverName ~ "\"", true, true);
+		                "Set password for \"" ~ cast(string)serverName ~ "\"",
+		                                                           true, true);
 		savePassword = getSessionState("saveRconPasswords") == "true";
 	}
 
@@ -539,7 +540,7 @@ class RconPasswordDialog : PasswordDialog
 		return result;
 	}
 
-	private char[] address_;
+	private string address_;
 }
 
 
