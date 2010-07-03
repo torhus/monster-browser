@@ -27,10 +27,10 @@ import servertable;
 import settings;
 
 
-PlayerTable playerTable;  ///
+__gshared PlayerTable playerTable;  ///
 
 // should correspond to serverlist.PlayerColumn
-string[] playerHeaders = ["Name", "Score", "Ping"];
+enum playerHeaders = ["Name", "Score", "Ping"];
 
 
 ///

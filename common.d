@@ -32,7 +32,7 @@ else
 	const bool MOD_ONLY = true;
 
 struct arguments {  ///
-static:
+shared static:
 	bool dumplist  = false;  ///
 	bool dumpqstat = false;  ///
 	bool fromfile  = false;  ///
@@ -42,46 +42,46 @@ static:
 }
 
 
-string appDir;  /// Absolute path to where the application is installed.
-string dataDir;  /// Absolute path to where settings and data is stored.
-string logDir;  /// Absolute path to where the log file is.
+shared string appDir;  /// Absolute path to where the application is installed.
+shared string dataDir;  /// Absolute path to where settings and data is stored.
+shared string logDir;  /// Absolute path to where the log file is.
 
-bool haveGslist;  /// Will be true if gslist was found during startup.
+shared bool haveGslist;  /// Will be true if gslist was found during startup.
 
 
-string APPNAME = "Monster Browser";
+enum APPNAME = "Monster Browser";
 
-const SVN = import("svnversion.txt");
+enum SVN = import("svnversion.txt");
 
-string FINAL_VERSION = "0.7";
+enum FINAL_VERSION = "0.7";
 
 debug {
-	string VERSION = __DATE__ ~ " (svnversion " ~ SVN ~ ") *DEBUG BUILD*";
+	enum VERSION = __DATE__ ~ " (svnversion " ~ SVN ~ ") *DEBUG BUILD*";
 }
 else {
 	version (Final)
-		string VERSION = FINAL_VERSION;
+		enum VERSION = FINAL_VERSION;
 	else
-		string VERSION = __DATE__ ~  " (svnversion " ~ SVN ~ ")";
+		enum VERSION = __DATE__ ~  " (svnversion " ~ SVN ~ ")";
 }
 
-Clipboard clipboard;
-Timer globalTimer;
+__gshared Clipboard clipboard;
+__gshared Timer globalTimer;
 
 ///
-bool userAbort = false;
+shared bool userAbort = false;
 
 /// Is there a console available for output?
-bool haveConsole;
+shared bool haveConsole;
 
 
 // Add dispose() methods etc. to this array, and they will be called at
 // shutdown.
-void delegate()[] callAtShutdown;
+__gshared void delegate()[] callAtShutdown;
 
 
 private {
-	File logFile;
+	__gshared File logFile;
 }
 
 

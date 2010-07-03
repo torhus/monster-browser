@@ -10,7 +10,7 @@ import common;
 import settings;
 
 
-CvarTable cvarTable;  ///
+__gshared CvarTable cvarTable;  ///
 
 
 ///
