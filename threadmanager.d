@@ -10,7 +10,7 @@ import runtools;// : killServerBrowser;
 
 
 /// Global instance.
-ThreadManager threadManager;
+__gshared ThreadManager threadManager;
 
 
 /**

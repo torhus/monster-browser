@@ -105,13 +105,15 @@ struct GameConfig
 }
 
 
-string[] gameNames;  /// The names of all games loaded from the config file.
-string gamesFileName;  /// Name of the file containing options for each game.
+/// The names of all games loaded from the config file.
+__gshared string[] gameNames;
+/// Name of the file containing options for each game.
+__gshared string gamesFileName;
 
 private {
-	string settingsFileName;
+	__gshared string settingsFileName;
 
-	string defaultGamesFile =
+	enum defaultGamesFile =
 `; Monster Browser game configuration
 ;
 ; Just put each game in square brackets, then you can list options under it.
@@ -165,14 +167,14 @@ useGslist=false
 [InstaUnlagged]
 `;
 
-	Ini settingsIni;
-	Ini gamesIni;
+	__gshared Ini settingsIni;
+	__gshared Ini gamesIni;
 
 	struct Setting {
 		string name;
 		string value;
 	}
-	Setting[] defaults = [{"coloredNames", "true"},
+	enum Setting[] defaults = [{"coloredNames", "true"},
 	                      {"lastMod", "Smokin' Guns"},
 	                      {"maxTimeouts", "3"},
 	                      {"minimizeOnGameLaunch", "true"},
@@ -183,7 +185,7 @@ useGslist=false
 	                      {"windowSize", "800x568"},
 	                     ];
 
-	Setting[] defaultSessionState = [{"filterState", "0"},
+	enum Setting[] defaultSessionState = [{"filterState", "0"},
 	                                 {"playerSortOrder", "0"},
 	                                 {"resolution", "0, 0"},
 	                                 {"serverSortOrder", "1"},

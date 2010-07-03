@@ -14,9 +14,9 @@ import org.eclipse.swt.widgets.Display;
 
 // Extended set of color codes, like in RtCW: Enemy Territory.
 // The first eight colors are the same as for Quake 3.
-private TextStyle[32] etColors;
+__gshared private TextStyle[32] etColors;
 
-private string Q3_DEFAULT_NAME = "UnnamedPlayer";
+private enum Q3_DEFAULT_NAME = "UnnamedPlayer";
 
 
 static this() {

@@ -37,10 +37,10 @@ struct MasterListCacheEntry
 }
 
 /// Master server lists indexed by master list name.
-MasterListCacheEntry*[char[]] masterLists;
+__gshared MasterListCacheEntry*[char[]] masterLists;
 
 /// ServerList cache indexed by game config name.
-ServerList[char[]] serverListCache;
+__gshared ServerList[char[]] serverListCache;
 
 
 /**
@@ -52,7 +52,7 @@ ServerList[char[]] serverListCache;
  */
 void switchToGame(string name)
 {
-	static string gameName;
+	shared static string gameName;
 
 	void f() {
 		ServerList serverList;
@@ -196,8 +196,8 @@ void loadSavedList()
  */
 void queryServers(string[] addresses, bool replace=false, bool select=false)
 {
-	static string[] addresses_;
-	static bool replace_, select_;
+	static __gshared string[] addresses_;
+	shared static bool replace_, select_;
 
 	static void f() {
 		string gameName = serverTable.serverList.gameName;

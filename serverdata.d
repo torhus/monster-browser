@@ -112,11 +112,11 @@ enum ServerColumn {
 };
 
 
-string PASSWORD_YES = "X";  ///
-string PASSWORD_NO  = "";  ///
+enum PASSWORD_YES = "X";  ///
+enum PASSWORD_NO  = "";  ///
 
 ///
-string TIMEOUT = "9999";
+enum TIMEOUT = "9999";
 
 
 /// Set sd to the empty state.
@@ -169,12 +169,12 @@ bool timedOut(in ServerData* sd)
 
 
 ///
-string[] defaultGameTypes = ["FFA", "1v1", "SP", "TDM", "CTF",
-                             /* "OFCTF", "Overload", "Harvester", */
-                            ];
+enum defaultGameTypes = ["FFA", "1v1", "SP", "TDM", "CTF",
+                         /* "OFCTF", "Overload", "Harvester", */
+                        ];
 
 ///
-string[][string] gameTypes;
+__gshared string[][string] gameTypes;
 
 
 static this() {

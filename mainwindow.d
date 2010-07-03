@@ -49,15 +49,15 @@ version (Windows) {
 	import mswindows.util;
 }
 
-StatusBar statusBar;  ///
-FilterBar filterBar;  ///
-MainWindow mainWindow;  ///
+__gshared StatusBar statusBar;  ///
+__gshared FilterBar filterBar;  ///
+__gshared MainWindow mainWindow;  ///
 /// The close() method will be called for these shells, before everything is
 /// disposed of.
-Shell[] subWindows;
+__gshared Shell[] subWindows;
 
 // Image objects that needs to be disposed of before shut down.
-private Image[] imageList;
+__gshared private Image[] imageList;
 
 
 ///

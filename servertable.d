@@ -47,10 +47,10 @@ import serverlist;
 import settings;
 
 
-ServerTable serverTable;  ///
+__gshared ServerTable serverTable;  ///
 
 // should correspond to serverlist.ServerColumn
-string[] serverHeaders =
+enum serverHeaders =
                    [" ", "Name", "PW", "Ping", "Players", "Game", "Map", "IP"];
 
 
