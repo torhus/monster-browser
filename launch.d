@@ -4,10 +4,12 @@ module launch;
 
 import std.path;
 import std.string;
-import std.windows.syserror;
 version (Windows) {
-	import tango.sys.win32.CodePage;
-	import tango.sys.win32.UserGdi;
+	import std.windows.charset;
+	import std.windows.syserror;
+	import std.c.windows.windows;
+	extern (Windows)
+		HINSTANCE ShellExecuteA(HWND, LPCSTR, LPCSTR, LPCSTR, LPCSTR, INT);
 }
 
 import org.eclipse.swt.SWT;
@@ -66,12 +68,11 @@ void joinServer(string gameName, ServerData sd)
 
 	if (launch) {
 		version (Windows) {
-			char[MAX_PATH] buf;
-			char[] ansiDir = CodePage.into(dirname(pathString), buf);
-			char[] ansiPath = ansiDir ~ CodePage.into(basename(pathString), buf);
+			const char* ansiPath = toMBSz(pathString);
+			const char* ansiDir = toMBSz(dirname(pathString));
 
-			int r = cast(int)ShellExecuteA(null, "open", toStringz(ansiPath),
-			                     toStringz(argv), toStringz(ansiDir), SW_SHOW);
+			int r = cast(int)ShellExecuteA(null, "open", ansiPath,
+			                               toStringz(argv), ansiDir, SW_SHOW);
 			if (r <= 32) {
 				auto code = GetLastError();
 				error("Unable to execute \"%s\".\n\nError %s: %s",

@@ -15,6 +15,7 @@ version(Windows) {
 	pragma(lib, "oleacc.lib");
 	pragma(lib, "msimg32.lib");
 	pragma(lib, "usp10.lib");
+	pragma(lib, "uuid.lib");
 	pragma(lib, "zlib.lib");
 }
 

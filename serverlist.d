@@ -5,7 +5,6 @@ import std.conv;
 import std.string;
 
 import tango.core.Array;
-import tango.text.Util;
 import Integer = tango.text.convert.Integer;
 
 import common;

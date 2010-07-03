@@ -1,9 +1,11 @@
 module mswindows.taskbarprogress;
 
-import tango.sys.win32.Macros;
-import tango.sys.win32.Types;
+import core.sys.windows.windows;
+import std.c.windows.com;
 public import mswindows.taskbarlist;
 
+alias void* HWND;
+enum { NULL = null }
 
 /**
  * Convenience wrapper for using the Windows 7 taskbar progress display feature.
@@ -40,14 +42,14 @@ class TaskbarProgress
 	/// Wrapper around ITaskbarList3.SetProgressValue.
 	void setProgressValue(ULONGLONG completed, ULONGLONG total)
 	{
-		taskbarList_.SetProgressValue(handle_, completed, total);
+		taskbarList_.SetProgressValue(cast(HANDLE)handle_, completed, total);
 	}
 
 
 	/// Wrapper around ITaskbarList3.SetProgressState.
 	void setProgressState(int flag)
 	{
-		taskbarList_.SetProgressState(handle_, flag);
+		taskbarList_.SetProgressState(cast(HANDLE)handle_, flag);
 	}
 
 

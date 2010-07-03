@@ -2,7 +2,7 @@
 
 module dialogs;
 
-import tango.text.Util;
+import std.string;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -283,7 +283,7 @@ class SpecifyServerDialog
 		void handleEvent (Event event)
 		{
 			result_ = SWT.OK;
-			address = trim(addressText_.getText);
+			address = strip(addressText_.getText());
 
 			if (!isValidIpAddress(address)) {
 				error("Invalid address");
