@@ -53,13 +53,6 @@ private void _main(string[] args)
 	version (redirect)
 		redirectOutput(logDir ~ "CONSOLE.OUT");
 
-	haveConsole = testConsole();
-	if (!haveConsole) {
-		// Avoid getting IOExceptions all over the place.
-		/*Cout.output = new BitBucket;
-		Cerr.output = Cout.output;*/
-	}
-
 	try
 		initLogging();
 	catch (StdioException e)

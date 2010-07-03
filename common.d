@@ -105,22 +105,20 @@ void initLogging(string fileName="LOG.TXT")
 	time_t t = time(null);
 	char[] timestamp = ctime(&t)[0..24];
 	logFile = File(path, "a");
-	logFile.writeln(newline ~ sep ~ newline ~ APPNAME ~ " " ~ VERSION ~
-	                     " started at " ~ timestamp ~ newline ~ sep);
+	logFile.writeln('\n' ~ sep ~ '\n' ~ APPNAME ~ " " ~ VERSION ~
+	                     " started at " ~ timestamp ~ '\n' ~ sep);
 }
 
 
 /// Logging, with formatting support.
-/*void log(in char[] file, int line, in char[] msg)
-{
-	log(file, "(", line, "): ", msg);
-}*/
-
-
-/// ditto
 void log(T...)(T args)
 {
 	logFile.writefln(args);
+	version (redirect) { }
+	else {
+		write("LOG: ");
+		writefln(args);
+	}
 }
 
 
