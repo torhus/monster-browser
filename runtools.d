@@ -20,7 +20,7 @@ import settings;
 
 
 // workaround for process.d bug
-extern(C) extern char **_environ;
+__gshared extern(C) extern char **_environ;
 
 __gshared private Process proc;
 
