@@ -8,7 +8,6 @@ import std.conv;
 import std.loader;
 import std.string;
 import std.c.string;
-import tango.text.Ascii;
 
 import java.io.ByteArrayInputStream;
 import org.eclipse.swt.SWTException;

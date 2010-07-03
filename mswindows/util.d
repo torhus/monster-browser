@@ -4,17 +4,27 @@
 
 module mswindows.util;
 
-import tango.sys.win32.Types;
-import tango.sys.win32.UserGdi;
+import core.sys.windows.windows;
+
+
+struct OSVERSIONINFO {
+  DWORD dwOSVersionInfoSize;
+  DWORD dwMajorVersion;
+  DWORD dwMinorVersion;
+  DWORD dwBuildNumber;
+  DWORD dwPlatformId;
+  CHAR szCSDVersion[128];  // ANSI version
+}
+
+extern (Windows) BOOL GetVersionExA(OSVERSIONINFO*);
 
 
 ///
 OSVERSIONINFO getWindowsVersion()
 {
 	OSVERSIONINFO osvi = { OSVERSIONINFO.sizeof };
-	alias GetVersionExW GetVersionEx;  // Missing from Tango
 
-	GetVersionEx(&osvi);
+	GetVersionExA(&osvi);
 	return osvi;
 }
 

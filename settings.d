@@ -12,13 +12,12 @@ import ini;
 
 version (Windows) {
 	import std.string;
-	import tango.sys.win32.CodePage;
+	import std.windows.charset;
+	import std.c.windows.windows;
 	import tango.sys.win32.SpecialPath;
-	import tango.sys.win32.UserGdi;
 
-	const HKEY_CLASSES_ROOT  = cast(HKEY)0x80000000;
-	const HKEY_CURRENT_USER  = cast(HKEY)0x80000001;
-	const HKEY_LOCAL_MACHINE = cast(HKEY)0x80000002;
+	extern (Windows)
+		LONG RegQueryValueExA(HKEY, LPCSTR, LPDWORD, LPDWORD, LPBYTE, LPDWORD);
 }
 
 
@@ -526,7 +525,7 @@ version (Windows) private string getRegistryStringValue(in char[] key)
 	LPBYTE lpData = buf.ptr;
 	DWORD dwSize = buf.length;
 	LONG status;
-	char[] retval;
+	const(char)[] retval = null;
 
 	const(char)[][] parts = split(key, "\\");
 	if (parts.length < 3)
@@ -541,27 +540,24 @@ version (Windows) private string getRegistryStringValue(in char[] key)
 	                                                   KEY_ALL_ACCESS, &hKey);
 
 	if (status == ERROR_SUCCESS) {
-		status = RegQueryValueExA(hKey, cast(char*)toStringz(name), NULL,
-		                                             &dwType, lpData, &dwSize);
+		const(char)* namez = toStringz(name);
+		status = RegQueryValueExA(hKey, namez, null, &dwType, lpData, &dwSize);
 
 		if (status == ERROR_MORE_DATA) {
 			lpData = (new BYTE[dwSize]).ptr;
-			status = RegQueryValueExA(hKey, cast(char*)toStringz(name), NULL,
+			status = RegQueryValueExA(hKey, namez, null,
 			                                         &dwType, lpData, &dwSize);
 		}
 
-		if (status == ERROR_SUCCESS) {
-			retval.length = dwSize * 2;
-			retval = CodePage.from(to!string(cast(char*)lpData), retval);
-		}
-
-		if (dwSize > buf.length)
-			delete lpData;
+		if (status == ERROR_SUCCESS)
+			retval = fromMBSz(cast(immutable char*)lpData);
 
 		RegCloseKey(hKey);
 	}
 
-	return (status == ERROR_SUCCESS) ? cast(string)retval : null;
+	// need to cast to void* because of a DMD bug
+	return (cast(void*)retval.ptr == cast(void*)buf.ptr) ? retval.idup :
+	                                                        cast(string)retval;
 }
 
 
