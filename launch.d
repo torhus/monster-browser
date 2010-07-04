@@ -55,16 +55,15 @@ void joinServer(in char[] gameName, ServerData sd)
 		scope dialog = new ServerPasswordDialog(mainWindow.handle,
 		                          "Join Server", message, address, true, true);
 
-		if (dialog.open()) {
-			if (dialog.password.length)
-				argv ~= " +set password " ~ dialog.password;
-		}
-		else {
+		if (!dialog.open() || dialog.password.length == 0)
 			launch = false;
-		}
 	}
 
 	if (launch) {
+		char[] pw = getPassword(address);
+		if (pw.length > 0)
+			argv ~= " +set password " ~ pw;
+
 		version (Windows) {
 			FilePath path = FilePath(pathString);
 			char buf[MAX_PATH];
