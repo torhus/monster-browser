@@ -5,11 +5,11 @@
 module geoip;
 
 import std.conv;
-import std.loader;
 import std.string;
 import std.c.string;
 
 import java.io.ByteArrayInputStream;
+import java.nonstandard.loader;  // Replacement for std.loader
 import org.eclipse.swt.SWTException;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
@@ -33,7 +33,7 @@ private void bindFunc(alias funcPtr)(ExeModule lib)
 ///
 bool initGeoIp()
 {
-	scope ExeModule geoIpLib;
+	ExeModule geoIpLib;
 
 	assert(gi is null, "Can't call initGeoIp() more than once.");
 
