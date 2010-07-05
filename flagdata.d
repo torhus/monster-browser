@@ -2,7 +2,7 @@
 
 module flagdata;
 
-__gshared ubyte[][char[]] flagFiles;
+__gshared ubyte[][string] flagFiles;
 
 void initFlagFiles()
 {
