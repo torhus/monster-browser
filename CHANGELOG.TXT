@@ -1,11 +1,12 @@
 Latest changes
 --------------
+- New: Display progress on the task bar in Windows 7.
 - New: Infinity signs changed to use red font, to make it easier to see servers
   that timed out.
 - Fix: Password was not used when joining. Thanks to rane for reporting this.
 
 
-v0.7 - 2010-05-05
+v0.7 - 2010-04-05
 -----------------
 - New: Improved status bar.
 - New: Can now use .bat or .lnk files instead of an .exe when launching a game.
