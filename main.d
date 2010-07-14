@@ -1,4 +1,4 @@
-module main;
+﻿module main;
 
 import core.thread;
 //debug import tango.core.tools.TraceExceptions;
@@ -50,8 +50,14 @@ private void _main(string[] args)
 
 	detectDirectories(args[0]);
 
-	version (redirect)
-		redirectOutput(logDir ~ "CONSOLE.OUT");
+	version (redirect) {
+		haveConsole = false;
+		redirectOutput(logDir);
+	}
+	else {
+		// this isn't necessarily true
+		haveConsole = true;
+	}
 
 	try
 		initLogging();
@@ -195,35 +201,24 @@ private void detectDirectories(string firstArg)
 }
 
 
-/// Is there a console available for output?
-private bool testConsole()
-{
-	/*try
-		Cout(APPNAME ~ " " ~ VERSION).newline.flush;
-	catch (IOException e)
-		return false;*/
-	return true;
-}
-
-
 /*
- * Redirect stdout and stderr (Cout and Cerr) to a file.
+ * Redirect stdout and stderr to a file.
  *
- * Note: Cout and Cerr are flushed by a module destructor in Tango, so explicit
- *       flushing upon shutdown is not required.
+ * Returns true if it succeeded.
  */
-private bool redirectOutput(char[] file)
+private bool redirectOutput(string dir)
 {
-	/*try {
-		Cerr.output = new File(file, WriteCreateShared);
-		Cerr("Cerr is redirected to this file.").newline.flush;
-		Cout.output = Cerr.output;
-		Cout("Cout is redirected to this file.").newline.flush;
-		return true;
+	bool error = false;
+
+	if (!freopen((dir ~ "stdout.log").ptr, "w", stdout.getFP())) {
+		warning("Unable to redirect stdout to stdout.log");
+		error = true;
 	}
-	catch (IOException e) {
-		warning(e.toString);
-		return false;
-	}*/
-	return true;
+
+	if (!freopen((dir ~ "stderr.log").ptr, "w", stderr.getFP())) {
+		warning("Unable to redirect stderr to stderr.log");
+		error = true;
+	}
+
+	return !error;
 }
