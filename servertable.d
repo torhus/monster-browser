@@ -602,7 +602,7 @@ private:
 							log("-------------------------------------------");
 
 							if (!haveConsole)
-								db("{}", join(s, newline));
+								db(s);
 						}
 					}
 					break;

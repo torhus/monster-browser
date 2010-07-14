@@ -35,7 +35,7 @@ void messageBox(string msg, string title, int style)
 }
 
 
-void _messageBox(string title, int style)(in char[] fmt, ...)
+void _messageBox(string title, int style)(...)
 {
 	char[] msg;
 	void f(dchar c) { encode(msg, c); }
@@ -45,16 +45,15 @@ void _messageBox(string title, int style)(in char[] fmt, ...)
 
 /**
  * Displays message boxes with preset titles and icons.
- * Does formatting, the argument list is: (char[] fmt, ...)
+ * Does formatting, the argument list is (...)
  */
-//alias _messageBox!(APPNAME, SWT.ICON_INFORMATION) info;
-alias _messageBox!("Monster Browser", SWT.ICON_INFORMATION) info;
+alias _messageBox!(APPNAME, SWT.ICON_INFORMATION) info;
 alias _messageBox!("Warning", SWT.ICON_WARNING) warning;  /// ditto
 alias _messageBox!("Error", SWT.ICON_ERROR) error;        /// ditto
 
 
 /// Display a debug message in a dialog box.
-void db(in char[] fmt, ...)
+void db(...)
 {
 	debug {
 		char[] msg;
