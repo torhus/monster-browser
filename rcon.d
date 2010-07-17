@@ -363,11 +363,11 @@ private class Rcon
 			auto received = socket_.receiveFrom(buf);
 
 			if (received == 0) {
-				db("remote side closed connection");
+				error("remote side closed connection");
 			}
 			else if (received == Socket.ERROR) {
 				if (!closed_)
-					db("socket.receive returned ERROR");
+					error("socket.receive returned ERROR");
 				else
 					break;
 			}
