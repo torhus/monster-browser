@@ -20,14 +20,13 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
+import core.thread;
+import std.conv;
+import std.socket;
+import std.string;
+version (Windows)
+	import std.c.windows.winsock;
 import tango.core.Array;
-import tango.core.Exception;
-import tango.core.Thread;
-import tango.io.selector.Selector;
-import tango.net.InternetAddress;
-import tango.net.device.Datagram;
-import tango.text.Util;
-import tango.text.convert.Format;
 import Integer = tango.text.convert.Integer;
 
 import colorednames;
@@ -40,8 +39,7 @@ import settings;
 
 
 ///
-bool openRconWindow(in char[] serverName, in char[] address,
-                                                          in char[] password) {
+bool openRconWindow(string serverName, string address, string password) {
 
 	Rcon rcon;
 
@@ -65,7 +63,7 @@ bool openRconWindow(in char[] serverName, in char[] address,
 class RconWindow
 {
 	///
-	this(in char[] serverName, Rcon rcon)
+	this(string serverName, Rcon rcon)
 	{
 		serverName_ = serverName;
 		assert(rcon);
@@ -133,7 +131,7 @@ class RconWindow
 	}
 
 	/// Add a command to the command history.
-	private void storeCommand(in char[] cmd)
+	private void storeCommand(string cmd)
 	{
 		// add cmd at the end, or move it there if already present
 		if (remove(history_, cmd) == history_.length)
@@ -143,7 +141,7 @@ class RconWindow
 
 
 	///
-	private void deliverOutput(in char[] s)
+	private void deliverOutput(const(char)[] s)
 	{
 		Display.getDefault().syncExec(dgRunnable( {
 			if (outputText_.isDisposed())
@@ -158,7 +156,7 @@ class RconWindow
 	{
 		void widgetDefaultSelected(SelectionEvent e)
 		{
-			char[] cmd = inputText_.getText();
+			string cmd = inputText_.getText();
 			if (cmd.length > 0) {
 				rcon_.command(cmd);
 				inputText_.setText("");
@@ -285,11 +283,11 @@ class RconWindow
 
 	private {
 		Shell shell_;
-		char[] serverName_;
+		string serverName_;
 		Text outputText_;
 		Text inputText_;
 		Rcon rcon_;
-		char[][] history_;
+		string[] history_;
 		int position_ = 0;  // index into history_
 
 		static Font fixedWidthFont;  /// A monospaced font.
@@ -301,17 +299,25 @@ class RconWindow
 private class Rcon
 {
 	///
-	char[] password;
+	string password;
 
 
 	/**
 	* Throws: SocketException if unable to connect.
 	*/
-	this(in char[] address, in char[] password)
+	this(string address, string password)
 	{
 		address_ = address;
-		conn_ = new Datagram;
-		conn_.connect(new InternetAddress(address_));
+
+		// Workaround for Phobos 2 calling WSACleanup in its per-thread module
+		// destructor.
+		version (Windows) {
+			WSADATA wd;
+			WSAStartup(0x2020, &wd);
+		}
+
+		socket_ = new UdpSocket;
+		socket_.connect(parseAddress(address_));
 		this.password = password;
 
 		Thread thread = new Thread(&receive);
@@ -327,9 +333,9 @@ private class Rcon
 		assert(output_);
 
 		char[] s = "\xff\xff\xff\xff" ~ "rcon \"" ~ password ~ "\" " ~ cmd;
-		size_t written = conn_.write(s);
-		if (written < s.length) {
-			log(Format("Rcon: Only {} of {} bytes sent.", written, s.length));
+		size_t written = socket_.sendTo(s);
+		if (written == Socket.ERROR || written < s.length) {
+			log("Rcon: Only %s of %s bytes sent.", written, s.length);
 			error("An error occurred while sending the command, please check "
 			                                               "your connection.");
 		}
@@ -337,51 +343,66 @@ private class Rcon
 
 
 	///
-	char[] address() { return address_; }
+	string address() { return address_; }
 
 
 	///
-	void shutdown() { stop_ = true; }
+	void shutdown() { closed_ = true; socket_.close(); }
 
 
 	/// Sets the sink that receives the output.
-	private void output(void delegate(char[]) dg) { output_ = dg;  }
+	private void output(void delegate(const(char)[]) dg) { output_ = dg;  }
 
 
-	/// Waits for data in a separate thread, dumps it to output window.
+	/// Waits for data, dumps it to output window.
 	private void receive()
 	{
 		char[1024] buf = '\0';
-		scope selector = new Selector;
-
-		selector.open(1, 2);
-		selector.register(conn_, Event.Read);
 
 		while (true) {
-			int eventCount = selector.select(1);
-			assert(eventCount >= 0);
-			if (stop_)
-				break;
+			auto received = socket_.receiveFrom(buf);
 
-			while (eventCount > 0) {
-				size_t received = conn_.read(buf);
-				assert(received != IConduit.Eof);
-
+			if (received == 0) {
+				db("remote side closed connection");
+			}
+			else if (received == Socket.ERROR) {
+				if (!closed_)
+					db("socket.receive returned ERROR");
+				else
+					break;
+			}
+			else {
 				const prefix = "\xff\xff\xff\xffprint\n";
 				assert(received >= prefix.length);
 				assert(buf[0..prefix.length] == prefix);
 				output_(buf[prefix.length..received].dup);
-
-				eventCount--;
 			}
 		}
 	}
 
+
+	/// Parse a.b.c.d:e.
+	private InternetAddress parseAddress(string addr)
+	{
+		ushort port;
+
+		int colon = addr.lastIndexOf(':');
+		if (colon == -1 || addr.length < colon + 2) {
+			log("Missing port number for " ~ addr ~ ", using PORT_ANY");
+			db("Missing port number for " ~ addr);
+			port = InternetAddress.PORT_ANY;
+		}
+		else {
+			port = to!ushort(addr[colon+1..$]);
+		}
+		return new InternetAddress(addr[0..colon], port);
+	}
+
 	private {
-		Datagram conn_;
-		char[] address_;
-		bool stop_ = false;
-		void delegate(char[]) output_;
+		Socket socket_;
+		bool closed_ = false;
+		string address_;
+		void delegate(const(char)[]) output_;
 	}
 
 }

@@ -40,7 +40,7 @@ import mainwindow;
 import masterlist;
 import messageboxes;
 import playertable;
-//import rcon;
+import rcon;
 import serveractions;
 import serverdata;
 import serverlist;
@@ -792,7 +792,7 @@ private:
 
 	void onRemoteConsole()
 	{
-		/*int index = table_.getSelectionIndex();
+		int index = table_.getSelectionIndex();
 		if (index == -1)
 			return;
 
@@ -809,7 +809,7 @@ private:
 			                                                          address);
 			if (dialog.open())
 				openRconWindow(name, address, dialog.password);
-		}*/
+		}
 	}
 
 	void onSelectAll()
