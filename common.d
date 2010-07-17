@@ -125,7 +125,7 @@ void log(T...)(T args)
 /// ditto
 void logx(in char[] file, int line, Exception e)
 {
-	log(file, line, e.classinfo.name ~ ": " ~ e.toString());
+	log("%s(%s): %s", file, line, e.toString());
 	log("%s threads, currently in '%s'.", Thread.getAll().length,
 	                                                   Thread.getThis().name);
 	log("ThreadManager's thread is %s.",
