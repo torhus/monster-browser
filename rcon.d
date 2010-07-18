@@ -45,6 +45,11 @@ bool openRconWindow(in char[] serverName, in char[] address,
 
 	Rcon rcon;
 
+	if (!isValidIpAddress(address)) {
+		error(address ~ " is not a valid IP address!");
+		return false;
+	}
+
 	try {
 		rcon = new Rcon(address, password);
 	}
