@@ -1,10 +1,11 @@
 ﻿module main;
 
 import core.thread;
-//debug import tango.core.tools.TraceExceptions;
 import std.file;
 import std.path;
 import std.stdio;
+import std.string;
+import std.c.windows.windows;
 version (Windows) import tango.sys.win32.SpecialPath;
 
 import java.io.ByteArrayInputStream;
@@ -25,6 +26,8 @@ import serveractions;
 import servertable;
 import settings;
 import threadmanager;
+
+extern (Windows) HWND GetConsoleWindow();
 
 
 int main(string[] args) ///
@@ -50,14 +53,7 @@ private void _main(string[] args)
 
 	detectDirectories(args[0]);
 
-	version (redirect) {
-		haveConsole = false;
-		redirectOutput(logDir);
-	}
-	else {
-		// this isn't necessarily true
-		haveConsole = true;
-	}
+	checkConsoleOutput();
 
 	try
 		initLogging();
@@ -201,24 +197,53 @@ private void detectDirectories(string firstArg)
 }
 
 
-/*
- * Redirect stdout and stderr to a file.
- *
- * Returns true if it succeeded.
- */
-private bool redirectOutput(string dir)
+///
+void checkConsoleOutput()
 {
-	bool error = false;
+	version (redirect) {
+		haveConsole = false;
+		assert(logDir.length);
+		redirectOutput(logDir ~ "stdout.txt", logDir ~ "stderr.txt");
+	}
+	else {
+		haveConsole = testConsole();
+		if (!haveConsole)
+			version (Windows)
+				redirectOutput("NUL", "NUL");
+			else
+				redirectOutput("/dev/null", "/dev/null");
+	}
+}
 
-	if (!freopen((dir ~ "stdout.log").ptr, "w", stdout.getFP())) {
-		warning("Unable to redirect stdout to stdout.log");
-		error = true;
+
+/// Is there a console available for output?
+private bool testConsole()
+{
+	version (Windows)
+		return GetConsoleWindow() != null;
+	else
+		return true;
+}
+
+
+/*
+ * Redirect stdout and stderr to files.
+ *
+ * Returns true if it succeeded redirecting both.
+ */
+private bool redirectOutput(string stdout_, string stderr_)
+{
+	bool failed = false;
+
+	if (!freopen(toStringz(stdout_), "w", stdout.getFP())) {
+		warning("Unable to redirect stdout.");
+		failed = true;
 	}
 
-	if (!freopen((dir ~ "stderr.log").ptr, "w", stderr.getFP())) {
-		warning("Unable to redirect stderr to stderr.log");
-		error = true;
+	if (!freopen(toStringz(stderr_), "w", stderr.getFP())) {
+		warning("Unable to redirect stderr.");
+		failed = true;
 	}
 
-	return !error;
+	return !failed;
 }
