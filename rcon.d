@@ -310,7 +310,7 @@ private class Rcon
 		address_ = address;
 
 		// Workaround for Phobos 2 calling WSACleanup in its per-thread module
-		// destructor.
+		// destructor. http://d.puremagic.com/issues/show_bug.cgi?id=4344
 		version (Windows) {
 			WSADATA wd;
 			WSAStartup(0x2020, &wd);

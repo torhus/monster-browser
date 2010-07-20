@@ -1,10 +1,11 @@
 module serverlist;
 
 import core.stdc.string : memmove;
+import std.algorithm;
+import std.array;
 import std.conv;
 import std.string;
 
-import tango.core.Array;
 import Integer = tango.text.convert.Integer;
 
 import common;
@@ -388,7 +389,7 @@ private:
 			ServerData sda = master_.getServerData(a);
 			ServerData sdb = master_.getServerData(b);
 
-			return compare(&sda, &sdb) <= 0;
+			return compare(sda, sdb) <= 0;
 		}
 
 		if (!isSorted_) {
@@ -414,14 +415,26 @@ private:
 			ServerData sda = master_.getServerData(a);
 			ServerData sdb = master_.getServerData(b);
 
-			return compare(&sda, &sdb) < 0;
+			return compare(sda, sdb) < 0;
 		}
 
-		size_t i;
-		synchronized (master_) {
-			i = ubound(filteredList, sh, &less);
-		}
+		auto r = upperBound!(less)(filteredList, sh);
+		size_t i = filteredList.length - r.length;
+
+		// tried std.array.insert, but got a 30% slowdown
 		insertInFiltered(i, sh);
+
+		debug {
+			ServerData newSd = master_.getServerData(sh);
+			if (i > 0) {
+				ServerData before = getFiltered(i - 1);
+				assert(compare(newSd, before) >= 0);
+			}
+			if (filteredList.length > 0 && i < filteredList.length - 1) {
+				ServerData after = getFiltered(i + 1);
+				assert(compare(newSd, after) < 0);
+			}
+		}
 	}
 
 	/**
@@ -429,7 +442,7 @@ private:
 	 *
 	 * Returns: >0 if a is smaller, <0 if b is smaller, 0 if they are equal.
 	 */
-	int compare(in ServerData* a, in ServerData* b)
+	int compare(ref const ServerData a, ref const ServerData b)
 	{
 		int result;
 
