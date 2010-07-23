@@ -419,10 +419,7 @@ private:
 			return compare(&sda, &sdb) < 0;
 		}
 
-		size_t i;
-		synchronized (master_) {
-			i = ubound(filteredList, sh, &less);
-		}
+		size_t i = ubound(filteredList, sh, &less);
 		insertInFiltered(i, sh);
 	}
 
