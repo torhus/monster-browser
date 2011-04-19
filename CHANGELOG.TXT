@@ -4,6 +4,8 @@ Latest changes
 - New: Infinity signs changed to use red font, to make it easier to see servers
   that timed out.
 - Fix: Password was not used when joining. Thanks to rane for reporting this.
+- Fix: MB had problems with servers with certain characters (like '&') in their
+       name.
 
 
 v0.7 - 2010-04-05
