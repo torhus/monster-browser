@@ -10,6 +10,7 @@ import tango.text.Util;
 import tango.text.convert.Format;
 import Integer = tango.text.convert.Integer;
 import tango.time.StopWatch;
+import tango.text.xml.DocEntity;
 import tango.text.xml.SaxParser;
 
 import colorednames;
@@ -296,16 +297,16 @@ private final class XmlDumper
 	///
 	void serverToXml(in ServerData* sd)
 	{
-		output_.format(`  <server name="{}"`, sd.rawName)
-		       .format(` country_code="{}"`,  sd.server[ServerColumn.COUNTRY])
-		       .format(` address="{}"`,       sd.server[ServerColumn.ADDRESS])
-		       .format(` protocol_version="{}"`, sd.protocolVersion)
-		       .format(` ping="{}"`,          sd.server[ServerColumn.PING])
-		       .format(` player_count="{}"`,  sd.server[ServerColumn.PLAYERS])
-		       .format(` map="{}"`,           sd.server[ServerColumn.MAP])
-		       .format(` persistent="{}"`,    sd.persistent ? "true" : "false")
-		       .format(` fail_count="{}"`,    sd.failCount)
-		       .formatln(">");
+		outputXml(`  <server name=`, sd.rawName);
+		outputXml(` country_code=`,  sd.server[ServerColumn.COUNTRY]);
+		outputXml(` address=`,       sd.server[ServerColumn.ADDRESS]);
+		outputXml(` protocol_version=`, sd.protocolVersion);
+		outputXml(` ping=`,          sd.server[ServerColumn.PING]);
+		outputXml(` player_count=`,  sd.server[ServerColumn.PLAYERS]);
+		outputXml(` map=`,           sd.server[ServerColumn.MAP]);
+		outputXml(` persistent=`,    sd.persistent ? "true" : "false");
+		output_.format(` fail_count="{}"`,    sd.failCount);
+		output_.formatln(">");
 
 		if (sd.cvars.length) {
 			output_.formatln("    <cvars>");
@@ -325,23 +326,36 @@ private final class XmlDumper
 
 	private void cvarsToXml(in ServerData* sd)
 	{
-		foreach (cvar; sd.cvars)
-			output_.format(`      <cvar key="{}" value="{}"/>`,
-			                                         cvar[0], cvar[1]).newline;
+		foreach (cvar; sd.cvars) {
+			outputXml(`      <cvar key=`, cvar[0]);
+			outputXml(` value=`, cvar[1]);
+			output_.formatln("/>");
+		}
 	}
 
 
 	private void playersToXml(in ServerData* sd)
 	{
 		foreach (player; sd.players) {
-			output_.format(`      <player name="{}" score="{}" ping="{}"/>`,
-                                               player[PlayerColumn.RAWNAME],
-											   player[PlayerColumn.SCORE],
-											   player[PlayerColumn.PING]);
-			output_.newline;
+			outputXml(`      <player name=`, player[PlayerColumn.RAWNAME]);
+			outputXml(` score=`, player[PlayerColumn.SCORE]);
+			outputXml(` ping=`, player[PlayerColumn.PING]);
+			output_.formatln("/>");
 		}
 	}
 
+
+	// Outputs prefix as-is, value in quotes and after encoding entities.
+	private void outputXml(in char[] prefix, in char[] value)
+	{
+		char[100] buf = void;
+
+		output_.stream.write(prefix);
+		output_.stream.write("\"");
+		output_.stream.write(toEntity(value, buf));
+		output_.stream.write("\"");
+	}
+	
 
 	private {
 		FormatOutput!(char) output_;
