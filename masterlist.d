@@ -402,21 +402,22 @@ private final class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 
 		foreach (ref attr; attributes) {
 			if (attr.localName == "name") {
-				sd.rawName = attr.value.dup;
-				sd.server[ServerColumn.NAME] = stripColorCodes(attr.value);
+				sd.rawName = fromEntityCopy(attr.value);
+				sd.server[ServerColumn.NAME] =
+				                       fromEntity(stripColorCodes(attr.value));
 			}
 			else if (attr.localName == "country_code")
-				sd.server[ServerColumn.COUNTRY] = attr.value.dup;
+				sd.server[ServerColumn.COUNTRY] = fromEntityCopy(attr.value);
 			else if (attr.localName == "address")
-				sd.server[ServerColumn.ADDRESS] = attr.value.dup;
+				sd.server[ServerColumn.ADDRESS] = fromEntityCopy(attr.value);
 			else if (attr.localName == "protocol_version")
-				sd.protocolVersion = attr.value.dup;
+				sd.protocolVersion = fromEntityCopy(attr.value);
 			else if (attr.localName == "ping")
-				sd.server[ServerColumn.PING] = attr.value.dup;
+				sd.server[ServerColumn.PING] = fromEntityCopy(attr.value);
 			else if (attr.localName == "player_count")
-				sd.server[ServerColumn.PLAYERS] = attr.value.dup;
+				sd.server[ServerColumn.PLAYERS] = fromEntityCopy(attr.value);
 			else if (attr.localName == "map")
-				sd.server[ServerColumn.MAP] = attr.value.dup;
+				sd.server[ServerColumn.MAP] = fromEntityCopy(attr.value);
 			else if (attr.localName == "persistent")
 				sd.persistent = attr.value == "true";
 			else if (attr.localName == "fail_count")
@@ -440,9 +441,9 @@ private final class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 
 		foreach (ref attr; attributes) {
 			if (attr.localName == "key")
-				cvar[0] = attr.value.dup;
+				cvar[0] = fromEntityCopy(attr.value);
 			else if (attr.localName == "value")
-				cvar[1] = attr.value.dup;
+				cvar[1] = fromEntityCopy(attr.value);
 
 			if (icompare(cvar[0], "g_gametype") == 0)
 				servers[$-1].server[ServerColumn.GAMETYPE] = cvar[1];
@@ -463,14 +464,24 @@ private final class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 
 		foreach (ref attr; attributes) {
 			if (attr.localName == "name")
-				player[PlayerColumn.RAWNAME] = attr.value.dup;
+				player[PlayerColumn.RAWNAME] = fromEntityCopy(attr.value);
 			else if (attr.localName == "score")
-				player[PlayerColumn.SCORE] = attr.value.dup;
+				player[PlayerColumn.SCORE] = fromEntityCopy(attr.value);
 			else if (attr.localName == "ping")
-				player[PlayerColumn.PING] = attr.value.dup;
+				player[PlayerColumn.PING] = fromEntityCopy(attr.value);
 		}
 
 		servers[$-1].players ~= player;
+	}
+	
+	// Convert XML entities to characters, unconditionally copying the source.
+	char[] fromEntityCopy(in char[] s)
+	{	
+		char[] r = fromEntity(s);
+		if (r.ptr != s.ptr)
+			return r;
+		else
+			return s.dup;
 	}
 
 }
