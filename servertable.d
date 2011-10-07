@@ -661,7 +661,7 @@ private:
 		});
 
 		item = new MenuItem(menu, DWT.PUSH);
-		item.setText("Set password");
+		item.setText("Set password...");
 		item.addSelectionListener(new class SelectionAdapter {
 			void widgetSelected(SelectionEvent e) { onSetPassword(); }
 		});
