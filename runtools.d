@@ -24,16 +24,15 @@ private Process proc;
 
 
 /**
- * Run qstat or gslist (determined by the haveGslist variable) to retrieve a
- * list of servers from the game's master server.
+ * Run qstat or gslist to retrieve a list of servers from the game's master
+ * server.
  *
  * Returns: A set containing the IP addresses of the servers.
  */
-Set!(char[]) browserGetNewList(in GameConfig game)
+Set!(char[]) browserGetNewList(in GameConfig game, bool gslist)
 {
 	char[] cmdLine;
 	Set!(char[]) addresses;
-	bool gslist = common.haveGslist && game.useGslist;
 
 	version (linux)
 		cmdLine ~= "./";
@@ -149,7 +148,7 @@ final class MasterListServerRetriever : IServerRetriever
 
 		if (error) {
 			warning("Unable to load the server list from disk, "
-			                 "press \'Get new list\' to download a new list.");
+			                "press \'Check for New\' to download a new list.");
 		}
 
 		return error ? 0 : master_.length;
