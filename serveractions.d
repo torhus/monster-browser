@@ -10,6 +10,7 @@ import Path = tango.io.Path;
 import tango.io.stream.TextFile;
 import tango.text.convert.Format;
 import Integer = tango.text.convert.Integer;
+import tango.text.Util;
 import tango.util.log.Log;
 
 import dwt.dwthelper.Runnable;
@@ -332,12 +333,15 @@ void checkForNewServers()
 	try {
 		MasterList master = serverList.master;
 		GameConfig game = getGameConfig(serverList.gameName);
+		bool gslist = haveGslist && game.useGslist;
+		char[] masterName = gslist ? "master" :
+		                             split(game.masterServer, ":")[0];
 
 		Display.getDefault().syncExec(dgRunnable( {
-			statusBar.showProgress("Getting new list from master", true);
+			statusBar.showProgress("Getting new list from " ~ masterName, true);
 		}));
 
-		Set!(char[]) addresses = browserGetNewList(game);
+		Set!(char[]) addresses = browserGetNewList(game, gslist);
 
 		// Make sure we don't start removing servers based on an incomplete
 		// address list.
@@ -380,7 +384,7 @@ void checkForNewServers()
 		}
 
 		log(Format("Got {} servers from {}, including {} new.",
-		                          total, game.masterServer, addresses.length));
+		                          total, masterName, addresses.length));
 
 		if (removed > 0) {
 			Display.getDefault().syncExec(dgRunnable( {
@@ -415,15 +419,21 @@ void checkForNewServers()
 			auto retriever = new QstatServerRetriever(game.name, master,
 			                                                  addresses, true);
 			auto contr = new ServerRetrievalController(retriever);
-			contr.progressLabel = Format("Checking {}  servers",
-			                                                 addresses.length);
+			char[] message = Format("Got {} servers, querying", total);
+			if (addresses2.length) {
+				contr.progressLabel = message ~ Format(" {} new first",
+				                                       addresses.length);
+			}
+			else {
+				contr.progressLabel = message;
+			}
 			contr.run();
 
 			if (addresses2.length && !threadManager.abort) {
 				retriever = new QstatServerRetriever(game.name,
 				                                     master, addresses2, true);
 				contr = new ServerRetrievalController(retriever);
-				contr.progressLabel = Format("Extended check, {} servers",
+				contr.progressLabel = message ~ Format(" {} already known",
 				                                            addresses2.length);
 				contr.interruptedMessage = "Ready";
 				contr.run();
