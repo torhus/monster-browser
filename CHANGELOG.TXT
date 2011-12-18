@@ -1,8 +1,11 @@
 Latest changes
 --------------
 - New: Display progress on the task bar in Windows 7.
-- New: Infinity signs changed to use red font, to make it easier to see servers
-  that timed out.
+- Change: Keep the old server list if unable to retrieve a new on from the
+          master.
+- Change: Infinity signs changed to use red font, to make it easier to see
+  server that timed out.
+- Change: More informative status bar messages when checking for new servers.
 - Fix: Password was not used when joining. Thanks to rane for reporting this.
 - Fix: MB had problems with servers with certain characters (like '&') in their
        name.
