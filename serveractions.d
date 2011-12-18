@@ -336,16 +336,28 @@ void checkForNewServers()
 		bool gslist = haveGslist && game.useGslist;
 		char[] masterName = gslist ? "master" :
 		                             split(game.masterServer, ":")[0];
+		Set!(char[]) addresses;
+		bool serverError = false;
 
 		Display.getDefault().syncExec(dgRunnable( {
 			statusBar.showProgress("Getting new list from " ~ masterName, true);
 		}));
-
-		Set!(char[]) addresses = browserGetNewList(game, gslist);
+		
+		try {
+			addresses = browserGetNewList(game, gslist);
+		}
+		catch (MasterServerException e) {
+			Display.getDefault().syncExec(dgRunnable( {
+				statusBar.setProgressError();
+			}));
+			error("Unable to retrieve a server list from " ~ masterName ~
+			                "\n\nError message: \"" ~ e.toString() ~ "\"");
+			serverError = true;
+		}
 
 		// Make sure we don't start removing servers based on an incomplete
 		// address list.
-		if (threadManager.abort) {
+		if (serverError || threadManager.abort) {
 			Display.getDefault().syncExec(dgRunnable( {
 				statusBar.hideProgress("Ready");
 				serverTable.notifyRefreshEnded();

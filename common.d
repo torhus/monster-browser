@@ -457,6 +457,13 @@ void parseCmdLine(char[][] args)
 }
 
 
+/// Returns true if s starts with t.
+bool startsWith(in char[] s, in char[] t)
+{
+	return s.length >= t.length && s[0..t.length] == t;
+}
+
+
 /// Controls log event layout.
 class LayoutConsole : Appender.Layout
 {

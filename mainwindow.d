@@ -315,13 +315,17 @@ class StatusBar : Composite
 		}
 
 		if (useWin7Taskbar_) {
-			if (indeterminate)
+			if (indeterminate) {
 				tbProgress_.setProgressState(TBPF_INDETERMINATE);
-			else
+			}
+			else {
+				tbProgress_.setProgressState(TBPF_NORMAL);
 				tbProgress_.setProgressValue(0, 100);
+			}
 		}
 
 		setProgressLabel(label);
+		progressBar_.setState(DWT.NORMAL);
 		progressBar_.setSelection(0);
 		progressLabel_.setVisible(true);
 		progressBar_.setVisible(true);
@@ -357,6 +361,18 @@ class StatusBar : Composite
 			if (!(progressBar_.getStyle() & DWT.INDETERMINATE))
 				tbProgress_.setProgressValue(current, total);
 		}
+	}
+
+
+	void setProgressError()
+	{
+		if (isDisposed())
+			return;
+		
+		progressBar_.setState(DWT.ERROR);
+
+		if (useWin7Taskbar_)
+			tbProgress_.setProgressState(TBPF_ERROR);
 	}
 
 
