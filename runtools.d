@@ -6,8 +6,11 @@ module runtools;
 
 import tango.core.Exception : IOException, ProcessException;
 import tango.io.device.File;
+import tango.io.model.IConduit;
 import tango.io.stream.Lines;
 import tango.sys.Process;
+import tango.text.Ascii;
+import tango.text.Util;
 import tango.text.convert.Format;
 import Integer = tango.text.convert.Integer;
 
@@ -21,6 +24,11 @@ import settings;
 
 
 private Process proc;
+
+
+class MasterServerException : Exception {
+	this(char[] msg) { super(msg); }
+}
 
 
 /**
@@ -65,22 +73,57 @@ Set!(char[]) browserGetNewList(in GameConfig game, bool gslist)
 
 	if (proc) {
 		try {
-			auto lineIter= new Lines!(char)(proc.stdout);
+			auto lines = new Lines!(char)(proc.stdout);
 			size_t start = gslist ? 0 : "q3s ".length;
-			addresses = collectIpAddresses(lineIter, start);
+
+			lines.next();
+
+			if (!gslist) {
+				// Make sure qstat hasn't changed its output format.
+				assert(lines.get().startsWith("ADDRESS"));
+				// The second line contains the error message, if there is one.
+				throwIfQstatError(lines.next(), proc.stderr,
+				                           game.masterServer);
+			}
+
+			do {
+				char[] line = lines.get();
+				if (start >= line.length)
+					continue;
+
+				line = line[start..$];
+				if (isValidIpAddress(line))
+					addresses.add(line.dup);
+			} while (lines.next());
 		}
 		catch (IOException e) {
 			//logx(__FILE__, __LINE__, e);
 		}
-		catch(Exception e) {
-			logx(__FILE__, __LINE__,e);
-			error(__FILE__ ~ Integer.toString(__LINE__) ~
-			                 ": Unexpected exception: " ~ e.classinfo.name ~
-			                 ": " ~ e.toString());
-		}
 	}
 
 	return addresses;
+}
+
+
+private void throwIfQstatError(in char[] line, InputStream stderr,
+                                               in char[] masterName)
+{
+	if (toUpper(line.dup).startsWith("Q3M")) {
+		char[] error = cast(char[])stderr.load();
+		char[][] parts = split(line, " ");
+
+		if (error.length) {
+			throw new MasterServerException(trim(error));
+		}
+		else if (parts.length > 3) {
+			char[] s = trim(join(parts[3..$], " "));
+			throw new MasterServerException(masterName ~ ": " ~ s);
+		}
+		else {
+			throw new MasterServerException("Unrecognized error: \"" ~
+			                                         trim(line) ~ "\"");
+		}
+	}
 }
 
 
