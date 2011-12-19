@@ -440,7 +440,7 @@ class FilterBar : Group
 	this(Composite parent)
 	{
 		super(parent, DWT.SHADOW_NONE);
-		setText("Filters and Game Selection");
+		setText("Filters and game selection");
 		setLayoutData(new GridData);
 
 		notEmptyButton_ = new Button(this, DWT.CHECK);
@@ -628,7 +628,7 @@ private ToolBar createToolbar(Composite parent)
 	auto toolBar = new ToolBar(parent, DWT.HORIZONTAL);
 
 	auto button1 = new ToolItem(toolBar, DWT.PUSH);
-	button1.setText("Check for New");
+	button1.setText("Check for new");
 	button1.setImage(loadImage!("box_download_32.png"));
 	button1.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
@@ -639,7 +639,7 @@ private ToolBar createToolbar(Composite parent)
 
 	new ToolItem(toolBar, DWT.SEPARATOR);
 	ToolItem button2 = new ToolItem(toolBar, DWT.PUSH);
-	button2.setText("Refresh All");
+	button2.setText("Refresh all");
 	button2.setImage(loadImage!("refresh_32.png"));
 	button2.addSelectionListener(new class SelectionAdapter {
 		public void widgetSelected(SelectionEvent e)
