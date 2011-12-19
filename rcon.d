@@ -110,7 +110,7 @@ class RconWindow
 		inputText_.setFocus();
 
 		auto passwordButton = new Button(shell_, DWT.PUSH);
-		passwordButton.setText("Change Password...");
+		passwordButton.setText("Change password...");
 		passwordButton.addSelectionListener(new class SelectionAdapter
 		{
 			void widgetSelected(SelectionEvent e)

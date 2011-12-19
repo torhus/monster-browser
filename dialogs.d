@@ -230,6 +230,8 @@ class SpecifyServerDialog
 
 		saveButton_ = new Button(shell_, DWT.CHECK);
 		saveButton_.setText("Never remove this server automatically");
+		saveButton_.setToolTipText("This is useful for servers that are not"
+		                           " known to the master server");
 		saveButton_.setSelection(
 		                  getSessionState("addServersAsPersistent") == "true");
 		auto saveButtonData = new GridData;
@@ -370,7 +372,7 @@ class SettingsDialog
 
 		// startup game
 		Group startupGroup = new Group(mainComposite, DWT.SHADOW_ETCHED_IN);
-		startupGroup.setText("Start With");
+		startupGroup.setText("Start with");
 		auto startupLayout = new GridLayout();
 		startupGroup.setLayout(startupLayout);
 		startupDefaultButton_ = new Button(startupGroup, DWT.RADIO);
@@ -398,8 +400,8 @@ class SettingsDialog
 
 		// games button
 		Button gamesButton = new Button(mainComposite, DWT.PUSH);
-		gamesButton.setText("Games");
-		gamesButton.setLayoutData(new GridData(BUTTON_SIZE));
+		gamesButton.setText("Game configuration");
+		//gamesButton.setLayoutData(new GridData(BUTTON_SIZE));
 		gamesButton.addSelectionListener(new class SelectionAdapter {
 			public void widgetSelected(SelectionEvent e)
 			{
