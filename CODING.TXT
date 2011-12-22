@@ -6,7 +6,7 @@ Useful links
 ------------
 D compiler:
 http://digitalmars.com/d/1.0/dcompiler.html
-Currently I'm using DMD 1.056.
+Currently I'm using DMD 1.066.
 
 D docs:
 Language: http://www.digitalmars.com/d/1.0/lex.html

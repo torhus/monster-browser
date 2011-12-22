@@ -1,0 +1,755 @@
+<DProject>
+ <ProjectGuid>{9523ADDA-A090-4871-9E5A-EF13C06D464F}</ProjectGuid>
+ <Config name="Debug">
+  <obj>0</obj>
+  <link>0</link>
+  <lib>1</lib>
+  <multiobj>0</multiobj>
+  <singleFileCompilation>0</singleFileCompilation>
+  <oneobj>0</oneobj>
+  <trace>0</trace>
+  <quiet>0</quiet>
+  <verbose>0</verbose>
+  <vtls>0</vtls>
+  <symdebug>1</symdebug>
+  <optimize>0</optimize>
+  <cpu>0</cpu>
+  <isX86_64>0</isX86_64>
+  <isLinux>0</isLinux>
+  <isOSX>0</isOSX>
+  <isWindows>0</isWindows>
+  <isFreeBSD>0</isFreeBSD>
+  <isSolaris>0</isSolaris>
+  <scheduler>0</scheduler>
+  <useDeprecated>1</useDeprecated>
+  <useAssert>0</useAssert>
+  <useInvariants>0</useInvariants>
+  <useIn>0</useIn>
+  <useOut>0</useOut>
+  <useArrayBounds>0</useArrayBounds>
+  <noboundscheck>0</noboundscheck>
+  <useSwitchError>0</useSwitchError>
+  <useUnitTests>0</useUnitTests>
+  <useInline>0</useInline>
+  <release>0</release>
+  <preservePaths>0</preservePaths>
+  <warnings>0</warnings>
+  <infowarnings>0</infowarnings>
+  <pic>0</pic>
+  <cov>0</cov>
+  <nofloat>0</nofloat>
+  <Dversion>1</Dversion>
+  <ignoreUnsupportedPragmas>0</ignoreUnsupportedPragmas>
+  <otherDMD>0</otherDMD>
+  <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
+  <imppath>d:\prog\import\tango</imppath>
+  <fileImppath>res</fileImppath>
+  <outdir>$(ConfigurationName)\dwt</outdir>
+  <objdir>$(OutDir)</objdir>
+  <objname />
+  <libname />
+  <doDocComments>0</doDocComments>
+  <docdir />
+  <docname />
+  <modules_ddoc />
+  <ddocfiles />
+  <doHdrGeneration>0</doHdrGeneration>
+  <hdrdir />
+  <hdrname />
+  <doXGeneration>1</doXGeneration>
+  <xfilename>$(IntDir)\$(TargetName).json</xfilename>
+  <debuglevel>0</debuglevel>
+  <debugids />
+  <versionlevel>0</versionlevel>
+  <versionids />
+  <dump_source>0</dump_source>
+  <mapverbosity>0</mapverbosity>
+  <createImplib>0</createImplib>
+  <defaultlibname />
+  <debuglibname />
+  <moduleDepsFile />
+  <run>0</run>
+  <runargs />
+  <runCv2pdb>1</runCv2pdb>
+  <pathCv2pdb>$(VisualDInstallDir)cv2pdb\cv2pdb.exe</pathCv2pdb>
+  <objfiles />
+  <linkswitches />
+  <libfiles />
+  <libpaths />
+  <deffile />
+  <resfile />
+  <exefile>$(OutDir)\$(ProjectName).lib</exefile>
+  <additionalOptions />
+  <preBuildCommand />
+  <postBuildCommand />
+  <debugtarget>$(TARGETPATH)</debugtarget>
+  <debugarguments />
+  <debugworkingdir />
+  <debugattach>0</debugattach>
+  <debugremote />
+  <debugEngine>0</debugEngine>
+  <filesToClean>*.obj;*.cmd;*.build;*.json;*.dep</filesToClean>
+ </Config>
+ <Config name="Release (not used)">
+  <obj>0</obj>
+  <link>0</link>
+  <lib>1</lib>
+  <multiobj>0</multiobj>
+  <singleFileCompilation>1</singleFileCompilation>
+  <oneobj>0</oneobj>
+  <trace>0</trace>
+  <quiet>0</quiet>
+  <verbose>0</verbose>
+  <vtls>0</vtls>
+  <symdebug>0</symdebug>
+  <optimize>1</optimize>
+  <cpu>0</cpu>
+  <isX86_64>0</isX86_64>
+  <isLinux>0</isLinux>
+  <isOSX>0</isOSX>
+  <isWindows>0</isWindows>
+  <isFreeBSD>0</isFreeBSD>
+  <isSolaris>0</isSolaris>
+  <scheduler>0</scheduler>
+  <useDeprecated>1</useDeprecated>
+  <useAssert>0</useAssert>
+  <useInvariants>0</useInvariants>
+  <useIn>0</useIn>
+  <useOut>0</useOut>
+  <useArrayBounds>0</useArrayBounds>
+  <noboundscheck>0</noboundscheck>
+  <useSwitchError>0</useSwitchError>
+  <useUnitTests>0</useUnitTests>
+  <useInline>1</useInline>
+  <release>1</release>
+  <preservePaths>0</preservePaths>
+  <warnings>0</warnings>
+  <infowarnings>0</infowarnings>
+  <pic>0</pic>
+  <cov>0</cov>
+  <nofloat>0</nofloat>
+  <Dversion>1</Dversion>
+  <ignoreUnsupportedPragmas>0</ignoreUnsupportedPragmas>
+  <otherDMD>0</otherDMD>
+  <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
+  <imppath>d:\prog\import\tango</imppath>
+  <fileImppath>res</fileImppath>
+  <outdir>$(ConfigurationName)\dwt</outdir>
+  <objdir>$(OutDir)</objdir>
+  <objname />
+  <libname />
+  <doDocComments>0</doDocComments>
+  <docdir />
+  <docname />
+  <modules_ddoc />
+  <ddocfiles />
+  <doHdrGeneration>0</doHdrGeneration>
+  <hdrdir />
+  <hdrname />
+  <doXGeneration>1</doXGeneration>
+  <xfilename>$(IntDir)\$(TargetName).json</xfilename>
+  <debuglevel>0</debuglevel>
+  <debugids />
+  <versionlevel>0</versionlevel>
+  <versionids />
+  <dump_source>0</dump_source>
+  <mapverbosity>0</mapverbosity>
+  <createImplib>0</createImplib>
+  <defaultlibname />
+  <debuglibname />
+  <moduleDepsFile />
+  <run>0</run>
+  <runargs />
+  <runCv2pdb>0</runCv2pdb>
+  <pathCv2pdb>$(VisualDInstallDir)cv2pdb\cv2pdb.exe</pathCv2pdb>
+  <objfiles />
+  <linkswitches />
+  <libfiles />
+  <libpaths />
+  <deffile />
+  <resfile />
+  <exefile>$(OutDir)\$(ProjectName).lib</exefile>
+  <additionalOptions />
+  <preBuildCommand />
+  <postBuildCommand />
+  <debugtarget>$(TARGETPATH)</debugtarget>
+  <debugarguments />
+  <debugworkingdir />
+  <debugattach>0</debugattach>
+  <debugremote />
+  <debugEngine>0</debugEngine>
+  <filesToClean>*.obj;*.cmd;*.build;*.json;*.dep</filesToClean>
+ </Config>
+ <Folder name="DWT">
+  <Folder name="dwt">
+   <Folder name="accessibility">
+    <File path="dwt\accessibility\ACC.d" />
+    <File path="dwt\accessibility\Accessible.d" />
+    <File path="dwt\accessibility\AccessibleAdapter.d" />
+    <File path="dwt\accessibility\AccessibleControlAdapter.d" />
+    <File path="dwt\accessibility\AccessibleControlEvent.d" />
+    <File path="dwt\accessibility\AccessibleControlListener.d" />
+    <File path="dwt\accessibility\AccessibleEvent.d" />
+    <File path="dwt\accessibility\AccessibleListener.d" />
+    <File path="dwt\accessibility\AccessibleTextAdapter.d" />
+    <File path="dwt\accessibility\AccessibleTextEvent.d" />
+    <File path="dwt\accessibility\AccessibleTextListener.d" />
+    <File path="dwt\accessibility\all.d" />
+   </Folder>
+   <Folder name="custom">
+    <File path="dwt\custom\all.d" />
+    <File path="dwt\custom\AnimatedProgress.d" />
+    <File path="dwt\custom\BidiSegmentEvent.d" />
+    <File path="dwt\custom\BidiSegmentListener.d" />
+    <File path="dwt\custom\Bullet.d" />
+    <File path="dwt\custom\BusyIndicator.d" />
+    <File path="dwt\custom\CBanner.d" />
+    <File path="dwt\custom\CBannerLayout.d" />
+    <File path="dwt\custom\CCombo.d" />
+    <File path="dwt\custom\CLabel.d" />
+    <File path="dwt\custom\CLayoutData.d" />
+    <File path="dwt\custom\ControlEditor.d" />
+    <File path="dwt\custom\CTabFolder.d" />
+    <File path="dwt\custom\CTabFolder2Adapter.d" />
+    <File path="dwt\custom\CTabFolder2Listener.d" />
+    <File path="dwt\custom\CTabFolderAdapter.d" />
+    <File path="dwt\custom\CTabFolderEvent.d" />
+    <File path="dwt\custom\CTabFolderLayout.d" />
+    <File path="dwt\custom\CTabFolderListener.d" />
+    <File path="dwt\custom\CTabItem.d" />
+    <File path="dwt\custom\DefaultContent.d" />
+    <File path="dwt\custom\ExtendedModifyEvent.d" />
+    <File path="dwt\custom\ExtendedModifyListener.d" />
+    <File path="dwt\custom\LineBackgroundEvent.d" />
+    <File path="dwt\custom\LineBackgroundListener.d" />
+    <File path="dwt\custom\LineStyleEvent.d" />
+    <File path="dwt\custom\LineStyleListener.d" />
+    <File path="dwt\custom\MovementEvent.d" />
+    <File path="dwt\custom\MovementListener.d" />
+    <File path="dwt\custom\PaintObjectEvent.d" />
+    <File path="dwt\custom\PaintObjectListener.d" />
+    <File path="dwt\custom\PopupList.d" />
+    <File path="dwt\custom\SashForm.d" />
+    <File path="dwt\custom\SashFormData.d" />
+    <File path="dwt\custom\SashFormLayout.d" />
+    <File path="dwt\custom\ScrolledComposite.d" />
+    <File path="dwt\custom\ScrolledCompositeLayout.d" />
+    <File path="dwt\custom\ST.d" />
+    <File path="dwt\custom\StackLayout.d" />
+    <File path="dwt\custom\StyledText.d" />
+    <File path="dwt\custom\StyledTextContent.d" />
+    <File path="dwt\custom\StyledTextDropTargetEffect.d" />
+    <File path="dwt\custom\StyledTextEvent.d" />
+    <File path="dwt\custom\StyledTextListener.d" />
+    <File path="dwt\custom\StyledTextPrintOptions.d" />
+    <File path="dwt\custom\StyledTextRenderer.d" />
+    <File path="dwt\custom\StyleRange.d" />
+    <File tool="None" path="dwt\custom\TableCursor.d" />
+    <File path="dwt\custom\TableEditor.d" />
+    <File path="dwt\custom\TableTree.d" />
+    <File path="dwt\custom\TableTreeEditor.d" />
+    <File path="dwt\custom\TableTreeItem.d" />
+    <File path="dwt\custom\TextChangedEvent.d" />
+    <File path="dwt\custom\TextChangeListener.d" />
+    <File path="dwt\custom\TextChangingEvent.d" />
+    <File path="dwt\custom\TreeEditor.d" />
+    <File path="dwt\custom\VerifyKeyListener.d" />
+    <File path="dwt\custom\ViewForm.d" />
+    <File path="dwt\custom\ViewFormLayout.d" />
+   </Folder>
+   <Folder name="dnd">
+    <File path="dwt\dnd\all.d" />
+    <File path="dwt\dnd\ByteArrayTransfer.d" />
+    <File path="dwt\dnd\Clipboard.d" />
+    <File path="dwt\dnd\DND.d" />
+    <File path="dwt\dnd\DNDEvent.d" />
+    <File path="dwt\dnd\DNDListener.d" />
+    <File path="dwt\dnd\DragSource.d" />
+    <File path="dwt\dnd\DragSourceAdapter.d" />
+    <File path="dwt\dnd\DragSourceEffect.d" />
+    <File path="dwt\dnd\DragSourceEvent.d" />
+    <File path="dwt\dnd\DragSourceListener.d" />
+    <File path="dwt\dnd\DropTarget.d" />
+    <File path="dwt\dnd\DropTargetAdapter.d" />
+    <File path="dwt\dnd\DropTargetEffect.d" />
+    <File path="dwt\dnd\DropTargetEvent.d" />
+    <File path="dwt\dnd\DropTargetListener.d" />
+    <File path="dwt\dnd\FileTransfer.d" />
+    <File path="dwt\dnd\HTMLTransfer.d" />
+    <File path="dwt\dnd\ImageTransfer.d" />
+    <File path="dwt\dnd\OleEnumFORMATETC.d" />
+    <File path="dwt\dnd\RTFTransfer.d" />
+    <File path="dwt\dnd\TableDragSourceEffect.d" />
+    <File path="dwt\dnd\TableDropTargetEffect.d" />
+    <File path="dwt\dnd\TextTransfer.d" />
+    <File path="dwt\dnd\Transfer.d" />
+    <File path="dwt\dnd\TransferData.d" />
+    <File path="dwt\dnd\TreeDragSourceEffect.d" />
+    <File path="dwt\dnd\TreeDropTargetEffect.d" />
+    <File path="dwt\dnd\URLTransfer.d" />
+   </Folder>
+   <Folder name="dwthelper">
+    <File path="dwt\dwthelper\all.d" />
+    <File path="dwt\dwthelper\BufferedInputStream.d" />
+    <File path="dwt\dwthelper\ByteArrayInputStream.d" />
+    <File path="dwt\dwthelper\ByteArrayOutputStream.d" />
+    <File path="dwt\dwthelper\File.d" />
+    <File path="dwt\dwthelper\FileInputStream.d" />
+    <File path="dwt\dwthelper\FileOutputStream.d" />
+    <File path="dwt\dwthelper\InflaterInputStream.d" />
+    <File path="dwt\dwthelper\InputStream.d" />
+    <File path="dwt\dwthelper\OutputStream.d" />
+    <File path="dwt\dwthelper\ResourceBundle.d" />
+    <File path="dwt\dwthelper\Runnable.d" />
+    <File path="dwt\dwthelper\System.d" />
+    <File path="dwt\dwthelper\utils.d" />
+    <File path="dwt\dwthelper\WeakHashMap.d" />
+    <File path="dwt\dwthelper\WeakRef.d" />
+    <File path="dwt\dwthelper\XmlTranscode.d" />
+   </Folder>
+   <Folder name="events">
+    <File path="dwt\events\all.d" />
+    <File path="dwt\events\ArmEvent.d" />
+    <File path="dwt\events\ArmListener.d" />
+    <File path="dwt\events\ControlAdapter.d" />
+    <File path="dwt\events\ControlEvent.d" />
+    <File path="dwt\events\ControlListener.d" />
+    <File path="dwt\events\DisposeEvent.d" />
+    <File path="dwt\events\DisposeListener.d" />
+    <File path="dwt\events\DragDetectEvent.d" />
+    <File path="dwt\events\DragDetectListener.d" />
+    <File path="dwt\events\ExpandAdapter.d" />
+    <File path="dwt\events\ExpandEvent.d" />
+    <File path="dwt\events\ExpandListener.d" />
+    <File path="dwt\events\FocusAdapter.d" />
+    <File path="dwt\events\FocusEvent.d" />
+    <File path="dwt\events\FocusListener.d" />
+    <File path="dwt\events\HelpEvent.d" />
+    <File path="dwt\events\HelpListener.d" />
+    <File path="dwt\events\KeyAdapter.d" />
+    <File path="dwt\events\KeyEvent.d" />
+    <File path="dwt\events\KeyListener.d" />
+    <File path="dwt\events\MenuAdapter.d" />
+    <File path="dwt\events\MenuDetectEvent.d" />
+    <File path="dwt\events\MenuDetectListener.d" />
+    <File path="dwt\events\MenuEvent.d" />
+    <File path="dwt\events\MenuListener.d" />
+    <File path="dwt\events\ModifyEvent.d" />
+    <File path="dwt\events\ModifyListener.d" />
+    <File path="dwt\events\MouseAdapter.d" />
+    <File path="dwt\events\MouseEvent.d" />
+    <File path="dwt\events\MouseListener.d" />
+    <File path="dwt\events\MouseMoveListener.d" />
+    <File path="dwt\events\MouseTrackAdapter.d" />
+    <File path="dwt\events\MouseTrackListener.d" />
+    <File path="dwt\events\MouseWheelListener.d" />
+    <File path="dwt\events\PaintEvent.d" />
+    <File path="dwt\events\PaintListener.d" />
+    <File path="dwt\events\SelectionAdapter.d" />
+    <File path="dwt\events\SelectionEvent.d" />
+    <File path="dwt\events\SelectionListener.d" />
+    <File path="dwt\events\ShellAdapter.d" />
+    <File path="dwt\events\ShellEvent.d" />
+    <File path="dwt\events\ShellListener.d" />
+    <File path="dwt\events\TraverseEvent.d" />
+    <File path="dwt\events\TraverseListener.d" />
+    <File path="dwt\events\TreeAdapter.d" />
+    <File path="dwt\events\TreeEvent.d" />
+    <File path="dwt\events\TreeListener.d" />
+    <File path="dwt\events\TypedEvent.d" />
+    <File path="dwt\events\VerifyEvent.d" />
+    <File path="dwt\events\VerifyListener.d" />
+   </Folder>
+   <Folder name="graphics">
+    <File path="dwt\graphics\all.d" />
+    <File path="dwt\graphics\Color.d" />
+    <File path="dwt\graphics\Cursor.d" />
+    <File path="dwt\graphics\Device.d" />
+    <File path="dwt\graphics\DeviceData.d" />
+    <File path="dwt\graphics\Drawable.d" />
+    <File path="dwt\graphics\Font.d" />
+    <File path="dwt\graphics\FontData.d" />
+    <File path="dwt\graphics\FontMetrics.d" />
+    <File path="dwt\graphics\GC.d" />
+    <File path="dwt\graphics\GCData.d" />
+    <File path="dwt\graphics\GlyphMetrics.d" />
+    <File path="dwt\graphics\Image.d" />
+    <File path="dwt\graphics\ImageData.d" />
+    <File path="dwt\graphics\ImageDataLoader.d" />
+    <File path="dwt\graphics\ImageLoader.d" />
+    <File path="dwt\graphics\ImageLoaderEvent.d" />
+    <File path="dwt\graphics\ImageLoaderListener.d" />
+    <File path="dwt\graphics\LineAttributes.d" />
+    <File path="dwt\graphics\PaletteData.d" />
+    <File path="dwt\graphics\Path.d" />
+    <File path="dwt\graphics\PathData.d" />
+    <File path="dwt\graphics\Pattern.d" />
+    <File path="dwt\graphics\Point.d" />
+    <File path="dwt\graphics\Rectangle.d" />
+    <File path="dwt\graphics\Region.d" />
+    <File path="dwt\graphics\Resource.d" />
+    <File path="dwt\graphics\RGB.d" />
+    <File path="dwt\graphics\TextLayout.d" />
+    <File path="dwt\graphics\TextStyle.d" />
+    <File path="dwt\graphics\Transform.d" />
+   </Folder>
+   <Folder name="internal">
+    <Folder name="gdip">
+     <File path="dwt\internal\gdip\Gdip.d" />
+     <File path="dwt\internal\gdip\native.d" />
+    </Folder>
+    <Folder name="image">
+     <File path="dwt\internal\image\FileFormat.d" />
+     <File path="dwt\internal\image\GIFFileFormat.d" />
+     <File path="dwt\internal\image\JPEGAppn.d" />
+     <File path="dwt\internal\image\JPEGArithmeticConditioningTable.d" />
+     <File path="dwt\internal\image\JPEGComment.d" />
+     <File path="dwt\internal\image\JPEGDecoder.d" />
+     <File path="dwt\internal\image\JPEGEndOfImage.d" />
+     <File path="dwt\internal\image\JPEGFileFormat.d" />
+     <File path="dwt\internal\image\JPEGFixedSizeSegment.d" />
+     <File path="dwt\internal\image\JPEGFrameHeader.d" />
+     <File path="dwt\internal\image\JPEGHuffmanTable.d" />
+     <File path="dwt\internal\image\JPEGQuantizationTable.d" />
+     <File path="dwt\internal\image\JPEGRestartInterval.d" />
+     <File path="dwt\internal\image\JPEGScanHeader.d" />
+     <File path="dwt\internal\image\JPEGSegment.d" />
+     <File path="dwt\internal\image\JPEGStartOfImage.d" />
+     <File path="dwt\internal\image\JPEGVariableSizeSegment.d" />
+     <File path="dwt\internal\image\LEDataInputStream.d" />
+     <File path="dwt\internal\image\LEDataOutputStream.d" />
+     <File path="dwt\internal\image\LZWCodec.d" />
+     <File path="dwt\internal\image\LZWNode.d" />
+     <File path="dwt\internal\image\OS2BMPFileFormat.d" />
+     <File path="dwt\internal\image\PngChunk.d" />
+     <File path="dwt\internal\image\PngChunkReader.d" />
+     <File path="dwt\internal\image\PngDecodingDataStream.d" />
+     <File path="dwt\internal\image\PngDeflater.d" />
+     <File path="dwt\internal\image\PngEncoder.d" />
+     <File path="dwt\internal\image\PNGFileFormat.d" />
+     <File path="dwt\internal\image\PngFileReadState.d" />
+     <File path="dwt\internal\image\PngHuffmanTable.d" />
+     <File path="dwt\internal\image\PngHuffmanTables.d" />
+     <File path="dwt\internal\image\PngIdatChunk.d" />
+     <File path="dwt\internal\image\PngIendChunk.d" />
+     <File path="dwt\internal\image\PngIhdrChunk.d" />
+     <File path="dwt\internal\image\PngInputStream.d" />
+     <File path="dwt\internal\image\PngLzBlockReader.d" />
+     <File path="dwt\internal\image\PngPlteChunk.d" />
+     <File path="dwt\internal\image\PngTrnsChunk.d" />
+     <File path="dwt\internal\image\TIFFDirectory.d" />
+     <File path="dwt\internal\image\TIFFFileFormat.d" />
+     <File path="dwt\internal\image\TIFFModifiedHuffmanCodec.d" />
+     <File path="dwt\internal\image\TIFFRandomFileAccess.d" />
+     <File path="dwt\internal\image\WinBMPFileFormat.d" />
+     <File path="dwt\internal\image\WinICOFileFormat.d" />
+    </Folder>
+    <Folder name="mozilla">
+     <File path="dwt\internal\mozilla\Common.d" />
+     <File path="dwt\internal\mozilla\gfxIImageFrame.d" />
+     <File path="dwt\internal\mozilla\imgIContainer.d" />
+     <File path="dwt\internal\mozilla\imgIContainerObserver.d" />
+     <File path="dwt\internal\mozilla\nsEmbedString.d" />
+     <File path="dwt\internal\mozilla\nsError.d" />
+     <File path="dwt\internal\mozilla\nsIAppShell.d" />
+     <File path="dwt\internal\mozilla\nsIAtom.d" />
+     <File path="dwt\internal\mozilla\nsIAuthInformation.d" />
+     <File path="dwt\internal\mozilla\nsIAuthPrompt.d" />
+     <File path="dwt\internal\mozilla\nsIAuthPromptCallback.d" />
+     <File path="dwt\internal\mozilla\nsIBaseWindow.d" />
+     <File path="dwt\internal\mozilla\nsIBinaryInputStream.d" />
+     <File path="dwt\internal\mozilla\nsIBinaryOutputStream.d" />
+     <File path="dwt\internal\mozilla\nsICancelable.d" />
+     <File path="dwt\internal\mozilla\nsICategoryManager.d" />
+     <File path="dwt\internal\mozilla\nsIChannel.d" />
+     <File path="dwt\internal\mozilla\nsIChromeEventHandler.d" />
+     <File path="dwt\internal\mozilla\nsICollection.d" />
+     <File path="dwt\internal\mozilla\nsIComponentManager.d" />
+     <File path="dwt\internal\mozilla\nsIComponentRegistrar.d" />
+     <File path="dwt\internal\mozilla\nsIContentViewer.d" />
+     <File path="dwt\internal\mozilla\nsIContextMenuListener.d" />
+     <File path="dwt\internal\mozilla\nsIContextMenuListener2.d" />
+     <File path="dwt\internal\mozilla\nsICookie.d" />
+     <File path="dwt\internal\mozilla\nsICookie2.d" />
+     <File path="dwt\internal\mozilla\nsICookieManager.d" />
+     <File path="dwt\internal\mozilla\nsICookieManager2.d" />
+     <File path="dwt\internal\mozilla\nsID.d" />
+     <File path="dwt\internal\mozilla\nsIDebug.d" />
+     <File path="dwt\internal\mozilla\nsIDirectoryService.d" />
+     <File path="dwt\internal\mozilla\nsIDocShell.d" />
+     <File path="dwt\internal\mozilla\nsIDocShellLoadInfo.d" />
+     <File path="dwt\internal\mozilla\nsIDocShellTreeItem.d" />
+     <File path="dwt\internal\mozilla\nsIDocShellTreeOwner.d" />
+     <File path="dwt\internal\mozilla\nsIDocumentCharsetInfo.d" />
+     <File path="dwt\internal\mozilla\nsIDOMAbstractView.d" />
+     <File path="dwt\internal\mozilla\nsIDOMAttr.d" />
+     <File path="dwt\internal\mozilla\nsIDOMBarProp.d" />
+     <File path="dwt\internal\mozilla\nsIDOMCDATASection.d" />
+     <File path="dwt\internal\mozilla\nsIDOMCharacterData.d" />
+     <File path="dwt\internal\mozilla\nsIDOMComment.d" />
+     <File path="dwt\internal\mozilla\nsIDOMDocument.d" />
+     <File path="dwt\internal\mozilla\nsIDOMDocumentFragment.d" />
+     <File path="dwt\internal\mozilla\nsIDOMDocumentType.d" />
+     <File path="dwt\internal\mozilla\nsIDOMDocumentView.d" />
+     <File path="dwt\internal\mozilla\nsIDOMDOMImplementation.d" />
+     <File path="dwt\internal\mozilla\nsIDOMElement.d" />
+     <File path="dwt\internal\mozilla\nsIDOMEntityReference.d" />
+     <File path="dwt\internal\mozilla\nsIDOMEvent.d" />
+     <File path="dwt\internal\mozilla\nsIDOMEventGroup.d" />
+     <File path="dwt\internal\mozilla\nsIDOMEventListener.d" />
+     <File path="dwt\internal\mozilla\nsIDOMEventTarget.d" />
+     <File path="dwt\internal\mozilla\nsIDOMKeyEvent.d" />
+     <File path="dwt\internal\mozilla\nsIDOMMouseEvent.d" />
+     <File path="dwt\internal\mozilla\nsIDOMNamedNodeMap.d" />
+     <File path="dwt\internal\mozilla\nsIDOMNode.d" />
+     <File path="dwt\internal\mozilla\nsIDOMNodeList.d" />
+     <File path="dwt\internal\mozilla\nsIDOMProcessingInstruction.d" />
+     <File path="dwt\internal\mozilla\nsIDOMRange.d" />
+     <File path="dwt\internal\mozilla\nsIDOMSerializer.d" />
+     <File path="dwt\internal\mozilla\nsIDOMSerializer_1_7.d" />
+     <File path="dwt\internal\mozilla\nsIDOMStorage.d" />
+     <File path="dwt\internal\mozilla\nsIDOMStorageItem.d" />
+     <File path="dwt\internal\mozilla\nsIDOMText.d" />
+     <File path="dwt\internal\mozilla\nsIDOMUIEvent.d" />
+     <File path="dwt\internal\mozilla\nsIDOMWindow.d" />
+     <File path="dwt\internal\mozilla\nsIDOMWindow2.d" />
+     <File path="dwt\internal\mozilla\nsIDOMWindowCollection.d" />
+     <File path="dwt\internal\mozilla\nsIDownload.d" />
+     <File path="dwt\internal\mozilla\nsIDownload_1_8.d" />
+     <File path="dwt\internal\mozilla\nsIEmbeddingSiteWindow.d" />
+     <File path="dwt\internal\mozilla\nsIEmbeddingSiteWindow2.d" />
+     <File path="dwt\internal\mozilla\nsIEnumerator.d" />
+     <File path="dwt\internal\mozilla\nsIEventQueue.d" />
+     <File path="dwt\internal\mozilla\nsIEventTarget.d" />
+     <File path="dwt\internal\mozilla\nsIFactory.d" />
+     <File path="dwt\internal\mozilla\nsIFile.d" />
+     <File path="dwt\internal\mozilla\nsIFilePicker.d" />
+     <File path="dwt\internal\mozilla\nsIFilePicker_1_8.d" />
+     <File path="dwt\internal\mozilla\nsIFileURL.d" />
+     <File path="dwt\internal\mozilla\nsIHelperAppLauncher.d" />
+     <File path="dwt\internal\mozilla\nsIHelperAppLauncher_1_8.d" />
+     <File path="dwt\internal\mozilla\nsIHelperAppLauncher_1_9.d" />
+     <File path="dwt\internal\mozilla\nsIHelperAppLauncherDialog.d" />
+     <File path="dwt\internal\mozilla\nsIHelperAppLauncherDialog_1_9.d" />
+     <File path="dwt\internal\mozilla\nsIHistoryEntry.d" />
+     <File path="dwt\internal\mozilla\nsIInputStream.d" />
+     <File path="dwt\internal\mozilla\nsIInterfaceRequestor.d" />
+     <File path="dwt\internal\mozilla\nsIIOService.d" />
+     <File path="dwt\internal\mozilla\nsIIOService2.d" />
+     <File path="dwt\internal\mozilla\nsIJSContextStack.d" />
+     <File path="dwt\internal\mozilla\nsILoadGroup.d" />
+     <File path="dwt\internal\mozilla\nsILocalFile.d" />
+     <File path="dwt\internal\mozilla\nsIMemory.d" />
+     <File path="dwt\internal\mozilla\nsIMIMEInfo.d" />
+     <File path="dwt\internal\mozilla\nsIModule.d" />
+     <File path="dwt\internal\mozilla\nsIObjectInputStream.d" />
+     <File path="dwt\internal\mozilla\nsIObjectOutputStream.d" />
+     <File path="dwt\internal\mozilla\nsIObserver.d" />
+     <File path="dwt\internal\mozilla\nsIObserverService.d" />
+     <File path="dwt\internal\mozilla\nsIOutputStream.d" />
+     <File path="dwt\internal\mozilla\nsIPrefBranch.d" />
+     <File path="dwt\internal\mozilla\nsIPrefBranch2.d" />
+     <File path="dwt\internal\mozilla\nsIPrefLocalizedString.d" />
+     <File path="dwt\internal\mozilla\nsIPrefService.d" />
+     <File path="dwt\internal\mozilla\nsIProgressDialog.d" />
+     <File path="dwt\internal\mozilla\nsIProgressDialog_1_8.d" />
+     <File path="dwt\internal\mozilla\nsIPrompt.d" />
+     <File path="dwt\internal\mozilla\nsIPromptService.d" />
+     <File path="dwt\internal\mozilla\nsIPromptService2.d" />
+     <File path="dwt\internal\mozilla\nsIProperties.d" />
+     <File path="dwt\internal\mozilla\nsIProtocolHandler.d" />
+     <File path="dwt\internal\mozilla\nsIRequest.d" />
+     <File path="dwt\internal\mozilla\nsIRequestObserver.d" />
+     <File path="dwt\internal\mozilla\nsISecureBrowserUI.d" />
+     <File path="dwt\internal\mozilla\nsISelection.d" />
+     <File path="dwt\internal\mozilla\nsISerializable.d" />
+     <File path="dwt\internal\mozilla\nsIServiceManager.d" />
+     <File path="dwt\internal\mozilla\nsISHEntry.d" />
+     <File path="dwt\internal\mozilla\nsISHistory.d" />
+     <File path="dwt\internal\mozilla\nsISHistoryListener.d" />
+     <File path="dwt\internal\mozilla\nsISimpleEnumerator.d" />
+     <File path="dwt\internal\mozilla\nsIStreamListener.d" />
+     <File path="dwt\internal\mozilla\nsIStringEnumerator.d" />
+     <File path="dwt\internal\mozilla\nsISupports.d" />
+     <File path="dwt\internal\mozilla\nsISupportsArray.d" />
+     <File path="dwt\internal\mozilla\nsITooltipListener.d" />
+     <File path="dwt\internal\mozilla\nsITraceRefcnt.d" />
+     <File path="dwt\internal\mozilla\nsITransfer.d" />
+     <File path="dwt\internal\mozilla\nsIURI.d" />
+     <File path="dwt\internal\mozilla\nsIURIContentListener.d" />
+     <File path="dwt\internal\mozilla\nsIURL.d" />
+     <File path="dwt\internal\mozilla\nsIWeakReference.d" />
+     <File path="dwt\internal\mozilla\nsIWebBrowser.d" />
+     <File path="dwt\internal\mozilla\nsIWebBrowserChrome.d" />
+     <File path="dwt\internal\mozilla\nsIWebBrowserChromeFocus.d" />
+     <File path="dwt\internal\mozilla\nsIWebBrowserFocus.d" />
+     <File path="dwt\internal\mozilla\nsIWebNavigation.d" />
+     <File path="dwt\internal\mozilla\nsIWebNavigationInfo.d" />
+     <File path="dwt\internal\mozilla\nsIWebProgress.d" />
+     <File path="dwt\internal\mozilla\nsIWebProgressListener.d" />
+     <File path="dwt\internal\mozilla\nsIWebProgressListener2.d" />
+     <File path="dwt\internal\mozilla\nsIWindowCreator.d" />
+     <File path="dwt\internal\mozilla\nsIWindowCreator2.d" />
+     <File path="dwt\internal\mozilla\nsIWindowWatcher.d" />
+     <File path="dwt\internal\mozilla\nsStringAPI.d" />
+     <File path="dwt\internal\mozilla\prinrval.d" />
+     <File path="dwt\internal\mozilla\prio.d" />
+     <File path="dwt\internal\mozilla\prlink.d" />
+     <File path="dwt\internal\mozilla\prtime.d" />
+     <File path="dwt\internal\mozilla\XPCOM.d" />
+     <File path="dwt\internal\mozilla\XPCOMInit.d" />
+    </Folder>
+    <Folder name="ole">
+     <Folder name="win32">
+      <File path="dwt\internal\ole\win32\COM.d" />
+      <File path="dwt\internal\ole\win32\COMAPI.d" />
+      <File path="dwt\internal\ole\win32\COMTYPES.d" />
+      <File path="dwt\internal\ole\win32\DOCOBJ.d" />
+      <File path="dwt\internal\ole\win32\EXDISP.d" />
+      <File path="dwt\internal\ole\win32\extras.d" />
+      <File path="dwt\internal\ole\win32\ifs.d" />
+      <File path="dwt\internal\ole\win32\MSHTMHST.d" />
+      <File path="dwt\internal\ole\win32\OAIDL.d" />
+      <File path="dwt\internal\ole\win32\OBJIDL.d" />
+      <File path="dwt\internal\ole\win32\OLEIDL.d" />
+     </Folder>
+    </Folder>
+    <Folder name="opengl">
+     <Folder name="win32">
+      <File path="dwt\internal\opengl\win32\native.d" />
+      <File path="dwt\internal\opengl\win32\WGL.d" />
+     </Folder>
+    </Folder>
+    <Folder name="win32">
+     <File path="dwt\internal\win32\OS.d" />
+     <File path="dwt\internal\win32\WINAPI.d" />
+     <File path="dwt\internal\win32\WINTYPES.d" />
+    </Folder>
+    <File path="dwt\internal\BidiUtil.d" />
+    <File path="dwt\internal\C.d" />
+    <File path="dwt\internal\CloneableCompatibility.d" />
+    <File path="dwt\internal\Compatibility.d" />
+    <File path="dwt\internal\DWTEventListener.d" />
+    <File path="dwt\internal\DWTEventObject.d" />
+    <File path="dwt\internal\ImageList.d" />
+    <File path="dwt\internal\Library.d" />
+    <File path="dwt\internal\Lock.d" />
+    <File path="dwt\internal\Platform.d" />
+    <File path="dwt\internal\SerializableCompatibility.d" />
+   </Folder>
+   <Folder name="layout">
+    <File path="dwt\layout\all.d" />
+    <File path="dwt\layout\FillData.d" />
+    <File path="dwt\layout\FillLayout.d" />
+    <File path="dwt\layout\FormAttachment.d" />
+    <File path="dwt\layout\FormData.d" />
+    <File path="dwt\layout\FormLayout.d" />
+    <File path="dwt\layout\GridData.d" />
+    <File path="dwt\layout\GridLayout.d" />
+    <File path="dwt\layout\RowData.d" />
+    <File path="dwt\layout\RowLayout.d" />
+   </Folder>
+   <Folder name="ole">
+    <Folder name="win32">
+     <File path="dwt\ole\win32\OLE.d" />
+     <File path="dwt\ole\win32\OleAutomation.d" />
+     <File path="dwt\ole\win32\OleClientSite.d" />
+     <File path="dwt\ole\win32\OleControlSite.d" />
+     <File path="dwt\ole\win32\OleEvent.d" />
+     <File path="dwt\ole\win32\OleEventSink.d" />
+     <File path="dwt\ole\win32\OleEventTable.d" />
+     <File path="dwt\ole\win32\OleFrame.d" />
+     <File path="dwt\ole\win32\OleFunctionDescription.d" />
+     <File path="dwt\ole\win32\OleListener.d" />
+     <File path="dwt\ole\win32\OleParameterDescription.d" />
+     <File path="dwt\ole\win32\OlePropertyChangeSink.d" />
+     <File path="dwt\ole\win32\OlePropertyDescription.d" />
+     <File path="dwt\ole\win32\Variant.d" />
+    </Folder>
+    <File path="dwt\ole\all.d" />
+   </Folder>
+   <Folder name="opengl">
+    <File path="dwt\opengl\all.d" />
+    <File path="dwt\opengl\GLCanvas.d" />
+    <File path="dwt\opengl\GLData.d" />
+   </Folder>
+   <Folder name="printing">
+    <File path="dwt\printing\all.d" />
+    <File path="dwt\printing\PrintDialog.d" />
+    <File path="dwt\printing\Printer.d" />
+    <File path="dwt\printing\PrinterData.d" />
+   </Folder>
+   <Folder name="program">
+    <File path="dwt\program\all.d" />
+    <File path="dwt\program\Program.d" />
+   </Folder>
+   <Folder name="widgets">
+    <File path="dwt\widgets\all.d" />
+    <File path="dwt\widgets\Button.d" />
+    <File path="dwt\widgets\Canvas.d" />
+    <File path="dwt\widgets\Caret.d" />
+    <File path="dwt\widgets\ColorDialog.d" />
+    <File path="dwt\widgets\Combo.d" />
+    <File path="dwt\widgets\Composite.d" />
+    <File path="dwt\widgets\Control.d" />
+    <File path="dwt\widgets\CoolBar.d" />
+    <File path="dwt\widgets\CoolItem.d" />
+    <File path="dwt\widgets\DateTime.d" />
+    <File path="dwt\widgets\Decorations.d" />
+    <File path="dwt\widgets\Dialog.d" />
+    <File path="dwt\widgets\DirectoryDialog.d" />
+    <File path="dwt\widgets\Display.d" />
+    <File path="dwt\widgets\Event.d" />
+    <File path="dwt\widgets\EventTable.d" />
+    <File path="dwt\widgets\ExpandBar.d" />
+    <File path="dwt\widgets\ExpandItem.d" />
+    <File path="dwt\widgets\FileDialog.d" />
+    <File path="dwt\widgets\FontDialog.d" />
+    <File path="dwt\widgets\Group.d" />
+    <File path="dwt\widgets\IME.d" />
+    <File path="dwt\widgets\Item.d" />
+    <File path="dwt\widgets\Label.d" />
+    <File path="dwt\widgets\Layout.d" />
+    <File path="dwt\widgets\Link.d" />
+    <File path="dwt\widgets\List.d" />
+    <File path="dwt\widgets\Listener.d" />
+    <File path="dwt\widgets\Menu.d" />
+    <File path="dwt\widgets\MenuItem.d" />
+    <File path="dwt\widgets\MessageBox.d" />
+    <File path="dwt\widgets\Monitor.d" />
+    <File path="dwt\widgets\ProgressBar.d" />
+    <File path="dwt\widgets\RunnableLock.d" />
+    <File path="dwt\widgets\Sash.d" />
+    <File path="dwt\widgets\Scale.d" />
+    <File path="dwt\widgets\Scrollable.d" />
+    <File path="dwt\widgets\ScrollBar.d" />
+    <File path="dwt\widgets\Shell.d" />
+    <File path="dwt\widgets\Slider.d" />
+    <File path="dwt\widgets\Spinner.d" />
+    <File path="dwt\widgets\Synchronizer.d" />
+    <File path="dwt\widgets\TabFolder.d" />
+    <File path="dwt\widgets\TabItem.d" />
+    <File path="dwt\widgets\Table.d" />
+    <File path="dwt\widgets\TableColumn.d" />
+    <File path="dwt\widgets\TableItem.d" />
+    <File path="dwt\widgets\Text.d" />
+    <File path="dwt\widgets\ToolBar.d" />
+    <File path="dwt\widgets\ToolItem.d" />
+    <File path="dwt\widgets\ToolTip.d" />
+    <File path="dwt\widgets\Tracker.d" />
+    <File path="dwt\widgets\Tray.d" />
+    <File path="dwt\widgets\TrayItem.d" />
+    <File path="dwt\widgets\Tree.d" />
+    <File path="dwt\widgets\TreeColumn.d" />
+    <File path="dwt\widgets\TreeItem.d" />
+    <File path="dwt\widgets\TypedListener.d" />
+    <File path="dwt\widgets\Widget.d" />
+   </Folder>
+   <File path="dwt\all.d" />
+   <File path="dwt\DWT.d" />
+   <File path="dwt\DWTError.d" />
+   <File path="dwt\DWTException.d" />
+   <File path="dwt\std.d" />
+  </Folder>
+ </Folder>
+</DProject>
