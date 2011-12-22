@@ -1,0 +1,216 @@
+<DProject>
+ <ProjectGuid>{4F0EB67F-115E-4553-BBBD-0231802AA9A0}</ProjectGuid>
+ <Config name="Debug">
+  <obj>0</obj>
+  <link>0</link>
+  <lib>0</lib>
+  <multiobj>0</multiobj>
+  <singleFileCompilation>0</singleFileCompilation>
+  <oneobj>0</oneobj>
+  <trace>0</trace>
+  <quiet>0</quiet>
+  <verbose>0</verbose>
+  <vtls>0</vtls>
+  <symdebug>1</symdebug>
+  <optimize>0</optimize>
+  <cpu>0</cpu>
+  <isX86_64>0</isX86_64>
+  <isLinux>0</isLinux>
+  <isOSX>0</isOSX>
+  <isWindows>0</isWindows>
+  <isFreeBSD>0</isFreeBSD>
+  <isSolaris>0</isSolaris>
+  <scheduler>0</scheduler>
+  <useDeprecated>0</useDeprecated>
+  <useAssert>0</useAssert>
+  <useInvariants>0</useInvariants>
+  <useIn>0</useIn>
+  <useOut>0</useOut>
+  <useArrayBounds>0</useArrayBounds>
+  <noboundscheck>0</noboundscheck>
+  <useSwitchError>0</useSwitchError>
+  <useUnitTests>0</useUnitTests>
+  <useInline>0</useInline>
+  <release>0</release>
+  <preservePaths>0</preservePaths>
+  <warnings>0</warnings>
+  <infowarnings>0</infowarnings>
+  <pic>0</pic>
+  <cov>0</cov>
+  <nofloat>0</nofloat>
+  <Dversion>1</Dversion>
+  <ignoreUnsupportedPragmas>0</ignoreUnsupportedPragmas>
+  <otherDMD>0</otherDMD>
+  <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
+  <imppath>d:\prog\import\tango</imppath>
+  <fileImppath>. flags icons res</fileImppath>
+  <outdir>$(ConfigurationName)</outdir>
+  <objdir>$(OutDir)</objdir>
+  <objname />
+  <libname />
+  <doDocComments>0</doDocComments>
+  <docdir />
+  <docname />
+  <modules_ddoc />
+  <ddocfiles />
+  <doHdrGeneration>0</doHdrGeneration>
+  <hdrdir />
+  <hdrname />
+  <doXGeneration>1</doXGeneration>
+  <xfilename>$(IntDir)\$(TargetName).json</xfilename>
+  <debuglevel>0</debuglevel>
+  <debugids />
+  <versionlevel>0</versionlevel>
+  <versionids />
+  <dump_source>0</dump_source>
+  <mapverbosity>0</mapverbosity>
+  <createImplib>0</createImplib>
+  <defaultlibname />
+  <debuglibname />
+  <moduleDepsFile />
+  <run>0</run>
+  <runargs />
+  <runCv2pdb>1</runCv2pdb>
+  <pathCv2pdb>$(VisualDInstallDir)cv2pdb\cv2pdb.exe</pathCv2pdb>
+  <objfiles />
+  <linkswitches />
+  <libfiles>$(OutDir)\dwt\dwt.lib</libfiles>
+  <libpaths />
+  <deffile />
+  <resfile />
+  <exefile>$(ProjectName).exe</exefile>
+  <additionalOptions>-L/rc:mb.res -L/rc:dwt.res -L/su:windows:4</additionalOptions>
+  <preBuildCommand>svnversion -n . trunk &gt; svnversion.txt</preBuildCommand>
+  <postBuildCommand />
+  <debugtarget>$(TARGETPATH)</debugtarget>
+  <debugarguments />
+  <debugworkingdir />
+  <debugattach>0</debugattach>
+  <debugremote />
+  <debugEngine>0</debugEngine>
+  <filesToClean>*.obj;*.cmd;*.build;*.json;*.dep</filesToClean>
+ </Config>
+ <Config name="Release (not used)">
+  <obj>0</obj>
+  <link>0</link>
+  <lib>0</lib>
+  <multiobj>0</multiobj>
+  <singleFileCompilation>0</singleFileCompilation>
+  <oneobj>0</oneobj>
+  <trace>0</trace>
+  <quiet>0</quiet>
+  <verbose>0</verbose>
+  <vtls>0</vtls>
+  <symdebug>0</symdebug>
+  <optimize>1</optimize>
+  <cpu>0</cpu>
+  <isX86_64>0</isX86_64>
+  <isLinux>0</isLinux>
+  <isOSX>0</isOSX>
+  <isWindows>0</isWindows>
+  <isFreeBSD>0</isFreeBSD>
+  <isSolaris>0</isSolaris>
+  <scheduler>0</scheduler>
+  <useDeprecated>0</useDeprecated>
+  <useAssert>0</useAssert>
+  <useInvariants>0</useInvariants>
+  <useIn>0</useIn>
+  <useOut>0</useOut>
+  <useArrayBounds>0</useArrayBounds>
+  <noboundscheck>0</noboundscheck>
+  <useSwitchError>0</useSwitchError>
+  <useUnitTests>0</useUnitTests>
+  <useInline>1</useInline>
+  <release>1</release>
+  <preservePaths>0</preservePaths>
+  <warnings>0</warnings>
+  <infowarnings>0</infowarnings>
+  <pic>0</pic>
+  <cov>0</cov>
+  <nofloat>0</nofloat>
+  <Dversion>1</Dversion>
+  <ignoreUnsupportedPragmas>0</ignoreUnsupportedPragmas>
+  <otherDMD>0</otherDMD>
+  <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
+  <imppath>d:\prog\import\tango</imppath>
+  <fileImppath>. flags icons res</fileImppath>
+  <outdir>$(ConfigurationName)</outdir>
+  <objdir>$(OutDir)</objdir>
+  <objname />
+  <libname />
+  <doDocComments>0</doDocComments>
+  <docdir />
+  <docname />
+  <modules_ddoc />
+  <ddocfiles />
+  <doHdrGeneration>0</doHdrGeneration>
+  <hdrdir />
+  <hdrname />
+  <doXGeneration>1</doXGeneration>
+  <xfilename>$(IntDir)\$(TargetName).json</xfilename>
+  <debuglevel>0</debuglevel>
+  <debugids />
+  <versionlevel>0</versionlevel>
+  <versionids />
+  <dump_source>0</dump_source>
+  <mapverbosity>0</mapverbosity>
+  <createImplib>0</createImplib>
+  <defaultlibname />
+  <debuglibname />
+  <moduleDepsFile />
+  <run>0</run>
+  <runargs />
+  <runCv2pdb>0</runCv2pdb>
+  <pathCv2pdb>$(VisualDInstallDir)cv2pdb\cv2pdb.exe</pathCv2pdb>
+  <objfiles />
+  <linkswitches />
+  <libfiles>$(OutDir)\dwt\dwt.lib</libfiles>
+  <libpaths />
+  <deffile />
+  <resfile />
+  <exefile>$(ProjectName).exe</exefile>
+  <additionalOptions>-L/rc:mb.res -L/rc:dwt.res -L/su:windows:4</additionalOptions>
+  <preBuildCommand />
+  <postBuildCommand />
+  <debugtarget>$(TARGETPATH)</debugtarget>
+  <debugarguments />
+  <debugworkingdir />
+  <debugattach>0</debugattach>
+  <debugremote />
+  <debugEngine>0</debugEngine>
+  <filesToClean>*.obj;*.cmd;*.build;*.json;*.dep</filesToClean>
+ </Config>
+ <Folder name="MonsterBrowser">
+  <Folder name="mswindows">
+   <File path="mswindows\taskbarlist.d" />
+   <File path="mswindows\taskbarprogress.d" />
+   <File path="mswindows\util.d" />
+  </Folder>
+  <File path="colorednames.d" />
+  <File path="common.d" />
+  <File path="cvartable.d" />
+  <File path="dialogs.d" />
+  <File path="flagdata.d" />
+  <File tool="None" path="genflagdata.d" />
+  <File path="geoip.d" />
+  <File path="ini.d" />
+  <File path="launch.d" />
+  <File path="link.d" />
+  <File path="main.d" />
+  <File path="mainwindow.d" />
+  <File path="masterlist.d" />
+  <File path="messageboxes.d" />
+  <File path="playertable.d" />
+  <File path="qstat.d" />
+  <File path="rcon.d" />
+  <File path="runtools.d" />
+  <File path="serveractions.d" />
+  <File path="serverdata.d" />
+  <File path="serverlist.d" />
+  <File path="serverqueue.d" />
+  <File path="servertable.d" />
+  <File path="set.d" />
+  <File path="settings.d" />
+  <File path="threadmanager.d" />
+ </Folder>
+</DProject>
