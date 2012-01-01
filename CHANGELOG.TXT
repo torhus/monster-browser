@@ -1,5 +1,5 @@
-Latest changes
---------------
+v0.8 - 2012-01-01
+-----------------
 - New: Display progress on the task bar in Windows 7.
 - Change: Keep the old server list if unable to retrieve a new on from the
           master.

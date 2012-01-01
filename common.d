@@ -57,7 +57,7 @@ const char[] APPNAME = "Monster Browser";
 
 const char[] SVN = import("svnversion.txt");
 
-const char[] FINAL_VERSION = "0.7";
+const char[] FINAL_VERSION = "0.8";
 
 debug {
 	const char[] VERSION = __DATE__ ~

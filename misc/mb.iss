@@ -7,16 +7,17 @@
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
 AppId={{E5D3BD22-CD4C-4823-A383-3971BCE0052C}
 AppName=Monster Browser
-AppVerName=Monster Browser 0.7
+AppVerName=Monster Browser 0.8
 AppPublisherURL=http://sites.google.com/site/monsterbrowser/
 AppSupportURL=http://sites.google.com/site/monsterbrowser/
 AppUpdatesURL=http://sites.google.com/site/monsterbrowser/
 DefaultDirName={pf}\Monster Browser
 DefaultGroupName=Monster Browser
+DisableWelcomePage=yes
 AllowNoIcons=yes
 SourceDir=..
 OutputDir=misc
-OutputBaseFilename=Monster Browser 0.7 Setup
+OutputBaseFilename=Monster Browser 0.8 Setup
 Compression=lzma
 SolidCompression=yes
 
