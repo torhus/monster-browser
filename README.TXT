@@ -63,7 +63,7 @@ Source code, etc.: http://monsterbrowser.googlecode.com/
 
 I'm open for requests to change the licence, I just haven't bothered deciding which licence to use yet.
 
-Check out smokin-guns.net, I'm registered as torhu.  Send me a PM there if I don't reply to your emails.
+Check out smokin-guns.org, I'm registered as torhu.  Send me a private message through the forum there if I don't reply to your emails.
 
 Email:
 torhu at yahoo dot com.
