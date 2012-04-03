@@ -45,11 +45,19 @@ Set!(char[]) browserGetNewList(in GameConfig game, bool gslist)
 	version (linux)
 		cmdLine ~= "./";
 
-	if (gslist)
+	if (gslist) {
 		cmdLine ~= "gslist -n quake3 -o 5";
-	else
-		cmdLine ~= "qstat -q3m," ~ game.protocolVersion ~ ",outfile " ~
-		                                              game.masterServer ~ ",-";
+	}
+	else {
+		cmdLine ~= "qstat";
+		// This has to be the first argument.
+		if (game.qstatConfigFile)
+			cmdLine ~= " -cfg " ~ game.qstatConfigFile;
+
+		cmdLine ~= " -" ~ game.qstatMasterServerType ~
+		           "," ~ game.protocolVersion ~ ",outfile " ~
+		           game.masterServer ~ ",-";
+	}
 
 	// use gslist's server-sider filtering
 	// Note: gslist returns no servers if filtering on "baseq3"
@@ -79,11 +87,9 @@ Set!(char[]) browserGetNewList(in GameConfig game, bool gslist)
 			lines.next();
 
 			if (!gslist) {
-				// Make sure qstat hasn't changed its output format.
-				assert(lines.get().startsWith("ADDRESS"));
-				// The second line contains the error message, if there is one.
-				throwIfQstatError(lines.next(), proc.stderr,
-				                           game.masterServer);
+				char[] line1 = lines.get();
+				char[] line2 = lines.next();
+				throwIfQstatError(line1, line2, proc.stderr, game);
 			}
 
 			do {
@@ -105,23 +111,27 @@ Set!(char[]) browserGetNewList(in GameConfig game, bool gslist)
 }
 
 
-private void throwIfQstatError(in char[] line, InputStream stderr,
-                                               in char[] masterName)
+private void throwIfQstatError(in char[] line1, in char[] line2,
+                               InputStream stderr, in GameConfig game)
 {
-	if (toUpper(line.dup).startsWith("Q3M")) {
-		char[] error = cast(char[])stderr.load();
-		char[][] parts = split(line, " ");
-
-		if (error.length) {
+	if (!line1.startsWith("ADDRESS")) {
+		char[] error = cast(char[])proc.stderr.load();
+		if (error.length)
 			throw new MasterServerException(trim(error));
-		}
-		else if (parts.length > 3) {
-			char[] s = trim(join(parts[3..$], " "));
-			throw new MasterServerException(masterName ~ ": " ~ s);
+		else
+			throw new MasterServerException("Unknown Qstat error");
+	}
+
+	if (line2.startsWithNoCase(game.qstatMasterServerType)) {
+		char[][] parts = split(line2, " ");
+
+		if (parts.length > 2) {
+			char[] s = trim(join(parts[1..$], " "));
+			throw new MasterServerException(s);
 		}
 		else {
 			throw new MasterServerException("Unrecognized error: \"" ~
-			                                         trim(line) ~ "\"");
+			                                        trim(line2) ~ "\"");
 		}
 	}
 }

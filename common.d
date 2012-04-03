@@ -464,6 +464,13 @@ bool startsWith(in char[] s, in char[] t)
 }
 
 
+/// ditto
+bool startsWithNoCase(in char[] s, in char[] t)
+{
+	return s.length >= t.length && icompare(s[0..t.length], t) == 0;
+}
+
+
 /// Controls log event layout.
 class LayoutConsole : Appender.Layout
 {
