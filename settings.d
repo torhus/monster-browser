@@ -101,6 +101,18 @@ struct GameConfig
 		return arguments.colortest && mod == "smokinguns";
 	}
 
+	/// Value to use for Qstat's -cfg parameter.
+	char[] qstatConfigFile()
+	{
+		return section.getValue("qstatConfigFile", null);
+	}
+
+	/// Defaults to "q3m".
+	char[] qstatMasterServerType()
+	{
+		return section.getValue("qstatMasterServerType", "q3m");
+	}
+
 	private char[] name_;
 	private IniSection section;
 }
@@ -127,6 +139,8 @@ private {
 ;           example: exePath=C:\Program Files\My Game\mygame.exe
 ; masterServer    - defaults to master3.idsoftware.com
 ; protocolVersion - defaults to 68
+; qstatMasterServerType - Defaults to q3m.
+; qstatConfigFile - Value to use for Qstat's -cfg parameter.
 ;
 ; Lines beginning with a ";" are comments.
 
@@ -137,12 +151,15 @@ exeName=smokinguns.exe
 exePath=%ProgramFiles%\Smokin' Guns\smokinguns.exe
 
 [World of Padman]
-mod=wop
-regKey=HKEY_LOCAL_MACHINE\SOFTWARE\World of Padman\Path
+mod=WorldofPadman
+regKey=HKEY_LOCAL_MACHINE\SOFTWARE\Padworld Entertainment\Path
 exeName=wop.exe
-exePath=%ProgramFiles%\World of Padman\wop.exe
+exePath=%ProgramFiles%\World of Padman 1.5\wop.exe
 useGslist=false
-masterServer=wopmaster.kickchat.com:27955
+masterServer=master.worldofpadman.com:27955
+protocolVersion=71
+qstatMasterServerType=worldofpadmanm
+qstatConfigFile=worldofpadman.cfg
 
 [Urban Terror]
 mod=q3ut4
