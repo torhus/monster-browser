@@ -573,30 +573,30 @@ class FilterBar : Group
 	/// Set the contents of the game name drop-down list.
 	void setGames(char[][] list)
 	{
-		if (list is null)
-			return;
-
-		char[][] items = gamesCombo_.getItems();
-
-		foreach (s; list) {
-			if (findString(items, s) == -1) {
-				gamesCombo_.add(s);
-			}
-		}
+		gamesCombo_.setItems(list);
 
 		int n = gamesCombo_.getItemCount();
 		if (n > 8)
 			n = 8;
 		gamesCombo_.setVisibleItemCount(max(n, 5));
 
-		int selected = gamesCombo_.getSelectionIndex();
-		gamesCombo_.select(selected == -1 ? 0 : selected);
+		gamesCombo_.select(gamesCombo_.indexOf(lastSelectedGame_));
 	}
 
 
 	///  Saves the session state.
 	private void saveState()
 	{
+		// avoid saving a bogus value for lastMod
+		if (gamesCombo_.indexOf(lastSelectedGame_) == -1) {
+			foreach (s; gamesCombo_.getItems()) {
+				if (s.length) {
+					lastSelectedGame_ = s;
+					break;
+				}
+			}
+		}
+
 		setSetting("lastMod", lastSelectedGame_);
 		setSessionState("filterState", Integer.toString(filterState));
 	}
