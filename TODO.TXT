@@ -3,14 +3,15 @@
 [01:30]	<Aelf>	in qxmon it looks like this e.g. : http://www.qxmon.net/q3mon-spy.pl?91.121.106.200:7777
 [01:30]	<BJ_Ketchum>	i woulde like to now how long a map hav been played and whats the score is (br), cus people ofen disconect at map switches thus giving room to me
 
+- clear tables when the active game has been deleted from the dropdown, since
+  many actions will cause a crash, like changing filters
+
 - should optimize countHumanPlayers?  Profile it.
 
 - When interrupting a check for new servers, the press of Refresh all won't
   query the servers the were not tried already.
 
 - Tab completion for rcon commands, or at least fix tab traversal order.
-
-- Make the infinity sign for timed out servers more visible?
 
 - Colored text in rcon output?
 
