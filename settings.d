@@ -285,6 +285,7 @@ void loadGamesFile()
 		gamesIni.remove("");
 	}
 
+	gameNames = null;
 	foreach (sec; gamesIni)
 		gameNames ~= sec.name;
 }
