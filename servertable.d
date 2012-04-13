@@ -580,9 +580,7 @@ private:
 		public void keyPressed (KeyEvent e)
 		{
 			switch (e.keyCode) {
-				case DWT.F9: case DWT.F10:
-					// F10 is deprecated, as it is the standard key for opening
-					// the menu on Windows.
+				case DWT.F9:
 					if ((e.stateMask & DWT.MODIFIER_MASK) == 0)
 						onRemoteConsole();
 					break;
