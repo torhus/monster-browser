@@ -92,7 +92,7 @@ struct GameConfig
 	bool useGslist() /// Use gslist instead of qstat when querying master?
 	{
 		char[] r = section["useGslist"];
-		return r ? (r == "true") : true;
+		return r ? (r == "true") : false;
 	}
 
 	/// Enable Enemy Territory-style extended color codes (31 colors)?
@@ -162,7 +162,6 @@ mod=WorldofPadman
 regKey=HKEY_LOCAL_MACHINE\SOFTWARE\Padworld Entertainment\Path
 exeName=wop.exe
 exePath=%ProgramFiles%\World of Padman 1.5\wop.exe
-useGslist=false
 masterServer=master.worldofpadman.com:27955
 protocolVersion=71
 qstatMasterServerType=worldofpadmanm
@@ -179,7 +178,6 @@ exeName=tremulous.exe
 exePath=%ProgramFiles%\Tremulous\tremulous.exe
 masterServer=master.tremulous.net:30710
 protocolVersion=69
-useGslist=false
 
 [baseq3]
 
