@@ -151,6 +151,7 @@ mod=smokinguns
 regKey=HKEY_LOCAL_MACHINE\SOFTWARE\Smokin' Guns Productions\Smokin' Guns\InstallPath
 exeName=smokinguns.exe
 exePath=%ProgramFiles%\Smokin' Guns\smokinguns.exe
+masterServer=master.smokin-guns.org
 
 [World of Padman]
 mod=WorldofPadman
