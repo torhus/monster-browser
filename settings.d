@@ -40,7 +40,7 @@ struct GameConfig
 
 	char[] masterServer()  /// Like "master3.idsoftware.com".
 	{
-		return section.getValue("masterServer", "master3.idsoftware.com");
+		return section.getValue("masterServer", "master.ioquake3.org");
 	}
 
 	char[] protocolVersion()  /// Defaults to 68.
