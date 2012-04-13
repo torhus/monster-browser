@@ -139,7 +139,7 @@ private {
 ; exePath - Only used if regKey or exeName are missing. If exePath is missing
 ;           too, gamePath from the global settings is used instead.
 ;           example: exePath=C:\Program Files\My Game\mygame.exe
-; masterServer    - defaults to master3.idsoftware.com
+; masterServer    - defaults to master.ioquake3.org
 ; protocolVersion - defaults to 68
 ; qstatMasterServerType - Defaults to q3m.
 ; qstatConfigFile - Value to use for Qstat's -cfg parameter.
