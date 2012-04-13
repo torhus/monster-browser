@@ -11,6 +11,7 @@ import tango.stdc.stdio;
 
 import common;
 import ini;
+import messageboxes;
 
 version (Windows) {
 	import tango.stdc.stringz;
@@ -120,6 +121,7 @@ struct GameConfig
 
 char[][] gameNames;  /// The names of all games loaded from the config file.
 char[] gamesFileName;  /// Name of the file containing options for each game.
+char[] backupGamesFileName;  /// ditto
 
 private {
 	char[] settingsFileName;
@@ -201,7 +203,8 @@ useGslist=false
 	                      {"windowSize", "800x568"},
 	                     ];
 
-	Setting[] defaultSessionState = [{"filterState", "0"},
+	Setting[] defaultSessionState = [{"programVersion", "0.0"},
+	                                 {"filterState", "0"},
 	                                 {"playerSortOrder", "0"},
 	                                 {"resolution", "0, 0"},
 	                                 {"serverSortOrder", "1"},
@@ -269,7 +272,10 @@ void loadGamesFile()
 
 	if (!Path.exists(gamesFileName))
 		writeDefaultGamesFile();
+	else if (!gamesIni && getSessionState("programVersion") < "0.8a")
+		updateGameConfiguration();
 
+	// load the file now that we know it's there
 	delete gamesIni;
 	gamesIni = new Ini(gamesFileName);
 
@@ -349,6 +355,7 @@ void loadSettings()
 	loadSessionState();
 
 	gamesFileName = dataDir ~ "mods.ini";
+	backupGamesFileName = gamesFileName ~ ".autobackup";
 	loadGamesFile();
 }
 
@@ -358,6 +365,9 @@ void loadSettings()
  */
 void saveSettings()
 {
+	if (getSessionState("programVersion") != FINAL_VERSION)
+		setSessionState("programVersion", FINAL_VERSION);
+
 	if (settingsIni.modified) {
 		settingsIni.save();
 	}
@@ -492,6 +502,25 @@ void setSessionState(in char[] key, in char[] value)
 
 	assert(sec[key]);
 	sec[key] = value;
+}
+
+
+/**
+ *
+ */
+private void updateGameConfiguration()
+{
+	assert(Path.exists(gamesFileName));
+	try {
+		Path.rename(gamesFileName, backupGamesFileName);
+		info("The game configuration was updated.\n\nYour old configuration "
+		     "was backed up to \"{}\".", backupGamesFileName);
+	}
+	catch (IOException e) {
+		warning("Renaming \"{}\" to \"{}\" failed.  The game configuration "
+		        "was not updated.\n\nError: \"{}\"",
+		        gamesFileName, backupGamesFileName, e);
+	}
 }
 
 
