@@ -96,10 +96,11 @@ struct GameConfig
 	}
 
 	/// Enable Enemy Territory-style extended color codes (31 colors)?
+	/// Off by default.
 	bool useEtColors()
 	{
-		// just testing for now
-		return arguments.colortest && mod == "smokinguns";
+		char[] r = section["etColors"];
+		return r ? (r == "true") : false;
 	}
 
 	/// Value to use for Qstat's -cfg parameter.
@@ -141,6 +142,8 @@ private {
 ;           example: exePath=C:\Program Files\My Game\mygame.exe
 ; masterServer    - defaults to master.ioquake3.org
 ; protocolVersion - defaults to 68
+; etColors - Set to true to enable Enemy Territory-style extended color codes (31 colors).
+;            See http://wolfwiki.anime.net/index.php/Color_Codes for more information.
 ; qstatMasterServerType - Defaults to q3m.
 ; qstatConfigFile - Value to use for Qstat's -cfg parameter.
 ;
@@ -152,6 +155,7 @@ regKey=HKEY_LOCAL_MACHINE\SOFTWARE\Smokin' Guns Productions\Smokin' Guns\Install
 exeName=smokinguns.exe
 exePath=%ProgramFiles%\Smokin' Guns\smokinguns.exe
 masterServer=master.smokin-guns.org
+etColors=true
 
 [World of Padman]
 mod=WorldofPadman

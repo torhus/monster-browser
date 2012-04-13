@@ -42,7 +42,6 @@ static:
 	bool fromfile  = false;  ///
 	bool norefresh = false;  ///
 	bool quit      = false;  ///
-	bool colortest = false;  ///
 }
 
 
@@ -445,9 +444,6 @@ void parseCmdLine(char[][] args)
 				break;
 			case "quit":
 				arguments.quit = true;
-				break;
-			case "colortest":
-				arguments.colortest = true;
 				break;
 			default:
 				log("UNRECOGNIZED ARGUMENT: " ~ arg);
