@@ -2,7 +2,9 @@
 
 module dialogs;
 
+import tango.core.Exception;
 import tango.io.device.File;
+import tango.net.InternetAddress;
 import Integer = tango.text.convert.Integer;
 import tango.text.Util;
 
@@ -221,7 +223,8 @@ class SpecifyServerDialog
 
 		addressComposite.setLayout(new GridLayout);
 		Label labelB = new Label(addressComposite, DWT.NONE);
-		labelB.setText("Address (123.123.123.123 or 123.123.123.123:12345):");
+		labelB.setText("Please specify an IP address or host name, " ~
+		                               "with an optional port number:");
 		addressText_ = new Text(addressComposite, DWT.SINGLE | DWT.BORDER);
 		auto addressTextData = new GridData();
 		addressTextData.horizontalAlignment = DWT.CENTER;
@@ -271,8 +274,6 @@ class SpecifyServerDialog
 
 	bool open()
 	{
-		addressText_.setText(address);
-		addressText_.selectAll();
 		shell_.open();
 		Display display = Display.getDefault;
 		while (!shell_.isDisposed()) {
@@ -287,15 +288,25 @@ class SpecifyServerDialog
 	private class OkButtonListener : Listener {
 		void handleEvent (Event event)
 		{
-			result_ = DWT.OK;
-			address = trim(addressText_.getText);
+			shell_.setEnabled(false);
 
-			if (!isValidIpAddress(address)) {
-				error("Invalid address");
+			result_ = DWT.OK;
+			char[] input = trim(addressText_.getText());
+			char[] address = null;
+
+			try {
+				// Parse the address using the default Quake 3 port, 27960, as
+				// the default.
+				address = (new InternetAddress(input, 27960)).toString();
+			}
+			catch (SocketException e) {
+				error(e.toString());
+				shell_.setEnabled(true);
 				addressText_.setFocus();
 				addressText_.selectAll();
 			}
-			else {
+
+			if (address) {
 				ServerList serverList = serverTable.serverList;
 				MasterList master = serverList.master;
 				ServerHandle sh = master.findServer(address);
@@ -338,7 +349,6 @@ class SpecifyServerDialog
 	private {
 		Shell parent_, shell_;
 		Button okButton_, cancelButton_, saveButton_;
-		char[] address = "";
 		Text addressText_;
 		int result_ = DWT.CANCEL;
 	}
