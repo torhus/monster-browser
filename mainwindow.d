@@ -299,7 +299,8 @@ class StatusBar : Composite
 	}
 
 
-	void showProgress(in char[] label, bool indeterminate=false)
+	void showProgress(in char[] label, bool indeterminate=false, int total=0,
+	                                                           int progress=0)
 	{
 		if (isDisposed())
 			return;
@@ -320,13 +321,14 @@ class StatusBar : Composite
 			}
 			else {
 				tbProgress_.setProgressState(TBPF_NORMAL);
-				tbProgress_.setProgressValue(0, 100);
+				tbProgress_.setProgressValue(progress, total);
 			}
 		}
 
 		setProgressLabel(label);
 		progressBar_.setState(DWT.NORMAL);
-		progressBar_.setSelection(0);
+		progressBar_.setMaximum(total);
+		progressBar_.setSelection(progress);
 		progressLabel_.setVisible(true);
 		progressBar_.setVisible(true);
 	}
