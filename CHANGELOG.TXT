@@ -1,10 +1,12 @@
-Work in progress - 2012-04-19
------------------------------
+v0.8a - 2012-04-21
+------------------
 - New: Support for World of Padman 1.6, plus updated settings.
 - New: Support Smokin' Guns extended color codes for player and server names.
 - New: The "Add..." dialog now accepts host names.
 - Change: Updated Smokin' Guns master server to master.smokin-guns.org.
 - Change: Use master.ioquake3.org as the default master server.
+- Change: The progress bar is only filled once when querying servers in
+          multiple batches.
 - Fix: A couple of crashes fixed.
 
 
