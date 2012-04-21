@@ -7,7 +7,7 @@
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
 AppId={{E5D3BD22-CD4C-4823-A383-3971BCE0052C}
 AppName=Monster Browser
-AppVerName=Monster Browser 0.8
+AppVerName=Monster Browser 0.8a
 AppPublisherURL=http://sites.google.com/site/monsterbrowser/
 AppSupportURL=http://sites.google.com/site/monsterbrowser/
 AppUpdatesURL=http://sites.google.com/site/monsterbrowser/
@@ -17,7 +17,7 @@ DisableWelcomePage=yes
 AllowNoIcons=yes
 SourceDir=..
 OutputDir=misc
-OutputBaseFilename=Monster Browser 0.8 Setup
+OutputBaseFilename=Monster Browser 0.8a Setup
 Compression=lzma
 SolidCompression=yes
 
@@ -35,6 +35,7 @@ Source: "CHANGELOG.TXT"; DestDir: "{app}"; Flags: ignoreversion
 Source: "GeoIP.dat"; DestDir: "{app}"; Flags: ignoreversion
 Source: "GeoIP.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "qstat.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "worldofpadman.cfg"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
