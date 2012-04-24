@@ -50,6 +50,8 @@ Credits
 -------
 Monster Browser uses:
 
+Qstat for querying servers - http://qstat.sourceforge.net
+
 GeoLite Country from maxmind.com.
 
 Function Free Icon set by Function Design & Development Studio
