@@ -1,3 +1,8 @@
+Work in progress - 2012-04-26
+-----------------------------
+- New: A new application icon, made by Biondo.
+
+
 v0.8a - 2012-04-21
 ------------------
 - New: Support for World of Padman 1.6, plus updated settings.

@@ -48,9 +48,9 @@ Esc    - Abort action
 
 Credits
 -------
-Monster Browser uses:
-
 Qstat for querying servers - http://qstat.sourceforge.net
+
+Thanks to Biondo for making the application icon that's used for Monster Browser 0.8b and later.
 
 GeoLite Country from maxmind.com.
 
