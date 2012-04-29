@@ -3,6 +3,7 @@
 module settings;
 
 import tango.core.Exception;
+import tango.io.device.File;
 import Path = tango.io.Path;
 import tango.text.Ascii;
 import tango.text.Util;
@@ -304,13 +305,19 @@ private void writeDefaultGamesFile()
 {
 	char[] text = defaultGamesFile;
 
-	version (Windows)
+	version (Windows) {
 		text = substitute(text, "%ProgramFiles%", getProgramFilesDirectory());
+		text = substitute(text, "\n", "\r\n");
+	}
 
-	// Use C IO to get line ending translation.
-	FILE* f = fopen((gamesFileName ~ '\0').ptr, "w");
-	fwrite(text.ptr, 1, text.length, f);
-	fclose(f);
+	try {
+		File.set(gamesFileName, text);
+	}
+	catch (IOException e) {
+		error("Creating \"{}\" failed.  Monster Browser will not function "
+		      "properly without this file.\n\nError: \"{}\"",
+		      gamesFileName, e);
+	}
 }
 
 
@@ -518,6 +525,7 @@ private void updateGameConfiguration()
 		Path.rename(gamesFileName, backupGamesFileName);
 		info("The game configuration was updated.\n\nYour old configuration "
 		     "was backed up to \"{}\".", backupGamesFileName);
+		writeDefaultGamesFile();
 	}
 	catch (IOException e) {
 		warning("Renaming \"{}\" to \"{}\" failed.  The game configuration "

@@ -1,6 +1,8 @@
 Work in progress - 2012-04-26
 -----------------------------
 - New: A new application icon, made by Biondo.
+- Fix: Report the error if unable to create mods.ini.  Related to the issue
+       some people where having on Windows XP.
 
 
 v0.8a - 2012-04-21
