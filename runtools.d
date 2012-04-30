@@ -87,7 +87,7 @@ Set!(char[]) browserGetNewList(in GameConfig game, bool gslist)
 			lines.next();
 
 			if (!gslist) {
-				char[] line1 = lines.get();
+				char[] line1 = lines.get().dup;
 				char[] line2 = lines.next();
 				throwIfQstatError(line1, line2, proc.stderr, game);
 			}
