@@ -76,7 +76,7 @@ StopWatch globalTimer;
 bool userAbort = false;
 
 /// Is there a console available for output?
-bool haveConsole;
+bool haveConsole = false;
 
 
 // Add dispose() methods etc. to this array, and they will be called at
@@ -103,7 +103,8 @@ void initLogging(char[] fileName="LOG.TXT")
 	assert(logDir);
 	char[] path = logDir ~ fileName;
 
-	Log.root.add(new AppendConsole(new LayoutConsole));
+	if (haveConsole)
+		Log.root.add(new AppendConsole(new LayoutConsole));
 
 	// limit file size
 	if (Path.exists(path) && Path.fileSize(path) > 1024 * 100)
