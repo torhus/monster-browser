@@ -100,9 +100,6 @@ final class ServerList
 			ServerData sd = master_.getServerData(sh);
 			bool removed = removeFromFiltered(sd.server[ServerColumn.ADDRESS]);
 
-			if (sd.customData)
-				sd.customData.dispose();
-
 			if (!removed) {
 				// adding as a new server
 				ipHash_[sd.server[ServerColumn.ADDRESS]] = -1;
