@@ -525,21 +525,15 @@ private:
 				case ServerColumn.NAME:
 					auto textX = e.x + leftMargin;
 					if (!(e.detail & DWT.SELECTED)) {
-						// FIXME: this caching is broken now
-						TextLayout tl = sd.customData;
-						if (tl is null) {
-							tl = new TextLayout(Display.getDefault);
-							tl.setText(sd.server[ServerColumn.NAME]);
-							bool useEtColors = serverList_.useEtColors;
-							auto name = parseColors(sd.rawName, useEtColors);
-							foreach (r; name.ranges)
-								tl.setStyle(r.style, r.start, r.end);
+						TextLayout tl = new TextLayout(Display.getDefault);
+						tl.setText(sd.server[ServerColumn.NAME]);
 
-							sd.customData = tl;  // cache it
-						}
+						bool useEtColors = serverList_.useEtColors;
+						auto name = parseColors(sd.rawName, useEtColors);
+						foreach (r; name.ranges)
+							tl.setStyle(r.style, r.start, r.end);
 
 						tl.draw(e.gc, textX, e.y);
-						// FIXME: don't dispose if caching it
 						tl.dispose();
 					}
 					else {
