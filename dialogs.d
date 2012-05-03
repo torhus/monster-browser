@@ -4,6 +4,7 @@ module dialogs;
 
 import tango.core.Exception;
 import tango.io.device.File;
+import tango.io.Path;
 import tango.net.InternetAddress;
 import Integer = tango.text.convert.Integer;
 import tango.text.Util;
@@ -408,14 +409,20 @@ class SettingsDialog
 		int val = Integer.convert(getSetting("simultaneousQueries"), 10, &ate);
 		sqSpinner_.setSelection(ate > 0 ? val : 10);
 
-		// games button
+		// game configuration
 		Button gamesButton = new Button(mainComposite, DWT.PUSH);
 		gamesButton.setText("Game configuration");
-		//gamesButton.setLayoutData(new GridData(BUTTON_SIZE));
 		gamesButton.addSelectionListener(new class SelectionAdapter {
 			public void widgetSelected(SelectionEvent e)
 			{
-				Program.launch(settings.gamesFileName);
+				try {
+					lastModified_ = modified(settings.gamesFileName);
+					Program.launch(settings.gamesFileName);
+					checkGameConfig_ = true;
+				}
+				catch (IOException e) {
+					error(e.toString());
+				}
 			}
 		});
 
@@ -451,9 +458,19 @@ class SettingsDialog
 					int sq = sqSpinner_.getSelection();
 					setSetting("simultaneousQueries", Integer.toString(sq));
 				}
+
 				// in case the game list was edited
-				settings.loadGamesFile();
-				filterBar.setGames(settings.gameNames);
+				if (checkGameConfig_) {
+					try {
+						if (modified(gamesFileName) > lastModified_) {
+							settings.loadGamesFile();
+							filterBar.setGames(settings.gameNames);
+						}
+					}
+					catch (IOException e) {
+						error(e.toString());
+					}
+				}
 
 				shell_.close();
 			}
@@ -482,6 +499,8 @@ private:
 	Shell parent_, shell_;
 	Button okButton_, cancelButton_;
 	Button startupDefaultButton_, startupLastButton_;
+	bool checkGameConfig_ = false;
+	Time lastModified_;
 	Text pathText_;
 	int result_ = DWT.CANCEL;
 	Spinner sqSpinner_;
