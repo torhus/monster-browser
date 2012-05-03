@@ -1,6 +1,7 @@
-Work in progress - 2012-04-26
+Work in progress - 2012-05-03
 -----------------------------
 - New: A new application icon, made by Biondo.
+- Change: Reload mods.ini only if it was modified.
 - Fix: Report the error if unable to create mods.ini.  Related to the issue
        some people where having on Windows XP.
 
