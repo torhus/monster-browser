@@ -386,7 +386,7 @@ class SettingsDialog
 		auto startupLayout = new GridLayout();
 		startupGroup.setLayout(startupLayout);
 		startupDefaultButton_ = new Button(startupGroup, DWT.RADIO);
-		startupDefaultButton_.setText("Default game");
+		startupDefaultButton_.setText("First game");
 		startupLastButton_ = new Button(startupGroup, DWT.RADIO);
 		startupLastButton_.setText("Last used game");
 
