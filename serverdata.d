@@ -3,6 +3,7 @@ module serverdata;
 debug import tango.core.Thread;
 import tango.stdc.ctype;
 import tango.text.Ascii;
+debug import tango.text.convert.Format;
 import tango.text.Util;
 import Integer = tango.text.convert.Integer;
 debug import tango.util.log.Log;
@@ -170,8 +171,8 @@ bool matchGame(in ServerData* sd, in GameConfig game)
 	}
 
 	debug if (gameMatched) {
-		log("Skipped (game matched) {} ({})", sd.server[ServerColumn.NAME], 
-		                                      sd.server[ServerColumn.ADDRESS]);
+		log(Format("Skipped (game matched) {} ({})",
+		       sd.server[ServerColumn.NAME], sd.server[ServerColumn.ADDRESS]));
 	}
 
 	static if (MOD_ONLY)
