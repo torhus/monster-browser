@@ -64,6 +64,8 @@ void joinServer(in char[] gameName, ServerData sd)
 		if (pw.length > 0)
 			argv ~= " +set password " ~ pw;
 
+		log("Launching game: " ~ pathString ~ " " ~ argv);
+
 		version (Windows) {
 			FilePath path = FilePath(pathString);
 			char buf[MAX_PATH];
