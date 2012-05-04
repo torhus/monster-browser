@@ -35,6 +35,7 @@ void joinServer(in char[] gameName, ServerData sd)
 	GameConfig game = getGameConfig(gameName);
 	char[] pathString = game.exePath;
 	bool launch = true;
+	int i;
 
 	if (!pathString) {
 		error("No path found for " ~ gameName ~
@@ -42,12 +43,16 @@ void joinServer(in char[] gameName, ServerData sd)
 		return;
 	}
 
-	if (MOD_ONLY) {
-		argv = "+set fs_game " ~ game.mod;
+	i = findString(sd.cvars, "game", 0);
+	if (i != -1) {
+		char[] s = sd.cvars[i][1];
+		if (s.length > 0)
+			argv = "+set fs_game " ~ s;
 	}
-	argv ~= " +connect " ~ address;
 
-	int i = findString(sd.cvars, "g_needpass", 0);
+	argv ~= "+connect " ~ address;
+
+	i = findString(sd.cvars, "g_needpass", 0);
 	if (i != -1 && sd.cvars[i][1] == "1" && getPassword(address).length == 0) {
 		char[] message = "Join \"" ~ sd.server[ServerColumn.NAME] ~ "\"\n\n" ~
 		                          "You need a password to join this server.\n";
