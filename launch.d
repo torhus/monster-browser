@@ -35,7 +35,6 @@ void joinServer(in char[] gameName, ServerData sd)
 	GameConfig game = getGameConfig(gameName);
 	char[] pathString = game.exePath;
 	bool launch = true;
-	bool showDialog = false;
 
 	if (!pathString) {
 		error("No path found for " ~ gameName ~
