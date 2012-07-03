@@ -24,6 +24,7 @@ import common;
 import link;
 import mainwindow;
 import messageboxes;
+import runtools;
 import serveractions;
 import servertable;
 import settings;
@@ -142,6 +143,7 @@ private void _main(char[][] args)
 	mainWindow.open();
 
 	serverTable.getTable.setFocus();
+	runtoolsInit();
 	switchToGame(filterBar.selectedGame);
 
 	// main loop
