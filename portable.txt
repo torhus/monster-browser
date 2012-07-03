@@ -1,0 +1,3 @@
+When Monster Browser finds this file (portable.txt), it will run in portable
+mode.  In this mode, all settings and data files are stored in the same folder
+as MonsterBrowser.exe.
