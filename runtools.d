@@ -24,10 +24,17 @@ import settings;
 
 
 private Process proc;
+private Object procMutex;
 
 
 class MasterServerException : Exception {
 	this(char[] msg) { super(msg); }
+}
+
+
+void runtoolsInit()
+{
+	procMutex = new Object;
 }
 
 
@@ -41,6 +48,7 @@ Set!(char[]) browserGetNewList(in GameConfig game, bool gslist)
 {
 	char[] cmdLine;
 	Set!(char[]) addresses;
+	InputStream stdout_copy, stderr_copy;
 
 	version (linux)
 		cmdLine ~= "./";
@@ -66,22 +74,29 @@ Set!(char[]) browserGetNewList(in GameConfig game, bool gslist)
 		           " AND (protocol=" ~ game.protocolVersion ~ ")\"";
 
 	try {
-		proc = new Process(true, cmdLine);
-		proc.workDir = appDir;
-		proc.gui = true;
-		log("Executing '" ~ cmdLine ~ "'.");
-		proc.execute();
+		synchronized (procMutex) {
+			proc = new Process(true, cmdLine);
+			proc.workDir = appDir;
+			proc.gui = true;
+			log("Executing '" ~ cmdLine ~ "'.");
+			proc.execute();
+			// Copy these in case proc is null when we try to use them later.
+			stdout_copy = proc.stdout;
+			stderr_copy = proc.stderr;
+		}
 	}
 	catch (ProcessException e) {
 		char[] s = gslist ? "gslist" : "qstat";
 		error(s ~ " not found! Please reinstall " ~ APPNAME ~ ".");
 		logx(__FILE__, __LINE__, e);
-		proc = null;
+		synchronized (procMutex) {
+			proc = null;
+		}
 	}
 
 	if (proc) {
 		try {
-			auto lines = new Lines!(char)(proc.stdout);
+			auto lines = new Lines!(char)(stdout_copy);
 			size_t start = gslist ? 0 : "q3s ".length;
 
 			lines.next();
@@ -89,7 +104,7 @@ Set!(char[]) browserGetNewList(in GameConfig game, bool gslist)
 			if (!gslist) {
 				char[] line1 = lines.get().dup;
 				char[] line2 = lines.next();
-				throwIfQstatError(line1, line2, proc.stderr, game);
+				throwIfQstatError(line1, line2, stderr_copy, game);
 			}
 
 			do {
@@ -115,7 +130,7 @@ private void throwIfQstatError(in char[] line1, in char[] line2,
                                InputStream stderr, in GameConfig game)
 {
 	if (!line1.startsWith("ADDRESS")) {
-		char[] error = cast(char[])proc.stderr.load();
+		char[] error = cast(char[])stderr.load();
 		if (error.length)
 			throw new MasterServerException(trim(error));
 		else
@@ -269,24 +284,33 @@ final class QstatServerRetriever : IServerRetriever
 
 			cmdLine ~= " -maxsim " ~ getSetting("simultaneousQueries");
 
-			proc = new Process(true, cmdLine);
-			proc.workDir = appDir;
-			proc.gui = true;
-			log("Executing '" ~ cmdLine ~ "'.");
-			proc.execute();
+			synchronized (procMutex) {
+				proc = new Process(true, cmdLine);
+				proc.workDir = appDir;
+				proc.gui = true;
+				log("Executing '" ~ cmdLine ~ "'.");
+				proc.execute();
+				// Copy stdout in case proc is null when we try to access it
+				// later.
+				stdout_copy_ = proc.stdout;
+			}
 
 			if (arguments.dumplist)
 				dumpFile = new File("refreshlist.tmp", File.WriteCreate);
 
-			foreach (address; addresses_) {
-				proc.stdin.write(address);
-				proc.stdin.write(newline);
-				if (dumpFile) {
-					dumpFile.write(address);
-					dumpFile.write(newline);
+			synchronized (procMutex) {
+				if (proc) {
+					foreach (address; addresses_) {
+						proc.stdin.write(address);
+						proc.stdin.write(newline);
+						if (dumpFile) {
+							dumpFile.write(address);
+							dumpFile.write(newline);
+						}
+					}
+					proc.stdin.flush.close;
 				}
 			}
-			proc.stdin.flush.close;
 			log(Format("Fed {} addresses to qstat.", addresses_.length));
 
 			scope (exit) if (dumpFile)
@@ -304,7 +328,7 @@ final class QstatServerRetriever : IServerRetriever
 	///
 	void retrieve(bool delegate(ServerHandle sh, bool replied) deliver)
 	{
-		scope iter = new Lines!(char)(proc.stdout);
+		scope iter = new Lines!(char)(stdout_copy_);
 		// FIXME: verify that everything is initialized correctly, and that
 		// stdout is valid
 
@@ -333,6 +357,7 @@ final class QstatServerRetriever : IServerRetriever
 		GameConfig game_;
 		MasterList master_;
 		bool replace_;
+		InputStream stdout_copy_;
 	}
 }
 
@@ -344,17 +369,24 @@ final class QstatServerRetriever : IServerRetriever
  */
 bool killServerBrowser()
 {
-	if (proc is null || !proc.isRunning)
-		return false;
+	synchronized (procMutex) {
+		if (proc is null)
+			return false;
 
-	try {
-		proc.kill();
-		proc = null;
-	}
-	catch (ProcessException e) {
-		// Since isRunning doesn't actually check if the process is still
-		// running, this exception will happen all the time.
-		//logx(__FILE__, __LINE__, e);
+		if (!proc.isRunning) {
+			proc = null;
+			return false;
+		}
+
+		try {
+			proc.kill();
+			proc = null;
+		}
+		catch (ProcessException e) {
+			// Since isRunning doesn't actually check if the process is still
+			// running, this exception will happen all the time.
+			//logx(__FILE__, __LINE__, e);
+		}
 	}
 	return true;
 }

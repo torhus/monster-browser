@@ -1,10 +1,13 @@
-Work in progress - 2012-05-03
+Work in progress - 2012-07-03
 -----------------------------
 - New: A new application icon, made by Biondo.
 - Change: Don't repopulate the game list dropdown unless mods.ini was edited.
           Check the file modification time to know.
 - Fix: Report the error if unable to create mods.ini.  Related to the issue
        some people where having on Windows XP.
+- Fix: Fixed a bug that caused getting new servers to fail when running on
+       Wine.
+- Fix: Remove some potentials hangs when interrupting the Qstat process.
 
 
 v0.8a - 2012-04-21
