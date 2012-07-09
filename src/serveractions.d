@@ -424,13 +424,6 @@ void checkForNewServers()
 			}));
 		}
 		else {
-			// if it's only a few servers, do it all in one go
-			if (count < 100 || addresses.length == 0) {
-				foreach (addr; addresses2)
-					addresses.add(addr);
-				addresses2.clear();
-			}
-
 			auto updater = new StatusBarUpdater(addresses.length +
 			                                    addresses2.length);
 
@@ -440,15 +433,13 @@ void checkForNewServers()
 			                                                  addresses, true);
 			auto contr = new ServerRetrievalController(retriever, false,
 			                                      !addresses2.length, updater);
-			// FIXME: Which total should be used here?
 			char[] message = Format("Got {} servers, querying", total);
-			if (addresses2.length) {
-				contr.progressLabel = message ~ Format(" {} new first",
-				                                       addresses.length);
-			}
-			else {
+			if (addresses.length < total)
+				contr.progressLabel = message ~ Format(" {} new",
+			                                     addresses.length);
+			else
 				contr.progressLabel = message;
-			}
+
 			contr.run();
 
 			if (addresses2.length) {
