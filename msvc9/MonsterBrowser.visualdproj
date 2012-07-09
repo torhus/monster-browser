@@ -1,6 +1,6 @@
 <DProject>
  <ProjectGuid>{4F0EB67F-115E-4553-BBBD-0231802AA9A0}</ProjectGuid>
- <Config name="Debug">
+ <Config name="Debug" platform="Win32">
   <obj>0</obj>
   <link>0</link>
   <lib>0</lib>
@@ -35,15 +35,18 @@
   <preservePaths>0</preservePaths>
   <warnings>0</warnings>
   <infowarnings>0</infowarnings>
+  <checkProperty>0</checkProperty>
+  <genStackFrame>0</genStackFrame>
   <pic>0</pic>
   <cov>0</cov>
   <nofloat>0</nofloat>
   <Dversion>1</Dversion>
   <ignoreUnsupportedPragmas>0</ignoreUnsupportedPragmas>
+  <compiler>0</compiler>
   <otherDMD>0</otherDMD>
   <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
-  <imppath>d:\prog\import\tango</imppath>
-  <fileImppath>. flags icons res</fileImppath>
+  <imppath>..\;d:\prog\import\tango</imppath>
+  <fileImppath>. ..\flags ..\icons ..\res</fileImppath>
   <outdir>$(ConfigurationName)</outdir>
   <objdir>$(OutDir)</objdir>
   <objname />
@@ -78,19 +81,21 @@
   <libpaths />
   <deffile />
   <resfile />
-  <exefile>$(ProjectName).exe</exefile>
-  <additionalOptions>-L/rc:mb.res -L/rc:dwt.res -L/su:windows:4</additionalOptions>
-  <preBuildCommand>svnversion -n . trunk &gt; svnversion.txt</preBuildCommand>
-  <postBuildCommand />
+  <exefile>..\$(ProjectName).exe</exefile>
+  <additionalOptions>-L/rc:..\misc\mb.res -L/rc:..\misc\dwt.res -L/su:windows:4</additionalOptions>
+  <preBuildCommand>svnversion -n .. trunk &gt; svnversion.txt</preBuildCommand>
+  <postBuildCommand>del svnversion.txt</postBuildCommand>
   <debugtarget>$(TARGETPATH)</debugtarget>
   <debugarguments />
   <debugworkingdir />
   <debugattach>0</debugattach>
   <debugremote />
   <debugEngine>0</debugEngine>
+  <debugStdOutToOutputWindow>0</debugStdOutToOutputWindow>
+  <pauseAfterRunning>0</pauseAfterRunning>
   <filesToClean>*.obj;*.cmd;*.build;*.json;*.dep</filesToClean>
  </Config>
- <Config name="Release (not used)">
+ <Config name="Release (not used)" platform="Win32">
   <obj>0</obj>
   <link>0</link>
   <lib>0</lib>
@@ -125,15 +130,18 @@
   <preservePaths>0</preservePaths>
   <warnings>0</warnings>
   <infowarnings>0</infowarnings>
+  <checkProperty>0</checkProperty>
+  <genStackFrame>0</genStackFrame>
   <pic>0</pic>
   <cov>0</cov>
   <nofloat>0</nofloat>
   <Dversion>1</Dversion>
   <ignoreUnsupportedPragmas>0</ignoreUnsupportedPragmas>
+  <compiler>0</compiler>
   <otherDMD>0</otherDMD>
   <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
-  <imppath>d:\prog\import\tango</imppath>
-  <fileImppath>. flags icons res</fileImppath>
+  <imppath>..\;d:\prog\import\tango</imppath>
+  <fileImppath>. ..\flags ..\icons ..\res</fileImppath>
   <outdir>$(ConfigurationName)</outdir>
   <objdir>$(OutDir)</objdir>
   <objname />
@@ -168,49 +176,51 @@
   <libpaths />
   <deffile />
   <resfile />
-  <exefile>$(ProjectName).exe</exefile>
-  <additionalOptions>-L/rc:mb.res -L/rc:dwt.res -L/su:windows:4</additionalOptions>
-  <preBuildCommand />
-  <postBuildCommand />
+  <exefile>..\$(ProjectName).exe</exefile>
+  <additionalOptions>-L/rc:..\misc\mb.res -L/rc:..\misc\dwt.res -L/su:windows:4</additionalOptions>
+  <preBuildCommand>svnversion -n .. trunk &gt; svnversion.txt</preBuildCommand>
+  <postBuildCommand>del svnversion.txt</postBuildCommand>
   <debugtarget>$(TARGETPATH)</debugtarget>
   <debugarguments />
   <debugworkingdir />
   <debugattach>0</debugattach>
   <debugremote />
   <debugEngine>0</debugEngine>
+  <debugStdOutToOutputWindow>0</debugStdOutToOutputWindow>
+  <pauseAfterRunning>0</pauseAfterRunning>
   <filesToClean>*.obj;*.cmd;*.build;*.json;*.dep</filesToClean>
  </Config>
  <Folder name="MonsterBrowser">
   <Folder name="mswindows">
-   <File path="mswindows\taskbarlist.d" />
-   <File path="mswindows\taskbarprogress.d" />
-   <File path="mswindows\util.d" />
+   <File path="..\src\mswindows\taskbarlist.d" />
+   <File path="..\src\mswindows\taskbarprogress.d" />
+   <File path="..\src\mswindows\util.d" />
   </Folder>
-  <File path="colorednames.d" />
-  <File path="common.d" />
-  <File path="cvartable.d" />
-  <File path="dialogs.d" />
-  <File path="flagdata.d" />
-  <File tool="None" path="genflagdata.d" />
-  <File path="geoip.d" />
-  <File path="ini.d" />
-  <File path="launch.d" />
-  <File path="link.d" />
-  <File path="main.d" />
-  <File path="mainwindow.d" />
-  <File path="masterlist.d" />
-  <File path="messageboxes.d" />
-  <File path="playertable.d" />
-  <File path="qstat.d" />
-  <File path="rcon.d" />
-  <File path="runtools.d" />
-  <File path="serveractions.d" />
-  <File path="serverdata.d" />
-  <File path="serverlist.d" />
-  <File path="serverqueue.d" />
-  <File path="servertable.d" />
-  <File path="set.d" />
-  <File path="settings.d" />
-  <File path="threadmanager.d" />
+  <File path="..\src\colorednames.d" />
+  <File path="..\src\common.d" />
+  <File path="..\src\cvartable.d" />
+  <File path="..\src\dialogs.d" />
+  <File path="..\src\flagdata.d" />
+  <File tool="None" path="..\misc\genflagdata.d" />
+  <File path="..\src\geoip.d" />
+  <File path="..\src\ini.d" />
+  <File path="..\src\launch.d" />
+  <File path="..\src\link.d" />
+  <File path="..\src\main.d" />
+  <File path="..\src\mainwindow.d" />
+  <File path="..\src\masterlist.d" />
+  <File path="..\src\messageboxes.d" />
+  <File path="..\src\playertable.d" />
+  <File path="..\src\qstat.d" />
+  <File path="..\src\rcon.d" />
+  <File path="..\src\runtools.d" />
+  <File path="..\src\serveractions.d" />
+  <File path="..\src\serverdata.d" />
+  <File path="..\src\serverlist.d" />
+  <File path="..\src\serverqueue.d" />
+  <File path="..\src\servertable.d" />
+  <File path="..\src\set.d" />
+  <File path="..\src\settings.d" />
+  <File path="..\src\threadmanager.d" />
  </Folder>
 </DProject>
