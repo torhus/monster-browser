@@ -10,15 +10,20 @@ geoip.dll
 qstat.exe
 glist.exe
 
-# Files and directories created when building
+# Files and directories by build tools, etc
 debug
 debug-gui
 release
 release-console
 profile
 docs
+Debug
 MonsterBrowser.exe
+MonsterBrowser.exe_cv
+MonsterBrowser.obj
+MonsterBrowser.pdb
 MonsterBrowser.map
+MonsterBrowser.suo
 svnversion.txt
 
 # Files created by Monster Browser when running
