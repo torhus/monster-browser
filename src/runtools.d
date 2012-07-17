@@ -204,22 +204,7 @@ final class MasterListServerRetriever : IServerRetriever
 	///
 	int prepare()
 	{
-		bool error = false;
-
-		try {
-			if (master_.length == 0 && !master_.load(game_.protocolVersion))
-				error = true;
-		}
-		catch (IOException o) {
-			error = true;
-		}
-
-		if (error) {
-			warning("Unable to load the server list from disk, "
-			                "press \'Check for New\' to download a new list.");
-		}
-
-		return error ? 0 : master_.length;
+		return master_.length;
 	}
 
 
