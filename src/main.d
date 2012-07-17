@@ -144,7 +144,11 @@ private void _main(char[][] args)
 
 	serverTable.getTable.setFocus();
 	runtoolsInit();
-	switchToGame(filterBar.selectedGame);
+	
+	if (settings.gameNames.length == 0)
+		error("No valid game configurations were found.");
+	else
+		switchToGame(filterBar.selectedGame);
 
 	// main loop
 	Display display = Display.getDefault;

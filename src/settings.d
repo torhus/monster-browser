@@ -296,8 +296,10 @@ void loadGamesFile()
 	}
 
 	gameNames = null;
-	foreach (sec; gamesIni)
-		gameNames ~= sec.name;
+	foreach (sec; gamesIni) {
+		if (sec.name.length > 0)
+			gameNames ~= sec.name;
+	}
 }
 
 
