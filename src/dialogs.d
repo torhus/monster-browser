@@ -381,20 +381,43 @@ class SettingsDialog
 		gridData = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
 		pathText_.setLayoutData(gridData);
 
-		// startup game
-		Group startupGroup = new Group(mainComposite, DWT.SHADOW_ETCHED_IN);
-		startupGroup.setText("Start with");
-		auto startupLayout = new GridLayout();
-		startupGroup.setLayout(startupLayout);
-		startupDefaultButton_ = new Button(startupGroup, DWT.RADIO);
-		startupDefaultButton_.setText("First game");
-		startupLastButton_ = new Button(startupGroup, DWT.RADIO);
+		// Startup settings are in two groups side by side
+		auto startupComposite = new Composite(mainComposite, DWT.NONE);
+		auto startupLayout = new RowLayout();
+		startupComposite.setLayout(startupLayout);
+
+		// Startup action
+		startupActionGroup_ = new Group(startupComposite, DWT.SHADOW_ETCHED_IN);
+		startupActionGroup_.setText("Do at startup");
+		startupActionGroup_.setLayout(new GridLayout());
+		auto startupAction = getSetting("startupAction");
+		bool buttonEnabled = false;
+		foreach (buttonDef; startupActionButtonDefs_) {
+			auto button = new Button(startupActionGroup_, DWT.RADIO);
+			button.setText(buttonDef.text);
+			if (startupAction == buttonDef.value) {
+				button.setSelection(true);
+				buttonEnabled = true;
+			}
+		}
+
+		if (!buttonEnabled)
+			(cast(Button)startupActionGroup_.getChildren()[0])
+			                                .setSelection(true);
+
+		// Startup game
+		Group startupGameGroup = new Group(startupComposite, DWT.SHADOW_ETCHED_IN);
+		startupGameGroup.setText("Start with");
+		startupGameGroup.setLayout(new GridLayout());
+		startupFirstGameButton_ = new Button(startupGameGroup, DWT.RADIO);
+		startupFirstGameButton_.setText("First game");
+		startupLastButton_ = new Button(startupGameGroup, DWT.RADIO);
 		startupLastButton_.setText("Last used game");
 
 		if (getSetting("startWithLastMod") == "true")
 			startupLastButton_.setSelection(true);
 		else
-			startupDefaultButton_.setSelection(true);
+			startupFirstGameButton_.setSelection(true);
 
 		// simultaneousQueries
 		auto sqComposite = new Composite(mainComposite, DWT.NONE);
@@ -409,7 +432,7 @@ class SettingsDialog
 		int val = Integer.convert(getSetting("simultaneousQueries"), 10, &ate);
 		sqSpinner_.setSelection(ate > 0 ? val : 10);
 
-		// game configuration
+		// Game configuration
 		Button gamesButton = new Button(mainComposite, DWT.PUSH);
 		gamesButton.setText("Game configuration");
 		gamesButton.addSelectionListener(new class SelectionAdapter {
@@ -426,7 +449,7 @@ class SettingsDialog
 			}
 		});
 
-		// main buttons
+		// OK and Cancel buttons
 		Composite buttonComposite = new Composite(shell_, DWT.NONE);
 		GridData buttonData = new GridData();
 		buttonData.horizontalAlignment = DWT.CENTER;
@@ -454,6 +477,16 @@ class SettingsDialog
 
 					s = (startupLastButton_.getSelection()) ? "true" : "false";
 					setSetting("startWithLastMod", s);
+					
+					foreach(child; startupActionGroup_.getChildren()) {
+						auto button = cast(Button)child;
+						if (button.getSelection()) {
+							char[] value = getButtonValue(
+							       startupActionButtonDefs_, button.getText());
+							setSetting("startupAction", value);
+							break;
+						}
+					}
 
 					int sq = sqSpinner_.getSelection();
 					setSetting("simultaneousQueries", Integer.toString(sq));
@@ -496,14 +529,37 @@ class SettingsDialog
 	}
 
 private:
+	static const ButtonDef[3] startupActionButtonDefs_ = [
+	                             { "Refresh all",         "1" },
+	                             { "Check for new",       "2" },
+	                             { "Only load from disk", "0" }
+	];
+
 	Shell parent_, shell_;
 	Button okButton_, cancelButton_;
-	Button startupDefaultButton_, startupLastButton_;
+	Button startupFirstGameButton_, startupLastButton_;
+	Group startupActionGroup_;
 	bool checkGameConfig_ = false;
 	Time lastModified_;
 	Text pathText_;
 	int result_ = DWT.CANCEL;
 	Spinner sqSpinner_;
+	
+	struct ButtonDef
+	{
+		char[] text;
+		char[] value;
+	}
+	
+	char[] getButtonValue(ButtonDef[] defs, in char[] text)
+	{
+		foreach (def; defs) {
+			if (def.text == text)
+				return def.value;
+		}
+		assert(null);
+		return null;
+	}		
 }
 
 
