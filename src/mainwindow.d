@@ -582,7 +582,8 @@ class FilterBar : Group
 			n = 8;
 		gamesCombo_.setVisibleItemCount(max(n, 5));
 
-		gamesCombo_.select(gamesCombo_.indexOf(lastSelectedGame_));
+		int i = gamesCombo_.indexOf(lastSelectedGame_);
+		gamesCombo_.select((i == -1) ? 0 : i);
 	}
 
 
