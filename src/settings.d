@@ -203,6 +203,7 @@ protocolVersion=69
 	                      {"showFlags", "true"},
 	                      {"simultaneousQueries", "10"},
 	                      {"startWithLastMod", "true"},
+	                      {"startupAction", "1"},
 	                      {"windowMaximized", "false"},
 	                      {"windowSize", "800x568"},
 	                     ];
