@@ -123,12 +123,16 @@ private void _main(char[][] args)
 					}
 					break;
 				case DWT.F4:
-					threadManager.run(&checkForNewServers);
-					e.type = DWT.None;
+					if ((e.stateMask & DWT.MODIFIER_MASK) == 0) {
+						threadManager.run(&checkForNewServers);
+						e.type = DWT.None;
+					}
 					break;
 				case DWT.F5:
-					threadManager.run(&refreshAll);
-					e.type = DWT.None;
+					if ((e.stateMask & DWT.MODIFIER_MASK) == 0) {
+						threadManager.run(&refreshAll);
+						e.type = DWT.None;
+					}
 					break;
 				default:
 					break;
