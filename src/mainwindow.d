@@ -663,19 +663,7 @@ private ToolBar createToolbar(Composite parent)
 			dialog.open();
 		}
 	});
-/+
-	new ToolItem(toolBar, DWT.SEPARATOR);
 
-	auto button4 = new ToolItem(toolBar, DWT.PUSH);
-	button4.setText("Monitor...");
-	button4.setEnabled(false);
-	button4.addSelectionListener(new class SelectionAdapter {
-		public void widgetSelected(SelectionEvent e)
-		{
-			startMonitor(mainWindow.handle);
-		}
-	});
-+/
 	new ToolItem(toolBar, DWT.SEPARATOR);
 
 	auto button5 = new ToolItem(toolBar, DWT.PUSH);
