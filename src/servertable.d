@@ -298,17 +298,8 @@ class ServerTable
 				indices ~= i;
 		}
 
-		if (indices.length) {
-			table_.setSelection(indices);
-			playerTable.setItems(indices, serverList_);
-			int cvarIndex = table_.getSelectionIndex();
-			cvarTable.setItems(serverList_.getFiltered(cvarIndex).cvars);
-		}
-		else {
-			table_.deselectAll();
-			playerTable.clear();
-			cvarTable.clear();
-		}
+		table_.setSelection(indices);
+		setPlayersAndCvars(indices);
 
 		updateStatusBar();
 	}
@@ -332,15 +323,7 @@ class ServerTable
 			}
 		}
 		table_.setSelection(validIndices);
-		if (validIndices.length > 0) {
-			playerTable.setItems(validIndices, serverList_);
-			int cvarIndex = table_.getSelectionIndex();
-			cvarTable.setItems(serverList_.getFiltered(cvarIndex).cvars);
-		}
-		else {
-			playerTable.clear();
-			cvarTable.clear();
-		}
+		setPlayersAndCvars(validIndices);
 
 		if (takeFocus)
 			table_.setFocus();
@@ -437,16 +420,8 @@ private:
 						auto sd = serverList_.getFiltered(i);
 						selectedIps_[sd.server[ServerColumn.ADDRESS]] = i;
 					}
-
-					auto sd =
-					         serverList_.getFiltered(table_.getSelectionIndex);
-					cvarTable.setItems(sd.cvars);
-					playerTable.setItems(indices, serverList_);
 				}
-				else {
-					cvarTable.clear;
-					playerTable.clear;
-				}
+				setPlayersAndCvars(indices);
 			}
 		}
 
@@ -612,7 +587,6 @@ private:
 						// In SWT, it marks all items, and fires the
 						// widgetSelected event, neither of which happens
 						// here.
-						table_.selectAll();
 						onSelectAll();
 						e.doit = false;
 					}
@@ -810,6 +784,7 @@ private:
 
 	void onSelectAll()
 	{
+		table_.selectAll();
 		selectedIps_.clear();
 
 		synchronized (serverList_) {
@@ -820,10 +795,19 @@ private:
 				selectedIps_[sd.server[ServerColumn.ADDRESS]] = i;
 				indices ~= i;
 			}
+			setPlayersAndCvars(indices);
+		}
+	}
 
-			auto sd = serverList_.getFiltered(table_.getSelectionIndex);
+	void setPlayersAndCvars(int[] selectedServers)
+	{
+		playerTable.setItems(selectedServers, serverList_);
+		if (table_.getSelectionCount() == 1) {
+			auto sd = serverList_.getFiltered(table_.getSelectionIndex());
 			cvarTable.setItems(sd.cvars);
-			playerTable.setItems(indices, serverList_);
+		}
+		else {
+			cvarTable.clear();
 		}
 	}
 
