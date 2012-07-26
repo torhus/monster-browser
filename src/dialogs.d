@@ -307,7 +307,7 @@ class SpecifyServerDialog
 				addressText_.selectAll();
 			}
 
-			if (address) {
+			if (address && input.length) {
 				ServerList serverList = serverTable.serverList;
 				MasterList master = serverList.master;
 				ServerHandle sh = master.findServer(address);
@@ -341,8 +341,9 @@ class SpecifyServerDialog
 						queryServers([address], true, true);
 					}
 				}
-				shell_.close();
 			}
+
+			shell_.close();
 		}
 	}
 
