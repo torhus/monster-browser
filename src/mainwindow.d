@@ -106,7 +106,7 @@ class MainWindow
 		topLayout.horizontalSpacing = 50;
 		topComposite.setLayout(topLayout);
 
-		ToolBar toolBar = createToolbar(topComposite);
+		ToolBar toolBar = (new ToolBarWrapper(topComposite)).getToolBar();
 
 		// filtering options
 		filterBar = new FilterBar(topComposite);
@@ -626,59 +626,71 @@ private:
  *       Composite.setTabList in this case.  A more involved solution would be
  *       needed.
  */
-private ToolBar createToolbar(Composite parent)
+private class ToolBarWrapper
 {
-	auto toolBar = new ToolBar(parent, DWT.HORIZONTAL);
+	this(Composite parent)
+	{
+		auto toolBar_ = new ToolBar(parent, DWT.HORIZONTAL);
 
-	auto button1 = new ToolItem(toolBar, DWT.PUSH);
-	button1.setText("Check for new");
-	button1.setImage(loadImage!("box_download_32.png"));
-	button1.addSelectionListener(new class SelectionAdapter {
-		public void widgetSelected(SelectionEvent e)
-		{
-			threadManager.run(&checkForNewServers);
-		}
-	});
+		auto checkForNewButton_ = new ToolItem(toolBar_, DWT.PUSH);
+		checkForNewButton_.setText("Check for new");
+		checkForNewButton_.setImage(loadImage!("box_download_32.png"));
+		checkForNewButton_.addSelectionListener(new class SelectionAdapter {
+			public void widgetSelected(SelectionEvent e)
+			{
+				threadManager.run(&checkForNewServers);
+			}
+		});
 
-	new ToolItem(toolBar, DWT.SEPARATOR);
-	ToolItem button2 = new ToolItem(toolBar, DWT.PUSH);
-	button2.setText("Refresh all");
-	button2.setImage(loadImage!("refresh_32.png"));
-	button2.addSelectionListener(new class SelectionAdapter {
-		public void widgetSelected(SelectionEvent e)
-		{
-			threadManager.run(&refreshAll);
-		}
-	});
+		new ToolItem(toolBar_, DWT.SEPARATOR);
+		refreshAllButton_ = new ToolItem(toolBar_, DWT.PUSH);
+		refreshAllButton_.setText("Refresh all");
+		refreshAllButton_.setImage(loadImage!("refresh_32.png"));
+		refreshAllButton_.addSelectionListener(new class SelectionAdapter {
+			public void widgetSelected(SelectionEvent e)
+			{
+				threadManager.run(&refreshAll);
+			}
+		});
 
-	new ToolItem(toolBar, DWT.SEPARATOR);
+		new ToolItem(toolBar_, DWT.SEPARATOR);
 
-	auto button3 = new ToolItem(toolBar, DWT.PUSH);
-	button3.setText("   Add... ");
-	button3.setImage(loadImage!("add_32.png"));
-	button3.addSelectionListener(new class SelectionAdapter {
-		public void widgetSelected(SelectionEvent e)
-		{
-			auto dialog = new SpecifyServerDialog(mainWindow.handle);
-			dialog.open();
-		}
-	});
+		addButton_ = new ToolItem(toolBar_, DWT.PUSH);
+		addButton_.setText("   Add... ");
+		addButton_.setImage(loadImage!("add_32.png"));
+		addButton_.addSelectionListener(new class SelectionAdapter {
+			public void widgetSelected(SelectionEvent e)
+			{
+				auto dialog = new SpecifyServerDialog(mainWindow.handle);
+				dialog.open();
+			}
+		});
 
-	new ToolItem(toolBar, DWT.SEPARATOR);
+		new ToolItem(toolBar_, DWT.SEPARATOR);
 
-	auto button5 = new ToolItem(toolBar, DWT.PUSH);
-	button5.setText(" Settings");
-	button5.setImage(loadImage!("spanner_32.png"));
-	button5.addSelectionListener(new class SelectionAdapter {
-		public void widgetSelected(SelectionEvent e)
-		{
-			SettingsDialog dialog = new SettingsDialog(mainWindow.handle);
-			if (dialog.open())
-				saveSettings();
-		}
-	});
+		settingsButton_ = new ToolItem(toolBar_, DWT.PUSH);
+		settingsButton_.setText(" Settings");
+		settingsButton_.setImage(loadImage!("spanner_32.png"));
+		settingsButton_.addSelectionListener(new class SelectionAdapter {
+			public void widgetSelected(SelectionEvent e)
+			{
+				SettingsDialog dialog = new SettingsDialog(mainWindow.handle);
+				if (dialog.open())
+					saveSettings();
+			}
+		});
 
-	return toolBar;
+	}
+
+	ToolBar getToolBar() { return toolBar_; }
+
+	private {
+		ToolBar toolBar_;
+		ToolItem checkForNewButton_;
+		ToolItem refreshAllButton_;
+		ToolItem addButton_;
+		ToolItem settingsButton_;
+	}
 }
 
 
