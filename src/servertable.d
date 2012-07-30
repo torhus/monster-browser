@@ -16,6 +16,8 @@ import dwt.events.SelectionAdapter;
 import dwt.events.SelectionListener;
 import dwt.events.SelectionEvent;
 import dwt.graphics.Color;
+import dwt.graphics.Font;
+import dwt.graphics.FontData;
 import dwt.graphics.Image;
 import dwt.graphics.ImageData;
 import dwt.graphics.Rectangle;
@@ -82,6 +84,8 @@ class ServerTable
 		}
 
 		table_.getColumn(ServerColumn.PASSWORDED).setAlignment(DWT.CENTER);
+
+		staleItemFont = getItalicItemFont();
 
 		table_.addListener(DWT.SetData, new SetDataListener);
 		table_.addSelectionListener(new MySelectionListener);
@@ -389,11 +393,6 @@ private:
 			int index = table_.indexOf(item);
 			assert(index < serverList_.filteredLength);
 			auto sd = serverList_.getFiltered(index);
-
-			for (int i = ServerColumn.NAME; i <= ServerColumn.max; i++) {
-				item.setText(i, sd.server[i]);
-			}
-
 			char[] countryCode = sd.server[ServerColumn.COUNTRY];
 			char[] ip = sd.server[ServerColumn.ADDRESS];
 
@@ -401,14 +400,24 @@ private:
 				item.setText(ServerColumn.COUNTRY, sd.countryName);
 			else if (countryCode.length)
 				item.setText(ServerColumn.COUNTRY, countryCode);
-
+				
 			if (showFlags_ && countryCode.length)
 				item.setImage(ServerColumn.COUNTRY, getFlagImage(countryCode));
 
-			if (timedOut(&sd)) {
-				item.setText(ServerColumn.PING, "\&infin;");
-				item.setForeground(ServerColumn.PING, timeOutColor_);
-			}
+			item.setText(ServerColumn.ADDRESS, ip);
+				
+			if (sd.updateState != UpdateState.querying) {
+				for (int i = ServerColumn.NAME; i < ServerColumn.ADDRESS; i++)
+					item.setText(i, sd.server[i]);
+				if (sd.updateState == UpdateState.stale) {
+					item.setFont(staleItemFont);
+					item.setText(ServerColumn.PING, "?");
+				}
+				else if (timedOut(&sd)) {
+					item.setText(ServerColumn.PING, "\&infin;");
+					item.setForeground(ServerColumn.PING, timeOutColor_);
+				}
+			}			
 		}
 	}
 
@@ -493,6 +502,8 @@ private:
 
 			switch (e.index) {
 				case ServerColumn.NAME:
+					if (sd.updateState == UpdateState.querying)
+						break;
 					auto textX = e.x + leftMargin;
 					if (!(e.detail & DWT.SELECTED)) {
 						TextLayout tl = new TextLayout(Display.getDefault);
@@ -503,6 +514,7 @@ private:
 						foreach (r; name.ranges)
 							tl.setStyle(r.style, r.start, r.end);
 
+						tl.setFont(item.getFont());
 						tl.draw(e.gc, textX, e.y);
 						tl.dispose();
 					}
@@ -512,7 +524,8 @@ private:
 					}
 					break;
 				case ServerColumn.PASSWORDED:
-					if (sd.server[ServerColumn.PASSWORDED] == PASSWORD_YES)
+					if (sd.server[ServerColumn.PASSWORDED] == PASSWORD_YES &&
+					                   sd.updateState != UpdateState.querying)
 						e.gc.drawImage(padlockImage_, e.x+4, e.y+1);
 					break;
 				default:
@@ -655,9 +668,18 @@ private:
 
 		if (selectedIps_.size == 0)
 			return;
-
-		foreach (ip, v; selectedIps_)
-			addresses ~= ip;
+		
+		MasterList master = serverList_.master;
+		synchronized (serverList_) synchronized (master) {
+			foreach (ip, index; selectedIps_) {
+				ServerHandle sh = master.findServer(ip);
+				ServerData sd = master.getServerData(sh);
+				sd.updateState = UpdateState.querying;
+				master.setServerData(sh, sd);
+				addresses ~= ip;
+			}
+			fullRefresh();
+		}
 		queryServers(addresses, true);
 	}
 
@@ -779,7 +801,7 @@ private:
 		playerTable.setItems(selectedServers, serverList_);
 		if (table_.getSelectionCount() == 1) {
 			auto sd = serverList_.getFiltered(table_.getSelectionIndex());
-			cvarTable.setItems(sd.cvars);
+			cvarTable.setItems(sd.cvars, sd.updateState);
 		}
 		else {
 			cvarTable.clear();
@@ -791,5 +813,19 @@ private:
 		double q = cast(double)(table_.getClientArea().height -
 		                    table_.getHeaderHeight()) / table_.getItemHeight();
 		return cast(int)ceil(q) + table_.getTopIndex() - 1;
+	}
+
+	// Get an italic version of the table item font.
+	private Font getItalicItemFont()
+	{
+		assert(table_.getItemCount() == 0);
+
+		auto item = new TableItem(table_, DWT.NONE);
+		FontData fontData = item.getFont().getFontData()[0];
+		fontData.setStyle(DWT.ITALIC);
+		Font font = new Font(Display.getDefault(), fontData);
+		callAtShutdown ~= &font.dispose;
+		table_.removeAll();
+		return font;
 	}
 }

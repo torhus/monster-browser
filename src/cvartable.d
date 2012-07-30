@@ -7,6 +7,7 @@ import dwt.widgets.TableColumn;
 import dwt.widgets.TableItem;
 
 import common;
+import serverdata;
 import settings;
 
 
@@ -38,13 +39,15 @@ class CvarTable
 
 	Table getTable() { return table_; }  ///
 
-	void setItems(char[][][] items)  ///
+	void setItems(char[][][] items, UpdateState updateState)  ///
 	{
 		table_.setRedraw(false);
 		table_.setItemCount(0);
 		foreach (v; items) {
 			TableItem item = new TableItem(table_, DWT.NONE);
       		item.setText(v);
+      		if (updateState != UpdateState.fresh)
+      			item.setFont(staleItemFont);
       	}
 		table_.setRedraw(true);
   	}

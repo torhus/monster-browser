@@ -31,6 +31,8 @@ struct ServerData {
 	char[] countryName;  ///
 
 	int failCount = 0;  ///
+	
+	UpdateState updateState = UpdateState.stale;  ///
 
 	bool persistent;  ///
 
@@ -109,6 +111,9 @@ struct ServerData {
 	}
 }
 
+
+/// The GUI displays data differently depending on how "fresh" they are.
+enum UpdateState { stale, querying, fresh }
 
 // should correspond to playertable.playerHeaders
 enum PlayerColumn { NAME, SCORE, PING, RAWNAME };
