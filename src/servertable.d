@@ -35,6 +35,7 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 
+import actions;
 import colorednames;
 import common;
 import cvartable;
@@ -263,34 +264,6 @@ final class ServerTable
 		       columnShown_[ServerColumn.CVAR_GAMENAME];
 	}
 
-	///
-	void notifyRefreshStarted(void delegate(bool) stopServerRefresh=null)
-	{
-		refreshInProgress_ = true;
-		stopServerRefresh_ = stopServerRefresh;
-	}
-
-	///
-	void notifyRefreshEnded()
-	{
-		refreshInProgress_ = false;
-		stopServerRefresh_ = null;
-	}
-
-	///
-	bool stopRefresh(bool addRemaining)
-	{
-		if (!refreshInProgress_)
-			return true;
-
-		refreshInProgress_ = false;
-		if (stopServerRefresh_ !is null) {
-			stopServerRefresh_(addRemaining);
-			return true;
-		}
-		return false;
-	}
-
 	/**
 	 * If necessary clears the table and refills it with updated data.
 	 *
@@ -448,8 +421,7 @@ final class ServerTable
 
 		refreshFavorite(sd.server[ServerColumn.ADDRESS]);
 
-		if (stopServerRefresh_ !is null)
-			stopServerRefresh_(true);
+		stopAction();
 		joinServer(serverList_.gameName, sd);
 	}
 
@@ -472,11 +444,10 @@ private:
 	bool showingFavCursor_ = false;
 	MenuItem refreshSelected_;
 	MenuItem[] contextMenuItems_;
-	void delegate(bool) stopServerRefresh_;
-	bool refreshInProgress_ = false;
 	Color timeOutColor_;
 	Listener sortListener_;
 	int[] columnShown_;
+
 
 	class SetDataListener : Listener {
 		void handleEvent(Event e)
@@ -535,6 +506,7 @@ private:
 			if (table_.getSelectionIndex() < 0)
 				return;
 
+			stopAction();
 			widgetSelected(e);
 
 			if (!doubleClickInFavColumn_ || (e.time - lastDoubleClickTime_) > 50)
@@ -739,7 +711,7 @@ private:
 					break;
 				case 'r':
 					if (e.stateMask == SWT.MOD1) {
-						if (!refreshInProgress_)
+						if (!getCurrentAction())
 							onRefreshSelected();
 						e.doit = false;
 					}
@@ -859,7 +831,7 @@ private:
 			{
 				bool enable = table_.getSelectionCount() > 0;
 				contextMenuItems_.each!(x => x.setEnabled(enable));
-				refreshSelected_.setEnabled(enable && !refreshInProgress_);
+				refreshSelected_.setEnabled(enable && !getCurrentAction());
 			}
 		});
 
