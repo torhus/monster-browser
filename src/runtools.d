@@ -27,6 +27,7 @@ private Process proc;
 private Object procMutex;
 
 
+/// Thrown if there's an error when communicating with a master server.
 class MasterServerException : Exception {
 	this(char[] msg) { super(msg); }
 }
@@ -43,6 +44,8 @@ void runtoolsInit()
  * server.
  *
  * Returns: A set containing the IP addresses of the servers.
+ *
+ * Throws: MasterServerException.
  */
 Set!(char[]) browserGetNewList(in GameConfig game, bool gslist)
 {
