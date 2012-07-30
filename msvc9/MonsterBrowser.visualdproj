@@ -195,6 +195,7 @@
    <File path="..\src\mswindows\taskbarlist.d" />
    <File path="..\src\mswindows\taskbarprogress.d" />
   </Folder>
+  <File path="..\src\actions.d" />
   <File path="..\src\colorednames.d" />
   <File path="..\src\common.d" />
   <File path="..\src\cvartable.d" />

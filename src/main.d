@@ -19,6 +19,7 @@ import dwt.widgets.Display;
 import dwt.widgets.Event;
 import dwt.widgets.Listener;
 
+import actions;
 import colorednames : disposeNameColors;
 import common;
 import link;
@@ -99,20 +100,19 @@ private void _main(char[][] args)
 			switch (e.keyCode) {
 				case DWT.ESC:
 					if ((e.stateMask & DWT.MODIFIER_MASK) == 0) {
-						userAbort = true;
-						serverTable.stopRefresh(true);
+						stopAction();
 						e.type = DWT.None;
 					}
 					break;
 				case DWT.F4:
 					if ((e.stateMask & DWT.MODIFIER_MASK) == 0) {
-						threadManager.run(&checkForNewServers);
+						startAction(Action.checkForNew);
 						e.type = DWT.None;
 					}
 					break;
 				case DWT.F5:
 					if ((e.stateMask & DWT.MODIFIER_MASK) == 0) {
-						threadManager.run(&refreshAll);
+						startAction(Action.refreshAll);
 						e.type = DWT.None;
 					}
 					break;
@@ -130,6 +130,7 @@ private void _main(char[][] args)
 
 	serverTable.getTable.setFocus();
 	runtoolsInit();
+	serveractionsInit();
 	
 	if (settings.gameNames.length == 0)
 		error("No valid game configurations were found.");
