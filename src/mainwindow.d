@@ -576,6 +576,17 @@ private class ToolBarWrapper
 			}
 		});
 
+		auto stopButton_ = new ToolItem(toolBar_, SWT.PUSH);
+		stopButton_.setText("   Stop   ");
+		stopButton_.setImage(loadImage!("cancel_32.png"));
+		stopButton_.addSelectionListener(new class SelectionAdapter {
+			override public void widgetSelected(SelectionEvent e)
+			{
+				userAbort = true;
+				serverTable.stopRefresh(true);
+			}
+		});
+
 		launchButton_ = new ToolItem(toolBar_, SWT.DROP_DOWN);
 		launchButton_.setText("    Join    ");
 		launchButton_.setImage(loadImage!("launch_32.png"));
@@ -722,6 +733,7 @@ private class ToolBarWrapper
 		ToolItem refreshAllButton_;
 		ToolItem launchButton_;
 		ToolItem addButton_;
+		ToolItem stopButton_;
 		ToolItem settingsButton_;
 	}
 }
