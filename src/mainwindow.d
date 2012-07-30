@@ -37,6 +37,7 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 
+import actions;
 import common;
 import cvartable;
 import dialogs;
@@ -209,10 +210,10 @@ class MainWindow
 	private class MyShellListener : ShellAdapter {
 		override void shellClosed(ShellEvent e)  ///
 		{
-			serverTable.stopRefresh(false);
-			threadManager.shutDown();
-			statusBar.setLeft("Exiting...");
 			log("Shutting down...");
+			statusBar.setLeft("Exiting...");
+			stopAction();
+			threadManager.shutDown();
 			killServerBrowser();
 			foreach (shell; subWindows) {
 				if (!shell.isDisposed())
@@ -750,15 +751,15 @@ private class ToolBarWrapper
 {
 	this(Composite parent)
 	{
-		auto toolBar_ = new ToolBar(parent, SWT.HORIZONTAL);
+		toolBar_ = new ToolBar(parent, SWT.HORIZONTAL);
 
-		auto checkForNewButton_ = new ToolItem(toolBar_, SWT.PUSH);
+		checkForNewButton_ = new ToolItem(toolBar_, SWT.PUSH);
 		checkForNewButton_.setText("Check for new");
 		checkForNewButton_.setImage(loadImage!("box_download_32.png"));
 		checkForNewButton_.addSelectionListener(new class SelectionAdapter {
 			public override void widgetSelected(SelectionEvent e)
 			{
-				threadManager.run(&checkForNewServers);
+				startAction(Action.checkForNew);
 			}
 		});
 
@@ -769,7 +770,7 @@ private class ToolBarWrapper
 		refreshAllButton_.addSelectionListener(new class SelectionAdapter {
 			public override void widgetSelected(SelectionEvent e)
 			{
-				threadManager.run(&refreshAll);
+				startAction(Action.refreshAll);
 			}
 		});
 
@@ -788,14 +789,14 @@ private class ToolBarWrapper
 
 		(new ToolItem(toolBar_, SWT.SEPARATOR)).setWidth(12);
 
-		ToolItem stopButton_ = new ToolItem(toolBar_, SWT.PUSH);
+		stopButton_ = new ToolItem(toolBar_, SWT.PUSH);
 		stopButton_.setText("   Stop   ");
 		stopButton_.setImage(loadImage!("cancel_32.png"));
+		stopButton_.setEnabled(false);
 		stopButton_.addSelectionListener(new class SelectionAdapter {
 			override public void widgetSelected(SelectionEvent e)
 			{
-				userAbort = true;
-				serverTable.stopRefresh(true);
+				stopAction();
 			}
 		});
 
@@ -813,9 +814,55 @@ private class ToolBarWrapper
 			}
 		});
 
+		addActionHandler(new ToolBarActionHandler);
 	}
 
 	ToolBar getToolBar() { return toolBar_; }
+
+	private class ToolBarActionHandler : ActionHandler
+	{
+		override void actionStarting(Action action)
+		{
+			enableAllButtons();
+			switch (action) {
+				case Action.checkForNew:
+					if (!checkForNewButton_.isDisposed())
+						checkForNewButton_.setEnabled(false);
+					break;
+				case Action.refreshAll:
+					if (!refreshAllButton_.isDisposed())
+						refreshAllButton_.setEnabled(false);
+					break;
+				case Action.addServer:
+					if (!addButton_.isDisposed())
+						addButton_.setEnabled(false);
+					break;
+				default:
+				break;
+			}
+		}
+
+		override void actionQueued(Action action) { actionStarting(action); }
+
+		override void actionStopping(Action action)
+		{
+			enableAllButtons();
+			if (!stopButton_.isDisposed())
+				stopButton_.setEnabled(false);
+		}
+
+		override void actionDone(Action action) { actionStopping(action); }
+	}
+	
+	private void enableAllButtons()
+	{
+		if (toolBar_.isDisposed())
+			return;
+
+		foreach (item; toolBar_.getItems())
+			if (!item.isDisposed())
+				item.setEnabled(true);
+	}
 
 	private {
 		ToolBar toolBar_;

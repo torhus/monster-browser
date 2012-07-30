@@ -17,6 +17,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
+import actions;
 import colorednames;
 import common;
 import filewatcher;
@@ -90,19 +91,19 @@ private void _main(string[] args)
 				case SWT.ESC:
 					if ((e.stateMask & SWT.MODIFIER_MASK) == 0) {
 						userAbort = true;
-						serverTable.stopRefresh(true);
+						stopAction();
 						e.type = SWT.None;
 					}
 					break;
 				case SWT.F4:
 					if ((e.stateMask & SWT.MODIFIER_MASK) == 0) {
-						threadManager.run(&checkForNewServers);
+						startAction(Action.checkForNew);
 						e.type = SWT.None;
 					}
 					break;
 				case SWT.F5:
 					if ((e.stateMask & SWT.MODIFIER_MASK) == 0) {
-						threadManager.run(&refreshAll);
+						startAction(Action.refreshAll);
 						e.type = SWT.None;
 					}
 					break;
@@ -124,6 +125,7 @@ private void _main(string[] args)
 
 	runtoolsInit();
 	initNameColors();
+	serveractionsInit();
 	
 	if (settings.gameNames.length == 0)
 		error("No valid game configurations were found.");
