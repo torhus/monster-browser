@@ -24,6 +24,7 @@ import dwt.DWT;
 import dwt.dnd.Clipboard;
 import dwt.dnd.TextTransfer;
 import dwt.dwthelper.utils;
+import dwt.graphics.Font;
 import dwt.widgets.Table;
 
 import set;
@@ -63,6 +64,7 @@ bool userAbort = false;
 /// Is there a console available for output?
 bool haveConsole = false;
 
+Font staleItemFont;
 
 // Add dispose() methods etc. to this array, and they will be called at
 // shutdown.

@@ -55,14 +55,7 @@ class PlayerTable
 			column.setWidth(widths[i]);
 		}
 
-		table_.addListener(DWT.SetData, new class Listener {
-			public void handleEvent(Event e)
-			{
-				TableItem item = cast(TableItem) e.item;
-				char[][] data = players_[table_.indexOf(item)].data;
-				item.setText(data[0 .. table_.getColumnCount()]);
-			}
-		});
+		table_.addListener(DWT.SetData, new SetDataListener);
 
 		if (getSetting("coloredNames") == "true") {
 			table_.addListener(DWT.EraseItem, new class Listener {
@@ -87,10 +80,13 @@ class PlayerTable
 					foreach (r; parseColors(rawName, useEtColors).ranges)
 						tl.setStyle(r.style, r.start, r.end);
 
-					if (e.detail & DWT.SELECTED)
+					if (e.detail & DWT.SELECTED) {
 						e.gc.drawString(tl.getText, e.x+2, e.y);
-					else
+					}
+					else {
+						tl.setFont(item.getFont());
 						tl.draw(e.gc, e.x+2, e.y);
+					}
 					tl.dispose();
 				}
 			});
@@ -205,6 +201,19 @@ private:
 	ServerList serverList_;
 	Player[] players_;
 	bool moreThanOneServer_;
+
+	class SetDataListener : Listener {
+		public void handleEvent(Event e)
+		{
+			TableItem item = cast(TableItem) e.item;
+			Player player = players_[table_.indexOf(item)];
+			ServerData sd = serverList_.getFiltered(player.serverIndex);
+
+			item.setText(player.data[0 .. table_.getColumnCount()]);
+			if (sd.updateState != UpdateState.fresh)
+				item.setFont(staleItemFont);
+		}
+	}
 
 
 	class MouseMoveListener : Listener {

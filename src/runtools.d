@@ -348,6 +348,8 @@ final class QstatServerRetriever : IServerRetriever
 		bool _deliver(ServerData* sd, bool replied)
 		{
 			ServerHandle sh;
+			
+			sd.updateState = UpdateState.fresh;
 
 			if (replace_) {
 				sh = master_.updateServer(*sd);
@@ -355,6 +357,7 @@ final class QstatServerRetriever : IServerRetriever
 					sh = master_.addServer(*sd);
 			}
 			else {
+				assert(!master_.findServer(sd.server[ServerColumn.ADDRESS]));
 				sh = master_.addServer(*sd);
 			}
 
