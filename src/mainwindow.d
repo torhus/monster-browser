@@ -786,10 +786,23 @@ private class ToolBarWrapper
 			}
 		});
 
-		new ToolItem(toolBar_, SWT.SEPARATOR);
+		(new ToolItem(toolBar_, SWT.SEPARATOR)).setWidth(12);
+
+		ToolItem stopButton_ = new ToolItem(toolBar_, SWT.PUSH);
+		stopButton_.setText("   Stop   ");
+		stopButton_.setImage(loadImage!("cancel_32.png"));
+		stopButton_.addSelectionListener(new class SelectionAdapter {
+			override public void widgetSelected(SelectionEvent e)
+			{
+				userAbort = true;
+				serverTable.stopRefresh(true);
+			}
+		});
+
+		(new ToolItem(toolBar_, SWT.SEPARATOR)).setWidth(12);
 
 		settingsButton_ = new ToolItem(toolBar_, SWT.PUSH);
-		settingsButton_.setText(" Settings");
+		settingsButton_.setText("Settings");
 		settingsButton_.setImage(loadImage!("spanner_32.png"));
 		settingsButton_.addSelectionListener(new class SelectionAdapter {
 			public override void widgetSelected(SelectionEvent e)
@@ -809,6 +822,7 @@ private class ToolBarWrapper
 		ToolItem checkForNewButton_;
 		ToolItem refreshAllButton_;
 		ToolItem addButton_;
+		ToolItem stopButton_;
 		ToolItem settingsButton_;
 	}
 }
