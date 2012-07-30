@@ -16,6 +16,7 @@ import tango.util.log.Log;
 import dwt.dwthelper.Runnable;
 import dwt.widgets.Display;
 
+import actions;
 import common;
 import masterlist;
 import mainwindow;
@@ -44,6 +45,41 @@ MasterListCacheEntry*[char[]] masterLists;
 
 /// ServerList cache indexed by game config name.
 ServerList[char[]] serverListCache;
+
+
+/// Initialize this module.
+void serveractionsInit()
+{
+	addActionHandler(new ServerActionHandler);
+}
+
+
+private class ServerActionHandler : ActionHandler
+{
+	void actionStarting(Action action)
+	{
+		switch (action) {
+			case Action.checkForNew:
+				threadManager.run(&checkForNewServers);
+				break;
+			case Action.refreshAll:
+				threadManager.run(&refreshAll);
+				break;
+			default:
+				break;
+		}
+	}
+
+	void actionQueued(Action action)
+	{
+		threadManager.abort = true;
+	}
+
+	void actionStopping(Action action)
+	{
+		threadManager.abort = true;
+	}
+}
 
 
 /**
@@ -134,12 +170,12 @@ void switchToGame(in char[] name)
 			if (startupAction == "0" || arguments.fromfile)
 				threadManager.run(&loadSavedList);
 			else if (startupAction == "2" || gslist)
-				threadManager.run(&checkForNewServers);
+				startAction(Action.checkForNew);
 			else {
 				if (serverList.master.length > 0)
-					threadManager.run(&refreshAll);
+					startAction(Action.refreshAll);
 				else
-					threadManager.run(&checkForNewServers);
+					startAction(Action.checkForNew);
 			}
 		}
 
@@ -208,6 +244,8 @@ void queryServers(in char[][] addresses, bool replace=false, bool select=false)
 
 	if (!addresses.length)
 		return;
+
+	startAction(Action.refreshSome);
 
 	if (addresses.length > 100)
 		GC.collect();
@@ -311,13 +349,12 @@ void checkForNewServers()
 {
 	ServerList serverList = serverTable.serverList;
 
-	log("Checking for new servers for " ~ serverList.gameName ~ "...");
-
-	Display.getDefault().syncExec(dgRunnable({
-		serverTable.notifyRefreshStarted((bool) {
-			threadManager.abort = true;
-		});
-	}));
+	if (serverList.master.length > 0) {
+		log("Checking for new servers for " ~ serverList.gameName ~ "...");
+	}
+	else {
+		log("Getting new server list for " ~ serverList.gameName ~ "...");
+	}
 
 	GC.collect();
 
@@ -351,7 +388,7 @@ void checkForNewServers()
 		if (serverError || threadManager.abort) {
 			Display.getDefault().syncExec(dgRunnable( {
 				statusBar.hideProgress("Ready");
-				serverTable.notifyRefreshEnded();
+				doneAction();
 			}));
 			return;
 		}
@@ -406,7 +443,7 @@ void checkForNewServers()
 			Display.getDefault.asyncExec(dgRunnable( {
 				statusBar.hideProgress("There were no new servers");
 				serverTable.fullRefresh;
-				serverTable.notifyRefreshEnded;
+				doneAction();
 			}));
 		}
 		else {
@@ -510,9 +547,7 @@ class ServerRetrievalController
 		catch (IllegalArgumentException e)
 			maxTimeouts_ = 3;  // FIXME: use the actual default
 
-		Display.getDefault.syncExec(dgRunnable( {
-			serverTable.notifyRefreshStarted(&stop);
-		}));
+		addActionHandler(new MyActionHandler);
 	}
 
 
@@ -558,7 +593,7 @@ class ServerRetrievalController
 					      statusBarUpdater_.total, statusBarUpdater_.progress);
 				}));
 
-				userAbort = false;
+				userAbort_ = false;
 				serverRetriever_.retrieve(&deliver);
 
 				// a benchmarking tool
@@ -576,21 +611,22 @@ class ServerRetrievalController
 			Display.getDefault.syncExec(dgRunnable( {
 				if (threadManager.abort || wasStopped_) {
 					statusBar.hideProgress(interruptedMessage);
-					serverTable.notifyRefreshEnded;
 					serverList_.complete = false;
 
-					if (userAbort) {
+					if (userAbort_) {
 						// disable refreshAll's autoretry
 						MasterList master = serverList_.master;
 						GameConfig game = getGameConfig(serverList_.gameName);
 						auto masterItem = masterLists[master.name];
 						masterItem.retryProtocols.remove(game.protocolVersion);
 					}
+					doneAction();
 				}
 				else {
 					if (finish_) {
 						statusBar.hideProgress("Done");
 						done();
+						doneAction();
 					}
 					serverList_.complete = true;
 				}
@@ -610,7 +646,6 @@ class ServerRetrievalController
 	 */
 	void stop(bool addRemaining)
 	{
-		threadManager.abort = true;
 		wasStopped_ = true;
 		addRemaining_ = addRemaining;
 	}
@@ -673,8 +708,6 @@ class ServerRetrievalController
 
 		// FIXME: only doing this so that players will be shown
 		serverTable.fullRefresh();
-
-		serverTable.notifyRefreshEnded();
 	}
 
 
@@ -694,6 +727,10 @@ class ServerRetrievalController
 		deliverDg2_(sh);
 	}
 
+	private class MyActionHandler : ActionHandler
+	{
+		void actionStopping() { stop(true); userAbort_ = true; }
+	}
 
 	private {
 		IServerRetriever serverRetriever_;
@@ -705,6 +742,7 @@ class ServerRetrievalController
 		void delegate(ServerHandle) deliverDg_;
 		bool delegate(ServerHandle) deliverDg2_;
 		bool wasStopped_ = false;
+		bool userAbort_;
 		bool addRemaining_ = true;
 		bool useQueue_ = true;
 		ServerList serverList_;
