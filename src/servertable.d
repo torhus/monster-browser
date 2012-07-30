@@ -31,6 +31,7 @@ import dwt.widgets.Table;
 import dwt.widgets.TableColumn;
 import dwt.widgets.TableItem;
 
+import actions;
 import colorednames;
 import common;
 import cvartable;
@@ -131,6 +132,8 @@ class ServerTable
 		selectedIps_ = new HashMap!(char[], int);
 		
 		timeOutColor_ = Display.getDefault().getSystemColor(DWT.COLOR_RED);
+
+		addActionHandler(new MyActionHandler);
 	}
 
 
@@ -196,38 +199,6 @@ class ServerTable
 
 	/// Returns the server list's Table widget object.
 	Table getTable() { return table_; };
-
-	///
-	void notifyRefreshStarted(void delegate(bool) stopServerRefresh=null)
-	{
-		refreshInProgress_ = true;
-		stopServerRefresh_ = stopServerRefresh;
-		if (!refreshSelected_.isDisposed)
-			refreshSelected_.setEnabled(false);
-	}
-
-	///
-	void notifyRefreshEnded()
-	{
-		refreshInProgress_ = false;
-		stopServerRefresh_ = null;
-		if (!refreshSelected_.isDisposed)
-			refreshSelected_.setEnabled(true);
-	}
-
-	///
-	bool stopRefresh(bool addRemaining)
-	{
-		if (!refreshInProgress_)
-			return true;
-
-		refreshInProgress_ = false;
-		if (stopServerRefresh_ !is null) {
-			stopServerRefresh_(addRemaining);
-			return true;
-		}
-		return false;
-	}
 
 	/**
 	 * If necessary clears the table and refills it with updated data.
@@ -383,9 +354,33 @@ private:
 	bool showFlags_, coloredNames_;
 	Image padlockImage_;
 	MenuItem refreshSelected_;
-	void delegate(bool) stopServerRefresh_;
-	bool refreshInProgress_ = false;
 	Color timeOutColor_;
+
+	class MyActionHandler : ActionHandler
+	{
+		void actionStarting(Action action)
+		{
+			switch (action) {
+				case Action.checkForNew:
+				case Action.refreshAll:
+				case Action.refreshSome:
+				case Action.addServer:
+					if (!refreshSelected_.isDisposed)
+						refreshSelected_.setEnabled(false);
+					break;
+				case Action.none:
+					break;
+				default:
+					assert(0);
+			}
+		}
+
+		void actionDone(Action action)
+		{
+			if (!refreshSelected_.isDisposed)
+				refreshSelected_.setEnabled(true);
+		}
+	}
 
 	class SetDataListener : Listener {
 		void handleEvent(Event e)
@@ -437,9 +432,8 @@ private:
 
 		void widgetDefaultSelected(SelectionEvent e)
 		{
+			stopAction();
 			widgetSelected(e);
-			if (stopServerRefresh_ !is null)
-				stopServerRefresh_(true);
 			int index = table_.getSelectionIndex();
 			joinServer(serverList_.gameName, serverList_.getFiltered(index));
 		}
@@ -598,8 +592,7 @@ private:
 		menu.setDefaultItem(item);
 		item.addSelectionListener(new class SelectionAdapter {
 			void widgetSelected(SelectionEvent e) {
-				if (stopServerRefresh_ !is null)
-					stopServerRefresh_(true);
+				stopAction();
 				joinServer(serverList_.gameName,
 				          serverList_.getFiltered(table_.getSelectionIndex()));
 			}
