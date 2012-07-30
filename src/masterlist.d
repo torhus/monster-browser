@@ -89,6 +89,7 @@ final class MasterList
 			if (timedOut(&sd)) {
 				oldSd.server[ServerColumn.PING] =
 					                            sd.server[ServerColumn.PING];
+				old.updateState = sd.updateState;
 				// clear player count
 				oldSd.setPlayersColumn(0, 0, oldSd.maxClients);
 				oldSd.players = null;
@@ -158,6 +159,15 @@ final class MasterList
 			ServerData* old = sh in servers_;
 			debug isValid(old);
 			*old = sd;
+		}
+	}
+
+
+	/// Set the updateState field of a ServerData object.
+	void setUpdateState(ServerHandle sh, UpdateState updateState)
+	{
+		synchronized (this) {
+			(sh in servers_).updateState = updateState;
 		}
 	}
 

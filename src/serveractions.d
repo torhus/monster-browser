@@ -111,12 +111,12 @@ void switchToGame(string name, bool configChanged=false)
 	void f() {
 		ServerList serverList;
 		GameConfig game = getGameConfig(gameName);
-		bool firstTime = true;
+		bool hadServerList = false;
 
 		// make sure we have a ServerList object
 		if (ServerList* list = gameName in serverListCache) {
 			serverList = *list;
-			firstTime = false;
+			hadServerList = true;
 		}
 		else {
 			string masterName = game.masterServer;
@@ -162,11 +162,14 @@ void switchToGame(string name, bool configChanged=false)
 		}
 
 		serverTable.setServerList(serverList);
+		if (hadServerList) {
+			// refill the list, in case servers where removed in the mean time
+			serverTable.serverList.refillFromMaster(configChanged);
+		}
 		serverTable.clear();
 		filterBar.clearSearch();
 
-		if (serverList.complete) {
-			serverList.refillFromMaster(configChanged);
+		if (hadServerList) {
 			serverTable.forgetSelection();
 			serverTable.fullRefresh();
 			statusBar.setLeft("Ready");
@@ -285,12 +288,16 @@ void refreshAll()
 		ServerData sd = master.getServerData(sh);
 		bool matched = matchGame(&sd, game);
 
-		if (matched)
+		if (matched) {
 			addresses.add(sd.server[ServerColumn.ADDRESS]);
+			master.setUpdateState(sh, UpdateState.querying);
+		}
 		else if (retry && timedOut(&sd) && sd.failCount < 2  &&
-		                            sd.protocolVersion == game.protocolVersion)
+		             sd.protocolVersion == game.protocolVersion) {
 			// retry previously unresponsive servers
 			addresses2.add(sd.server[ServerColumn.ADDRESS]);
+			master.setUpdateState(sh, UpdateState.querying);
+		}
 	}
 
 	log("Refreshing server list for " ~ game.name ~ "...");
@@ -307,8 +314,7 @@ void refreshAll()
 	                                         delta, extraServers.length-delta);
 
 	Display.getDefault().syncExec(dgRunnable({
-		serverTable.clear();
-		serverList.clear();
+		serverTable.fullRefresh();
 	}));
 	GC.collect();
 
@@ -318,7 +324,7 @@ void refreshAll()
 		if (addresses.length) {
 			auto retriever = new QstatServerRetriever(game.name, master,
 			                                                  addresses, true);
-			auto contr = new ServerRetrievalController(retriever, false,
+			auto contr = new ServerRetrievalController(retriever, true,
 			                                      !addresses2.length, updater);
 			contr.progressLabel = text("Refreshing ", addresses.length,
 			                           " servers");
@@ -607,12 +613,16 @@ class ServerRetrievalController
 
 			Display.getDefault.syncExec(dgRunnable( {
 				if (threadManager.abort || wasStopped_) {
+					MasterList master = serverList_.master;
 					statusBar.hideProgress(interruptedMessage);
 					serverList_.complete = false;
 
+					// servers that were not queried are now considered stale
+					setNonQueriedToStale(master);
+					serverTable.fullRefresh();
+
 					if (userAbort_) {
 						// disable refreshAll's autoretry
-						MasterList master = serverList_.master;
 						GameConfig game = getGameConfig(serverList_.gameName);
 						auto masterItem = masterLists[master.name];
 						masterItem.retryProtocols.remove(game.protocolVersion);
@@ -668,16 +678,18 @@ class ServerRetrievalController
 					// included in refreshAll()'s requery of unresponsive
 					// servers.
 					sd.protocolVersion = game.protocolVersion;
-					serverList_.master.setServerData(sh, sd);
 				}
+				serverList_.master.setServerData(sh, sd);
 				// Try to match using the old data, since we still want to
 				// display the server if we know it runs the right game.
 				matched = matchGame(&sd, game);
 			}
 			else {
-				serverList_.master.removeServer(sh);
-				if (replace_)
-					refillAndRefresh();  // make server disappear from GUI
+				Display.getDefault().syncExec(dgRunnable({
+					serverList_.master.removeServer(sh);
+					if (replace_)
+						refillAndRefresh();  // make server disappear from GUI
+				}));
 				matched = false;
 			}
 		}
@@ -712,13 +724,22 @@ class ServerRetrievalController
 	}
 
 
+	/// Only to be called from the GUI thread.
 	private void refillAndRefresh()
 	{
-		Display.getDefault.syncExec(dgRunnable( {
-			serverList_.refillFromMaster();
-			serverTable.fullRefresh();
-		}));
+		serverList_.refillFromMaster();
+		serverTable.fullRefresh();
 	}
+
+
+	private void setNonQueriedToStale(MasterList master)
+	{
+		foreach(sh; master) {
+			if (master.getServerData(sh).updateState == UpdateState.querying)
+				master.setUpdateState(sh, UpdateState.stale);
+		}
+	}
+
 
 	// Just a workaround for ServerQueue.add and ServerList.add and replace
 	// not having the same signatures.

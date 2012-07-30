@@ -58,6 +58,7 @@ shared bool userAbort = false;
 /// Is there a console available for output?
 shared bool haveConsole = false;
 
+shared Font staleItemFont;
 
 // Add dispose() methods etc. to this array, and they will be called at
 // shutdown.

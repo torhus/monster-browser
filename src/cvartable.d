@@ -7,6 +7,7 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 
 import common;
+import serverdata;
 import settings;
 
 
@@ -38,16 +39,18 @@ class CvarTable
 
 	Table getTable() { return table_; }  ///
 
-	void setItems(string[][] items)  ///
+	void setItems(string [][] items, UpdateState updateState)  ///
 	{
 		table_.setRedraw(false);
 		table_.setItemCount(0);
 		foreach (v; items) {
 			TableItem item = new TableItem(table_, SWT.NONE);
-      		item.setText(v);
-      	}
+			item.setText(v);
+			if (updateState != UpdateState.fresh)
+				item.setFont(staleItemFont);
+		}
 		table_.setRedraw(true);
-  	}
+	}
 
 	void clear()  ///
 	{
@@ -55,7 +58,7 @@ class CvarTable
 	}
 
 	/************************************************
-	            PRIVATE STUFF
+				PRIVATE STUFF
 	 ************************************************/
 private:
 	Table table_;
