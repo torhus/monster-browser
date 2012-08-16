@@ -50,7 +50,7 @@ void joinServer(in char[] gameName, ServerData sd)
 			argv = "+set fs_game " ~ s;
 	}
 
-	argv ~= "+connect " ~ address;
+	argv ~= " +connect " ~ address;
 
 	i = findString(sd.cvars, "g_needpass", 0);
 	if (i != -1 && sd.cvars[i][1] == "1" && getPassword(address).length == 0) {
