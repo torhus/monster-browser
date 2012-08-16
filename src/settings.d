@@ -73,7 +73,7 @@ struct GameConfig
 		version (Windows) if (regKey && exeName) {
 			try {
 				if (char[] dir = getRegistryStringValue(regKey))
-					path = dir ~ '\\' ~ exeName;
+					path = Path.join(Path.standard(dir), exeName);
 				else
 					log("regKey not found: " ~ regKey);
 			}
