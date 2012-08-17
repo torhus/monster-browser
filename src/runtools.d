@@ -14,6 +14,7 @@ import tango.text.Util;
 import tango.text.convert.Format;
 import Integer = tango.text.convert.Integer;
 
+import actions;
 import common;
 import messageboxes;
 import qstat;
@@ -25,6 +26,7 @@ import settings;
 
 private Process proc;
 private Object procMutex;
+private bool shouldKillProcess = false;
 
 
 /// Thrown if there's an error when communicating with a master server.
@@ -36,6 +38,22 @@ class MasterServerException : Exception {
 void runtoolsInit()
 {
 	procMutex = new Object;
+	addActionHandler(new MyActionHandler);
+}
+
+
+private class MyActionHandler : ActionHandler
+{
+	void actionQueued(Action action)
+	{
+		if (shouldKillProcess)
+			killServerBrowser();
+	}
+
+	void actionStopping(Action action)
+	{
+		actionQueued(action);
+	}
 }
 
 
@@ -52,6 +70,9 @@ Set!(char[]) browserGetNewList(in GameConfig game, bool gslist)
 	char[] cmdLine;
 	Set!(char[]) addresses;
 	InputStream stdout_copy, stderr_copy;
+
+	shouldKillProcess = true;
+	scope (exit) shouldKillProcess = false;
 
 	version (linux)
 		cmdLine ~= "./";
@@ -107,7 +128,11 @@ Set!(char[]) browserGetNewList(in GameConfig game, bool gslist)
 			if (!gslist) {
 				char[] line1 = lines.get().dup;
 				char[] line2 = lines.next();
-				throwIfQstatError(line1, line2, stderr_copy, game);
+				synchronized (procMutex) {
+					if (proc !is null && proc.isRunning())
+						throwIfQstatError(line1, line2, stderr_copy, game);
+				}
+
 			}
 
 			do {
