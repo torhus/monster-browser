@@ -12,6 +12,7 @@ import std.process;
 import std.stdio;
 import std.string;
 
+import actions;
 import common;
 import messageboxes;
 import qstat;
@@ -23,6 +24,7 @@ import settings;
 
 __gshared private ProcessPipes proc;
 __gshared private Object procMutex;
+__gshared private bool shouldKillProcess = false;
 
 
 /// Thrown if there's an error when communicating with a master server.
@@ -33,7 +35,23 @@ class MasterServerException : Exception {
 
 void runtoolsInit()
 {
-	procMutex = new Object();
+	procMutex = new Object;
+	addActionHandler(new MyActionHandler);
+}
+
+
+private class MyActionHandler : ActionHandler
+{
+	override void actionQueued(Action action)
+	{
+		if (shouldKillProcess)
+			killServerBrowser();
+	}
+
+	override void actionStopping(Action action)
+	{
+		actionQueued(action);
+	}
 }
 
 /**
@@ -48,6 +66,9 @@ Set!(string) browserGetNewList(in GameConfig game)
 {
 	char[] cmdLine;
 	Set!(string) addresses;
+
+	shouldKillProcess = true;
+	scope (exit) shouldKillProcess = false;
 
 	version (linux)
 		cmdLine ~= "./";
@@ -80,8 +101,9 @@ Set!(string) browserGetNewList(in GameConfig game)
 
 			char[] firstLine = lines.front.dup;
 			lines.popFront();
-			throwIfQstatError(firstLine, lines.front, proc.stderr, game);
-
+			synchronized (procMutex) {
+				throwIfQstatError(firstLine, lines.front, proc.stderr, game);
+			}
 			addresses = collectIpAddresses(lines, start);
 		}
 		catch (StdioException e) {
