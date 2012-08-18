@@ -4,7 +4,6 @@
 
 module colorednames;
 
-import tango.stdc.ctype;
 import tango.stdc.stdio;
 
 import dwt.graphics.Color;
