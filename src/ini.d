@@ -62,6 +62,10 @@ import tango.io.stream.TextFile;
 import tango.stdc.stringz;
 import tango.text.Ascii;
 import tango.text.Util;
+version (Windows) {
+	import tango.core.Exception;
+	import tango.sys.win32.CodePage;
+}
 
 //debug = INI; //show file being parsed
 
@@ -484,7 +488,12 @@ protected:
 									if(ch2 == secEnd) // ']'
 									{
 										isecs ~= isec;
-										isec = new IniSection(this, data[i2 .. i]);
+										version (Windows) {
+											isec = new IniSection(this, ansiToUtf8(data[i2 .. i]));
+										}
+										else {
+											isec = new IniSection(this, data[i2 .. i]);
+										}
 										debug(INI)
 											Stdout.formatln("INI section: '{}'", isec._name);
 										for(;;)
@@ -558,8 +567,14 @@ protected:
 
 									void addKey()
 									{
-										ikey.data = data[lineStartIndex .. i];
-										ikey._value = data[i2 .. i];
+										version (Windows) {
+											ikey.data = ansiToUtf8(data[lineStartIndex .. i]);
+											ikey._value = ansiToUtf8(data[i2 .. i]);
+										}
+										else {
+											ikey.data = data[lineStartIndex .. i];
+											ikey._value = data[i2 .. i];
+										}
 										isec.lines ~= ikey;
 										debug(INI)
 											Stdout.formatln("INI key: '{}' = '{}'", ikey._name, ikey._value);
@@ -699,6 +714,8 @@ public:
 		IniKey ikey;
 		IniSection isec;
 		uint i = 0, j;
+		version (Windows)
+			char[200] buffer;
 		scope TextFileOutput f = new TextFileOutput(_file);
 		scope (exit)
 			f.flush.close;
@@ -711,7 +728,12 @@ public:
 		for(; i != isecs.length; i++)
 		{
 			write_name:
-			f(secStart)(isecs[i]._name)(secEnd).newline;
+			f(secStart);
+			version (Windows)
+				f(utf8ToAnsi(isecs[i]._name, buffer));
+			else
+				f(isecs[i]._name);
+			f(secEnd).newline;
 			after_name:
 			isec = isecs[i];
 			for(j = 0; j != isec.lines.length; j++)
@@ -722,7 +744,11 @@ public:
 					if(ikey)
 						ikey.data = ikey._name ~ "=" ~ ikey._value;
 				}
-				f(isec.lines[j].data).newline;
+				version (Windows) {
+					f(utf8ToAnsi(isec.lines[j].data, buffer)).newline;
+				}
+				else
+					f(isec.lines[j].data).newline;
 			}
 		}
 	}
@@ -802,6 +828,34 @@ public:
 			}
 		}
 	}
+}
+
+
+private char[] ansiToUtf8(in char[] source)
+{
+	char[] buffer = new char[source.length * 2];
+
+	try {
+		return CodePage.from(source, buffer);
+	}
+	catch (IllegalArgumentException e) {
+		return source;
+	}
+}
+
+
+private char[] utf8ToAnsi(in char[] source, char[] buffer)
+{
+	if (buffer.length < source.length)
+		buffer.length = source.length;
+
+	try {
+		return CodePage.into(source, buffer);
+	}
+	catch (IllegalArgumentException e) {
+		return source;
+	}
+
 }
 
 
