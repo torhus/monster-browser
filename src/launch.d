@@ -12,7 +12,6 @@ version (Windows) {
 
 import dwt.DWT;
 
-import colorednames;
 import common;
 import dialogs;
 import mainwindow;
