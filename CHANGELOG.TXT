@@ -1,8 +1,9 @@
-Work in progress - 2012-07-17
+Work in progress - 2012-08-18
 -----------------------------
 - New: A new application icon, made by Biondo.
 - New: A setting to decide what MB does on startup or when a game is selected
        for the first time.  The default is to refresh the list, like before.
+- New: Support non-ASCII characters in settings.ini and mods.ini.
 - Change: Set fs_game based on the server's game cvar when launching the game,
           not on the mod setting from mods.ini.
 - Change: Don't repopulate the game list dropdown unless mods.ini was edited.
