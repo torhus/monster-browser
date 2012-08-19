@@ -1,10 +1,13 @@
 module serverqueue;
 
+import tango.util.MinMax;
+
 import dwt.dwthelper.Runnable;
 import dwt.widgets.Display;
 
 import common : arguments;
 import masterlist;
+import serverlist;
 import servertable;
 
 
@@ -12,7 +15,7 @@ import servertable;
 final class ServerQueue
 {
 	///
-	this(bool delegate(ServerHandle sh) addDg)
+	this(Replacement delegate(ServerHandle sh) addDg)
 	{
 		addDg_ = addDg;
 		Display.getDefault.syncExec(new TimerTask);
@@ -59,8 +62,9 @@ final class ServerQueue
 		synchronized (this) {
 			if (stop_)
 				return;
-			if (addAll() && !arguments.norefresh)
-				serverTable.quickRefresh;
+			int topIndex = addAll();
+			if (topIndex < int.max && !arguments.norefresh)
+				serverTable.quickRefresh(topIndex);
 			else
 				serverTable.updateStatusBar();
 		}
@@ -68,23 +72,24 @@ final class ServerQueue
 
 
 	/// Note: Doesn't synchronize.
-	private bool addAll()
+	private int addAll()
 	{
-		bool refresh = false;
+		int topIndex = int.max;
 
 		foreach (sh; list_) {
-			if (addDg_(sh))
-				refresh = true;
+			Replacement repl = addDg_(sh);
+			if (repl.oldIndex == -1 && repl.newIndex == -1)
+				continue;
+			topIndex = min(cast(uint)repl.oldIndex, cast(uint)repl.newIndex);
 		}
 		list_.length = 0;
 
-		return refresh;
+		return topIndex;
 	}
-
 
 	private {
 		ServerHandle[] list_;
-		bool delegate(ServerHandle) addDg_;
+		Replacement delegate(ServerHandle) addDg_;
 		bool stop_ = false;
 	}
 }
