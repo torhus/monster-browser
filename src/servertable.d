@@ -248,35 +248,23 @@ class ServerTable
 	}
 
 	/**
-	 * If necessary clears the table and refills it with updated data.
+	 * Clears part of the table and refills it with updated data.
 	 *
 	 * Keeps the same selection if there was one.  Updates the status bar main
 	 * info.
 	 */
-	void quickRefresh()
+	void quickRefresh(int topIndex)
 	{
 		if(table_.isDisposed())
 			return;
 
-		int itemCount = table_.getItemCount();
-		int bottom = getBottomIndex();
-		bool needRefresh = false;
+		assert (topIndex < serverList_.filteredLength);
 
-		// Check to see if the bottommost visible item has moved or not.
-		if (bottom < serverList_.filteredLength && bottom < itemCount) {
-			TableItem bottomItem = table_.getItem(bottom);
-			enum { col = ServerColumn.ADDRESS }
-			if (bottomItem.getText(col) !=
-		                           serverList_.getFiltered(bottom).server[col])
-				needRefresh = true;
-		}
+		int oldItemCount = table_.getItemCount();
 
-		table_.setItemCount(cast(int)serverList_.filteredLength);
-
-		// Only refill the Table if visible items, or items further up have
-		// moved.  Refilling every time is very slow.
-		if (needRefresh || itemCount <= bottom)
-			table_.clearAll();
+		table_.setRedraw(false);
+		table_.setItemCount(serverList_.filteredLength);
+		table_.clear(topIndex, oldItemCount - 1);
 
 		// Keep the same servers selected.
 		table_.deselectAll();
@@ -285,6 +273,7 @@ class ServerTable
 			selectedIps_[ip] = index;
 			table_.select(index);
 		}
+		table_.setRedraw(true);
 
 		updateStatusBar();
 	}
@@ -892,12 +881,6 @@ private:
 		}
 	}
 
-	int getBottomIndex()
-	{
-		double q = cast(double)(table_.getClientArea().height -
-		                    table_.getHeaderHeight()) / table_.getItemHeight();
-		return cast(int)ceil(q) + table_.getTopIndex() - 1;
-	}
 
 	// Get an italic version of the table item font.
 	Font getItalicItemFont()

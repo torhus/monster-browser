@@ -11,6 +11,7 @@ import std.uni : sicmp;
 import common;
 import geoip;
 import masterlist;
+import messageboxes;
 import serverdata;
 import set;
 import settings;
@@ -21,6 +22,17 @@ enum Filter {
 	NONE = 0,  /// Value is zero.
 	HAS_HUMANS = 1,  ///
 	NOT_EMPTY = 2  ///
+}
+
+
+/// Returned by the ServerList add and replace methods.
+struct Replacement
+{
+	/// The previous index, or -1 if the server was added or if the server was
+	/// previously filtered out.
+	int oldIndex;
+	/// The current index, or -1 if filtered out.
+	int newIndex;
 }
 
 
@@ -63,10 +75,8 @@ final class ServerList
 
 	/**
 	 * Add a server to the list.
-	 *
-	 * Returns true if the filtered list was altered.
 	 */
-	bool add(ServerHandle sh)
+	Replacement add(ServerHandle sh)
 	{
 		return addOrReplace(sh);
 	}
@@ -74,10 +84,8 @@ final class ServerList
 
 	/**
 	* Replace a server in the list, or add it if it's missing.
-	*
-	* Returns true if the filtered list was altered.
 	*/
-	bool replace(ServerHandle sh)
+	Replacement replace(ServerHandle sh)
 	{
 		return addOrReplace(sh, true);
 	}
@@ -333,6 +341,7 @@ private:
 			if (filteredList.length > ipHash_.length) {
 				log("filteredlist.length == %s\nipHash_.length == %s",
 				                   filteredList.length, ipHash_.length);
+				error("filteredList.length > ipHash_.length (see LOG.TXT)");
 				assert(0);
 			}
 			if (!(filters_ || filteredList.length == ipHash_.length ||
@@ -347,7 +356,7 @@ private:
 				    filters_ & Filter.HAS_HUMANS,
 				    filters_ & Filter.NOT_EMPTY,
 				    ipHash_.length, filteredList.length, searchString_.length);
-				assert(0);
+				assert(0, "Details in log file.");
 			}
 		}
 	}
@@ -355,24 +364,22 @@ private:
 
 	/**
 	* Add or replace a server in the list.
-	*
-	* Returns true if the filtered list was altered.
 	*/
-	bool addOrReplace(ServerHandle sh, bool replace=false)
+	Replacement addOrReplace(ServerHandle sh, bool replace=false)
 	{
 		synchronized (this) synchronized (master_) {
 			ServerData sd = master_.getServerData(sh);
 			GameConfig game = getGameConfig(gameName_);
-			bool removed = false;
+			int oldIndex = -1;
 
 			if (replace) {
-				removed = removeFromFiltered(sd.server[ServerColumn.ADDRESS]);
+				oldIndex = removeFromFiltered(sd.server[ServerColumn.ADDRESS]);
 			}
 
 			sd.server[ServerColumn.GAMETYPE] =
 			                         getGameTypeName(game, sd.numericGameType);
 
-			if (!removed) {
+			if (oldIndex == -1) {
 				// adding as a new server
 				string ip = sd.server[ServerColumn.ADDRESS];
 				GeoInfo geo = getGeoInfo(ip[0..findChar(ip, ':')]);
@@ -385,11 +392,10 @@ private:
 			}
 
 			if (!isFilteredOut(&sd)) {
-				insertSorted(sh);
-				return true;
+				return Replacement(oldIndex, insertSorted(sh));
 			}
 			else {
-				return removed;
+				return Replacement(oldIndex, -1);
 			}
 		}
 	}
@@ -440,8 +446,10 @@ private:
 
 	/**
 	 * Insert a server in sorted order in the filtered list.
+	 *
+	 * Returns the index where it was inserted.
 	 */
-	void insertSorted(ServerHandle sh)
+	int insertSorted(ServerHandle sh)
 	{
 		assert(isSorted_);
 
@@ -470,6 +478,8 @@ private:
 				assert(compare(newSd, after) < 0);
 			}
 		}
+
+		return i;
 	}
 
 
@@ -546,18 +556,17 @@ private:
 		return compare(a, b);
 	}
 
-
-	bool removeFromFiltered(in char[] address)
+	int removeFromFiltered(in char[] address)
 	{
 		int i = getFilteredIndex(address);
 		if (i == -1)
-			return false;
+			return i;
 
 		filteredList = filteredList.remove(i);
 		filteredList.assumeSafeAppend;
 
 		ipHashValid_ = false;
-		return true;
+		return i;
 	}
 
 	bool isFilteredOut(ServerHandle sh)
