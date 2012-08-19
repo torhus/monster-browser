@@ -758,7 +758,7 @@ class ServerRetrievalController
 		StatusBarUpdater statusBarUpdater_;
 		bool replace_;
 		void delegate(ServerHandle) deliverDg_;
-		bool delegate(ServerHandle) deliverDg2_;
+		Replacement delegate(ServerHandle) deliverDg2_;
 		bool wasStopped_ = false;
 		bool userAbort_;
 		bool addRemaining_ = true;

@@ -15,6 +15,7 @@ debug import tango.util.log.Log;
 import common;
 import geoip;
 import masterlist;
+debug import messageboxes;
 import serverdata;
 import set;
 import settings;
@@ -25,6 +26,17 @@ enum Filter {
 	NONE = 0,  /// Value is zero.
 	HAS_HUMANS = 1,  ///
 	NOT_EMPTY = 2  ///
+}
+
+
+/// Returned by the ServerList add and replace methods.
+struct Replacement
+{
+	/// The previous index, or -1 if the server was added or if the server was 
+	/// previously filtered out.
+	int oldIndex;
+	/// The current index, or -1 if filtered out. 
+	int newIndex;
 }
 
 
@@ -68,10 +80,8 @@ final class ServerList
 
 	/**
 	 * Add a server to the list.
-	 *
-	 * Returns true if the filtered list was altered.
 	 */
-	bool add(ServerHandle sh)
+	Replacement add(ServerHandle sh)
 	{
 		bool refresh = false;
 
@@ -80,37 +90,33 @@ final class ServerList
 			sd.server[ServerColumn.COUNTRY] = getCountryCode(&sd);
 			ipHash_[sd.server[ServerColumn.ADDRESS]] = -1;
 			if (!isFilteredOut(&sd)) {
-				insertSorted(sh);
-				refresh = true;
+				return Replacement(-1, insertSorted(sh));
 			}
 		}
 
-		return refresh;
+		return Replacement(-1, -1);
 	}
 
 
 	/**
 	* Replace a server in the list, or add it if it's missing.
-	*
-	* Returns true if the filtered list was altered.
 	*/
-	bool replace(ServerHandle sh)
+	Replacement replace(ServerHandle sh)
 	{
 		synchronized (this) synchronized (master_) {
 			ServerData sd = master_.getServerData(sh);
-			bool removed = removeFromFiltered(sd.server[ServerColumn.ADDRESS]);
+			int oldIndex = removeFromFiltered(sd.server[ServerColumn.ADDRESS]);
 
-			if (!removed) {
+			if (oldIndex == -1) {
 				// adding as a new server
 				ipHash_[sd.server[ServerColumn.ADDRESS]] = -1;
 				sd.server[ServerColumn.COUNTRY] = getCountryCode(&sd);
 			}
 			if (!isFilteredOut(&sd)) {
-				insertSorted(sh);
-				return true;
+				return Replacement(oldIndex, insertSorted(sh));
 			}
 			else {
-				return removed;
+				return Replacement(oldIndex, -1);
 			}
 		}
 	}
@@ -336,11 +342,12 @@ private:
 	version (Windows) invariant()
 	{
 		synchronized (this) {
-			/*if (filteredList.length > list.length) {
-				log(Format("filteredlist.length == {}\nlist.length == {}",
-				                            filteredList.length, list.length));
-				assert(0, "Details in log file.");
-			}*/
+			if (filteredList.length > ipHash_.size) {
+				log(Format("filteredlist.length == {}\nipHash_.size == {}",
+				                         filteredList.length, ipHash_.size));
+				error("filteredList.length > ipHash_.length (see LOG.TXT)");
+				assert(0);
+			}
 			/*if (!(filters_ || filteredList.length == list.length ||
 			                       filteredList.length == (list.length - 1))) {
 				log(Format("ServerList invariant broken!"
@@ -403,8 +410,10 @@ private:
 
 	/**
 	 * Insert a server in sorted order in the filtered list.
+	 * 
+	 * Returns the index where it was inserted.
 	 */
-	void insertSorted(ServerHandle sh)
+	int insertSorted(ServerHandle sh)
 	{
 		assert(isSorted_);
 
@@ -416,8 +425,9 @@ private:
 			return compare(&sda, &sdb) < 0;
 		}
 
-		size_t i = ubound(filteredList, sh, &less);
+		int i = ubound(filteredList, sh, &less);
 		insertInFiltered(i, sh);
+		return i;
 	}
 
 	/**
@@ -475,11 +485,11 @@ private:
 		ipHashValid_ = false;
 	}
 
-	bool removeFromFiltered(in char[] address)
+	int removeFromFiltered(in char[] address)
 	{
 		int i = getFilteredIndex(address);
 		if (i == -1)
-			return false;
+			return i;
 
 		ServerHandle* ptr = filteredList.ptr + i;
 		size_t bytes = (filteredList.length - 1 - i) * filteredList[0].sizeof;
@@ -487,7 +497,7 @@ private:
 		filteredList.length = filteredList.length - 1;
 
 		ipHashValid_ = false;
-		return true;
+		return i;
 	}
 
 	char[] getCountryCode(in ServerData* sd)
