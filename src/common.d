@@ -20,6 +20,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.graphics.Drawable;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.widgets.Table;
 
@@ -58,7 +59,7 @@ shared bool userAbort = false;
 /// Is there a console available for output?
 shared bool haveConsole = false;
 
-shared Font staleItemFont;
+__gshared Font staleItemFont;
 
 // Add dispose() methods etc. to this array, and they will be called at
 // shutdown.

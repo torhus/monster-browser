@@ -89,7 +89,7 @@ final class MasterList
 			if (timedOut(&sd)) {
 				oldSd.server[ServerColumn.PING] =
 					                            sd.server[ServerColumn.PING];
-				old.updateState = sd.updateState;
+				oldSd.updateState = sd.updateState;
 				// clear player count
 				oldSd.setPlayersColumn(0, 0, oldSd.maxClients);
 				oldSd.players = null;

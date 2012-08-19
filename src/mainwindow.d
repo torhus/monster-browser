@@ -31,6 +31,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.ProgressBar;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
@@ -93,7 +95,7 @@ class MainWindow
 		topLayout.horizontalSpacing = 20;
 		topComposite.setLayout(topLayout);
 
-		new ToolBarWrapper(topComposite);
+		new ToolBarWrapper(shell_, topComposite);
 
 		gameBar = new GameBar(topComposite);
 		filterBar = new FilterBar(topComposite);
@@ -749,7 +751,7 @@ private:
  */
 private class ToolBarWrapper
 {
-	this(Composite parent)
+	this(Shell shell, Composite parent)
 	{
 		toolBar_ = new ToolBar(parent, SWT.HORIZONTAL);
 
@@ -763,18 +765,19 @@ private class ToolBarWrapper
 			}
 		});
 
-		new ToolItem(toolBar_, SWT.SEPARATOR);
-		refreshAllButton_ = new ToolItem(toolBar_, SWT.PUSH);
+		// Need some space between the buttons to reduce the chance of the
+		// drop down part getting stuck in the hot state.
+		(new ToolItem(toolBar_, SWT.SEPARATOR)).setWidth(5);
+
+		refreshAllButton_ = new ToolItem(toolBar_, SWT.DROP_DOWN);
 		refreshAllButton_.setText("Refresh all");
 		refreshAllButton_.setImage(loadImage!("refresh_32.png"));
-		refreshAllButton_.addSelectionListener(new class SelectionAdapter {
-			public override void widgetSelected(SelectionEvent e)
-			{
-				startAction(Action.refreshAll);
-			}
-		});
+		refreshAllButton_.addSelectionListener(
+		                       new RefreshButtonListener(shell));
 
-		new ToolItem(toolBar_, SWT.SEPARATOR);
+		// Need some space between the buttons to reduce the chance of the
+		// drop down part getting stuck in the hot state.
+		(new ToolItem(toolBar_, SWT.SEPARATOR)).setWidth(5);
 
 		addButton_ = new ToolItem(toolBar_, SWT.PUSH);
 		addButton_.setText("   Add... ");
@@ -787,7 +790,7 @@ private class ToolBarWrapper
 			}
 		});
 
-		(new ToolItem(toolBar_, SWT.SEPARATOR)).setWidth(12);
+		(new ToolItem(toolBar_, SWT.SEPARATOR)).setWidth(16);
 
 		stopButton_ = new ToolItem(toolBar_, SWT.PUSH);
 		stopButton_.setText("   Stop   ");
@@ -800,7 +803,7 @@ private class ToolBarWrapper
 			}
 		});
 
-		(new ToolItem(toolBar_, SWT.SEPARATOR)).setWidth(12);
+		(new ToolItem(toolBar_, SWT.SEPARATOR)).setWidth(16);
 
 		settingsButton_ = new ToolItem(toolBar_, SWT.PUSH);
 		settingsButton_.setText("Settings");
@@ -872,6 +875,38 @@ private class ToolBarWrapper
 		ToolItem stopButton_;
 		ToolItem settingsButton_;
 	}
+}
+
+
+private class RefreshButtonListener : SelectionAdapter {
+	this(Shell shell)
+	{
+		menu_ = new Menu(shell);
+		(new MenuItem(menu_, SWT.NONE)).setText(
+		              "Refresh servers that did not respond (\&infin;)");
+		(new MenuItem(menu_, SWT.NONE)).setText(
+		             "Refresh servers that were not queried (?)");
+	}
+
+	override void widgetSelected(SelectionEvent e)
+	{
+		if (e.detail != SWT.ARROW) {
+			startAction(Action.refreshAll);
+		}
+		else {
+			// Align the menu to the button and show it
+			auto parent = (cast(ToolItem)e.widget).getParent();
+			auto display = Display.getDefault();
+			menu_.setLocation(display.map(parent, null, e.x, e.y));
+
+			// Making the button toggle the menu on/off is complicated, as
+			// the menu is automatically hidden when you click the button. We
+			// do it the easy way by just always showing it.
+			menu_.setVisible(true);
+		}
+	}
+
+	private Menu menu_;
 }
 
 
