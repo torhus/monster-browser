@@ -170,7 +170,16 @@ qstatConfigFile=worldofpadman.cfg
 
 [Urban Terror]
 mod=q3ut4
+exePath=%ProgramFiles%\UrbanTerror\ioUrbanTerror.exe
 masterServer=master.urbanterror.net
+
+[Urban Terror 4.2]
+mod=q3urt42
+regKey=HKEY_LOCAL_MACHINE\SOFTWARE\FrozenSand\Urban Terror\Path
+exeName=Quake3-UrT.exe
+exePath=%ProgramFiles%\UrbanTerror42\Quake3-UrT.exe
+masterServer=master.urbanterror.net
+protocolVersion=70
 
 [Tremulous]
 mod=base
