@@ -50,7 +50,7 @@ Credits
 -------
 Qstat for querying servers - http://qstat.sourceforge.net
 
-Thanks to Biondo for making the application icon that's used for Monster Browser 0.8b and later.
+Thanks to Biondo for making the application icon that's used for Monster Browser 0.9 and later.
 
 GeoLite Country from maxmind.com.
 
