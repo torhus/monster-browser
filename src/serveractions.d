@@ -249,7 +249,8 @@ void refreshAll()
 	}
 
 	log("Refreshing server list for " ~ game.name ~ "...");
-	log(Format("Found {} servers.", addresses.length));
+	log(Format("{} servers to refresh, {} to retry.", addresses.length,
+	                                                  addresses2.length));
 
 	// merge in the extra servers
 	Set!(char[]) extraServers = serverList.extraServers;
@@ -310,12 +311,8 @@ void checkForNewServers()
 {
 	ServerList serverList = serverTable.serverList;
 
-	if (serverList.master.length > 0) {
-		log("Checking for new servers for " ~ serverList.gameName ~ "...");
-	}
-	else {
-		log("Getting new server list for " ~ serverList.gameName ~ "...");
-	}
+	log("Checking for new servers for " ~ serverList.gameName ~ "...");
+
 	Display.getDefault().syncExec(dgRunnable({
 		serverTable.notifyRefreshStarted((bool) {
 			threadManager.abort = true;
