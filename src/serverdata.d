@@ -164,8 +164,10 @@ bool matchGame(in ServerData* sd, in GameConfig game)
 			}
 		}
 		else {
-			if (cvar[0] == "game" || cvar[0] == "gamename")
-				return true;
+			if (cvar[0] == "game" || cvar[0] == "gamename") {
+				if (icompare(cvar[1], game.mod) == 0)
+					return true;
+			}
 		}
 	}
 
