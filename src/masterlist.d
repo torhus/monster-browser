@@ -62,7 +62,7 @@ final class MasterList
 	 * Update the data for a server in the master list.
 	 *
 	 * Will update the first server found whose address matches the one of sd.
-	 * The country code will be kept, since it's not suppposed to change.
+	 * The country code and persistency state will be kept.
 	 *
 	 * Returns: The server's handle if it was found in the list, or
 	 *          InvalidServerHandle if not.
@@ -76,9 +76,12 @@ final class MasterList
 
 			if (sh != InvalidServerHandle) {
 				ServerData* old = &servers_[sh];
-				// country code is calculated locally, so we keep it
+
+				// some data is be kept between refreshes
 				sd.server[ServerColumn.COUNTRY] =
 				                              old.server[ServerColumn.COUNTRY];
+				sd.persistent = old.persistent;
+
 				if (timedOut(&sd)) {
 					old.server[ServerColumn.PING] =
 					                              sd.server[ServerColumn.PING];
