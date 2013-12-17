@@ -1,3 +1,7 @@
+v0.9b - 2013-12-18
+------------------
+- Fix: Adding servers as persistent didn't work.
+
 v0.9a - 2012-09-14
 ------------------
 - Fix: Mod filtering was broken.
