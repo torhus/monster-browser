@@ -203,9 +203,16 @@ char[][][char[]] gameTypes;
 
 
 static this() {
+	// Initialize game type mappings.
 	gameTypes["osp"] = split("FFA 1v1 SP TDM CTF CA", " ");
-	gameTypes["q3ut3"] = split("FFA FFA FFA TDM TS FtL C&H CTF B&D", " ");
-	gameTypes["q3ut4"] = split("FFA FFA FFA TDM TS FtL C&H CTF B&D", " ");
+	gameTypes["q3ut3"] = split("FFA FFA FFA TDM TS FTL C&H CTF B&D", " ");
+
+	// The Jump game type does not seeem to be included in UrT 4.1, but this
+	// way we can reuse the list for both versions. FT is Freezetag, which
+	// is only in planning as of this writing.
+	gameTypes["q3ut4"] = split("FFA LMS 2 TDM TS FTL C&H CTF Bomb Jump FT", " ");
+	gameTypes["q3urt42"] = gameTypes["q3ut4"];
+
 	gameTypes["smokinguns"] = split("FFA Duel 2 TDM RTP BR", " ");
 	gameTypes["westernq3"]  = split("FFA Duel 2 TDM RTP BR", " ");
 	gameTypes["wop"] = split("FFA 1v1 2 SyC LPS TDM 6 SyCT BB", " ");

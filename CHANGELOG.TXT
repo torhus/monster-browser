@@ -1,3 +1,9 @@
+2014-03-16
+----------
+- Fix: Updated Urban Terror 4.2 master server config. Unable to make the
+       master for older versions work again, so I removed it.
+- Fix: Updated Urban Terror game type names.
+
 v0.9b - 2013-12-18
 ------------------
 - Fix: Adding servers as persistent didn't work.
