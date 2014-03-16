@@ -168,10 +168,12 @@ protocolVersion=71
 qstatMasterServerType=worldofpadmanm
 qstatConfigFile=worldofpadman.cfg
 
-[Urban Terror]
-mod=q3ut4
-exePath=%ProgramFiles%\UrbanTerror\ioUrbanTerror.exe
-masterServer=master.quake3arena.com
+; I'm not able to get qstat to speak to this master anymore. If you know how,
+; please let me know.
+;[Urban Terror]
+;mod=q3ut4
+;exePath=%ProgramFiles%\UrbanTerror\ioUrbanTerror.exe
+;masterServer=master.quake3arena.com
 
 [Urban Terror 4.2]
 mod=q3urt42
