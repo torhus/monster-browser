@@ -51,7 +51,7 @@ Building on Windows
 - Copy the 'res' directory from DWT into the Monster Browser directory.
 - Also copy the 'dwt' directory, either into the Monster Browser directory, or
   into your D import directory.
-- Unzip http://monsterbrowser.googlecode.com/files/monsterbrowser_flags.zip
+- Unzip https://bitbucket.org/torhus/monster-browser/downloads/monsterbrowser_flags.zip
   into the Monster Browser directory.
 - Run build-release.bat or one of the other batch files.  Requires xfBuild to
   be installed, see above.
@@ -87,10 +87,10 @@ quit      - Print time since startup and then quit, after loading the server
 
 
 -----------
-Two external programs are used, the first one is optional and not included in
+Two external programs are used, the second one is optional and not included in
 the download:
+http://qstat.sourceforge.net/
 http://directory.fsf.org/All_Packages_in_Directory/gslist.html
-http://qstat.org/
 
 Please be aware that gslist is subject to some legal controversy, please read
 this link before redistributing it from a US server:
