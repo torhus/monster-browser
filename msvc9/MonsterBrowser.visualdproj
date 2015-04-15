@@ -83,8 +83,8 @@
   <resfile />
   <exefile>..\$(ProjectName).exe</exefile>
   <additionalOptions>-L/rc:..\misc\mb.res -L/rc:..\misc\dwt.res -L/su:windows:4</additionalOptions>
-  <preBuildCommand>svnversion -n .. trunk &gt; svnversion.txt</preBuildCommand>
-  <postBuildCommand>del svnversion.txt</postBuildCommand>
+  <preBuildCommand>hg id -i &gt; revision.txt</preBuildCommand>
+  <postBuildCommand>del revision.txt</postBuildCommand>
   <debugtarget>$(TARGETPATH)</debugtarget>
   <debugarguments />
   <debugworkingdir />
@@ -178,8 +178,8 @@
   <resfile />
   <exefile>..\$(ProjectName).exe</exefile>
   <additionalOptions>-L/rc:..\misc\mb.res -L/rc:..\misc\dwt.res -L/su:windows:4</additionalOptions>
-  <preBuildCommand>svnversion -n .. trunk &gt; svnversion.txt</preBuildCommand>
-  <postBuildCommand>del svnversion.txt</postBuildCommand>
+  <preBuildCommand>hg id -i &gt; revision.txt</preBuildCommand>
+  <postBuildCommand>del revision.txt</postBuildCommand>
   <debugtarget>$(TARGETPATH)</debugtarget>
   <debugarguments />
   <debugworkingdir />

@@ -70,7 +70,7 @@ class MainWindow
 	this()
 	{
 		shell_ = new Shell(Display.getDefault);
-		shell_.setText(APPNAME ~ " " ~ VERSION);
+		shell_.setText(APPNAME ~ " " ~ getVersionString());
 		shell_.addShellListener(new MyShellListener);
 
 		// restore window size and state
