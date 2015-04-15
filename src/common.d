@@ -51,23 +51,8 @@ char[] logDir;  /// Absolute path to where the log file is.
 
 bool haveGslist;  /// Will be true if gslist was found during startup.
 
-
 const char[] APPNAME = "Monster Browser";
-
-const char[] SVN = import("svnversion.txt");
-
 const char[] FINAL_VERSION = "0.9b";
-
-debug {
-	const char[] VERSION = __DATE__ ~
-	                                 " (svnversion " ~ SVN ~ ") *DEBUG BUILD*";
-}
-else {
-	version (Final)
-		const char[] VERSION = FINAL_VERSION;
-	else
-		const char[] VERSION = __DATE__ ~  " (svnversion " ~ SVN ~ ")";
-}
 
 Clipboard clipboard;
 StopWatch globalTimer;
@@ -88,6 +73,23 @@ const File.Style WriteCreateShared =
                       { File.Access.Write, File.Open.Create, File.Share.Read };
 const File.Style WriteAppendingShared =
                       { File.Access.Write, File.Open.Append, File.Share.Read };
+
+
+///
+char[] getVersionString()
+{
+	char[] revision = tango.text.Util.trim(import("revision.txt"));
+
+	debug {
+		return __DATE__ ~ " (rev. " ~ revision ~ ") *DEBUG BUILD*";
+	}
+	else {
+		version (Final)
+			return FINAL_VERSION;
+		else
+			return __DATE__ ~  " (rev. " ~ revision ~ ")";
+	}
+}
 
 
 /**
@@ -113,8 +115,9 @@ void initLogging(char[] fileName="LOG.TXT")
 	// add a startup message
 	time_t t = time(null);
 	char[] timestamp = ctime(&t)[0..24];
-	char[] msg = Format(newline ~ sep ~ newline ~ APPNAME ~ " " ~ VERSION ~
-	                     " started at " ~ timestamp ~ newline ~ sep ~ newline);
+	char[] msg = Format(newline ~ sep ~ newline ~ APPNAME ~ " " ~
+	                    getVersionString() ~ " started at " ~ timestamp ~
+	                    newline ~ sep ~ newline);
 	File.append(path, msg);
 
 	Log.root.add(new AppendFile(path, new LayoutFile));
