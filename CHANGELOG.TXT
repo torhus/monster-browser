@@ -1,5 +1,6 @@
-2014-03-16
+2015-04-17
 ----------
+- New: Support for Reaction (rq3.com).
 - Fix: Updated Urban Terror 4.2 master server config. Unable to make the
        master for older versions work again, so I removed it.
 - Fix: Updated Urban Terror game type names.
