@@ -213,6 +213,7 @@ static this() {
 	gameTypes["q3ut4"] = split("FFA LMS 2 TDM TS FTL C&H CTF Bomb Jump FT", " ");
 	gameTypes["q3urt42"] = gameTypes["q3ut4"];
 
+	gameTypes["Reaction"] = split("DM 1 2 TDM TP CBT", " ");
 	gameTypes["smokinguns"] = split("FFA Duel 2 TDM RTP BR", " ");
 	gameTypes["westernq3"]  = split("FFA Duel 2 TDM RTP BR", " ");
 	gameTypes["wop"] = split("FFA 1v1 2 SyC LPS TDM 6 SyCT BB", " ");
