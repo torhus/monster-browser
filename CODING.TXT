@@ -5,7 +5,7 @@ be easy to pick up, due to its similarity to C/C++ and Java.
 Useful links
 ------------
 D compiler:
-http://digitalmars.com/d/1.0/dcompiler.html
+http://www.digitalmars.com/d/1.0/changelog.html
 Currently I'm using DMD 1.066.
 
 D docs:
@@ -40,7 +40,7 @@ I'm currently using dwt-win r341 on Windows.
 http://www.dsource.org/projects/dwt
 Apply the patch that's attached to this ticket:
 http://www.dsource.org/projects/dwt-win/ticket/23
-http://help.eclipse.org/ganymede/nftopic/org.eclipse.platform.doc.isv/reference/api/org/eclipse/swt/widgets/package-tree.html
+http://help.eclipse.org/indigo/index.jsp?topic=%2Forg.eclipse.platform.doc.isv%2Freference%2Fapi%2Forg%2Feclipse%2Fswt%2Fwidgets%2Fpackage-summary.html
 There's also a DWT news group on news.digitalmars.com, and a #dwt channel on
 freenode (IRC).
 
@@ -95,8 +95,6 @@ http://directory.fsf.org/All_Packages_in_Directory/gslist.html
 Please be aware that gslist is subject to some legal controversy, please read
 this link before redistributing it from a US server:
 http://aluigi.altervista.org/papers.htm#distrust
-
-PathfinderET is also included, as a source of ideas for this project.
 
 
 -torhu at yahoo com
