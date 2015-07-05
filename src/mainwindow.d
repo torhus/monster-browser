@@ -44,10 +44,9 @@ import servertable;
 import settings;
 import threadmanager;
 
-// For the Windows 7 taskbar progress feature
+// For the taskbar progress display feature of Windows 7 and later
 version (Windows) {
 	import mswindows.taskbarprogress;
-	import mswindows.util;
 }
 
 StatusBar statusBar;  ///
@@ -315,7 +314,7 @@ class StatusBar : Composite
 			layout();
 		}
 
-		if (useWin7Taskbar_) {
+		version (Windows) if (tbProgress_) {
 			if (indeterminate) {
 				tbProgress_.setProgressState(TBPF_INDETERMINATE);
 			}
@@ -339,7 +338,7 @@ class StatusBar : Composite
 		if (isDisposed())
 			return;
 		progressBar_.setVisible(false);
-		if (useWin7Taskbar_)
+		version (Windows) if (tbProgress_)
 				tbProgress_.setProgressState(TBPF_NOPROGRESS);
 		setLeft(text);
 	}
@@ -359,7 +358,7 @@ class StatusBar : Composite
 		progressBar_.setMaximum(total);
 		progressBar_.setSelection(current);
 
-		if (useWin7Taskbar_) {
+		version (Windows) if (tbProgress_) {
 			if (!(progressBar_.getStyle() & DWT.INDETERMINATE))
 				tbProgress_.setProgressValue(current, total);
 		}
@@ -373,7 +372,7 @@ class StatusBar : Composite
 		
 		progressBar_.setState(DWT.ERROR);
 
-		if (useWin7Taskbar_)
+		version (Windows) if (tbProgress_)
 			tbProgress_.setProgressState(TBPF_ERROR);
 	}
 
@@ -400,23 +399,18 @@ class StatusBar : Composite
 	}
 
 
-	// For the Windows 7 taskbar.	
+	// For the Windows 7 and later taskbar.
 	version (Windows) private void initTaskbarProgress()
 	{
-		if (!isWindows7OrLater) {
-			useWin7Taskbar_ = false;
-			return;
+		try {
+			tbProgress_ = new TaskbarProgress(parent.getShell().handle);
+		}
+		catch (Exception e) {
+			//logx(__FILE__, __LINE__, e);
 		}
 
-		try
-			tbProgress_ = new TaskbarProgress(parent.getShell().handle);
-		catch (Exception e)
-			logx(__FILE__, __LINE__, e);
-			
 		if (tbProgress_)
 			callAtShutdown ~= &tbProgress_.dispose;
-
-		useWin7Taskbar_ = tbProgress_ !is null;
 	}
 
 
@@ -426,11 +420,7 @@ private:
 	Label progressLabel_;
 	ProgressBar progressBar_;
 	version (Windows) {
-		TaskbarProgress tbProgress_;
-		bool useWin7Taskbar_;
-	}
-	else {
-		enum { useWin7Taskbar_ = false };
+		TaskbarProgress tbProgress_ = null;
 	}
 }
 
