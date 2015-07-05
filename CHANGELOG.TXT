@@ -1,5 +1,5 @@
-2015-07-05
-----------
+v0.9c - 2015-07-05
+------------------
 - New: Support for Reaction (rq3.com).
 - Change: All Qstat configuration is now in qstat_mb.cfg, instead of having one
           file per game.
