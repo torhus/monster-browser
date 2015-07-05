@@ -166,7 +166,7 @@ exePath=%ProgramFiles%\World of Padman 1.5\wop.exe
 masterServer=master.worldofpadman.com:27955
 protocolVersion=71
 qstatMasterServerType=worldofpadmanm
-qstatConfigFile=worldofpadman.cfg
+qstatConfigFile=qstat_mb.cfg
 
 ; I'm not able to get qstat to speak to this master anymore. If you know how,
 ; please let me know.
@@ -203,7 +203,7 @@ exePath=%ProgramFiles%\Reaction\Reaction.x86.exe
 masterServer=master.rq3.com:27950
 protocolVersion=71
 qstatMasterServerType=reactionm
-qstatConfigFile=reaction.cfg
+qstatConfigFile=qstat_mb.cfg
 `;
 
 	Ini settingsIni;

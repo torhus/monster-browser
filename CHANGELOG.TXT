@@ -1,6 +1,8 @@
-2015-04-17
+2015-05-22
 ----------
 - New: Support for Reaction (rq3.com).
+- Change: All Qstat configuration is now in qstat_mb.cfg, instead of having one
+          file per game.
 - Fix: Updated Urban Terror 4.2 master server config. Unable to make the
        master for older versions work again, so I removed it.
 - Fix: Updated Urban Terror game type names.

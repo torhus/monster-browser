@@ -52,7 +52,7 @@ char[] logDir;  /// Absolute path to where the log file is.
 bool haveGslist;  /// Will be true if gslist was found during startup.
 
 const char[] APPNAME = "Monster Browser";
-const char[] FINAL_VERSION = "0.9b";
+const char[] FINAL_VERSION = "0.9c";
 
 Clipboard clipboard;
 StopWatch globalTimer;
