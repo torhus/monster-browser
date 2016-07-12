@@ -87,15 +87,13 @@ class ServerTable
 		table_.addKeyListener(new MyKeyListener);
 
 		coloredNames_ = getSetting("coloredNames") == "true";
-		showFlags_ = (getSetting("showFlags") == "true") && initGeoIp();
+		showFlags_ = initGeoIp() && (getSetting("showFlags") == "true");
 
 		if (showFlags_ || coloredNames_) {
 			table_.addListener(DWT.EraseItem, new EraseItemListener);
 			table_.addListener(DWT.PaintItem, new PaintItemListener);
 		}
 
-		if (showFlags_)
-			table_.addListener(DWT.MouseMove, new MouseMoveListener);
 
 		Listener sortListener = new SortListener;
 
@@ -398,8 +396,22 @@ private:
 			auto sd = serverList_.getFiltered(index);
 
 			// add text
-			for (int i = ServerColumn.COUNTRY + 1; i <= ServerColumn.max; i++)
+			for (int i = ServerColumn.COUNTRY + 1; i <= ServerColumn.max; i++) {
 				item.setText(i, sd.server[i]);
+			}
+
+			char[] countryCode = sd.server[ServerColumn.COUNTRY];
+			char[] ip = sd.server[ServerColumn.ADDRESS];
+			auto colon = locate(ip, ':');
+			char[] countryName = countryNameByAddr(ip[0..colon]);
+
+			if (countryName.length)
+				item.setText(ServerColumn.COUNTRY, countryName);
+			else if (countryCode.length)
+				item.setText(ServerColumn.COUNTRY, countryCode);
+
+			if (showFlags_ && countryCode.length)
+				item.setImage(ServerColumn.COUNTRY, getFlagImage(countryCode));
 
 			if (timedOut(&sd)) {
 				item.setText(ServerColumn.PING, "\&infin;");
@@ -467,7 +479,6 @@ private:
 	class EraseItemListener : Listener {
 		void handleEvent(Event e) {
 			if (e.index == ServerColumn.NAME && coloredNames_ ||
-			                   e.index == ServerColumn.COUNTRY && showFlags_ ||
 			                   e.index == ServerColumn.PASSWORDED)
 				e.detail &= ~DWT.FOREGROUND;
 		}
@@ -476,7 +487,6 @@ private:
 	class PaintItemListener : Listener {
 		void handleEvent(Event e) {
 			if (!((e.index == ServerColumn.NAME && coloredNames_) ||
-					(e.index == ServerColumn.COUNTRY && showFlags_) ||
 					 e.index == ServerColumn.PASSWORDED))
 				return;
 
@@ -487,16 +497,6 @@ private:
 			enum { leftMargin = 2 }
 
 			switch (e.index) {
-				case ServerColumn.COUNTRY:
-					char[] country = sd.server[ServerColumn.COUNTRY];
-					if (showFlags_ && country.length) {
-						if (Image flag = getFlagImage(country))
-							// could cache the flag Image here
-							e.gc.drawImage(flag, e.x+1, e.y+1);
-						else
-							e.gc.drawString(country, e.x + leftMargin, e.y);
-					}
-					break;
 				case ServerColumn.NAME:
 					auto textX = e.x + leftMargin;
 					if (!(e.detail & DWT.SELECTED)) {
@@ -523,25 +523,6 @@ private:
 				default:
 					assert(0);
 			}
-		}
-	}
-
-	class MouseMoveListener : Listener {
-		void handleEvent(Event event) {
-			char[] text = null;
-			scope point = new Point(event.x, event.y);
-			TableItem item = table_.getItem(point);
-			if (item && item.getBounds(ServerColumn.COUNTRY).contains(point)) {
-				int i = table_.indexOf(item);
-				ServerData sd = serverList_.getFiltered(i);
-				if (sd.server[ServerColumn.COUNTRY].length) {
-					char[] ip = sd.server[ServerColumn.ADDRESS];
-					auto colon = locate(ip, ':');
-					text = countryNameByAddr(ip[0..colon]);
-				}
-			}
-			if (table_.getToolTipText() != text)
-				table_.setToolTipText(text);
 		}
 	}
 
