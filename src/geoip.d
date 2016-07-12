@@ -55,7 +55,7 @@ bool initGeoIp()
 		bindFuncOrThrow!(GeoIP_country_name_by_addr)(geoIpLib);
 	}
 	catch (SharedLibException e) {
-		log("Error when loading the GeoIP DLL, flags will not be shown.");
+		log("Unable to load the GeoIP DLL, server locations will not be shown.");
 		return false;
 	}
 	if (GeoIP_lib_version !is null)
@@ -63,7 +63,7 @@ bool initGeoIp()
 
 	gi = GeoIP_open(toStringz(appDir ~ "GeoIP.dat"), GEOIP_MEMORY_CACHE);
 	if (gi is null) {
-		log("Unable to load the GeoIP database, flags will not be shown.");
+		log("Unable to load the GeoIP database, server locations will not be shown.");
 		geoIpLib.unload;
 	}
 	else {
@@ -71,17 +71,12 @@ bool initGeoIp()
 
 		log("Loaded GeoIP database: " ~ info);
 		initFlagFiles;
-		if (flagFiles is null || flagFiles.length == 0) {
-			log("No flag data was found.");
-			GeoIP_delete(gi);
-			gi = null;
-			geoIpLib.unload;
-		}
+
 		// This probably isn't needed just for country names.
 		//GeoIP_set_charset(gi, GEOIP_CHARSET_UTF8);
 	}
 
-	return gi && flagFiles;
+	return gi != null;
 }
 
 
