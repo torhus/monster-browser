@@ -89,7 +89,7 @@ class ServerTable
 		coloredNames_ = getSetting("coloredNames") == "true";
 		showFlags_ = initGeoIp() && (getSetting("showFlags") == "true");
 
-		if (showFlags_ || coloredNames_) {
+		if (coloredNames_) {
 			table_.addListener(DWT.EraseItem, new EraseItemListener);
 			table_.addListener(DWT.PaintItem, new PaintItemListener);
 		}
@@ -395,15 +395,13 @@ private:
 			assert(index < serverList_.filteredLength);
 			auto sd = serverList_.getFiltered(index);
 
-			// add text
-			for (int i = ServerColumn.COUNTRY + 1; i <= ServerColumn.max; i++) {
+			for (int i = ServerColumn.NAME; i <= ServerColumn.max; i++) {
 				item.setText(i, sd.server[i]);
 			}
 
 			char[] countryCode = sd.server[ServerColumn.COUNTRY];
 			char[] ip = sd.server[ServerColumn.ADDRESS];
-			auto colon = locate(ip, ':');
-			char[] countryName = countryNameByAddr(ip[0..colon]);
+			char[] countryName = countryNameByAddr(ip[0..locate(ip, ':')]);
 
 			if (countryName.length)
 				item.setText(ServerColumn.COUNTRY, countryName);
