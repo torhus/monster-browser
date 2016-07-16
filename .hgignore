@@ -8,9 +8,9 @@ flags
 GeoIP.dat
 geoip.dll
 qstat.exe
-glist.exe
+gslist.exe
 
-# Files and directories by build tools, etc
+# Files and directories created by build tools, etc
 debug
 debug-gui
 release
@@ -23,7 +23,7 @@ MonsterBrowser.exe_cv
 MonsterBrowser.obj
 MonsterBrowser.pdb
 MonsterBrowser.map
-MonsterBrowser.suo
+*.suo
 revision.txt
 
 # Files created by Monster Browser when running
