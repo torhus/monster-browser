@@ -334,7 +334,7 @@ protected:
 			delete f;
 			+/
 		}
-		catch(Object o)
+		catch(Throwable o)
 		{
 			debug(INI)
 				std.cstream.dout.writeString("INI no file to parse\n");

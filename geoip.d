@@ -9,7 +9,7 @@ import std.string;
 import std.c.string;
 
 import java.io.ByteArrayInputStream;
-import java.nonstandard.loader;  // Replacement for std.loader
+import lib.loader;  // Replacement for std.loader
 import org.eclipse.swt.SWTException;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;

@@ -1,6 +1,7 @@
 module serverlist;
 
 import core.stdc.string : memmove;
+import lib.phobosfixes; // upperBound, icmp
 import std.algorithm;
 import std.array;
 import std.conv;
@@ -418,7 +419,7 @@ private:
 			return compare(sda, sdb) < 0;
 		}
 
-		auto r = upperBound!(less)(filteredList, sh);
+		auto r = lib.phobosfixes.upperBound!(less)(filteredList, sh);
 		size_t i = filteredList.length - r.length;
 
 		// tried std.array.insert, but got a 30% slowdown
@@ -468,7 +469,7 @@ private:
 				break;
 
 			default:
-				result = icmp(a.server[sortColumn_], b.server[sortColumn_]);
+				result = lib.phobosfixes.icmp(a.server[sortColumn_], b.server[sortColumn_]);
 		}
 
 		return (reversed_ ? -result : result);

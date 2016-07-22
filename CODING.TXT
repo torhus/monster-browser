@@ -5,19 +5,17 @@ be easy to pick up, due to its similarity to C/C++ and Java.
 Useful links
 ------------
 D compiler:
-http://digitalmars.com/d/1.0/dcompiler.html
-Currently I'm using DMD 1.061.
+http://dlang.org/download.html
+Currently I'm using DMD 2.052.
 
 D docs:
-Language: http://www.digitalmars.com/d/1.0/lex.html
-Tango library (used instead of Phobos): http://dsource.org/projects/tango/
+Language: http://dlang.org/spec/spec.html
 http://www.prowiki.org/wiki4d/wiki.cgi?LanguageSpecification/KeywordIndex
 http://www.prowiki.org/wiki4d/wiki.cgi?FaqRoadmap
 
 D support:
 http://www.digitalmars.com/NewsGroup.html
 irc://irc.freenode.org/D
-irc://irc.freenode.org/d.tango
 
 xfBuild for building on Windows:
 http://bitbucket.org/h3r3tic/xfbuild/wiki/Home
@@ -29,18 +27,13 @@ Version 0.75 is known to work.
 
 Libraries used
 --------------
-Tango 0.99.9:
-http://dsource.org/projects/tango/
-
 ini.d (included in the source download):
 http://www.dprogramming.com/ini.php
 
 DWT2 GUI library. DWT2 is a D port of IBM's SWT 3.4.1 for Java.
-Revision used with this project is currently 106 on Windows.
+Revision used with this project is currently ??? on Windows.
 
-http://www.dsource.org/projects/dwt
-Apply the patch that's attached to this ticket:
-http://www.dsource.org/projects/dwt-win/ticket/23
+https://github.com/d-widget-toolkit/dwt
 http://help.eclipse.org/ganymede/nftopic/org.eclipse.platform.doc.isv/reference/api/org/eclipse/swt/widgets/package-tree.html
 There's also a DWT news group on news.digitalmars.com, and a #dwt channel on
 freenode (IRC).
