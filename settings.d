@@ -3,6 +3,7 @@
 module settings;
 
 import core.stdc.stdio;
+import std.array;
 import std.conv;
 import std.file;
 import std.string;

@@ -19,7 +19,7 @@ __gshared private TextStyle[32] etColors;
 private enum Q3_DEFAULT_NAME = "UnnamedPlayer";
 
 
-static this() {
+shared static this() {
 	Display disp = Display.getDefault();
 
 	// black

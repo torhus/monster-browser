@@ -5,7 +5,6 @@ import core.stdc.ctype;
 import core.stdc.string;
 import core.stdc.time;
 import std.conv;
-import std.date;
 import std.file;
 import std.stdio;
 import std.stream : InputStream;
@@ -142,11 +141,11 @@ void logx(in char[] file, int line, Exception e)
 ///
 struct Timer
 {
-	void start() { time_ = std.date.getUTCtime();	}  ///
-	private d_time raw() { return std.date.getUTCtime() - time_; }  ///
-	long millis() { return raw * (1000 / ticksPerSecond); }  ///
-	double seconds() { return cast(double)raw / ticksPerSecond; }  ///
-	private d_time time_;  ///
+	void start() { time_ = clock(); }  ///
+	private clock_t raw() { return clock() - time_; }  ///
+	long millis() { return raw() * (1000 / CLOCKS_PER_SEC); }  ///
+	double seconds() { return cast(double)raw() / CLOCKS_PER_SEC ; }  ///
+	private clock_t time_;  ///
 }
 
 
@@ -172,7 +171,7 @@ size_t findChar(in char[] s, char c)
 /**
  * Transfer a string to the system clipboard.
  */
-void copyToClipboard(in char[] s)
+void copyToClipboard(string s)
 {
 	Object obj = new ArrayWrapperString(s);
 	TextTransfer textTransfer = TextTransfer.getInstance();

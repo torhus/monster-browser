@@ -211,7 +211,7 @@ final class QstatServerRetriever : IServerRetriever
 	int prepare()
 	{
 		try {
-			char[] cmdLine = "qstat -f - -raw,game " ~ FIELDSEP ~ " -P -R" ~
+			string cmdLine = "qstat -f - -raw,game " ~ FIELDSEP ~ " -P -R" ~
 			                                                   " -default q3s";
 			File dumpFile;
 
@@ -231,7 +231,7 @@ final class QstatServerRetriever : IServerRetriever
 			}
 
 			log("Executing '" ~ cmdLine ~ "'.");
-			proc.execute(cmdLine);
+			proc.execute(cmdLine.dup);
 
 			if (arguments.dumplist)
 				dumpFile.open("refreshlist.tmp", "w");

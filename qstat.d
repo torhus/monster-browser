@@ -4,10 +4,12 @@
 
 module qstat;
 
+import std.array;
 import std.conv;
 import std.stdio;
 import std.string;
-import tango.text.convert.Integer;
+import tango.text.Util;
+import Integer = tango.text.convert.Integer;
 
 import lib.process;
 
@@ -19,7 +21,7 @@ import set;
 import settings;
 
 
-const char[] FIELDSEP = "\x1e"; // \x1e = ascii record separator
+string FIELDSEP = "\x1e"; // \x1e = ascii record separator
 
 private enum Field {
 	TYPE, ADDRESS, NAME, MAP, MAX_PLAYERS, PLAYER_COUNT, PING, RETRIES, GAME
@@ -73,7 +75,7 @@ bool parseOutput(in char[] modName, Process input,
 			outfile.writeln(line);
 
 		if (line.length >= 3 && line[0..3] == "Q3S") {
-			string[] fields = split(line, FIELDSEP);
+			string[] fields = std.array.split!()(line, FIELDSEP);
 			ServerData sd;
 
 			assert(fields.length >= 3);
@@ -104,7 +106,7 @@ bool parseOutput(in char[] modName, Process input,
 
 				// 'Players' column contents
 				uint ate;
-				int total = cast(int)parse(fields[Field.PLAYER_COUNT], 10, &ate);
+				int total = cast(int)Integer.parse(fields[Field.PLAYER_COUNT], 10, &ate);
 
 				if (ate < fields[Field.PLAYER_COUNT].length)
 					invalidInteger(sd.rawName, fields[Field.PLAYER_COUNT]);
@@ -114,7 +116,7 @@ bool parseOutput(in char[] modName, Process input,
 					bots = 0;
 
 				sd.setPlayersColumn(humans, bots,
-				                  cast(int)convert(fields[Field.MAX_PLAYERS]));
+				                  cast(int)Integer.convert(fields[Field.MAX_PLAYERS]));
 
 				sd.server[ServerColumn.NAME] = stripColorCodes(sd.rawName);
 
@@ -171,7 +173,7 @@ in {
 	                               ServerColumn.PASSWORDED < sd.server.length);
 }
 body {
-	string[] temp = split(line, FIELDSEP);
+	string[] temp = std.array.split(line, FIELDSEP);
 
 	foreach (string s; temp) {
 		int i = indexOf(s, '=');
@@ -185,7 +187,7 @@ body {
 		switch (cvar[0]) {
 			case "gametype":
 				uint ate;
-				int gt = cast(int)parse(cvar[1], 10, &ate);
+				int gt = cast(int)Integer.parse(cvar[1], 10, &ate);
 				if (ate < cvar[1].length) {
 					invalidInteger(sd.rawName, cvar[1]);
 					sd.server[ServerColumn.GAMETYPE] = "???";
@@ -226,7 +228,7 @@ private string[][] parsePlayers(Process input, int* humanCount, File output)
 			if (output.isOpen)
 				output.writeln(line);
 
-			string[] s = split(line, FIELDSEP);
+			string[] s = std.array.split(line, FIELDSEP);
 			string[] player = new string[PlayerColumn.max + 1];
 			player[PlayerColumn.RAWNAME] = s[0];
 			player[PlayerColumn.SCORE]   = s[1];

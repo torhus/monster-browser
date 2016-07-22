@@ -1,5 +1,6 @@
 module servertable;
 
+import lib.phobosfixes; // icmp
 import std.conv;
 import std.math;
 import std.string;
@@ -701,7 +702,7 @@ private:
 		foreach (ip, v; selectedIps_)
 			addresses ~= ip;
 		if (addresses.length)
-			copyToClipboard(join(addresses, newline));
+			copyToClipboard(lib.phobosfixes.join(addresses, newline));
 	}
 
 	void onRefreshSelected()
