@@ -358,8 +358,8 @@ private final class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 		defaultProtocolVersion_ = defaultProtocolVersion;
 	}
 
-	override void startElement(Ch[] uri, Ch[] localName, Ch[] qName,
-	                                               Attribute!(Ch)[] attributes)
+	override void startElement(const(Ch)[] uri, const(Ch)[] localName,
+	                           const(Ch)[] qName, Attribute!(Ch)[] attributes)
 	{
 		if (localName == "cvar")
 			addCvar(attributes);
@@ -370,7 +370,8 @@ private final class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 	}
 
 
-	override void endElement(Ch[] uri, Ch[] localName, Ch[] qName)
+	override void endElement(const(Ch)[] uri, const(Ch)[] localName,
+	                         const(Ch)[] qName)
 	{
 
 	}
