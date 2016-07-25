@@ -31,7 +31,7 @@ else
 	const bool MOD_ONLY = true;
 
 struct arguments {  ///
-shared static:
+__gshared:
 	bool dumplist  = false;  ///
 	bool dumpqstat = false;  ///
 	bool fromfile  = false;  ///
@@ -186,7 +186,7 @@ void copyToClipboard(string s)
  */
 /*bool isValidIpAddress(in char[] address)
 {
-	static Regex re = null;
+	__gshared Regex re = null;
 	if (re is null)
 		re = Regex(r"(\d{1,3}\.){3}\d{1,3}(:\d{1,5})?");
 

@@ -52,7 +52,7 @@ __gshared ServerList[char[]] serverListCache;
  */
 void switchToGame(string name)
 {
-	shared static string gameName;
+	__gshared string gameName;
 
 	void f() {
 		ServerList serverList;
@@ -196,8 +196,8 @@ void loadSavedList()
  */
 void queryServers(string[] addresses, bool replace=false, bool select=false)
 {
-	static __gshared string[] addresses_;
-	shared static bool replace_, select_;
+	__gshared string[] addresses_;
+	__gshared bool replace_, select_;
 
 	static void f() {
 		string gameName = serverTable.serverList.gameName;
