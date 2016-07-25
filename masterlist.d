@@ -15,7 +15,7 @@ import serverdata;
 
 
 ///
-typedef size_t ServerHandle;
+alias size_t ServerHandle;
 
 ///
 const ServerHandle InvalidServerHandle = ServerHandle.max;
