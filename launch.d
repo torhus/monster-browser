@@ -69,7 +69,7 @@ void joinServer(string gameName, ServerData sd)
 	if (launch) {
 		version (Windows) {
 			const char* ansiPath = toMBSz(pathString);
-			const char* ansiDir = toMBSz(dirname(pathString));
+			const char* ansiDir = toMBSz(dirName(pathString));
 
 			int r = cast(int)ShellExecuteA(null, "open", ansiPath,
 			                               toStringz(argv), ansiDir, SW_SHOW);

@@ -485,7 +485,7 @@ class ServerRetrievalController
 
 		try
 			maxTimeouts_ = to!int(getSetting("maxTimeouts"));
-		catch (ConvError e)
+		catch (ConvException e)
 			maxTimeouts_ = 3;  // FIXME: use the actual default
 
 		Display.getDefault.syncExec(dgRunnable( {

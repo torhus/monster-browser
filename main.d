@@ -176,7 +176,7 @@ private void _main(string[] args)
  */
 private void detectDirectories(string firstArg)
 {
-	appDir = dirname(rel2abs(firstArg));
+	appDir = dirName(absolutePath(firstArg));
 
 	if (appDir[$-1] != '/')
 		appDir ~= '/';

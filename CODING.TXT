@@ -31,7 +31,7 @@ ini.d (included in the source download):
 http://www.dprogramming.com/ini.php
 
 DWT2 GUI library. DWT2 is a D port of IBM's SWT 3.4.1 for Java.
-Revision used with this project on Windows:
+Revisions used with this project on Windows:
 https://github.com/d-widget-toolkit/base/tree/0bf3235f95423cabd38e6dd67f4dffe88f34cdbc
 https://github.com/d-widget-toolkit/org.eclipse.swt.win32.win32.x86/tree/13ee1b5206568d876b15a564d3268394396b07ac
 
