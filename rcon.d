@@ -290,7 +290,7 @@ class RconWindow
 		string[] history_;
 		int position_ = 0;  // index into history_
 
-		static Font fixedWidthFont;  /// A monospaced font.
+		__gshared Font fixedWidthFont;  /// A monospaced font.
 	}
 }
 
