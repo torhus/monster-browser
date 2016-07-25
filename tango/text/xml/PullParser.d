@@ -13,7 +13,7 @@
 
 module tango.text.xml.PullParser;
 
-//private import tango.text.Util : indexOf;
+private import tango.text.Util : indexOf;
 
 //private import tango.core.Exception : XmlException;
 class XmlException : Exception { this(string msg) { super(msg); } }
@@ -86,14 +86,14 @@ public enum XmlTokenType {Done, StartElement, Attribute, EndElement,
 class PullParser(Ch = char)
 {
         public int                      depth;
-        public Ch[]                     prefix;    
-        public Ch[]                     rawValue;
-        public Ch[]                     localName;     
+        public const(Ch)[]              prefix;    
+        public const(Ch)[]              rawValue;
+        public const(Ch)[]              localName;     
         public XmlTokenType             type = XmlTokenType.None;
 
         package XmlText!(Ch)            text;
         private bool                    stream;
-        private char[]                  errMsg;
+        private const(char)[]           errMsg;
 
         /***********************************************************************
                 
@@ -101,7 +101,7 @@ class PullParser(Ch = char)
 
         ***********************************************************************/
 
-        this(Ch[] content = null)
+        this(const(Ch[]) content = null)
         {
                 reset (content);
         }
@@ -112,20 +112,20 @@ class PullParser(Ch = char)
 
         ***********************************************************************/
 
-        final XmlTokenType next()
+        @property final XmlTokenType next()
         {
                 auto e = text.end;
                 auto p = text.point;
         
                 // at end of document?
                 if (p >= e)
-                    return endOfInput;
+                    return endOfInput();
 version (stripwhite)
 {
                 // strip leading whitespace
                 while (*p <= 32)
                        if (++p >= e)                                      
-                           return endOfInput;
+                           return endOfInput();
 }                
                 // StartElement or Attribute?
                 if (type < XmlTokenType.EndElement) 
@@ -135,7 +135,7 @@ version (retainwhite)
                    // strip leading whitespace (thanks to DRK)
                    while (*p <= 32)
                           if (++p >= e)                                      
-                              return endOfInput;
+                              return endOfInput();
 }                
                    switch (*p)
                           {
@@ -148,12 +148,12 @@ version (retainwhite)
                           case '/':
                                // empty element closure
                                text.point = p;
-                               return doEndEmptyElement;
+                               return doEndEmptyElement();
  
                           default:
                                // must be attribute instead
                                text.point = p;
-                               return doAttributeName;
+                               return doAttributeName();
                           }
                    }
 
@@ -175,7 +175,7 @@ version (partialwhite)
                       rawValue = q [0 .. p - q];
                       return type = XmlTokenType.Data;
                       }
-                   return endOfInput;
+                   return endOfInput();
                    }
 
                 // must be a '<' character, so peek ahead
@@ -186,26 +186,26 @@ version (partialwhite)
                             if (p[2..4] == "--") 
                                {
                                text.point = p + 4;
-                               return doComment;
+                               return doComment();
                                }       
                             else 
                                if (p[2..9] == "[CDATA[") 
                                   {
                                   text.point = p + 9;
-                                  return doCData;
+                                  return doCData();
                                   }
                                else 
                                   if (p[2..9] == "DOCTYPE") 
                                      {
                                      text.point = p + 9;
-                                     return doDoctype;
+                                     return doDoctype();
                                      }
-                            return doUnexpected(cast(char[])"!", p);
+                            return doUnexpected("!", p);
 
                        case '\?':
                             // must be PI data
                             text.point = p + 2;
-                            return doPI;
+                            return doPI();
 
                        case '/':
                             // should be a closing element name
@@ -231,7 +231,7 @@ version (partialwhite)
 
                             while (*q <= 32) 
                                    if (++q >= e)        
-                                       return endOfInput;
+                                       return endOfInput();
 
                             if (*q is '>')
                                {
@@ -239,7 +239,7 @@ version (partialwhite)
                                text.point = q + 1;
                                return type = XmlTokenType.EndElement;
                                }
-                            return doExpected(cast(char[])">", q);
+                            return doExpected(">", q);
 
                        default:
                             // scan new element name
@@ -249,7 +249,7 @@ version (partialwhite)
 
                             // check if we ran past the end
                             if (q >= e)
-                                return endOfInput;
+                                return endOfInput();
 
                             if (*q != ':') 
                                {
@@ -283,7 +283,7 @@ version (partialwhite)
                 while (*q > 63 || text.attributeName[*q])
                        ++q;
                 if (q >= e)
-                    return endOfInput;
+                    return endOfInput();
 
                 if (*q is ':')
                    {
@@ -305,14 +305,14 @@ version (partialwhite)
                    {
                    while (*++q <= 32) {}
                    if (q >= e)
-                       return endOfInput;
+                       return endOfInput();
                    }
 
                 if (*q is '=')
                    {
                    while (*++q <= 32) {}
                    if (q >= e)
-                       return endOfInput;
+                       return endOfInput();
 
                    auto quote = *q;
                    switch (quote)
@@ -327,14 +327,14 @@ version (partialwhite)
                                   text.point = q + 1;   // skip end quote
                                   return type = XmlTokenType.Attribute;
                                   }
-                               return endOfInput; 
+                               return endOfInput(); 
 
                           default: 
-                               return doExpected(cast(char[])"\' or \"", q);
+                               return doExpected("\' or \"", q);
                           }
                    }
                 
-                return doExpected (cast(char[])"=", q);
+                return doExpected ("=", q);
         }
 
         /***********************************************************************
@@ -349,7 +349,7 @@ version (partialwhite)
                    text.point += 2;
                    return type = XmlTokenType.EndEmptyElement;
                    }
-                return doExpected(cast(char[])"/>", text.point);               
+                return doExpected("/>", text.point);
        }
         
         /***********************************************************************
@@ -366,7 +366,7 @@ version (partialwhite)
                       {
                       while (*p != '-')
                              if (++p >= e)
-                                 return endOfInput;
+                                 return endOfInput();
 
                       if (p[0..3] == "-->") 
                          {
@@ -377,7 +377,7 @@ version (partialwhite)
                       ++p;
                       }
 
-                return endOfInput;
+                return endOfInput();
         }
         
         /***********************************************************************
@@ -394,7 +394,7 @@ version (partialwhite)
                       auto q = p;
                       while (*p != ']')
                              if (++p >= e)
-                                 return endOfInput;
+                                 return endOfInput();
                 
                       if (p[0..3] == "]]>") 
                          {
@@ -405,7 +405,7 @@ version (partialwhite)
                       ++p;
                       }
 
-                return endOfInput;
+                return endOfInput();
         }
         
         /***********************************************************************
@@ -422,7 +422,7 @@ version (partialwhite)
                       {
                       while (*p != '\?')
                              if (++p >= e)
-                                 return endOfInput;
+                                 return endOfInput();
 
                       if (p[1] == '>') 
                          {
@@ -432,7 +432,7 @@ version (partialwhite)
                          }
                       ++p;
                       }
-                return endOfInput;
+                return endOfInput();
         }
         
         /***********************************************************************
@@ -447,7 +447,7 @@ version (partialwhite)
                 // strip leading whitespace
                 while (*p <= 32)
                        if (++p >= e)                                      
-                           return endOfInput;
+                           return endOfInput();
                 
                 auto q = p;              
                 while (p < e) 
@@ -464,14 +464,14 @@ version (partialwhite)
                          if (*p == '[') 
                              do {
                                 if (++p >= e)
-                                    return endOfInput;
+                                    return endOfInput();
                                 } while (*p != ']');
                          ++p;
                          }
                       }
 
                 if (p >= e)
-                    return endOfInput;
+                    return endOfInput();
                 return XmlTokenType.Doctype;
         }
         
@@ -482,7 +482,7 @@ version (partialwhite)
         private XmlTokenType endOfInput ()
         {
                 if (depth && (stream is false))
-                    error (cast(char[])"Unexpected EOF");
+                    error ("Unexpected EOF");
 
                 return XmlTokenType.Done;
         }
@@ -491,7 +491,7 @@ version (partialwhite)
         
         ***********************************************************************/
 
-        private XmlTokenType doUnexpected (char[] msg, Ch* p)
+        private XmlTokenType doUnexpected (const(char[]) msg, const(Ch)* p)
         {
                 return position ("parse error :: unexpected  " ~ msg, p);
         }
@@ -500,7 +500,7 @@ version (partialwhite)
         
         ***********************************************************************/
 
-        private XmlTokenType doExpected (char[] msg, Ch* p)
+        private XmlTokenType doExpected (const(char[]) msg, const(Ch)* p)
         {
                 char[4] tmp = void;
                 auto len = std.utf.encode(tmp, *p);
@@ -511,16 +511,16 @@ version (partialwhite)
         
         ***********************************************************************/
 
-        private XmlTokenType position (char[] msg, Ch* p)
+        private XmlTokenType position (const(char[]) msg, const(Ch)* p)
         {
-                return error (msg ~ " at position " ~ to!(char[])(p-text.text.ptr));
+                return error (msg ~ " at position " ~ to!(string)(p-text.text.ptr));
         }
 
         /***********************************************************************
         
         ***********************************************************************/
 
-        protected final XmlTokenType error (char[] msg)
+        @property protected final XmlTokenType error (const(char[]) msg)
         {
                 errMsg = msg;
                 throw new XmlException (msg.idup);
@@ -532,7 +532,7 @@ version (partialwhite)
 
         ***********************************************************************/
 
-        final Ch[] value()
+        @property final const const(Ch[]) value()
         {
                 return rawValue;
         }
@@ -543,7 +543,7 @@ version (partialwhite)
 
         ***********************************************************************/
 
-        final Ch[] name()
+        @property final const const(Ch[]) name()
         {
                 if (prefix.length)
                     return prefix ~ ":" ~ localName;
@@ -556,7 +556,7 @@ version (partialwhite)
 
         ***********************************************************************/
 
-        final char[] error()
+        @property final const const(char[]) error()
         {
                 return errMsg;
         }
@@ -570,7 +570,7 @@ version (partialwhite)
         final bool reset()
         {
                 text.reset (text.text);
-                reset_;
+                reset_();
                 return true;
         }
         
@@ -580,10 +580,10 @@ version (partialwhite)
 
         ***********************************************************************/
 
-        final void reset(Ch[] newText)
+        final void reset(const(Ch[]) newText)
         {
                 text.reset (newText);
-                reset_;                
+                reset_();                
         }
         
         /***********************************************************************
@@ -644,12 +644,12 @@ version (partialwhite)
 
 package struct XmlText(Ch)
 {
-        package Ch*     end;
+        package const(Ch)*     end;
         package size_t  len;
-        package Ch[]    text;
-        package Ch*     point;
+        package const(Ch)[]    text;
+        package const(Ch)*     point;
 
-        final void reset(Ch[] newText)
+        final void reset(const(Ch[]) newText)
         {
                 this.text = newText;
                 this.len = newText.length;
@@ -657,7 +657,7 @@ package struct XmlText(Ch)
                 this.end = point + len;
         }
 
-        __gshared const ubyte name[64] =
+        __gshared immutable ubyte[64] name =
         [
              // 0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F
                 0,  1,  1,  1,  1,  1,  1,  1,  1,  0,  0,  1,  1,  0,  1,  1,  // 0
@@ -666,7 +666,7 @@ package struct XmlText(Ch)
                 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  0,  1,  1,  1,  0,  0   // 3
         ];
 
-        __gshared const ubyte attributeName[64] =
+        __gshared immutable ubyte[64] attributeName =
         [
              // 0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F
                 0,  1,  1,  1,  1,  1,  1,  1,  1,  0,  0,  1,  1,  0,  1,  1,  // 0
@@ -685,7 +685,7 @@ debug (UnitTest)
 	/***********************************************************************
 	
 	***********************************************************************/
-	
+
 	void testParser(Ch)(PullParser!(Ch) itr)
 	{
 	  /*      assert(itr.next);
@@ -749,7 +749,7 @@ debug (UnitTest)
 	
 	***********************************************************************/
 	
-	__gshared const char[] testXML = "<?xml version=\"1.0\" ?><!DOCTYPE element [ <!ELEMENT element (#PCDATA)>]><element "
+	__gshared immutable immutable(char)[] testXML = "<?xml version=\"1.0\" ?><!DOCTYPE element [ <!ELEMENT element (#PCDATA)>]><element "
 	    "attr=\"1\" attr2=\"two\"><!--comment-->test&amp;&#x5a;<qual:elem /><el2 attr3 = "
 	    "'3three'><![CDATA[sdlgjsh]]><el3 />data<?pi test?></el2></element>";
 	
