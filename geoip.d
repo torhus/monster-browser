@@ -89,7 +89,7 @@ string countryCodeByAddr(in char[] addr)
 	else {
 		char[] s = code[0..strlen(code)].dup;
 		assert(s.length == 2);
-		tolowerInPlace(s);
+		toLowerInPlace(s);
 		return cast(string)s;
 	}
 }
