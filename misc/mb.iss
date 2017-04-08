@@ -13,13 +13,10 @@ AppSupportURL=http://sites.google.com/site/monsterbrowser/
 AppUpdatesURL=http://sites.google.com/site/monsterbrowser/
 DefaultDirName={pf}\Monster Browser
 DefaultGroupName=Monster Browser
-DisableWelcomePage=yes
 AllowNoIcons=yes
 SourceDir=..
 OutputDir=misc
 OutputBaseFilename=Monster Browser 0.9c Setup
-Compression=lzma
-SolidCompression=yes
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
