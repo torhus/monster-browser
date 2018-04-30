@@ -96,7 +96,7 @@ http://www.wefunction.com
 Info and contact
 ----------------
 Web site: http://sites.google.com/site/monsterbrowser/
-Source code, etc.: http://bitbucket.org/torhus/monster-browser/
+Source code, etc.: https://github.com/torhus/monster-browser
 
 I'm open for requests to change the licence, I just haven't bothered deciding
 which licence to use yet.
