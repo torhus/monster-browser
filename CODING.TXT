@@ -1,6 +1,8 @@
 This program is written in the Digital Mars D programming language.  It should
 be easy to pick up, due to its similarity to C/C++ and Java.
 
+Some of the dependencies mentioned below are included in this package:
+https://github.com/torhus/monster-browser/releases/download/v0.9c/monsterbrowser_deps.7z
 
 Useful links
 ------------
