@@ -51,8 +51,6 @@ Building on Windows
 - Copy the 'res' directory from DWT into the Monster Browser directory.
 - Also copy the 'dwt' directory, either into the Monster Browser directory, or
   into your D import directory.
-- Unzip https://bitbucket.org/torhus/monster-browser/downloads/monsterbrowser_flags.zip
-  into the Monster Browser directory.
 - Run build-release.bat or one of the other batch files.  Requires xfBuild to
   be installed, see above.
 

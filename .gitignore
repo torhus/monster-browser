@@ -1,7 +1,6 @@
 # Monster Browser build dependencies
 dwt
 res
-flags
 
 # Monster Browser runtime dependencies
 GeoIP.dat
