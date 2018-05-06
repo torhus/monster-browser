@@ -53,8 +53,8 @@ Building on Windows
 - Copy the 'res' directory from DWT into the Monster Browser directory.
 - Also copy the 'dwt' directory, either into the Monster Browser directory, or
   into your D import directory.
-- Run build-release.bat or one of the other batch files.  Requires xfBuild to
-  be installed, see above.
+- Run "build.bat debug" or similar.  Requires xfBuild to be installed, see
+  above.
 
 
 Building on Linux

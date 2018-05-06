@@ -9,11 +9,7 @@ qstat.exe
 gslist.exe
 
 # Files and directories created by build tools, etc
-debug
-debug-gui
-release
-release-console
-profile
+build
 docs
 Debug
 MonsterBrowser.exe

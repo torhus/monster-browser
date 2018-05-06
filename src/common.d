@@ -81,13 +81,13 @@ char[] getVersionString()
 	char[] revision = tango.text.Util.trim(import("revision.txt"));
 
 	debug {
-		return __DATE__ ~ " (rev. " ~ revision ~ ") *DEBUG BUILD*";
+		return __DATE__ ~ " (" ~ revision ~ ") *DEBUG BUILD*";
 	}
 	else {
 		version (Final)
 			return FINAL_VERSION;
 		else
-			return __DATE__ ~  " (rev. " ~ revision ~ ")";
+			return __DATE__ ~  " (" ~ revision ~ ")";
 	}
 }
 
