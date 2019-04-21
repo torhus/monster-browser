@@ -87,7 +87,8 @@ Qstat for querying servers - http://qstat.sourceforge.net
 Thanks to Biondo for making the application icon that's used for Monster
 Browser 0.9 and later.
 
-GeoLite Country from maxmind.com.
+This product includes GeoLite2 data created by MaxMind, available from
+https://www.maxmind.com
 
 Function Free Icon set by Function Design & Development Studio
 http://www.wefunction.com

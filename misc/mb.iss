@@ -29,8 +29,8 @@ Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescrip
 Source: "MonsterBrowser.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "README.TXT"; DestDir: "{app}"; Flags: ignoreversion
 Source: "CHANGELOG.TXT"; DestDir: "{app}"; Flags: ignoreversion
-Source: "GeoIP.dat"; DestDir: "{app}"; Flags: ignoreversion
-Source: "GeoIP.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "libmaxminddb.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "GeoLite2-Country.mmdb"; DestDir: "{app}"; Flags: ignoreversion
 Source: "qstat_mb.cfg"; DestDir: "{app}"; Flags: ignoreversion
 Source: "qstat.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "worldofpadman.cfg"; DestDir: "{app}"; Flags: ignoreversion onlyifdestfileexists

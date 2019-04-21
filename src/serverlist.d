@@ -77,8 +77,15 @@ final class ServerList
 
 		synchronized (this) synchronized (master_) {
 			ServerData sd = master_.getServerData(sh);
-			sd.server[ServerColumn.COUNTRY] = getCountryCode(&sd);
-			ipHash_[sd.server[ServerColumn.ADDRESS]] = -1;
+			char[] ip = sd.server[ServerColumn.ADDRESS];
+			GeoInfo geo = getGeoInfo(ip[0..locate(ip, ':')]);
+
+			sd.server[ServerColumn.COUNTRY] = geo.countryCode;
+			sd.countryName = geo.countryName;
+			master_.setServerData(sh, sd);
+
+			ipHash_[ip] = -1;
+
 			if (!isFilteredOut(&sd)) {
 				insertSorted(sh);
 				refresh = true;
@@ -102,9 +109,16 @@ final class ServerList
 
 			if (!removed) {
 				// adding as a new server
-				ipHash_[sd.server[ServerColumn.ADDRESS]] = -1;
-				sd.server[ServerColumn.COUNTRY] = getCountryCode(&sd);
+				char[] ip = sd.server[ServerColumn.ADDRESS];
+				GeoInfo geo = getGeoInfo(ip[0..locate(ip, ':')]);
+
+				sd.server[ServerColumn.COUNTRY] = geo.countryCode;
+				sd.countryName = geo.countryName;
+				master_.setServerData(sh, sd);
+
+				ipHash_[ip] = -1;
 			}
+
 			if (!isFilteredOut(&sd)) {
 				insertSorted(sh);
 				return true;
@@ -488,14 +502,6 @@ private:
 
 		ipHashValid_ = false;
 		return true;
-	}
-
-	char[] getCountryCode(in ServerData* sd)
-	{
-		char[] address = sd.server[ServerColumn.ADDRESS];
-		char[] code = countryCodeByAddr(address[0..locate(address, ':')]);
-
-		return code;
 	}
 
 	bool isFilteredOut(ServerHandle sh)

@@ -26,6 +26,8 @@ struct ServerData {
 	/// list of cvars, with key and value for each
 	char[][][] cvars;
 
+	char[] countryName;  ///
+
 	int failCount = 0;  ///
 
 	bool persistent;  ///
@@ -128,6 +130,7 @@ void setEmpty(ServerData* sd)
 	sd.server  = null;
 	sd.players = null;
 	sd.cvars   = null;
+	sd.countryName = null;
 }
 
 
@@ -147,7 +150,7 @@ bool matchGame(in ServerData* sd, in GameConfig game)
 {
 	if (sd.protocolVersion != game.protocolVersion)
 		return false;
-		
+
 	debug version (matchOnlyGamename)
 		bool gameMatched = false;
 

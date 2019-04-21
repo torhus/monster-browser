@@ -1,7 +1,7 @@
 @set FILES=^
 CHANGELOG.TXT ^
-GeoIP.dat ^
-geoip.dll ^
+GeoLite2-Country.mmdb ^
+libmaxminddb.dll ^
 MonsterBrowser.exe ^
 portable.txt ^
 qstat.exe ^

@@ -401,10 +401,9 @@ private:
 
 			char[] countryCode = sd.server[ServerColumn.COUNTRY];
 			char[] ip = sd.server[ServerColumn.ADDRESS];
-			char[] countryName = countryNameByAddr(ip[0..locate(ip, ':')]);
 
-			if (countryName.length)
-				item.setText(ServerColumn.COUNTRY, countryName);
+			if (sd.countryName.length)
+				item.setText(ServerColumn.COUNTRY, sd.countryName);
 			else if (countryCode.length)
 				item.setText(ServerColumn.COUNTRY, countryCode);
 

@@ -1,5 +1,6 @@
 Work in progress
 ----------------
+- Fix: Upgraded from GeoIP to GeoIP2 to get updated location databases.
 - Fix: Made location flag tooltips work in Windows 10.
 
 v0.9c - 2015-07-05

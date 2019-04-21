@@ -3,10 +3,10 @@ dwt
 res
 
 # Monster Browser runtime dependencies
-GeoIP.dat
-geoip.dll
 qstat.exe
 gslist.exe
+GeoLite2-Country.mmdb
+libmaxminddb.dll
 
 # Files and directories created by build tools, etc
 build
