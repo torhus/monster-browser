@@ -1,0 +1,24 @@
+version: 0.9c-{branch}.{build}
+environment:
+  BASEDIR: C:\projects
+install: |
+  cd %BASEDIR%
+  cd
+  curl -sS -o dmd.zip http://downloads.dlang.org/releases/2010/dmd.1.066.zip
+  curl -sSL -o deps.7z https://github.com/torhus/monster-browser/releases/download/v0.9c/monsterbrowser_deps.7z
+  unzip -q dmd.zip
+  7z x deps.7z > NUL
+  copy sc.ini dmd\windows\bin\
+  for %%f in (xfbuild.exe qstat.exe GeoIP.dat geoip.dll) do copy %%f monster-browser\
+  xcopy /E /Q dwt-win monster-browser\
+  cd monster-browser
+  path %BASEDIR%\dmd\windows\bin;%PATH%
+build_script: |
+  build.bat release
+  make-package.bat
+  cd misc
+  "C:\Program Files (x86)\Inno Setup 5\iscc" /Q mb.iss
+artifacts:
+- path: MonsterBrowser.exe
+- path: MonsterBrowser09c.zip
+- path: misc\Monster Browser 0.9c Setup.exe
