@@ -1,11 +1,13 @@
 @echo off
 setlocal
 
-(
-    git rev-parse --abbrev-ref HEAD
-    echo :
-    git describe --always --dirty
-) > revision.txt
+for /f "tokens=*" %%s in ('git rev-parse --abbrev-ref HEAD') do (
+    set BRANCH=%%s
+)
+for /f "tokens=*" %%s in ('git describe --always --dirty') do (
+    set REVISION=%%s
+)
+echo %BRANCH%:%REVISION%> revision.txt
 
 if "%1" == "" goto usage
 if "%1" == "debug" (set DEBUG=true & goto build)
