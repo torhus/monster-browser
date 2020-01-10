@@ -1,3 +1,7 @@
+Work in progress
+----------------
+- Change: Updated installer that won't add anything to per-user directories.
+
 v0.9d - 2019-04-24
 ------------------
 - Fix: Upgraded from GeoIP to GeoIP2 to get updated location databases.
