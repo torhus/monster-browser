@@ -182,7 +182,7 @@ bool matchGame(in ServerData* sd, in GameConfig game)
 	}
 
 	static if (MOD_ONLY)
-		return false;
+		return game.mod.length == 0 && sd.cvars.length > 0;
 	else
 		return true;
 }

@@ -129,7 +129,9 @@ private {
 ;
 ; Available options:
 ;
-; mod     - defaults to being the same as the section name
+; mod     - defaults to being the same as the section name. This is matched
+;           against the game and gamename cvars. Set to empty value (mod=) to
+;           disable filtering.
 ; regKey  - need to set exeName too if using this
 ; exeName - combined with the value found through regKey to form the full path
 ; exePath - Only used if regKey or exeName are missing. If exePath is missing
