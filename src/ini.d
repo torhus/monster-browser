@@ -833,6 +833,9 @@ public:
 
 private char[] ansiToUtf8(in char[] source)
 {
+	if (source.length == 0)
+		return source;
+
 	char[] buffer = new char[source.length * 2];
 
 	try {
