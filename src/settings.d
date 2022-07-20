@@ -90,12 +90,6 @@ struct GameConfig
 		                                                                  null;
 	}
 
-	bool useGslist() /// Use gslist instead of qstat when querying master?
-	{
-		char[] r = section["useGslist"];
-		return r ? (r == "true") : false;
-	}
-
 	/// Enable Enemy Territory-style extended color codes (31 colors)?
 	/// Off by default.
 	bool useEtColors()

@@ -4,7 +4,6 @@ res
 
 # Monster Browser runtime dependencies
 qstat.exe
-gslist.exe
 GeoLite2-Country.mmdb
 libmaxminddb.dll
 

@@ -77,24 +77,6 @@ private void _main(char[][] args)
 
 	loadSettings;
 
-	// FIXME: make function for this
-	// check for presence of Gslist
-	char[] gslistExe;
-	version (Windows) {
-		gslistExe = appDir ~ "gslist.exe";
-	}
-	else version(linux) {
-		gslistExe = appDir ~ "gslist";
-	}
-	else {
-		static assert(0);
-	}
-
-	common.haveGslist = exists(gslistExe);
-
-	if (common.haveGslist)
-		log("Found gslist, using it for faster server list retrieval.");
-
 	mainWindow = new MainWindow;
 
 	// Set the application's window icon.
@@ -181,8 +163,7 @@ private void _main(char[][] args)
 
 	log("Saving server lists...");
 	foreach (entry; masterLists)
-		if (entry.save)
-			entry.masterList.save();
+		entry.masterList.save();
 
 	log("Exit.");
 }

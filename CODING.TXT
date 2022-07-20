@@ -87,14 +87,8 @@ quit      - Print time since startup and then quit, after loading the server
 
 
 -----------
-Two external programs are used, the second one is optional and not included in
-the download:
+This external tool is required for Monster Browser to operate:
 http://qstat.sourceforge.net/
-http://directory.fsf.org/All_Packages_in_Directory/gslist.html
-
-Please be aware that gslist is subject to some legal controversy, please read
-this link before redistributing it from a US server:
-http://aluigi.altervista.org/papers.htm#distrust
 
 
 -torhu at yahoo com

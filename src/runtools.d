@@ -1,5 +1,5 @@
 /**
- * Functions for running qstat and gslist, while capturing their output
+ * Functions for running qstat and capturing its output
  */
 
 module runtools;
@@ -40,14 +40,14 @@ void runtoolsInit()
 
 
 /**
- * Run qstat or gslist to retrieve a list of servers from the game's master
+ * Run qstat to retrieve a list of servers from the game's master
  * server.
  *
  * Returns: A set containing the IP addresses of the servers.
  *
  * Throws: MasterServerException.
  */
-Set!(char[]) browserGetNewList(in GameConfig game, bool gslist)
+Set!(char[]) browserGetNewList(in GameConfig game)
 {
 	char[] cmdLine;
 	Set!(char[]) addresses;
@@ -56,25 +56,14 @@ Set!(char[]) browserGetNewList(in GameConfig game, bool gslist)
 	version (linux)
 		cmdLine ~= "./";
 
-	if (gslist) {
-		cmdLine ~= "gslist -n quake3 -o 5";
-	}
-	else {
-		cmdLine ~= "qstat";
-		// This has to be the first argument.
-		if (game.qstatConfigFile)
-			cmdLine ~= " -cfg " ~ game.qstatConfigFile;
+	cmdLine ~= "qstat";
+	// This has to be the first argument.
+	if (game.qstatConfigFile)
+		cmdLine ~= " -cfg " ~ game.qstatConfigFile;
 
-		cmdLine ~= " -" ~ game.qstatMasterServerType ~
-		           "," ~ game.protocolVersion ~ ",outfile " ~
-		           game.masterServer ~ ",-";
-	}
-
-	// use gslist's server-sider filtering
-	// Note: gslist returns no servers if filtering on "baseq3"
-	if (gslist && MOD_ONLY && game.mod != "baseq3")
-		cmdLine ~= " -f \"(gametype='" ~ game.mod ~ "')"
-		           " AND (protocol=" ~ game.protocolVersion ~ ")\"";
+	cmdLine ~= " -" ~ game.qstatMasterServerType ~
+			   "," ~ game.protocolVersion ~ ",outfile " ~
+			   game.masterServer ~ ",-";
 
 	try {
 		synchronized (procMutex) {
@@ -89,8 +78,7 @@ Set!(char[]) browserGetNewList(in GameConfig game, bool gslist)
 		}
 	}
 	catch (ProcessException e) {
-		char[] s = gslist ? "gslist" : "qstat";
-		error(s ~ " not found! Please reinstall " ~ APPNAME ~ ".");
+		error("qstat not found! Please reinstall " ~ APPNAME ~ ".");
 		logx(__FILE__, __LINE__, e);
 		synchronized (procMutex) {
 			proc = null;
@@ -100,15 +88,13 @@ Set!(char[]) browserGetNewList(in GameConfig game, bool gslist)
 	if (proc) {
 		try {
 			auto lines = new Lines!(char)(stdout_copy);
-			size_t start = gslist ? 0 : "q3s ".length;
+			size_t start = "q3s ".length;
 
 			lines.next();
 
-			if (!gslist) {
-				char[] line1 = lines.get().dup;
-				char[] line2 = lines.next();
-				throwIfQstatError(line1, line2, stderr_copy, game);
-			}
+			char[] line1 = lines.get().dup;
+			char[] line2 = lines.next();
+			throwIfQstatError(line1, line2, stderr_copy, game);
 
 			do {
 				char[] line = lines.get();

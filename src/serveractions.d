@@ -35,7 +35,6 @@ import threadmanager;
 struct MasterListCacheEntry
 {
 	MasterList masterList;  ///
-	bool save = true;  ///
 	Set!(char[]) retryProtocols;  ///
 }
 
@@ -60,7 +59,6 @@ void switchToGame(in char[] name)
 	void f() {
 		ServerList serverList;
 		GameConfig game = getGameConfig(gameName);
-		bool gslist = haveGslist && game.useGslist;
 		bool firstTime = true;
 
 		// make sure we have a ServerList object
@@ -69,8 +67,7 @@ void switchToGame(in char[] name)
 			firstTime = false;
 		}
 		else {
-			char[] masterName = gslist ? "gslist-" ~ gameName :
-			                                                 game.masterServer;
+			char[] masterName = game.masterServer;
 			MasterList master;
 
 			// make sure we have a MasterList object
@@ -82,7 +79,6 @@ void switchToGame(in char[] name)
 				auto entry = new MasterListCacheEntry;
 				// see http://d.puremagic.com/issues/show_bug.cgi?id=1860
 				entry.masterList = master;
-				entry.save = !gslist;
 				masterLists[masterName] = entry;
 
 				try {
@@ -133,7 +129,7 @@ void switchToGame(in char[] name)
 
 			if (startupAction == "0" || arguments.fromfile)
 				threadManager.run(&loadSavedList);
-			else if (startupAction == "2" || gslist)
+			else if (startupAction == "2")
 				threadManager.run(&checkForNewServers);
 			else {
 				if (serverList.master.length > 0)
@@ -324,9 +320,7 @@ void checkForNewServers()
 	try {
 		MasterList master = serverList.master;
 		GameConfig game = getGameConfig(serverList.gameName);
-		bool gslist = haveGslist && game.useGslist;
-		char[] masterName = gslist ? "master" :
-		                             split(game.masterServer, ":")[0];
+		char[] masterName = split(game.masterServer, ":")[0];
 		Set!(char[]) addresses;
 		bool serverError = false;
 
@@ -335,7 +329,7 @@ void checkForNewServers()
 		}));
 		
 		try {
-			addresses = browserGetNewList(game, gslist);
+			addresses = browserGetNewList(game);
 		}
 		catch (MasterServerException e) {
 			Display.getDefault().syncExec(dgRunnable( {
