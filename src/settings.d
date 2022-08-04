@@ -41,7 +41,8 @@ struct GameConfig
 
 	char[] masterServer()  /// Like "master3.idsoftware.com".
 	{
-		return section.getValue("masterServer", "master.ioquake3.org");
+		return section.getValue(
+		                       "masterServer", "master.quake3arena.com:27950");
 	}
 
 	char[] protocolVersion()  /// Defaults to 68.
@@ -101,13 +102,13 @@ struct GameConfig
 	/// Value to use for Qstat's -cfg parameter.
 	char[] qstatConfigFile()
 	{
-		return section.getValue("qstatConfigFile", null);
+		return section.getValue("qstatConfigFile", "qstat_mb.cfg");
 	}
 
-	/// Defaults to "q3m".
+	/// Qstat master server type.
 	char[] qstatMasterServerType()
 	{
-		return section.getValue("qstatMasterServerType", "q3m");
+		return section.getValue("qstatMasterServerType", "quake3arenam");
 	}
 
 	private char[] name_;
@@ -137,12 +138,13 @@ private {
 ; exePath - Only used if regKey or exeName are missing. If exePath is missing
 ;           too, gamePath from the global settings is used instead.
 ;           example: exePath=C:\Program Files\My Game\mygame.exe
-; masterServer    - defaults to master.ioquake3.org
+; masterServer    - defaults to master.quake3arena.com:27950.
 ; protocolVersion - defaults to 68
 ; etColors - Set to true to enable Enemy Territory-style extended color codes (31 colors).
 ;            See http://wolfwiki.anime.net/index.php/Color_Codes for more information.
-; qstatMasterServerType - Defaults to q3m.
-; qstatConfigFile - Value to use for Qstat's -cfg parameter.
+; qstatMasterServerType - Defaults to quake3arenam.
+; qstatConfigFile - For setting Qstat's -cfg parameter. Defaults to
+;                   qstat_mb.cfg.
 ;
 ; Lines beginning with a ";" are comments.
 
