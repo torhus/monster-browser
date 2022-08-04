@@ -136,8 +136,10 @@ private {
 ; regKey  - need to set exeName too if using this
 ; exeName - combined with the value found through regKey to form the full path
 ; exePath - Only used if regKey or exeName are missing. If exePath is missing
-;           too, gamePath from the global settings is used instead.
-;           example: exePath=C:\Program Files\My Game\mygame.exe
+;           too, gamePath from the global settings is used instead. This can be
+;           set a to shortcut (.lnk) or batch file (.bat) to get more
+;           flexibility. In batch files you have to pass MB's arguments to the
+;           executable on explicitly, like this: C:\TheGame\game.exe %*
 ; masterServer    - defaults to master.quake3arena.com:27950.
 ; protocolVersion - defaults to 68
 ; etColors - Set to true to enable Enemy Territory-style extended color codes (31 colors).
