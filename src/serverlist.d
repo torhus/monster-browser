@@ -73,26 +73,7 @@ final class ServerList
 	 */
 	bool add(ServerHandle sh)
 	{
-		bool refresh = false;
-
-		synchronized (this) synchronized (master_) {
-			ServerData sd = master_.getServerData(sh);
-			char[] ip = sd.server[ServerColumn.ADDRESS];
-			GeoInfo geo = getGeoInfo(ip[0..locate(ip, ':')]);
-
-			sd.server[ServerColumn.COUNTRY] = geo.countryCode;
-			sd.countryName = geo.countryName;
-			master_.setServerData(sh, sd);
-
-			ipHash_[ip] = -1;
-
-			if (!isFilteredOut(&sd)) {
-				insertSorted(sh);
-				refresh = true;
-			}
-		}
-
-		return refresh;
+		return addOrReplace(sh);
 	}
 
 
@@ -103,30 +84,7 @@ final class ServerList
 	*/
 	bool replace(ServerHandle sh)
 	{
-		synchronized (this) synchronized (master_) {
-			ServerData sd = master_.getServerData(sh);
-			bool removed = removeFromFiltered(sd.server[ServerColumn.ADDRESS]);
-
-			if (!removed) {
-				// adding as a new server
-				char[] ip = sd.server[ServerColumn.ADDRESS];
-				GeoInfo geo = getGeoInfo(ip[0..locate(ip, ':')]);
-
-				sd.server[ServerColumn.COUNTRY] = geo.countryCode;
-				sd.countryName = geo.countryName;
-				master_.setServerData(sh, sd);
-
-				ipHash_[ip] = -1;
-			}
-
-			if (!isFilteredOut(&sd)) {
-				insertSorted(sh);
-				return true;
-			}
-			else {
-				return removed;
-			}
-		}
+		return addOrReplace(sh, true);
 	}
 
 
@@ -367,6 +325,43 @@ private:
 				           list.length, filteredList.length));
 				assert(0, "Details in log file.");
 			}*/
+		}
+	}
+
+	/**
+	* Add or replace a server in the list.
+	*
+	* Returns true if the filtered list was altered.
+	*/
+	private bool addOrReplace(ServerHandle sh, bool replace=false)
+	{
+		synchronized (this) synchronized (master_) {
+			ServerData sd = master_.getServerData(sh);
+			bool removed = false;
+
+			if (replace) {
+				removed = removeFromFiltered(sd.server[ServerColumn.ADDRESS]);
+			}
+
+			if (!removed) {
+				// adding as a new server
+				char[] ip = sd.server[ServerColumn.ADDRESS];
+				GeoInfo geo = getGeoInfo(ip[0..locate(ip, ':')]);
+
+				sd.server[ServerColumn.COUNTRY] = geo.countryCode;
+				sd.countryName = geo.countryName;
+				master_.setServerData(sh, sd);
+
+				ipHash_[ip] = -1;
+			}
+
+			if (!isFilteredOut(&sd)) {
+				insertSorted(sh);
+				return true;
+			}
+			else {
+				return removed;
+			}
 		}
 	}
 
