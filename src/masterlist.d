@@ -449,8 +449,15 @@ private final class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 			else if (attr.localName == "value")
 				cvar[1] = fromEntityCopy(attr.value);
 
-			if (icompare(cvar[0], "g_gametype") == 0)
-				servers[$-1].server[ServerColumn.GAMETYPE] = cvar[1];
+			if (icompare(cvar[0], "g_gametype") == 0) {
+				uint ate;
+				int gt = Integer.parse(cvar[1], 10, &ate);
+
+				if (ate == cvar[1].length)
+					servers[$-1].numericGameType = gt;
+				else
+					servers[$-1].numericGameType = -1;
+			}
 			else if (icompare(cvar[0], "g_needpass") == 0) {
 				char[] s = cvar[1] == "0" ? PASSWORD_NO : PASSWORD_YES;
 				servers[$-1].server[ServerColumn.PASSWORDED] = s;

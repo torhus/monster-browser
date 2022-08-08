@@ -16,6 +16,8 @@ import settings;
 struct ServerData {
 	/// server name, with any color codes intact
 	char[] rawName;
+	/// g_gametype cvar's value, or -1 if missing or invalid.
+	int numericGameType = -1;
 	/// name (without color codes), ping, playercount, map, etc.
 	/// Note: If this is a zero-length array, this object is considered to be
 	/// empty, and can be deleted.
@@ -127,6 +129,7 @@ const char[] TIMEOUT = "9999";
 void setEmpty(ServerData* sd)
 {
 	sd.rawName = null;
+	sd.numericGameType = -1;
 	sd.server  = null;
 	sd.players = null;
 	sd.cvars   = null;
@@ -187,6 +190,31 @@ bool matchGame(in ServerData* sd, in GameConfig game)
 		return true;
 }
 
+
+/**
+ * Returns the game type name corresponding to the given the numeric type.
+ */
+char[] getGameTypeName(in GameConfig game, int type)
+{
+	char[][] gtypes = game.gameTypes;
+
+	if (type < 0) {
+		return "???";
+	}
+
+	if (gtypes is null) {
+		// Fall back to hardcoded names or Q3 defaults.
+		char[][]* t = game.mod in gameTypes;
+		gtypes = t ? *t : defaultGameTypes;
+	}
+
+	if (type < gtypes.length) {
+		return gtypes[type];
+	}
+	else {
+		return Integer.toString(type);
+	}
+}
 
 /// Did this server time out when last queried?
 bool timedOut(in ServerData* sd)

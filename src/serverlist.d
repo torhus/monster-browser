@@ -106,6 +106,8 @@ final class ServerList
 
 			if (address in ipHash_ && matchGame(&sd, game)) {
 				newHash[address] = -1;
+				sd.server[ServerColumn.GAMETYPE] =
+				                     getGameTypeName(game, sd.numericGameType);
 				if (!isFilteredOut(&sd))
 					filteredList ~= sh;
 			}
@@ -337,11 +339,15 @@ private:
 	{
 		synchronized (this) synchronized (master_) {
 			ServerData sd = master_.getServerData(sh);
+			GameConfig game = getGameConfig(gameName_);
 			bool removed = false;
 
 			if (replace) {
 				removed = removeFromFiltered(sd.server[ServerColumn.ADDRESS]);
 			}
+
+			sd.server[ServerColumn.GAMETYPE] =
+			                         getGameTypeName(game, sd.numericGameType);
 
 			if (!removed) {
 				// adding as a new server

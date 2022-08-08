@@ -50,6 +50,18 @@ struct GameConfig
 		return section.getValue("protocolVersion", "68");
 	}
 
+	char[][] gameTypes() ///
+	{
+		char[] s = section.getValue("gameTypes");
+
+		if (s is null)
+			return null;
+
+		char[][] r = split(trim(s), " ");
+
+		return r[0].length > 0 ? r : r[0..0];
+	}
+
 	char[] extraServersFile() /// Like "baseq3.extra".
 	{
 		return appDir ~ mod ~ ".extra";  // FIXME: check dataDir too?
@@ -142,6 +154,7 @@ private {
 ;           executable on explicitly, like this: C:\TheGame\game.exe %*
 ; masterServer    - defaults to master.quake3arena.com:27950.
 ; protocolVersion - defaults to 68
+; gameTypes       - List of game type names, seperated by spaces.
 ; etColors - Set to true to enable Enemy Territory-style extended color codes (31 colors).
 ;            See http://wolfwiki.anime.net/index.php/Color_Codes for more information.
 ; qstatMasterServerType - Defaults to quake3arenam.

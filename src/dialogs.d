@@ -439,6 +439,7 @@ class SettingsDialog
 						if (modified(gamesFileName) > lastModified_) {
 							settings.loadGamesFile();
 							filterBar.setGames(settings.gameNames);
+							switchToGame(serverTable.serverList.gameName);
 						}
 					}
 					catch (IOException e) {
