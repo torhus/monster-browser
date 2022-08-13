@@ -124,19 +124,6 @@ struct MMDB_s {
 	MMDB_metadata_s metadata;
 }
 
-version (GeoIp_static) extern (C) {
-	c_int MMDB_open(/*const*/ char */*const*/ filename, uint32_t flags,
-	                MMDB_s */*const*/ mmdb);
-	MMDB_lookup_result_s MMDB_lookup_string(MMDB_s */*const*/ mmdb,
-	                                        /*const*/ char */*const*/ ipstr,
-	                                        c_int */*const*/ gai_error,
-	                                        c_int */*const*/ mmdb_error);
-	c_int MMDB_get_value(MMDB_entry_s */*const*/ start,
-	                     MMDB_entry_data_s */*const*/ entry_data, ...);
-	/*const*/ char *MMDB_lib_version();
-	/*const*/ char *MMDB_strerror(c_int error_code);
-}
-
 /* For interpreting the gai_error argument of MMDB lookup functions */
 version (Windows) {
 	// It's an inline function on Windows, defined in WS2tcpip.h
