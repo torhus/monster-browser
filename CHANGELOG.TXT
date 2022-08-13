@@ -1,6 +1,8 @@
 Work in progress
 ----------------
 - Change: Updated installer that won't add anything to per-user directories.
+- Fix: Updated the MaxMind DB DLL to 1.6.0, this makes location information
+       work when MB is installed in a path with non-ASCII characters.
 
 v0.9d - 2019-04-24
 ------------------

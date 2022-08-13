@@ -5,9 +5,9 @@ install: |
   cd %BASEDIR%
   cd
   curl -sS -o dmd.zip http://downloads.dlang.org/releases/2010/dmd.1.066.zip
-  curl -sSL -o deps.7z https://github.com/torhus/monster-browser/releases/download/v0.9d/monsterbrowser_deps.7z
+  curl -sSL -o deps.zip https://github.com/torhus/monster-browser/files/9331932/monsterbrowser_deps.zip
   unzip -q dmd.zip
-  7z x deps.7z > NUL
+  unzip -q deps.zip
   copy sc.ini dmd\windows\bin\
   for %%f in (xfbuild.exe qstat.exe libmaxminddb.dll GeoLite2-Country.mmdb) do copy %%f monster-browser\
   xcopy /E /Q dwt-win monster-browser\
