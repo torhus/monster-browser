@@ -185,6 +185,13 @@ exePath=%ProgramFiles%\UrbanTerror43\Quake3-UrT.exe
 masterServer=master.urbanterror.info:27900
 gameTypes=FFA LMS 2 TDM TS FTL C&H CTF Bomb Jump FT Gun
 
+[OpenArena]
+mod=
+exePath=C:\Games\openarena-0.8.8\openarena.exe
+masterServer=dpmaster.deathmask.net:27950
+protocolVersion=71
+gameTypes=FFA 1v1 SP TDM CTF OFC Ovl Harv Elim CTFE LMS DD Dom Pos
+
 [Tremulous]
 mod=
 regKey=HKEY_LOCAL_MACHINE\SOFTWARE\Tremulous\InstallDir
