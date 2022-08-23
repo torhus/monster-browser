@@ -173,9 +173,7 @@ etColors=true
 
 [World of Padman]
 mod=WorldofPadman
-regKey=HKEY_LOCAL_MACHINE\SOFTWARE\Padworld Entertainment\Path
-exeName=wop.exe
-exePath=%ProgramFiles%\World of Padman 1.5\wop.exe
+exePath=%ProgramFiles%\Padworld Entertainment\World of Padman 1.6.2\wop.exe
 masterServer=master.worldofpadman.com:27955
 protocolVersion=71
 qstatMasterServerType=worldofpadmanm

@@ -239,7 +239,6 @@ static this() {
 	gameTypes["Reaction"] = split("DM 1 2 TDM TP CTB", " ");
 	gameTypes["smokinguns"] = split("FFA Duel 2 TDM RTP BR", " ");
 	gameTypes["westernq3"]  = split("FFA Duel 2 TDM RTP BR", " ");
-	gameTypes["wop"] = split("FFA 1v1 2 SyC LPS TDM 6 SyCT BB", " ");
 	gameTypes["WorldofPadman"] = split("FFA 1v1 2 SyC LPS TDM CtL SyCT BB", " ");
 }
 
