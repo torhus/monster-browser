@@ -188,7 +188,7 @@ masterServer=master.urbanterror.info:27900
 gameTypes=FFA LMS 2 TDM TS FTL C&H CTF Bomb Jump FT Gun
 
 [Tremulous]
-mod=base
+mod=
 regKey=HKEY_LOCAL_MACHINE\SOFTWARE\Tremulous\InstallDir
 exeName=tremulous.exe
 exePath=%ProgramFiles%\Tremulous\tremulous.exe
