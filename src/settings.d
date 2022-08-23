@@ -200,13 +200,6 @@ protocolVersion=69
 [cpma]
 
 [InstaUnlagged]
-
-[Reaction]
-exePath=%ProgramFiles%\Reaction\Reaction.x86.exe
-masterServer=master.rq3.com:27950
-protocolVersion=71
-qstatMasterServerType=reactionm
-qstatConfigFile=qstat_mb.cfg
 `;
 
 	Ini settingsIni;
