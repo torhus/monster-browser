@@ -64,7 +64,8 @@ struct GameConfig
 
 	char[] extraServersFile() /// Like "baseq3.extra".
 	{
-		return appDir ~ mod ~ ".extra";  // FIXME: check dataDir too?
+		char[] base = mod.length > 0 ? mod : name;
+		return appDir ~ base ~ ".extra";
 	}
 
 	/**
