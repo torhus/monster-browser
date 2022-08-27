@@ -8,7 +8,7 @@ import tango.text.Util;
 import tango.text.convert.Format;
 import Integer = tango.text.convert.Integer;
 import tango.stdc.string : memmove;
-import tango.time.StopWatch;
+debug import tango.time.StopWatch;
 import tango.util.container.HashMap;
 debug import tango.util.log.Log;
 
@@ -38,7 +38,6 @@ final class ServerList
 	 * true if list contains all servers for the mod, that replied when queried.
 	 * Meaning that the server querying process was not interrupted.
 	 */
-	// FIXME: how does MasterList relate to this?
 	bool complete = false;
 
 
@@ -335,7 +334,7 @@ private:
 	*
 	* Returns true if the filtered list was altered.
 	*/
-	private bool addOrReplace(ServerHandle sh, bool replace=false)
+	bool addOrReplace(ServerHandle sh, bool replace=false)
 	{
 		synchronized (this) synchronized (master_) {
 			ServerData sd = master_.getServerData(sh);
