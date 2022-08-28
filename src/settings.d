@@ -115,13 +115,13 @@ struct GameConfig
 	/// Value to use for Qstat's -cfg parameter.
 	char[] qstatConfigFile()
 	{
-		return section.getValue("qstatConfigFile", "qstat_mb.cfg");
+		return section.getValue("qstatConfigFile", null);
 	}
 
 	/// Qstat master server type.
 	char[] qstatMasterServerType()
 	{
-		return section.getValue("qstatMasterServerType", "quake3arenam");
+		return section.getValue("qstatMasterServerType", "q3m");
 	}
 
 	private char[] name_;
@@ -158,9 +158,8 @@ private {
 ; gameTypes       - List of game type names, seperated by spaces.
 ; etColors - Set to true to enable Enemy Territory-style extended color codes (31 colors).
 ;            See http://wolfwiki.anime.net/index.php/Color_Codes for more information.
-; qstatMasterServerType - Defaults to quake3arenam.
-; qstatConfigFile - For setting Qstat's -cfg parameter. Defaults to
-;                   qstat_mb.cfg.
+; qstatMasterServerType - Defaults to q3m.
+; qstatConfigFile - For setting Qstat's -cfg parameter.
 ;
 ; Lines beginning with a ";" are comments.
 
