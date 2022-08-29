@@ -6,14 +6,15 @@ Work in progress
 - New: Game type names can now be configured in mods.ini.
 - Change: Default master switched from master.ioquake3.org to
           master.quake3arena.com, the latter has got more servers.
-- Change: Updated configurations for World of Padman, Tremulous and Urban
-          Terror. Configuration for Reaction was removed.
+- Change: Updated configurations for Tremulous and Urban Terror. Configuration
+          for Reaction was removed.
 - Change: If mod is set to nothing, extra servers are loaded from
           <section name>.extra, as opposed to <mod>.extra.
 - Change: QStat is updated to version 2.17.
 - Change: Updated installer that won't add anything to per-user directories.
 - Fix: Updated the MaxMind DB DLL to 1.6.0, this makes location information
        work when MB is installed in a path with non-ASCII characters.
+- Fix: Updated installation paths for Smokin' Guns and World of Padman.
 
 v0.9d - 2019-04-24
 ------------------

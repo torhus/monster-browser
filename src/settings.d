@@ -165,7 +165,7 @@ private {
 
 [Smokin' Guns]
 mod=smokinguns
-regKey=HKEY_LOCAL_MACHINE\SOFTWARE\Smokin' Guns Productions\Smokin' Guns\InstallPath
+regKey=HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Smokin' Guns Productions\Smokin' Guns\InstallPath
 exeName=smokinguns.exe
 exePath=%ProgramFiles%\Smokin' Guns\smokinguns.exe
 masterServer=master.smokin-guns.org
@@ -173,7 +173,9 @@ etColors=true
 
 [World of Padman]
 mod=WorldofPadman
-exePath=%ProgramFiles%\Padworld Entertainment\World of Padman 1.6.2\wop.exe
+regKey=HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Padworld Entertainment\World of Padman 1.6.2\Path
+exeName=wop.x86_64.exe
+exePath=%ProgramFiles%\Padworld Entertainment\World of Padman 1.6.2\wop.x86_64.exe
 masterServer=master.worldofpadman.com:27955
 protocolVersion=71
 qstatMasterServerType=worldofpadmanm
