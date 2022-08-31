@@ -141,7 +141,7 @@ void switchToGame(in char[] name)
 
 	}
 
-	gameName = (findString(gameNames, name) != -1) ? name : gameNames[0];
+	gameName = name;
 	threadManager.run({ Display.getDefault().syncExec(dgRunnable(&f)); });
 }
 
