@@ -202,6 +202,9 @@ exePath=%ProgramFiles%\Tremulous\tremulous.exe
 masterServer=master.tremulous.net:30710
 protocolVersion=69
 
+[Quake III (all servers)]
+mod=
+
 [baseq3]
 
 [osp]
