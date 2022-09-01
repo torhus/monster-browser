@@ -4,6 +4,7 @@ Work in progress
 - New: Filtering on cvars game and gamename can be disabled by setting the mod
        value in mods.ini to nothing.
 - New: Game type names can now be configured in mods.ini.
+- New: Added or updated configuration for some popular Q3 mods.
 - Change: Default master switched from master.ioquake3.org to
           master.quake3arena.com, the latter has got more servers.
 - Change: Updated configurations for Tremulous and Urban Terror. Configuration

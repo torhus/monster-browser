@@ -207,9 +207,23 @@ mod=
 
 [baseq3]
 
-[osp]
+[OSP]
+gameTypes=FFA 1v1 SP TDM CTF CA
 
-[cpma]
+[CPMA]
+gameTypes=FFA 1v1 DA TDM CTF CA FTAG CTFS 2v2
+
+[Excessive Plus]
+mod=excessiveplus
+gameTypes=FFA 1on1 SP TDM CTF RTF 1FCTF CA FTAG PTL
+
+[DeFRaG]
+
+[Q3Plus]
+gameTypes=FFA 1on1 SP TDM CTF RTF 1FCTF CA FTAG PTL
+
+[Rocket Arena 3]
+mod=arena
 `;
 
 	Ini settingsIni;
