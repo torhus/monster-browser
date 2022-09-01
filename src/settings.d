@@ -210,8 +210,6 @@ mod=
 [osp]
 
 [cpma]
-
-[InstaUnlagged]
 `;
 
 	Ini settingsIni;
