@@ -1,5 +1,5 @@
-Work in progress
-----------------
+v0.9e - 2022-09-02
+------------------
 - New: Configuration for OpenArena was added.
 - New: Filtering on cvars game and gamename can be disabled by setting the mod
        value in mods.ini to nothing.

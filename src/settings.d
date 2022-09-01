@@ -314,7 +314,7 @@ void loadGamesFile()
 
 	if (!Path.exists(gamesFileName))
 		writeDefaultGamesFile();
-	else if (!gamesIni && getSessionState("programVersion") < "0.8a")
+	else if (!gamesIni && getSessionState("programVersion") < "0.9e")
 		updateGameConfiguration();
 
 	// load the file now that we know it's there

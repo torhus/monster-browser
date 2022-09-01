@@ -1,11 +1,11 @@
-version: 0.9d-{branch}.{build}
+version: 0.9e-{branch}.{build}
 environment:
   BASEDIR: C:\projects
 install: |
   cd %BASEDIR%
   cd
   curl -sS -o dmd.zip http://downloads.dlang.org/releases/2010/dmd.1.066.zip
-  curl -sSL -o deps.zip https://github.com/torhus/monster-browser/files/9439788/monsterbrowser_deps.zip
+  curl -sSL -o deps.zip https://github.com/torhus/monster-browser/files/9473908/monsterbrowser_deps.zip
   unzip -q dmd.zip
   unzip -q deps.zip
   copy sc.ini dmd\windows\bin\
@@ -21,5 +21,5 @@ build_script: |
 test: off
 artifacts:
 - path: MonsterBrowser.exe
-- path: MonsterBrowser09d.zip
-- path: misc\Monster Browser 0.9d Setup.exe
+- path: MonsterBrowser09e.zip
+- path: misc\Monster Browser 0.9e Setup.exe

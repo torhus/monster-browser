@@ -50,7 +50,7 @@ char[] dataDir;  /// Absolute path to where settings and data is stored.
 char[] logDir;  /// Absolute path to where the log file is.
 
 const char[] APPNAME = "Monster Browser";
-const char[] FINAL_VERSION = "0.9d";
+const char[] FINAL_VERSION = "0.9e";
 
 Clipboard clipboard;
 StopWatch globalTimer;

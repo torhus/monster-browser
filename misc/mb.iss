@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Monster Browser"
-#define MyAppVersion "0.9d"
+#define MyAppVersion "0.9e"
 #define MyAppURL "http://sites.google.com/site/monsterbrowser/"
 #define MyAppExeName "MonsterBrowser.exe"
 
