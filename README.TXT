@@ -29,9 +29,8 @@ Customizing the Game List
 -------------------------
 By clicking on the 'Game configuration' button in the settings, you can edit
 the list displayed in the combo box. The format of this file is explained in
-the file itself. The first game listed will be used as the default. If you want
-the program to always start with the topmost game, select 'Default game' in the
-settings. Otherwise it will start with the last selected game.
+the file itself. If you remove this file, or clear its contents, Monster
+Browser will create a new one containing the default configuration.
 
 
 Adding Extra Servers
@@ -83,7 +82,7 @@ Esc - Abort action
 
 Credits
 -------
-Qstat for querying servers - http://qstat.sourceforge.net
+Qstat for querying servers - https://github.com/Unity-Technologies/qstat
 
 Thanks to Biondo for making the application icon that's used for Monster
 Browser 0.9 and later.
@@ -102,9 +101,6 @@ Source code, etc.: https://github.com/torhus/monster-browser
 
 I'm open for requests to change the licence, I just haven't bothered deciding
 which licence to use yet.
-
-Check out smokin-guns.org, I'm registered as torhu. Send me a private message
-through the forum there if I don't reply to your emails.
 
 Email:
 torhu at yahoo dot com.
