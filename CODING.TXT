@@ -88,7 +88,7 @@ quit      - Print time since startup and then quit, after loading the server
 
 -----------
 This external tool is required for Monster Browser to operate:
-http://qstat.sourceforge.net/
+https://github.com/Unity-Technologies/qstat
 
 
 -torhu at yahoo com
