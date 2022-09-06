@@ -9,6 +9,7 @@ version (Windows) {
 	import tango.sys.win32.CodePage;
 	import tango.sys.win32.UserGdi;
 }
+import tango.text.convert.Format;
 
 import dwt.DWT;
 
@@ -78,8 +79,12 @@ void joinServer(in char[] gameName, ServerData sd)
 			int r = cast(int)ShellExecuteA(null, "open", toStringz(ansiPath),
 			                     toStringz(argv), toStringz(ansiDir), SW_SHOW);
 			if (r <= 32) {
-				error("Unable to execute \"{}\".\n\nError {}: {}",
-				                  path, SysError.lastCode, SysError.lastMsg());
+				log(Format("Launch error {}: {}", SysError.lastCode,
+				                                          SysError.lastMsg()));
+				error("Unable to execute \"{}\".\n\nPlease check that the " ~
+				      "correct location for Quake 3 is set in the settings, " ~
+				      "or the exePath value in the game configuration for " ~
+				      "other games.", path);
 			}
 			else if (getSetting("minimizeOnGameLaunch") == "true") {
 				mainWindow.minimized = true;
