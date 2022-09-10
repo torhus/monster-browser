@@ -1,6 +1,7 @@
 module servertable;
 
 import lib.phobosfixes; // icmp
+import std.ascii : newline;
 import std.conv;
 import std.math;
 import std.string;

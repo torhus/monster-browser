@@ -4,7 +4,6 @@ import core.thread;
 import core.stdc.ctype;
 import core.stdc.string;
 import core.stdc.time;
-import std.conv;
 import std.file;
 import std.stdio;
 import std.stream : InputStream;
@@ -254,9 +253,9 @@ int findString(in char[][] array, in char[] str)
  * Like the above findString, but search in a given _column of a
  * 3-dimensional _array.
  */
-int findString(const(char)[][][] array, in char[] str, int column)
+int findString(in char[][][] array, in char[] str, int column)
 {
-	foreach (int i, const(char)[][] s; array) {
+	foreach (int i, const(char[][]) s; array) {
 		if (icmp(str, s[column]) == 0)
 			return i;
 	}
@@ -273,7 +272,7 @@ int findString(const(char)[][][] array, in char[] str, int column)
  *     numerical  = Set to true to get a numerical sort instead of an
  *                  alphabetical one.
  */
-void sortStringArray(const(char)[][][] arr, int column=0, bool reverse=false,
+void sortStringArray(string[][] arr, int column=0, bool reverse=false,
                                                           bool numerical=false)
 {
 	bool less(in char[][] a, in char[][] b)
@@ -379,7 +378,7 @@ int[] parseIntList(in char[] str, size_t forcedLength=0, int defaultVal=0)
  */
 string toCsv(T)(T[] a)
 {
-	return to!string(a, "", ", ", "");
+	return format("%s", a[1..$-1]);
 }
 
 

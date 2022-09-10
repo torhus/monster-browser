@@ -21,7 +21,7 @@ import mainwindow;
 void messageBox(string msg, string title, int style)
 {
 	Display.getDefault().syncExec(dgRunnable({
-		scope MessageBox mb;
+		MessageBox mb;
 		if (mainWindow !is null)
 			mb = new MessageBox(mainWindow.handle, style);
 		else

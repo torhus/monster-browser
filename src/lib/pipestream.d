@@ -138,7 +138,7 @@ version(Windows)
 		override void flush()
 		{
 			assertWriteable();
-			FlushFileBuffers(writeHandle);
+			std.stream.FlushFileBuffers(writeHandle);
 		}
 
 	private:

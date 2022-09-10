@@ -1,0 +1,12 @@
+{
+	"authors": ["torhu"],
+	"copyright": "Copyright © 2022, torhu",
+	"description": "A server browser for Quake 3, mods, and derivates.",
+	"name": "monster-browser",
+
+	"dflags": [],
+	"buildRequirements": ["silenceDeprecations", "silenceWarnings"],
+	"importPaths": [".","src", "import"],
+	"excludedSourceFiles": ["src/monitor.d"],
+	"stringImportPaths": [".", "flags", "icons", "res"],
+}
