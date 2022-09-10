@@ -63,7 +63,7 @@ version(Windows)
 			security.lpSecurityDescriptor = null;
 			security.bInheritHandle = true;
 
-			if (!CreatePipe(&read,&write,&security,bufferSize))
+			if (!CreatePipe(&_read,&_write,&security,bufferSize))
 				throw new PipeException("CreatePipe");
 
 			writeable = true;
@@ -74,18 +74,18 @@ version(Windows)
 
 		HANDLE readHandle()
 		{
-			return read;
+			return _read;
 		}
 
 		HANDLE writeHandle()
 		{
-			return write;
+			return _write;
 		}
 
 		void closeRead()
 		{
 			CloseHandle(readHandle);
-			read = INVALID_HANDLE_VALUE;
+			_read = INVALID_HANDLE_VALUE;
 			readable = false;
 			if (!writeable) isopen = false;
 		}
@@ -93,7 +93,7 @@ version(Windows)
 		void closeWrite()
 		{
 			CloseHandle(writeHandle);
-			write = INVALID_HANDLE_VALUE;
+			_write = INVALID_HANDLE_VALUE;
 			writeable = false;
 			if (!readable) isopen = false;
 		}
@@ -142,8 +142,8 @@ version(Windows)
 		}
 
 	private:
-		HANDLE write = INVALID_HANDLE_VALUE;
-		HANDLE read = INVALID_HANDLE_VALUE;
+		HANDLE _write = INVALID_HANDLE_VALUE;
+		HANDLE _read = INVALID_HANDLE_VALUE;
 	}
 }
 
