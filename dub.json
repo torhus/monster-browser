@@ -5,8 +5,13 @@
 	"name": "monster-browser",
 
 	"dflags": [],
+	"lflags": ["/subsystem:console:4", "/rc:dwt.res", "/rc:mb.res"],
 	"buildRequirements": ["silenceDeprecations", "silenceWarnings"],
-	"importPaths": [".","src", "import"],
-	"excludedSourceFiles": ["src/monitor.d"],
+	"importPaths": ["src"],
+	"excludedSourceFiles": [
+		"src/monitor.d",
+		"src/org/eclipse/swt/internal/mozilla/*",
+	],
 	"stringImportPaths": [".", "flags", "icons", "res"],
+	"targetName": "MonsterBrowser",
 }
