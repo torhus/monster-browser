@@ -522,7 +522,7 @@ version (Windows) private string getRegistryStringValue(in char[] key)
 {
 	HKEY hKey;
 	DWORD dwType = REG_SZ;
-	BYTE buf[255] = void;
+	BYTE[255] buf = void;
 	LPBYTE lpData = buf.ptr;
 	DWORD dwSize = buf.length;
 	LONG status;

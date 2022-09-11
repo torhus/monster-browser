@@ -398,7 +398,7 @@ class SettingsDialog
 		gamesButton.setText("Games");
 		gamesButton.setLayoutData(new GridData(BUTTON_SIZE));
 		gamesButton.addSelectionListener(new class SelectionAdapter {
-			public void widgetSelected(SelectionEvent e)
+			public override void widgetSelected(SelectionEvent e)
 			{
 				Program.launch(settings.gamesFileName);
 			}

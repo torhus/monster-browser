@@ -13,7 +13,7 @@ struct OSVERSIONINFO {
   DWORD dwMinorVersion;
   DWORD dwBuildNumber;
   DWORD dwPlatformId;
-  CHAR szCSDVersion[128];  // ANSI version
+  CHAR[128] szCSDVersion;  // ANSI version
 }
 
 extern (Windows) BOOL GetVersionExA(OSVERSIONINFO*);

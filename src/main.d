@@ -87,7 +87,7 @@ private void _main(string[] args)
 	mainWindow = new MainWindow;
 
 	// Set the application's window icon.
-	ByteArrayInputStream streams[];
+	ByteArrayInputStream[] streams;
 	streams ~= new ByteArrayInputStream(cast(byte[])import("mb16.png"));
 	streams ~= new ByteArrayInputStream(cast(byte[])import("mb32.png"));
 
@@ -207,11 +207,12 @@ void checkConsoleOutput()
 	}
 	else {
 		haveConsole = testConsole();
-		if (!haveConsole)
+		if (!haveConsole) {
 			version (Windows)
 				redirectOutput("NUL", "NUL");
 			else
 				redirectOutput("/dev/null", "/dev/null");
+		}
 	}
 }
 

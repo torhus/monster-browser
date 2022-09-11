@@ -106,7 +106,7 @@ class RconWindow
 		passwordButton.setText("Change Password...");
 		passwordButton.addSelectionListener(new class SelectionAdapter
 		{
-			void widgetSelected(SelectionEvent e)
+			override void widgetSelected(SelectionEvent e)
 			{
 				onChangePassword();
 			}
@@ -120,7 +120,7 @@ class RconWindow
 
 		shell_.addShellListener(new class ShellAdapter
 		{
-			void shellClosed(ShellEvent e)
+			override void shellClosed(ShellEvent e)
 			{
 				rcon_.shutdown();  // stop thread
 				saveSessionState();
@@ -154,7 +154,7 @@ class RconWindow
 
 	private class MySelectionListener : SelectionAdapter
 	{
-		void widgetDefaultSelected(SelectionEvent e)
+		override void widgetDefaultSelected(SelectionEvent e)
 		{
 			string cmd = inputText_.getText();
 			if (cmd.length > 0) {
@@ -168,7 +168,7 @@ class RconWindow
 
 	private class CommonKeyListener : KeyAdapter
 	{
-		void keyPressed(KeyEvent e)
+		override void keyPressed(KeyEvent e)
 		{
 			switch (e.keyCode) {
 				case SWT.ESC:
@@ -191,7 +191,7 @@ class RconWindow
 
 	private class InputKeyListener : KeyAdapter
 	{
-		void keyPressed(KeyEvent e)
+		override void keyPressed(KeyEvent e)
 		{
 			switch (e.keyCode) {
 				case SWT.ARROW_UP:

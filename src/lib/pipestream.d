@@ -238,7 +238,7 @@ version(linux)
 		}
 
 	private:
-		int handle[2];
+		int[2] handle;
 	}
 }
 

@@ -167,10 +167,12 @@ uint trim(T) (T[] digits, ref bool sign, ref uint radix)
            else
               // explicit radix must match (optional) prefix
               if (radix != r)
+                  {
                   if (radix)
                       --p;
                   else
                      radix = r;
+                  }
            }
 
         // return number of characters eaten

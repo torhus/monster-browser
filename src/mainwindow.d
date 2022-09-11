@@ -197,7 +197,7 @@ class MainWindow
 
 	/// Handles the shell close event.
 	private class MyShellListener : ShellAdapter {
-		void shellClosed(ShellEvent e)  ///
+		override void shellClosed(ShellEvent e)  ///
 		{
 			serverTable.stopRefresh(false);
 			threadManager.shutDown();
@@ -424,7 +424,7 @@ class FilterBar : Group
 		notEmptyButton_ = new Button(this, SWT.CHECK);
 		notEmptyButton_.setText("Not empty");
 		notEmptyButton_.addSelectionListener(new class SelectionAdapter {
-			public void widgetSelected(SelectionEvent e)
+			public override void widgetSelected(SelectionEvent e)
 			{
 				ServerList list = serverTable.serverList;
 				bool notEmpty = notEmptyButton_.getSelection() != 0;
@@ -446,7 +446,7 @@ class FilterBar : Group
 		hasHumansButton_ = new Button(this, SWT.CHECK);
 		hasHumansButton_.setText("Has humans");
 		hasHumansButton_.addSelectionListener(new class SelectionAdapter {
-			public void widgetSelected(SelectionEvent e)
+			public override void widgetSelected(SelectionEvent e)
 			{
 				ServerList list = serverTable.serverList;
 				bool hasHumans = hasHumansButton_.getSelection() != 0;
@@ -489,14 +489,14 @@ class FilterBar : Group
 
 		gamesCombo_.clearSelection();
 		gamesCombo_.addSelectionListener(new class SelectionAdapter {
-			public void widgetSelected(SelectionEvent e)
+			public override void widgetSelected(SelectionEvent e)
 			{
 				serverTable.getTable.setFocus();
 				lastSelectedGame_ = (cast(Combo)e.widget).getText();
 				switchToGame(lastSelectedGame_);
 			}
 
-			public void widgetDefaultSelected(SelectionEvent e)
+			public override void widgetDefaultSelected(SelectionEvent e)
 			{
 				string s = strip((cast(Combo)e.widget).getText());
 				if (s.length == 0)
@@ -609,7 +609,7 @@ private ToolBar createToolbar(Composite parent)
 	button1.setText("Check for New");
 	button1.setImage(loadImage!("box_download_32.png"));
 	button1.addSelectionListener(new class SelectionAdapter {
-		public void widgetSelected(SelectionEvent e)
+		public override void widgetSelected(SelectionEvent e)
 		{
 			threadManager.run(&checkForNewServers);
 		}
@@ -620,7 +620,7 @@ private ToolBar createToolbar(Composite parent)
 	button2.setText("Refresh All");
 	button2.setImage(loadImage!("refresh_32.png"));
 	button2.addSelectionListener(new class SelectionAdapter {
-		public void widgetSelected(SelectionEvent e)
+		public override void widgetSelected(SelectionEvent e)
 		{
 			threadManager.run(&refreshAll);
 		}
@@ -632,7 +632,7 @@ private ToolBar createToolbar(Composite parent)
 	button3.setText("   Add... ");
 	button3.setImage(loadImage!("add_32.png"));
 	button3.addSelectionListener(new class SelectionAdapter {
-		public void widgetSelected(SelectionEvent e)
+		public override void widgetSelected(SelectionEvent e)
 		{
 			auto dialog = new SpecifyServerDialog(mainWindow.handle);
 			dialog.open();
@@ -657,7 +657,7 @@ private ToolBar createToolbar(Composite parent)
 	button5.setText(" Settings");
 	button5.setImage(loadImage!("spanner_32.png"));
 	button5.addSelectionListener(new class SelectionAdapter {
-		public void widgetSelected(SelectionEvent e)
+		public override void widgetSelected(SelectionEvent e)
 		{
 			SettingsDialog dialog = new SettingsDialog(mainWindow.handle);
 			if (dialog.open())

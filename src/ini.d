@@ -445,7 +445,7 @@ protected:
 							case 0: //eof
 								goto ini_eof;
 							
-							default: ;
+							default: { }
 						}
 					}
 					break;
@@ -587,12 +587,12 @@ protected:
 												reset();
 												goto ini_eof;
 											
-											default: ;
+											default: { }
 										}
 									}
 									break done_default;
 								
-								default: ;
+								default: { }
 							}
 						}
 					}

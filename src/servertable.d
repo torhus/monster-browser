@@ -575,7 +575,7 @@ private:
 	}
 
 	class MyKeyListener : KeyAdapter {
-		public void keyPressed (KeyEvent e)
+		public override void keyPressed (KeyEvent e)
 		{
 			switch (e.keyCode) {
 				case SWT.F9: case SWT.F10:
@@ -650,7 +650,7 @@ private:
 		item.setText("Join\tEnter");
 		menu.setDefaultItem(item);
 		item.addSelectionListener(new class SelectionAdapter {
-			void widgetSelected(SelectionEvent e) {
+			override void widgetSelected(SelectionEvent e) {
 				if (stopServerRefresh_ !is null)
 					stopServerRefresh_(true);
 				joinServer(serverList_.gameName,
@@ -661,7 +661,7 @@ private:
 		item = new MenuItem(menu, SWT.PUSH);
 		item.setText("Set password");
 		item.addSelectionListener(new class SelectionAdapter {
-			void widgetSelected(SelectionEvent e) { onSetPassword(); }
+			override void widgetSelected(SelectionEvent e) { onSetPassword(); }
 		});
 
 
@@ -670,20 +670,29 @@ private:
 		item = new MenuItem(menu, SWT.PUSH);
 		item.setText("Refresh selected\tCtrl+R");
 		item.addSelectionListener(new class SelectionAdapter {
-			void widgetSelected(SelectionEvent e) { onRefreshSelected(); }
+			override void widgetSelected(SelectionEvent e)
+			{
+				onRefreshSelected();
+			}
 		});
 		refreshSelected_ = item;
 
 		item = new MenuItem(menu, SWT.PUSH);
 		item.setText("Copy addresses\tCtrl+C");
 		item.addSelectionListener(new class SelectionAdapter {
-			void widgetSelected(SelectionEvent e) { onCopyAddresses(); }
+			override void widgetSelected(SelectionEvent e)
+			{
+				onCopyAddresses();
+			}
 		});
 
 		item = new MenuItem(menu, SWT.PUSH);
 		item.setText("Remove selected\tDel");
 		item.addSelectionListener(new class SelectionAdapter {
-			void widgetSelected(SelectionEvent e) { onRemoveSelected(); }
+			override void widgetSelected(SelectionEvent e)
+			{
+				onRemoveSelected();
+			}
 		});
 
 		new MenuItem(menu, SWT.SEPARATOR);
@@ -691,7 +700,10 @@ private:
 		item = new MenuItem(menu, SWT.PUSH);
 		item.setText("Remote console\tF9");
 		item.addSelectionListener(new class SelectionAdapter {
-			void widgetSelected(SelectionEvent e) { onRemoteConsole(); }
+			override void widgetSelected(SelectionEvent e)
+			{
+				onRemoteConsole();
+			}
 		});
 
 		return menu;

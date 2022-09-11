@@ -134,7 +134,7 @@ class PlayerTable
 		table_.addListener(SWT.MouseMove, new MouseMoveListener);
 
 		table_.addSelectionListener(new class SelectionAdapter {
-			void widgetDefaultSelected(SelectionEvent e)
+			override void widgetDefaultSelected(SelectionEvent e)
 			{
 				TableItem item = cast(TableItem)e.item;
 				int serverIndex = players_[table_.indexOf(item)].serverIndex;
@@ -238,7 +238,7 @@ private:
 		item.setText("Select server\tEnter");
 		menu.setDefaultItem(item);
 		item.addSelectionListener(new class SelectionAdapter {
-			void widgetSelected(SelectionEvent e) {
+			override void widgetSelected(SelectionEvent e) {
 				int index = players_[table_.getSelectionIndex()].serverIndex;
 				serverTable.setSelection([index], true);
 			}
