@@ -56,9 +56,9 @@ module lib.loader;
 
 private import std.string;
 import std.conv;
-private import std.c.string;
-private import std.c.stdlib;
-private import std.c.stdio;
+private import core.stdc.string;
+//private import std.c.stdlib;
+//private import std.c.stdio;
 
 //import synsoft.types;
 /+ + These are borrowed from synsoft.types, until such time as something similar is in Phobos ++
@@ -71,7 +71,7 @@ public alias int                    boolean;
 
 version(Windows)
 {
-    private import std.c.windows.windows;
+    private import core.sys.windows.windows;
     private import std.windows.syserror;
 
     extern(Windows)

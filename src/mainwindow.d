@@ -5,6 +5,7 @@ module mainwindow;
 import std.algorithm : max;
 import std.conv;
 import std.string;
+import Integer = tango.text.convert.Integer;
 
 import java.io.ByteArrayInputStream;
 import java.lang.Runnable;

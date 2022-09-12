@@ -7,9 +7,9 @@ module serveractions;
 import core.memory;
 import std.conv;
 import std.file;
-import std.stream;
+import undead.stream;
 import std.string;
-import tango.text.xml.SaxParser : XmlException;
+import tango.text.xml.PullParser : XmlException;
 
 import java.lang.Runnable;
 import org.eclipse.swt.widgets.Display;

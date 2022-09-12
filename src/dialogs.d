@@ -3,6 +3,7 @@
 module dialogs;
 
 import std.string;
+import Integer = tango.text.convert.Integer;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -314,7 +315,7 @@ class SpecifyServerDialog
 					GameConfig game = getGameConfig(serverList.gameName);
 
 					if (matchGame(&sd, game)) {
-						info("That server is already on the list.  If you "
+						info("That server is already on the list.  If you " ~
 						         "can't see it, try turning off the filters.");
 						int i = serverList.getFilteredIndex(address);
 						if (i != -1)
@@ -384,7 +385,7 @@ class SettingsDialog
 		auto sqComposite = new Composite(mainComposite, SWT.NONE);
 		sqComposite.setLayout(new GridLayout(2, false));
 		Label sqLabel = new Label(sqComposite, SWT.WRAP);
-		sqLabel.setText("Number of servers to query\n"
+		sqLabel.setText("Number of servers to query\n" ~
 		                "simultaneously, default is 10:");
 		sqSpinner_ = new Spinner(sqComposite, SWT.BORDER);
 		sqSpinner_.setMinimum(1);

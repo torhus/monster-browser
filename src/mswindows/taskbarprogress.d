@@ -1,7 +1,7 @@
 module mswindows.taskbarprogress;
 
 import core.sys.windows.windows;
-import std.c.windows.com;
+import core.sys.windows.com;
 public import mswindows.taskbarlist;
 
 alias void* HWND;

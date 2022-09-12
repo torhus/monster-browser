@@ -14,7 +14,7 @@ import ini;
 version (Windows) {
 	import std.string;
 	import std.windows.charset;
-	import std.c.windows.windows;
+	import core.sys.windows.windows;
 	import tango.sys.win32.SpecialPath;
 
 	extern (Windows)
@@ -357,7 +357,7 @@ string getSetting(in char[] key)
 	assert(settingsIni && settingsIni.sections.length > 0);
 	IniSection sec = settingsIni["Settings"];
 
-	assert(sec[key], key ~ " not found.\n\n"
+	assert(sec[key], key ~ " not found.\n\n" ~
 	                  "All settings need to have a default.");
 	return sec[key];
 }
@@ -457,7 +457,7 @@ string getSessionState(in char[] key)
 {
 	IniSection sec = settingsIni.section("Session");
 	assert(sec !is null);
-	assert(sec[key], key ~ " not found.\n\n"
+	assert(sec[key], key ~ " not found.\n\n" ~
 	                  "All settings need to have a default.");
 	return sec[key];
 }
@@ -481,10 +481,10 @@ void setSessionState(in char[] key, string value)
 private string autodetectQuake3Path()
 {
 	version (Windows) {
-		string q3path = getRegistryStringValue("HKEY_LOCAL_MACHINE\\"
+		string q3path = getRegistryStringValue("HKEY_LOCAL_MACHINE\\" ~
 		                      "SOFTWARE\\Id\\Quake III Arena\\INSTALLEXEPATH");
 		if (!q3path) {
-			log("Quake 3's installation path was not found in the registry, "
+			log("Quake 3's installation path was not found in the registry, " ~
 		                                   "falling back to a default value.");
 			// use a sensible default value
 			q3path = getProgramFilesDirectory();

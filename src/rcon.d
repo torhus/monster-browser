@@ -25,7 +25,7 @@ import std.conv;
 import std.socket;
 import std.string;
 version (Windows)
-	import std.c.windows.winsock;
+	import core.sys.windows.winsock2;
 import tango.core.Array;
 import Integer = tango.text.convert.Integer;
 
@@ -336,8 +336,8 @@ private class Rcon
 		size_t written = socket_.sendTo(s);
 		if (written == Socket.ERROR || written < s.length) {
 			log("Rcon: Only %s of %s bytes sent.", written, s.length);
-			error("An error occurred while sending the command, please check "
-			                                               "your connection.");
+			error("An error occurred while sending the command, please " ~
+			                                        " check your connection.");
 		}
 	}
 

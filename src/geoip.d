@@ -4,9 +4,9 @@
 
 module geoip;
 
+import core.stdc.string;
 import std.conv;
 import std.string;
-import std.c.string;
 
 import java.io.ByteArrayInputStream;
 import lib.loader;  // Replacement for std.loader
@@ -135,7 +135,7 @@ Image getFlagImage(in char[] countryCode)
 				tmp = new Image(display, stream);
 			}
 			catch (SWTException e) {
-				log("Error when decoding flag for '" ~ countryCode ~ "', "
+				log("Error when decoding flag for '" ~ countryCode ~ "', " ~
 				                                     "possibly corrupt file.");
 			}
 		}

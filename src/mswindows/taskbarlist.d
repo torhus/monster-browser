@@ -5,16 +5,12 @@
 module mswindows.taskbarlist;
 
 import core.sys.windows.windows;
-import std.c.windows.com;
+import core.sys.windows.com;
 
 
 alias ulong ULONGLONG;  ///
 alias IUnknown HIMAGELIST;  ///
 private alias void* LPTHUMBBUTTON;  // just to make it compile
-
-///
-const CLSID CLSID_TaskbarList = {0x56FDF344, 0xFD6D, 0x11D0,
-                             [0x95, 0x8A, 0x00, 0x60, 0x97, 0xC9, 0xA0, 0x90]};
 
 ///
 const IID IID_ITaskbarList3 = {0xea1afb91, 0x9e28, 0x4b86,

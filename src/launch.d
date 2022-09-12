@@ -7,7 +7,7 @@ import std.string;
 version (Windows) {
 	import std.windows.charset;
 	import std.windows.syserror;
-	import std.c.windows.windows;
+	import core.sys.windows.windows;
 	extern (Windows)
 		HINSTANCE ShellExecuteA(HWND, LPCSTR, LPCSTR, LPCSTR, LPCSTR, INT);
 }

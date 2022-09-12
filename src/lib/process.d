@@ -12,13 +12,13 @@
  */
 
 module lib.process;
-private import std.c.stdlib;
+private import core.stdc.stdlib;
 public import lib.pipestream;
 
 extern(C) char* strdup(char*);
 
 version(Windows) {
-	public import std.c.windows.windows;
+	public import core.sys.windows.windows;
 	import std.windows.syserror;
 
 	extern(Windows) {

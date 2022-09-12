@@ -49,7 +49,7 @@ Set!(string) browserGetNewList(in GameConfig game)
 	// use gslist's server-sider filtering
 	// Note: gslist returns no servers if filtering on "baseq3"
 	if (gslist && MOD_ONLY && game.mod != "baseq3")
-		cmdLine ~= " -f \"(gametype='" ~ game.mod ~ "')"
+		cmdLine ~= " -f \"(gametype='" ~ game.mod ~ "')" ~
 		           " AND (protocol=" ~ game.protocolVersion ~ ")\"";
 
 	try {
@@ -153,7 +153,7 @@ final class MasterListServerRetriever : IServerRetriever
 		}
 
 		if (error) {
-			warning("Unable to load the server list from disk, "
+			warning("Unable to load the server list from disk, " ~
 			                 "press \'Get new list\' to download a new list.");
 		}
 

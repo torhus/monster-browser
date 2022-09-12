@@ -5,7 +5,7 @@ import std.file;
 import std.path;
 import std.stdio;
 import std.string;
-import std.c.windows.windows;
+import core.sys.windows.windows;
 version (Windows) import tango.sys.win32.SpecialPath;
 
 import java.io.ByteArrayInputStream;
@@ -146,7 +146,7 @@ private void _main(string[] args)
 	foreach (slist; serverListCache)
 		slist.disposeCustomData();
 	mainWindow.disposeAll();
-	colorednames.disposeNameColors();
+	disposeNameColors();
 	foreach (icon; appIcons)
 		icon.dispose;
 	clipboard.dispose;

@@ -12,12 +12,12 @@
  */
 
 module lib.pipestream;
-private import std.stream;
+private import undead.stream;
 
 extern(C) char* strdup(char*);
 
 version(Windows) {
-	import std.c.windows.windows;
+	import core.sys.windows.windows;
 	import std.windows.syserror;
 
 	extern(Windows) {
@@ -138,7 +138,7 @@ version(Windows)
 		override void flush()
 		{
 			assertWriteable();
-			std.stream.FlushFileBuffers(writeHandle);
+			undead.stream.FlushFileBuffers(writeHandle);
 		}
 
 	private:

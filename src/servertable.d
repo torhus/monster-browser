@@ -792,10 +792,10 @@ private:
 		ServerData sd = serverList_.getFiltered(index);
 		string address = sd.server[ServerColumn.ADDRESS];
 		string message =
-		            "Set the password to be used when joining the server.\n"
-		            "The password will be saved on disk.\n\n"
-		            "To delete the stored password, clear the password field\n"
-		            "and press OK.";
+		          "Set the password to be used when joining the server.\n" ~
+		          "The password will be saved on disk.\n\n" ~
+		          "To delete the stored password, clear the password field\n" ~
+		          "and press OK.";
 
 		scope dialog = new ServerPasswordDialog(mainWindow.handle,
 		                                     "Set Password", message, address);

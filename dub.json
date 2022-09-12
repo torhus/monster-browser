@@ -4,13 +4,17 @@
 	"description": "A server browser for Quake 3, mods, and derivates.",
 	"name": "monster-browser",
 
+	"dependencies": {
+		"dwt": { "path": "dwt-66b84b401e44c010168fd579bca056eb0f73fc3d" },
+	},
 	"dflags": [],
-	"lflags": ["/subsystem:console:4", "/rc:dwt.res", "/rc:mb.res"],
+	"lflags-windows": ["/rc:misc\\dwt.res", "/rc:misc\\mb.res"],
+	"lflags-x86_omf": ["/subsystem:console:4"],
+	"lflags-x86_mscoff": ["/subsystem:console,5.01"],
 	"buildRequirements": ["silenceDeprecations", "silenceWarnings"],
 	"importPaths": ["src"],
 	"excludedSourceFiles": [
 		"src/monitor.d",
-		"src/org/eclipse/swt/internal/mozilla/*",
 	],
 	"stringImportPaths": [".", "flags", "icons", "res"],
 	"targetName": "MonsterBrowser",

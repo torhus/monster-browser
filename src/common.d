@@ -6,7 +6,7 @@ import core.stdc.string;
 import core.stdc.time;
 import std.file;
 import std.stdio;
-import std.stream : InputStream;
+import undead.stream : InputStream;
 import std.string;
 import tango.core.Array;
 import Integer = tango.text.convert.Integer;

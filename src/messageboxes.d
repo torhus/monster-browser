@@ -4,9 +4,9 @@
 
 module messageboxes;
 
-import std.format;
 import std.string;
 import std.utf;
+import undead.doformat;
 
 import java.lang.Runnable;
 import org.eclipse.swt.SWT;

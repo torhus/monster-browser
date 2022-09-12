@@ -52,7 +52,7 @@ bool parseOutput(in char[] modName, Process input,
 			outfile = File("qstat.out", "w");
 		}
 		catch (StdioException e) {
-			error("Unable to create file, qstat output will not be saved "
+			error("Unable to create file, qstat output will not be saved " ~
 			                                                       "to disk.");
 		}
 	}
