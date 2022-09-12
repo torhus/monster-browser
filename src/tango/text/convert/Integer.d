@@ -60,15 +60,12 @@ long parse(T) (T[] digits, uint radix=0, uint* ate=null)
 
 ******************************************************************************/
 
-ulong convert(T, U=uint) (T[] digits, U radix=10, uint* ate=null)
-{return convert!(T)(digits, radix, ate);}
-
-ulong convert(T) (T[] digits, uint radix=10, uint* ate=null)
+ulong convert(T) (const(T[]) digits, uint radix=10, size_t* ate=null)
 {
         uint  eaten;
         ulong value;
 
-        foreach (Unqual!T c; digits)
+        foreach (c; cast(T[])digits)
                 {
                 if (c >= '0' && c <= '9')
                    {}

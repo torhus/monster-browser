@@ -126,8 +126,10 @@ void logx(in char[] file, int line, Exception e)
 	log("%s(%s): %s", file, line, e.toString());
 	log("%s threads, currently in '%s'.", Thread.getAll().length,
 	                                                   Thread.getThis().name);
-	log("ThreadManager's thread is %s.",
-	                          threadManager.sleeping ? "sleeping" : "working");
+	if (threadManager !is null) {
+		log("ThreadManager's thread is %s.",
+		                      threadManager.sleeping ? "sleeping" : "working");
+	}
 
 	// output stack trace
 	/*char[] buf;
@@ -378,7 +380,7 @@ int[] parseIntList(in char[] str, size_t forcedLength=0, int defaultVal=0)
  */
 string toCsv(T)(T[] a)
 {
-	return format("%s", a[1..$-1]);
+	return format("%s", a)[1..$-1];
 }
 
 
