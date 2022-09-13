@@ -6,7 +6,7 @@ Useful links
 ------------
 D compiler:
 http://dlang.org/download.html
-Currently I'm using DMD 2.055.
+Currently I'm using DMD 2.094.2.
 
 D docs:
 Language: http://dlang.org/spec/spec.html
@@ -17,8 +17,8 @@ D support:
 http://www.digitalmars.com/NewsGroup.html
 irc://irc.freenode.org/D
 
-xfBuild for building on Windows:
-http://bitbucket.org/h3r3tic/xfbuild/wiki/Home
+DUB for building:
+https://github.com/dlang/dub
 
 DSSS, needed for building the project on Linux:
 http://dsource.org/projects/dsss
@@ -30,10 +30,7 @@ Libraries used
 ini.d (included in the source download):
 http://www.dprogramming.com/ini.php
 
-DWT2 GUI library. DWT2 is a D port of IBM's SWT 3.4.1 for Java.
-Revisions used with this project on Windows:
-https://github.com/d-widget-toolkit/base/tree/0bf3235f95423cabd38e6dd67f4dffe88f34cdbc
-https://github.com/d-widget-toolkit/org.eclipse.swt.win32.win32.x86/tree/13ee1b5206568d876b15a564d3268394396b07ac
+DWT GUI library. DWT is a D port of IBM's SWT 3.4.1 for Java.
 
 https://github.com/d-widget-toolkit/dwt
 http://help.eclipse.org/ganymede/nftopic/org.eclipse.platform.doc.isv/reference/api/org/eclipse/swt/widgets/package-tree.html
@@ -43,20 +40,7 @@ freenode (IRC).
 
 Building on Windows
 -------------------
-- Download the correct revision of dwt2, see above.
-- Copy these directories to the directory where you checked out Monster
-  Browser, alternatively to somewhere in you D import path:
-  * org.eclipse.swt.win32.win32.x86\src\org
-  * base\src\java
-- Copy this directory to the directory where you checked out Monster Browser:
-  * org.eclipse.swt.win32.win32.x86\res
-- You might need some of the extra .lib files found in the
-  'org.eclipse.swt.win32.win32.x86\lib\' directory too, if you haven't got them
-  installed already.  They go in the compiler's lib directory.
-- Unzip http://monsterbrowser.googlecode.com/files/monsterbrowser_flags.zip
-  into the Monster Browser directory.
-- Run build-release.bat or one of the other batch files.  Requires xfBuild to
-  be installed, see above.
+FIXME
 
 
 Building on Linux

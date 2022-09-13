@@ -5,7 +5,7 @@
 	"name": "monster-browser",
 
 	"dependencies": {
-		"dwt": { "path": "dwt-66b84b401e44c010168fd579bca056eb0f73fc3d" },
+		"dwt": "~>1.0.5+swt-3.4.1"
 	},
 	"dflags": [],
 	"lflags-windows": ["/rc:misc\\dwt.res", "/rc:misc\\mb.res"],
