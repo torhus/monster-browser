@@ -340,7 +340,6 @@ void mergeSort(T)(T[] a, bool delegate(T a, T b) lessOrEqual)
 	if (a.length > 0) {
 		b = new T[(a.length + 1) / 2];
 		_mergeSort(0, a.length - 1);
-		delete b;
 	}
 }
 

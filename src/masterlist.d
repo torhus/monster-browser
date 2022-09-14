@@ -199,13 +199,11 @@ final class MasterList
 		parser.setSaxHandler(handler);
 		parser.setContent(content);
 		parser.parse;
-		delete content;
 
 		log("Loaded %s servers in %s seconds.", handler.servers.length,
 		                                                        timer.seconds);
 
 		synchronized (this) {
-			delete servers_;
 			servers_ = handler.servers;
 		}
 

@@ -254,7 +254,6 @@ void loadGamesFile()
 	if (!exists(gamesFileName))
 		writeDefaultGamesFile();
 
-	delete gamesIni;
 	gamesIni = new Ini(gamesFileName);
 
 	// remove the nameless section caused by comments
@@ -264,7 +263,6 @@ void loadGamesFile()
 		// Invalid format, probably the old version.  Just overwrite with
 		// defaults and try again.
 		writeDefaultGamesFile();
-		delete gamesIni;
 		gamesIni = new Ini(gamesFileName);
 		gamesIni.remove("");
 	}
