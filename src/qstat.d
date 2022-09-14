@@ -75,7 +75,7 @@ bool parseOutput(in char[] modName, Process input,
 			outfile.writeln(line);
 
 		if (line.length >= 3 && line[0..3] == "Q3S") {
-			string[] fields = std.array.split!()(line, FIELDSEP);
+			string[] fields = std.array.split(line, FIELDSEP);
 			ServerData sd;
 
 			assert(fields.length >= 3);
