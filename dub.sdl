@@ -1,0 +1,17 @@
+name "monster-browser"
+description "A server browser for Quake 3, mods, and derivates."
+authors "torhu"
+copyright "Copyright © 2022, torhu"
+
+#dependency "dwt" version="~>1.0.5"
+dependency "dwt" path="dwt-master"
+targetName "MonsterBrowser"
+dflags
+lflags "/rc:misc\\dwt.res" "/rc:misc\\mb.res" platform="x86_omf"
+lflags "/subsystem:console:4" platform="x86_omf"
+lflags "misc\\dwt.res" "misc\\mb.res" platform="x86_mscoff"
+lflags "/subsystem:console,5.01" platform="x86_mscoff"
+buildRequirements "silenceWarnings" "silenceDeprecations"
+importPaths "src"
+excludedSourceFiles "src/monitor.d"
+stringImportPaths "." "flags" "icons" "res"
