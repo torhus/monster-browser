@@ -30,9 +30,6 @@ alias ConvException IllegalArgumentException;
 private import tango.core.Octal;
 
 
-long parse(T, U=uint) (T[] digits, U radix=0, uint* ate=null)
-{return parse!(T)(digits, radix, ate);}
-
 long parse(T) (T[] digits, uint radix=0, uint* ate=null)
 {
         bool sign;

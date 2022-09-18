@@ -4,14 +4,12 @@
 
 module qstat;
 
-import std.array;
+import std.ascii : newline;
 import std.conv;
+import std.process;
 import std.stdio;
 import std.string;
-import tango.text.Util;
 import Integer = tango.text.convert.Integer;
-
-import lib.process;
 
 import colorednames;
 import common;
@@ -34,9 +32,9 @@ private enum Field {
  * Returns: true if all servers were parsed and delivered, false if it stopped
  *          prematurely because of deliver() returning false;
  *
- * Throws: when outputFileName is given: IOException.
+ * Throws: StdioException when dumpqstat is specified.
  */
-bool parseOutput(in char[] modName, Process input,
+bool parseOutput(in char[] modName, File input,
                  bool delegate(ServerData*, bool replied) deliver)
 {
 	string[] gtypes;
@@ -66,7 +64,7 @@ bool parseOutput(in char[] modName, Process input,
 
 	while (keepGoing) {
 		debug checkTime(timer2, "1");
-		string line = cast(string)input.readLine();
+		string line = stripRight(input.readln(), newline);
 		debug checkTime(timer2, "2");
 		if (!line)
 			break;
@@ -74,8 +72,8 @@ bool parseOutput(in char[] modName, Process input,
 		if (outfile.isOpen)
 			outfile.writeln(line);
 
-		if (line.length >= 3 && line[0..3] == "Q3S") {
-			string[] fields = std.array.split(line, FIELDSEP);
+		if (line.startsWith("Q3S")) {
+			string[] fields = split(line, FIELDSEP);
 			ServerData sd;
 
 			assert(fields.length >= 3);
@@ -92,7 +90,7 @@ bool parseOutput(in char[] modName, Process input,
 				sd.server[ServerColumn.MAP] = fields[Field.MAP];
 
 				// cvar line
-				line = cast(string)input.readLine();
+				line = stripRight(input.readln(), newline);
 				if (outfile.isOpen)
 					outfile.writeln(line);
 
@@ -129,9 +127,6 @@ bool parseOutput(in char[] modName, Process input,
 				sd.server[ServerColumn.PING] = TIMEOUT;
 				keepGoing = deliver(&sd, false);
 				debug checkTime(timer2, "4x");
-			}
-			if (outfile.isOpen) {
-				outfile.writeln();
 			}
 		}
 	}
@@ -173,7 +168,7 @@ in {
 	                               ServerColumn.PASSWORDED < sd.server.length);
 }
 body {
-	string[] temp = std.array.split(line, FIELDSEP);
+	string[] temp = split(line, FIELDSEP);
 
 	foreach (string s; temp) {
 		int i = indexOf(s, '=');
@@ -217,32 +212,30 @@ body {
 }
 
 
-private string[][] parsePlayers(Process input, int* humanCount, File output)
+private string[][] parsePlayers(File input, int* humanCount, File output)
 {
 	string[][] players;
-	string line;
 	int humans = 0;
 
-	try {
-		while ((line = cast(string)input.readLine()) !is null) {
-			if (output.isOpen)
-				output.writeln(line);
+	foreach (line; input.byLineCopy(KeepTerminator.no, newline)) {
+		if (output.isOpen)
+			output.writeln(line);
 
-			string[] s = std.array.split(line, FIELDSEP);
-			string[] player = new string[PlayerColumn.max + 1];
-			player[PlayerColumn.RAWNAME] = s[0];
-			player[PlayerColumn.SCORE]   = s[1];
-			player[PlayerColumn.PING]    = s[2];
-			player[PlayerColumn.NAME]    = null;
-			players ~= player;
+		// no more players?
+		if (line.length == 0)
+			break;
 
-			if (player[PlayerColumn.PING] != "0") {
-				humans++;
-			}
+		string[] fields = split(line, FIELDSEP);
+		string[] player = new string[PlayerColumn.max + 1];
+		player[PlayerColumn.RAWNAME] = fields[0];
+		player[PlayerColumn.SCORE]   = fields[1];
+		player[PlayerColumn.PING]    = fields[2];
+		player[PlayerColumn.NAME]    = null;
+		players ~= player;
+
+		if (player[PlayerColumn.PING] != "0") {
+			humans++;
 		}
-	}
-	catch (PipeException e) {
-		// end of input
 	}
 
 	if (humanCount)

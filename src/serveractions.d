@@ -7,7 +7,7 @@ module serveractions;
 import core.memory;
 import std.conv;
 import std.file;
-import undead.stream;
+import std.stdio;
 import std.string;
 import tango.text.xml.PullParser : XmlException;
 
@@ -91,14 +91,12 @@ void switchToGame(string name)
 			auto file = game.extraServersFile;
 			try {
 				if (exists(file)) {
-					auto input = new BufferedFile(file);
-					auto addresses = collectIpAddresses(input);
-					input.close();
+					auto addresses = collectIpAddresses(File(file));
 					foreach (addr; addresses)
 						serverList.addExtraServer(addr);
 				}
 			}
-			catch (StreamException e) {
+			catch (StdioException e) {
 				log("Error when reading \"" ~ file ~ "\".");
 			}
 		}

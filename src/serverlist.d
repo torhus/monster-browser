@@ -3,7 +3,6 @@ module serverlist;
 import core.stdc.string : memmove;
 import lib.phobosfixes; // upperBound, icmp
 import std.algorithm;
-import std.array;
 import std.conv;
 import std.string;
 

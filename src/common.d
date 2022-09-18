@@ -4,15 +4,13 @@ import core.thread;
 import core.stdc.ctype;
 import core.stdc.string;
 import core.stdc.time;
+import std.ascii : newline;
 import std.file;
 import std.stdio;
-import undead.stream : InputStream;
 import std.string;
 import tango.core.Array;
 import Integer = tango.text.convert.Integer;
 import tango.text.Util : delimiters;
-
-import lib.process;
 
 import java.lang.wrappers;
 import org.eclipse.swt.SWT;
@@ -402,49 +400,25 @@ int[] getColumnWidths(Table table)
  * Collect IP addresses into a set.
  *
  * The format of each address is IP:PORT, where the port number is
- * optional.  One address each token. If no valid address is found, the token
- * is ignored.
+ * optional.  One address each line. If no valid address is found, the line is
+ * skipped.
  *
  * Returns: A set of strings containing the IP and port of each server.
  *
- * Throws: Whatever stream's opApply throws.
+ * Throws: StdioException.
  */
-Set!(string) collectIpAddresses(InputStream stream, uint start=0)
+Set!(string) collectIpAddresses(File stream, uint startColumn=0)
 {
 	Set!(string) addresses;
 
-	foreach (char[] line; stream) {
-		if (start >= line.length)
+	foreach (char[] line; stream.byLine(KeepTerminator.no, newline)) {
+		if (startColumn >= line.length)
 			continue;
 
-		line = line[start..$];
+		line = line[startColumn..$];
 		if (isValidIpAddress(line))
 			addresses.add(line.idup);
 	}
-
-	return addresses;
-}
-
-
-/// ditto
-Set!(string) collectIpAddresses(Process stream, uint start=0)
-{
-	Set!(string) addresses;
-
-	try {
-		for (;;) {
-			char[] line = stream.readLine();
-			if (start >= line.length)
-				continue;
-
-			line = line[start..$];
-			if (isValidIpAddress(line))
-				addresses.add(line.idup);
-		}
-	}
-	catch (PipeException e) {
-		// ignore the exception
-	}	
 
 	return addresses;
 }

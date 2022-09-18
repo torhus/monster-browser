@@ -5,10 +5,11 @@
 module runtools;
 
 import std.conv;
+import std.exception : ErrnoException;
 import std.file;
+import std.process;
 import std.stdio;
-
-import lib.process;
+import std.string;
 
 import common;
 import messageboxes;
@@ -22,7 +23,7 @@ import settings;
 // workaround for process.d bug
 __gshared extern(C) extern char **_environ;
 
-__gshared private Process proc;
+__gshared private ProcessPipes proc;
 
 
 /**
@@ -53,30 +54,19 @@ Set!(string) browserGetNewList(in GameConfig game)
 		           " AND (protocol=" ~ game.protocolVersion ~ ")\"";
 
 	try {
-		proc = new Process;
-		// bug workaround
-		for (int i = 0; _environ[i]; i++) {
-			proc.addEnv(to!string(_environ[i]).dup);
-		}
-		//proc.workDir = appDir;
-		//proc.gui = true;
 		log("Executing '" ~ cmdLine ~ "'.");
-		proc.execute(cmdLine);
+		proc = pipeProcess(split(cmdLine));
 	}
 	catch (ProcessException e) {
 		string s = gslist ? "gslist" : "qstat";
 		error(s ~ " not found! Please reinstall " ~ APPNAME ~ ".");
 		logx(__FILE__, __LINE__, e);
-		proc = null;
 	}
 
-	if (proc) {
+	if (proc != ProcessPipes.init) {
 		try {
 			size_t start = gslist ? 0 : "q3s ".length;
-			addresses = collectIpAddresses(proc, start);
-		}
-		catch (PipeException e) {
-			//logx(__FILE__, __LINE__, e);
+			addresses = collectIpAddresses(proc.stdout, start);
 		}
 		catch(Exception e) {
 			logx(__FILE__, __LINE__,e);
@@ -222,26 +212,19 @@ final class QstatServerRetriever : IServerRetriever
 
 			cmdLine ~= " -maxsim " ~ getSetting("simultaneousQueries");
 
-			proc = new Process;
-			//proc.workDir = appDir;
-			//proc.gui = true;
-			// bug workaround
-			for (int i = 0; _environ[i]; i++) {
-				proc.addEnv(to!string(_environ[i]).dup);
-			}
-
 			log("Executing '" ~ cmdLine ~ "'.");
-			proc.execute(cmdLine.dup);
+			proc = pipeProcess(split(cmdLine));
 
 			if (arguments.dumplist)
 				dumpFile.open("refreshlist.tmp", "w");
 
 			foreach (address; addresses_) {
-				proc.writeLine(address);
+				proc.stdin.writeln(address);
 				if (dumpFile.isOpen) {
 					dumpFile.writeln(address);
 				}
 			}
+			proc.stdin.close();
 			log("Fed %s addresses to qstat.", addresses_.length);
 		}
 		catch (ProcessException e) {
@@ -272,12 +255,7 @@ final class QstatServerRetriever : IServerRetriever
 			return deliver(sh, replied);
 		}
 
-		try {
-			qstat.parseOutput(game_.mod, proc, &_deliver);
-		}
-		catch (PipeException e) {
-			// exception probably means there was no more output
-		}
+		qstat.parseOutput(game_.mod, proc.stdout, &_deliver);
 	}
 
 
@@ -291,23 +269,20 @@ final class QstatServerRetriever : IServerRetriever
 
 
 
-/** Kill the command line server browser process
- *
- * Returns: true if the process was running, false if not.
+/**
+ * Kill the command line server browser process.
  */
-bool killServerBrowser()
+void killServerBrowser()
 {
-	if (proc is null /*|| !proc.isRunning*/)
-		return false;
+	if (proc == proc.init || proc.pid.processID < 0)
+		return;
 
 	try {
-		proc.kill();
-		proc = null;
+		kill(proc.pid);
+		wait(proc.pid);
 	}
 	catch (ProcessException e) {
-		// Since isRunning doesn't actually check if the process is still
-		// running, this exception will happen all the time.
-		//logx(__FILE__, __LINE__, e);
 	}
-	return true;
+	catch (ErrnoException e) {
+	}
 }
