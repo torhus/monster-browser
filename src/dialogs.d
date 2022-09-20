@@ -2,6 +2,10 @@
 
 module dialogs;
 
+import std.conv;
+import std.datetime.systime;
+import std.file;
+import std.socket;
 import std.string;
 import Integer = tango.text.convert.Integer;
 
@@ -220,7 +224,8 @@ class SpecifyServerDialog
 
 		addressComposite.setLayout(new GridLayout);
 		Label labelB = new Label(addressComposite, SWT.NONE);
-		labelB.setText("Address (123.123.123.123 or 123.123.123.123:12345):");
+		labelB.setText("Please specify an IP address or host name, " ~
+		                               "with an optional port number:");
 		addressText_ = new Text(addressComposite, SWT.SINGLE | SWT.BORDER);
 		auto addressTextData = new GridData();
 		addressTextData.horizontalAlignment = SWT.CENTER;
@@ -229,6 +234,8 @@ class SpecifyServerDialog
 
 		saveButton_ = new Button(shell_, SWT.CHECK);
 		saveButton_.setText("Never remove this server automatically");
+		saveButton_.setToolTipText("This is useful for servers that are not" ~
+		                           " known to the master server");
 		saveButton_.setSelection(
 		                  getSessionState("addServersAsPersistent") == "true");
 		auto saveButtonData = new GridData;
@@ -268,8 +275,6 @@ class SpecifyServerDialog
 
 	bool open()
 	{
-		addressText_.setText(address);
-		addressText_.selectAll();
 		shell_.open();
 		Display display = Display.getDefault;
 		while (!shell_.isDisposed()) {
@@ -283,15 +288,25 @@ class SpecifyServerDialog
 	private class OkButtonListener : Listener {
 		void handleEvent (Event event)
 		{
-			result_ = SWT.OK;
-			address = strip(addressText_.getText());
+			shell_.setEnabled(false);
 
-			if (!isValidIpAddress(address)) {
-				error("Invalid address");
+			result_ = SWT.OK;
+			string input = strip(addressText_.getText());
+			string address = null;
+
+			try {
+				// Parse the address using the default Quake 3 port, 27960, as
+				// the default.
+				address = getAddress(input, 27960)[0].toString();
+			}
+			catch (SocketOSException e) {
+				error(e.toString());
+				shell_.setEnabled(true);
 				addressText_.setFocus();
 				addressText_.selectAll();
 			}
-			else {
+
+			if (address) {
 				ServerList serverList = serverTable.serverList;
 				MasterList master = serverList.master;
 				ServerHandle sh = master.findServer(address);
@@ -334,7 +349,6 @@ class SpecifyServerDialog
 	private {
 		Shell parent_, shell_;
 		Button okButton_, cancelButton_, saveButton_;
-		string address = "";
 		Text addressText_;
 		int result_ = SWT.CANCEL;
 	}
@@ -368,11 +382,11 @@ class SettingsDialog
 
 		// startup game
 		Group startupGroup = new Group(mainComposite, SWT.SHADOW_ETCHED_IN);
-		startupGroup.setText("Start With");
+		startupGroup.setText("Start with");
 		auto startupLayout = new GridLayout();
 		startupGroup.setLayout(startupLayout);
 		startupDefaultButton_ = new Button(startupGroup, SWT.RADIO);
-		startupDefaultButton_.setText("Default game");
+		startupDefaultButton_.setText("First game");
 		startupLastButton_ = new Button(startupGroup, SWT.RADIO);
 		startupLastButton_.setText("Last used game");
 
@@ -394,14 +408,20 @@ class SettingsDialog
 		int val = cast(int)Integer.convert(getSetting("simultaneousQueries"), 10, &ate);
 		sqSpinner_.setSelection(ate > 0 ? val : 10);
 
-		// games button
+		// game configuration
 		Button gamesButton = new Button(mainComposite, SWT.PUSH);
-		gamesButton.setText("Games");
-		gamesButton.setLayoutData(new GridData(BUTTON_SIZE));
+		gamesButton.setText("Game configuration");
 		gamesButton.addSelectionListener(new class SelectionAdapter {
 			public override void widgetSelected(SelectionEvent e)
 			{
-				Program.launch(settings.gamesFileName);
+				try {
+					lastModified_ = timeLastModified(settings.gamesFileName);
+					Program.launch(settings.gamesFileName);
+					checkGameConfig_ = true;
+				}
+				catch (FileException e) {
+					error(e.toString());
+				}
 			}
 		});
 
@@ -433,10 +453,23 @@ class SettingsDialog
 
 					s = (startupLastButton_.getSelection()) ? "true" : "false";
 					setSetting("startWithLastMod", s);
+
+					int sq = sqSpinner_.getSelection();
+					setSetting("simultaneousQueries", to!string(sq));
 				}
+
 				// in case the game list was edited
-				settings.loadGamesFile();
-				filterBar.setGames(settings.gameNames);
+				if (checkGameConfig_) {
+					try {
+						if (timeLastModified(gamesFileName) > lastModified_) {
+							settings.loadGamesFile();
+							filterBar.setGames(settings.gameNames);
+						}
+					}
+					catch (FileException e) {
+						error(e.toString());
+					}
+				}
 
 				shell_.close();
 			}
@@ -465,6 +498,8 @@ private:
 	Shell parent_, shell_;
 	Button okButton_, cancelButton_;
 	Button startupDefaultButton_, startupLastButton_;
+	bool checkGameConfig_ = false;
+	SysTime lastModified_;
 	Text pathText_;
 	int result_ = SWT.CANCEL;
 	Spinner sqSpinner_;

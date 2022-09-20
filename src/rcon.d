@@ -103,7 +103,7 @@ class RconWindow
 		inputText_.setFocus();
 
 		auto passwordButton = new Button(shell_, SWT.PUSH);
-		passwordButton.setText("Change Password...");
+		passwordButton.setText("Change password...");
 		passwordButton.addSelectionListener(new class SelectionAdapter
 		{
 			override void widgetSelected(SelectionEvent e)
@@ -382,6 +382,7 @@ private class Rcon
 
 
 	/// Parse a.b.c.d:e.
+	/// FIXME: replace with std.socket.parseAddress?
 	private InternetAddress parseAddress(string addr)
 	{
 		ushort port;

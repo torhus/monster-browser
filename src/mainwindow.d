@@ -294,7 +294,8 @@ class StatusBar : Composite
 	}
 
 
-	void showProgress(string label, bool indeterminate=false)
+	void showProgress(string label, bool indeterminate=false, int total=0,
+	                                                        int progress=0)
 	{
 		if (isDisposed())
 			return;
@@ -313,11 +314,14 @@ class StatusBar : Composite
 			if (indeterminate)
 				tbProgress_.setProgressState(TBPF_INDETERMINATE);
 			else
-				tbProgress_.setProgressValue(0, 100);
+				tbProgress_.setProgressState(TBPF_NORMAL);
+				tbProgress_.setProgressValue(progress, total);
 		}
 
 		setProgressLabel(label);
-		progressBar_.setSelection(0);
+		progressBar_.setState(SWT.NORMAL);
+		progressBar_.setMaximum(total);
+		progressBar_.setSelection(progress);
 		progressLabel_.setVisible(true);
 		progressBar_.setVisible(true);
 	}
@@ -352,6 +356,18 @@ class StatusBar : Composite
 			if (!(progressBar_.getStyle() & SWT.INDETERMINATE))
 				tbProgress_.setProgressValue(current, total);
 		}
+	}
+
+
+	void setProgressError()
+	{
+		if (isDisposed())
+			return;
+		
+		progressBar_.setState(SWT.ERROR);
+
+		if (useWin7Taskbar_)
+			tbProgress_.setProgressState(TBPF_ERROR);
 	}
 
 
@@ -552,30 +568,30 @@ class FilterBar : Group
 	/// Set the contents of the game name drop-down list.
 	void setGames(string[] list)
 	{
-		if (list is null)
-			return;
-
-		string[] items = gamesCombo_.getItems();
-
-		foreach (s; list) {
-			if (findString(items, s) == -1) {
-				gamesCombo_.add(s);
-			}
-		}
+		gamesCombo_.setItems(list);
 
 		int n = gamesCombo_.getItemCount();
 		if (n > 8)
 			n = 8;
 		gamesCombo_.setVisibleItemCount(max(n, 5));
 
-		int selected = gamesCombo_.getSelectionIndex();
-		gamesCombo_.select(selected == -1 ? 0 : selected);
+		gamesCombo_.select(gamesCombo_.indexOf(lastSelectedGame_));
 	}
 
 
 	///  Saves the session state.
 	private void saveState()
 	{
+		// avoid saving a bogus value for lastMod
+		if (gamesCombo_.indexOf(lastSelectedGame_) == -1) {
+			foreach (s; gamesCombo_.getItems()) {
+				if (s.length) {
+					lastSelectedGame_ = s;
+					break;
+				}
+			}
+		}
+
 		setSetting("lastMod", lastSelectedGame_);
 		setSessionState("filterState", to!string(filterState));
 	}

@@ -524,21 +524,15 @@ private:
 				case ServerColumn.NAME:
 					auto textX = e.x + leftMargin;
 					if (!(e.detail & SWT.SELECTED)) {
-						// FIXME: this caching is broken now
-						TextLayout tl = sd.customData;
-						if (tl is null) {
-							tl = new TextLayout(Display.getDefault);
-							tl.setText(sd.server[ServerColumn.NAME]);
-							bool useEtColors = serverList_.useEtColors;
-							auto name = parseColors(sd.rawName, useEtColors);
-							foreach (r; name.ranges)
-								tl.setStyle(r.style, r.start, r.end);
+						TextLayout tl = new TextLayout(Display.getDefault);
+						tl.setText(sd.server[ServerColumn.NAME]);
 
-							sd.customData = tl;  // cache it
-						}
+						bool useEtColors = serverList_.useEtColors;
+						auto name = parseColors(sd.rawName, useEtColors);
+						foreach (r; name.ranges)
+							tl.setStyle(r.style, r.start, r.end);
 
 						tl.draw(e.gc, textX, e.y);
-						// FIXME: don't dispose if caching it
 						tl.dispose();
 					}
 					else {
@@ -578,9 +572,7 @@ private:
 		public override void keyPressed (KeyEvent e)
 		{
 			switch (e.keyCode) {
-				case SWT.F9: case SWT.F10:
-					// F10 is deprecated, as it is the standard key for opening
-					// the menu on Windows.
+				case SWT.F9:
 					if ((e.stateMask & SWT.MODIFIER_MASK) == 0)
 						onRemoteConsole();
 					break;
@@ -683,6 +675,26 @@ private:
 			override void widgetSelected(SelectionEvent e)
 			{
 				onCopyAddresses();
+			}
+		});
+
+		item = new MenuItem(menu, SWT.PUSH);
+		item.setText("Remove selected\tDel");
+		item.addSelectionListener(new class SelectionAdapter {
+			override void widgetSelected(SelectionEvent e)
+			{
+				onRemoveSelected();
+			}
+		});
+
+		new MenuItem(menu, SWT.SEPARATOR);
+
+		item = new MenuItem(menu, SWT.PUSH);
+		item.setText("Remote console\tF9");
+		item.addSelectionListener(new class SelectionAdapter {
+			override void widgetSelected(SelectionEvent e)
+			{
+				onRemoteConsole();
 			}
 		});
 

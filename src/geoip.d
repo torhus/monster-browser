@@ -24,9 +24,14 @@ private __gshared {
 	Image[string] flagCache;
 }
 
-private void bindFunc(alias funcPtr)(ExeModule lib)
+private void bindFuncOrThrow(alias funcPtr)(ExeModule lib)
 {
 	funcPtr = cast(typeof(funcPtr))lib.getSymbol(funcPtr.stringof);
+}
+
+private void bindFunc(alias funcPtr)(ExeModule lib)
+{
+	funcPtr = cast(typeof(funcPtr))lib.findSymbol(funcPtr.stringof);
 }
 
 
@@ -41,21 +46,24 @@ bool initGeoIp()
 
 	try {
 		geoIpLib = new ExeModule("GeoIP.dll");
-		bindFunc!(GeoIP_open)(geoIpLib);
-		bindFunc!(GeoIP_delete)(geoIpLib);
-		bindFunc!(GeoIP_database_info)(geoIpLib);
-		bindFunc!(GeoIP_country_code_by_addr)(geoIpLib);
-		bindFunc!(GeoIP_country_name_by_addr)(geoIpLib);
+		bindFunc!(GeoIP_lib_version)(geoIpLib);
+		bindFuncOrThrow!(GeoIP_open)(geoIpLib);
+		bindFuncOrThrow!(GeoIP_delete)(geoIpLib);
+		bindFuncOrThrow!(GeoIP_database_info)(geoIpLib);
+		bindFuncOrThrow!(GeoIP_country_code_by_addr)(geoIpLib);
+		bindFuncOrThrow!(GeoIP_country_name_by_addr)(geoIpLib);
 	}
 	catch (ExeModuleException e) {
 		log("Error when loading GeoIP.dll, flags will not be shown.");
 		geoIpLib.close();
 		return false;
 	}
+	if (GeoIP_lib_version !is null)
+		log("Loaded GeoIP DLL version " ~ fromStringz(GeoIP_lib_version()));
 
 	gi = GeoIP_open(toStringz(appDir ~ "GeoIP.dat"), GEOIP_MEMORY_CACHE);
 	if (gi is null) {
-		log("GeoIP.dat was not found, flags will not be shown.");
+		log("Unable to load the GeoIP database, flags will not be shown.");
 		geoIpLib.close();
 	}
 	else {
@@ -69,6 +77,8 @@ bool initGeoIp()
 			gi = null;
 			geoIpLib.close();
 		}
+		// This probably isn't needed just for country names.
+		//GeoIP_set_charset(gi, GEOIP_CHARSET_UTF8);
 	}
 
 	return gi && flagFiles;
@@ -181,4 +191,5 @@ extern (C) __gshared {
 	char* function(GeoIP* gi) GeoIP_database_info;
 	char* function(GeoIP* gi, in char* addr) GeoIP_country_code_by_addr;
 	char* function(GeoIP* gi, in char* addr) GeoIP_country_name_by_addr;
+	char* function() GeoIP_lib_version;
 }

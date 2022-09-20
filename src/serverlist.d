@@ -95,9 +95,6 @@ final class ServerList
 			ServerData sd = master_.getServerData(sh);
 			bool removed = removeFromFiltered(sd.server[ServerColumn.ADDRESS]);
 
-			if (sd.customData)
-				sd.customData.dispose();
-
 			if (!removed) {
 				// adding as a new server
 				ipHash_[sd.server[ServerColumn.ADDRESS]] = -1;
@@ -122,27 +119,27 @@ final class ServerList
 	 */
 	void refillFromMaster()
 	{
-		synchronized (this) {
-			GameConfig game = getGameConfig(gameName_);
-			typeof(ipHash_) newHash;
+		GameConfig game = getGameConfig(gameName_);
+		typeof(ipHash_) newHash;
 
-			filteredList.length = 0;
-			synchronized (master_) foreach (sh; master_) {
-				ServerData sd = master_.getServerData(sh);
-				string address = sd.server[ServerColumn.ADDRESS];
+		synchronized (this)
+		synchronized (master_)
+		foreach (sh; master_) {
+		filteredList.length = 0;
+			ServerData sd = master_.getServerData(sh);
+			string address = sd.server[ServerColumn.ADDRESS];
 
-				if (address in ipHash_ && matchGame(&sd, game)) {
-					newHash[address] = -1;
-					if (!isFilteredOut(&sd))
-						filteredList ~= sh;
-				}
+			if (address in ipHash_ && matchGame(&sd, game)) {
+				newHash[address] = -1;
+				if (!isFilteredOut(&sd))
+					filteredList ~= sh;
 			}
-
-			ipHash_ = newHash;
-			ipHashValid_ = false;
-			isSorted_ = false;
-			_sort();
 		}
+
+		ipHash_ = newHash;
+		ipHashValid_ = false;
+		isSorted_ = false;
+		_sort();
 	}
 
 
@@ -202,7 +199,10 @@ final class ServerList
 	}
 
 	///
-	size_t totalLength() { synchronized (this) return ipHash_.length; }
+	size_t totalLength() const
+	{
+		synchronized (this) return ipHash_.length;
+	}
 
 	///
 	size_t filteredLength() const
@@ -219,7 +219,6 @@ final class ServerList
 		synchronized (this) {
 			disposeCustomData();
 			filteredList.length = 0;
-			//ipHash_.clear();
 			ipHash_ = null;
 			isSorted_ = true;
 			complete = false;
@@ -251,7 +250,9 @@ final class ServerList
 	 */
 	void sort()
 	{
-		synchronized (this) _sort();
+		synchronized (this) {
+			_sort();
+		}
 	}
 
 
@@ -319,7 +320,6 @@ final class ServerList
 private:
 	ServerHandle[] filteredList;
 	// maps addresses to indices into the filtered list
-	//HashMap!(char[], int) ipHash_;
 	int[string] ipHash_;
 	bool ipHashValid_ = false;  // true if the values (indices) are up to date
 	Set!(string) extraServers_;

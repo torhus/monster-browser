@@ -6,7 +6,7 @@ import core.sync.semaphore;
 import java.lang.Runnable;
 import org.eclipse.swt.widgets.Display;
 
-import runtools;// : killServerBrowser;
+import runtools : killServerBrowser;
 
 
 /// Global instance.
@@ -19,8 +19,6 @@ __gshared ThreadManager threadManager;
  * The stored function or delegate will only be executed after the previously
  * started one has finished.  It will be executed in a thread controlled by
  * this class.
- *
- * FIXME: this class should probably be declared as synchronized.
  */
 class ThreadManager
 {

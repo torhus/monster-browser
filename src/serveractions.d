@@ -18,6 +18,7 @@ import common;
 import masterlist;
 import mainwindow;
 import messageboxes;
+import qstat;
 import runtools;
 import serverdata;
 import serverlist;
@@ -274,10 +275,13 @@ void refreshAll()
 	GC.collect();
 
 	if (addresses.length || addresses2.length) {
+		auto updater = new StatusBarUpdater(addresses.length +
+		                                    addresses2.length);
 		if (addresses.length) {
 			auto retriever = new QstatServerRetriever(game.name, master,
 			                                                  addresses, true);
-			auto contr = new ServerRetrievalController(retriever);
+			auto contr = new ServerRetrievalController(retriever, false,
+			                                      !addresses2.length, updater);
 			contr.progressLabel = text("Refreshing ", addresses.length,
 			                           " servers");
 			contr.run();
@@ -286,7 +290,8 @@ void refreshAll()
 		if (addresses2.length && !threadManager.abort) {
 			auto retriever = new QstatServerRetriever(game.name, master,
 			                                                 addresses2, true);
-			auto contr = new ServerRetrievalController(retriever);
+			auto contr = new ServerRetrievalController(retriever, false, true,
+			                                                           updater);
 			contr.progressLabel = text("Retrying ", addresses2.length,
 			                            " previously unresponsive servers");
 			contr.interruptedMessage = "Ready";
@@ -327,16 +332,31 @@ void checkForNewServers()
 	try {
 		MasterList master = serverList.master;
 		GameConfig game = getGameConfig(serverList.gameName);
+		bool gslist = haveGslist && game.useGslist;
+		string masterName = gslist ? "master" :
+		                             split(game.masterServer, ":")[0];
+		Set!(string) addresses;
+		bool serverError = false;
 
 		Display.getDefault().syncExec(dgRunnable( {
-			statusBar.showProgress("Getting new list from master", true);
+			statusBar.showProgress("Getting new list from " ~ masterName, true);
 		}));
-
-		Set!(string) addresses = browserGetNewList(game);
+		
+		try {
+			addresses = browserGetNewList(game, gslist);
+		}
+		catch (MasterServerException e) {
+			Display.getDefault().syncExec(dgRunnable( {
+				statusBar.setProgressError();
+			}));
+			error("Unable to retrieve a server list from " ~ masterName ~
+			                              ".\n\n\"" ~ e.toString() ~ "\"");
+			serverError = true;
+		}
 
 		// Make sure we don't start removing servers based on an incomplete
 		// address list.
-		if (threadManager.abort) {
+		if (serverError || threadManager.abort) {
 			Display.getDefault().syncExec(dgRunnable( {
 				statusBar.hideProgress("Ready");
 				serverTable.notifyRefreshEnded();
@@ -397,27 +417,30 @@ void checkForNewServers()
 			}));
 		}
 		else {
-			// if it's only a few servers, do it all in one go
-			if (count < 100 || addresses.length == 0) {
-				foreach (addr; addresses2)
-					addresses.add(addr);
-				addresses2.clear();
-			}
+			auto updater = new StatusBarUpdater(addresses.length +
+			                                    addresses2.length);
 
 			masterLists[master.name].retryProtocols.add(game.protocolVersion);
 
 			auto retriever = new QstatServerRetriever(game.name, master,
 			                                                  addresses, true);
-			auto contr = new ServerRetrievalController(retriever);
-			contr.progressLabel = format("Checking %s servers",
-			                                                 addresses.length);
+			auto contr = new ServerRetrievalController(retriever, false,
+			                                      !addresses2.length, updater);
+			string message = format("Got %s servers, querying", total);
+			if (addresses.length < total)
+				contr.progressLabel = message ~ format(" %s new",
+			                                     addresses.length);
+			else
+				contr.progressLabel = message;
+
 			contr.run();
 
-			if (addresses2.length && !threadManager.abort) {
+			if (addresses2.length) {
 				retriever = new QstatServerRetriever(game.name,
 				                                     master, addresses2, true);
-				contr = new ServerRetrievalController(retriever);
-				contr.progressLabel = format("Extended check, %s servers",
+				contr = new ServerRetrievalController(retriever, false, true,
+				                                                      updater);
+				contr.progressLabel = message ~ format(" %s already known",
 				                                            addresses2.length);
 				contr.interruptedMessage = "Ready";
 				contr.run();
@@ -471,11 +494,19 @@ class ServerRetrievalController
 	 * Params:
 	 *     replace = Pass the received servers to ServerList.replace instead of
 	 *               the default ServerList.add.
+	 *     finish  = Set this to false when querying servers in multiple
+	 *               batches.  Set it to true again for the last batch.
+	 *     updater = If querying in multiple batches, prime this with the
+	 *               combined total number of servers for all batches.  Then
+	 *               reuse the same object for each batch.
 	 */
-	this(IServerRetriever retriever, bool replace=false)
+	this(IServerRetriever retriever, bool replace=false, bool finish=true,
+	                                        StatusBarUpdater updater=null)
 	{
 		serverRetriever_= retriever;
 		replace_ = replace;
+		finish_ = finish;
+		statusBarUpdater_ = updater;
 
 		serverRetriever_.initialize();
 
@@ -510,12 +541,9 @@ class ServerRetrievalController
 	void run()
 	{
 		try {
-			statusBarUpdater_ = new StatusBarUpdater;
-			Display.getDefault.syncExec(statusBarUpdater_);
+			int total = serverRetriever_.prepare();
 
-			total_ = serverRetriever_.prepare();
-
-			if (total_ != 0) {
+			if (total != 0) {
 				auto dg = replace_ ? &serverList_.replace : &serverList_.add;
 
 				if (useQueue_) {
@@ -527,13 +555,18 @@ class ServerRetrievalController
 					deliverDg_ = &deliverDgWrapper;
 				}
 
+				if (!statusBarUpdater_)
+					statusBarUpdater_ = new StatusBarUpdater(total);
+				else
+					assert(statusBarUpdater_.total >= total);
+
 				Display.getDefault.syncExec(dgRunnable( {
-					statusBar.showProgress(progressLabel);
+					statusBar.showProgress(progressLabel, false,
+					      statusBarUpdater_.total, statusBarUpdater_.progress);
 				}));
 
 				userAbort = false;
 				serverRetriever_.retrieve(&deliver);
-				serverList_.complete = !threadManager.abort;
 
 				// a benchmarking tool
 				if (arguments.quit) {
@@ -551,6 +584,7 @@ class ServerRetrievalController
 				if (threadManager.abort || wasStopped_) {
 					statusBar.hideProgress(interruptedMessage);
 					serverTable.notifyRefreshEnded;
+					serverList_.complete = false;
 
 					if (userAbort) {
 						// disable refreshAll's autoretry
@@ -561,8 +595,11 @@ class ServerRetrievalController
 					}
 				}
 				else {
-					statusBar.hideProgress("Done");
-					done;
+					if (finish_) {
+						statusBar.hideProgress("Done");
+						done();
+					}
+					serverList_.complete = true;
 				}
 			}));
 		}
@@ -593,8 +630,6 @@ class ServerRetrievalController
 		ServerData sd = serverList_.master.getServerData(sh);
 		GameConfig game = getGameConfig(serverList_.gameName);
 		bool matched;
-		
-		counter_++;
 
 		if (replied) {
 			matched = matchGame(&sd, game);
@@ -627,9 +662,7 @@ class ServerRetrievalController
 			deliverDg_(sh);
 
 		// progress display
-		statusBarUpdater_.totalToQuery = total_;
-		statusBarUpdater_.progress = counter_;
-
+		statusBarUpdater_.increment();
 		Display.getDefault.syncExec(statusBarUpdater_);
 
 		return !threadManager.abort;
@@ -671,8 +704,7 @@ class ServerRetrievalController
 
 	private {
 		IServerRetriever serverRetriever_;
-		int counter_ = 0;
-		int total_;
+		bool finish_;
 		uint timedOut_ = 0;
 		int maxTimeouts_;
 		StatusBarUpdater statusBarUpdater_;
@@ -688,13 +720,29 @@ class ServerRetrievalController
 }
 
 
-// Update the progress bar when querying servers.
-private class StatusBarUpdater : Runnable {
-	int totalToQuery;
-	int progress;
-
-	void run()
+/// Update the progress bar when querying servers.
+class StatusBarUpdater : Runnable {
+	///
+	this(int totalServers)
 	{
-		statusBar.setProgress(totalToQuery, progress);
+		assert(totalServers >= 0);
+		total_ = totalServers;
 	}
+
+	int total() { return total_; } ///
+	int progress() { return progress_; } ///
+
+	///
+	void increment(int amount=1)
+	{
+		assert(amount >= 0);
+		progress_ += amount;
+	}
+
+	void run() ///
+	{
+		statusBar.setProgress(total, progress);
+	}
+	
+	private int progress_ = 0, total_;
 }

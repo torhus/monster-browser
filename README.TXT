@@ -5,16 +5,16 @@ Basic Usage
 -----------
 Select a game from the drop down box on the right, where it says "Smokin' Guns" the first time you run the program.  If the game or mod you want is not listed, just type its gamename there and press <Enter>.  If it doesn't use Id's Quake 3 master server, you need to create a custom config for it, see 'Customizing the Game List' below.
 
-To update the server list, press the 'Refresh All' button.  This happens automatically at startup, or the first time each session you switch to a game.  You can press 'Check for New' to synchronize the list of servers that Monster Browser queries with the master server.  It's probably a good idea to use 'Check for New' once a day or so.
+To update the server list, press the 'Refresh all' button.  This happens automatically at startup, or the first time each session you switch to a game.  You can press 'Check for new' to synchronize the list of servers that Monster Browser queries with the master server.  It's probably a good idea to use 'Check for new' once a day or so.
 
 The filters and column sorting should be pretty straight forward to use.  You can leave the filters on while doing a refresh, all the servers will be queried anyway.
 
-To join a server, double click on it, or select it and press <Enter>.  If the server requires a password, a password dialog will pop up.  To change the password, or add an optional password for servers with private slots, select 'Set password' in the right-click menu.
+To join a server, double click on it, or select it and press <Enter>.  If the server requires a password, a password dialog will pop up.  To change the password, or add an optional password for servers with private slots, select 'Set password...' in the right-click menu.
 
 
 Customizing the Game List
 -------------------------
-By clicking on the 'Games...' button in the settings, you can edit the list displayed in the combo box.  The format of this file is explained in the file itself.  The first game listed will be used as the default.  If you want the program to always start with the topmost game, select 'Default game' in the settings.  Otherwise it will start with the last selected game.
+By clicking on the 'Game configuration' button in the settings, you can edit the list displayed in the combo box.  The format of this file is explained in the file itself.  The first game listed will be used as the default.  If you want the program to always start with the topmost game, select 'Default game' in the settings.  Otherwise it will start with the last selected game.
 
 
 Adding Extra Servers
@@ -48,7 +48,9 @@ Esc    - Abort action
 
 Credits
 -------
-Monster Browser uses:
+Qstat for querying servers - http://qstat.sourceforge.net
+
+Thanks to Biondo for making the application icon that's used for Monster Browser 0.8b and later.
 
 GeoLite Country from maxmind.com.
 
@@ -58,12 +60,12 @@ http://www.wefunction.com
 
 Info and contact
 ----------------
-Web site: http://monsterbrowser.googlepages.com/
+Web site: http://sites.google.com/site/monsterbrowser/
 Source code, etc.: http://monsterbrowser.googlecode.com/
 
 I'm open for requests to change the licence, I just haven't bothered deciding which licence to use yet.
 
-Check out smokin-guns.net, I'm registered as torhu.  Send me a PM there if I don't reply to your emails.
+Check out smokin-guns.org, I'm registered as torhu.  Send me a private message through the forum there if I don't reply to your emails.
 
 Email:
 torhu at yahoo dot com.

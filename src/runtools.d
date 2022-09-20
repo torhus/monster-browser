@@ -4,6 +4,7 @@
 
 module runtools;
 
+import std.ascii : newline;
 import std.conv;
 import std.exception : ErrnoException;
 import std.file;
@@ -20,32 +21,47 @@ import set;
 import settings;
 
 
-// workaround for process.d bug
-__gshared extern(C) extern char **_environ;
-
 __gshared private ProcessPipes proc;
+__gshared private Object procMutex;
 
+
+class MasterServerException : Exception {
+	this(string msg) { super(msg); }
+}
+
+
+void runtoolsInit()
+{
+	procMutex = new Object();
+}
 
 /**
- * Run qstat or gslist (determined by the haveGslist variable) to retrieve a
- * list of servers from the game's master server.
+ * Run qstat or gslist to retrieve a list of servers from the game's master
+ * server.
  *
  * Returns: A set containing the IP addresses of the servers.
  */
-Set!(string) browserGetNewList(in GameConfig game)
+Set!(string) browserGetNewList(in GameConfig game, bool gslist)
 {
 	char[] cmdLine;
 	Set!(string) addresses;
-	bool gslist = common.haveGslist && game.useGslist;
 
 	version (linux)
 		cmdLine ~= "./";
 
-	if (gslist)
+	if (gslist) {
 		cmdLine ~= "gslist -n quake3 -o 5";
-	else
-		cmdLine ~= "qstat -q3m," ~ game.protocolVersion ~ ",outfile " ~
-		                                              game.masterServer ~ ",-";
+	}
+	else {
+		cmdLine ~= "qstat";
+		// This has to be the first argument.
+		if (game.qstatConfigFile)
+			cmdLine ~= " -cfg " ~ game.qstatConfigFile;
+
+		cmdLine ~= " -" ~ game.qstatMasterServerType ~
+		           "," ~ game.protocolVersion ~ ",outfile " ~
+		           game.masterServer ~ ",-";
+	}
 
 	// use gslist's server-sider filtering
 	// Note: gslist returns no servers if filtering on "baseq3"
@@ -54,8 +70,11 @@ Set!(string) browserGetNewList(in GameConfig game)
 		           " AND (protocol=" ~ game.protocolVersion ~ ")\"";
 
 	try {
-		log("Executing '" ~ cmdLine ~ "'.");
-		proc = pipeProcess(split(cmdLine));
+		synchronized (procMutex) {
+			log("Executing '" ~ cmdLine ~ "'.");
+			proc = pipeProcess(
+			       split(cmdLine), Redirect.all, null, Config.suppressConsole);
+		}
 	}
 	catch (ProcessException e) {
 		string s = gslist ? "gslist" : "qstat";
@@ -63,20 +82,59 @@ Set!(string) browserGetNewList(in GameConfig game)
 		logx(__FILE__, __LINE__, e);
 	}
 
-	if (proc != ProcessPipes.init) {
+	if (proc != ProcessPipes.init && proc.pid.processID >= 0) {
 		try {
 			size_t start = gslist ? 0 : "q3s ".length;
-			addresses = collectIpAddresses(proc.stdout, start);
+			auto lines = proc.stdout.byLine(KeepTerminator.no, newline);
+
+			if (!gslist) {
+				char[] firstLine = lines.front.dup;
+				lines.popFront();
+				throwIfQstatError(firstLine, lines.front, proc.stderr, game);
+			}
+
+			addresses = collectIpAddresses(lines, start);
 		}
-		catch(Exception e) {
+		catch (StdioException e) {
 			logx(__FILE__, __LINE__,e);
+		}
+		catch (Exception e) {
 			error(__FILE__ ~ to!string(__LINE__) ~
 			                 ": Unexpected exception: " ~ e.classinfo.name ~
 			                 ": " ~ e.toString());
+			logx(__FILE__, __LINE__,e);
 		}
 	}
 
 	return addresses;
+}
+
+
+private void throwIfQstatError(in char[] line1, in char[] line2,
+                               File stderr, in GameConfig game)
+{
+	if (!line1.startsWith("ADDRESS")) {
+		char[] error = stderr.rawRead(new char[512]);
+		if (error.length)
+			throw new MasterServerException(strip(error).idup);
+		else
+			throw new MasterServerException("Unknown Qstat error");
+	}
+
+	size_t len = game.qstatMasterServerType.length;
+
+	if (icmp(line2[0..len], game.qstatMasterServerType) == 0) {
+		const(char)[][] parts = split(line2, " ");
+
+		if (parts.length > 2) {
+			const(char)[] s = strip(join(parts[1..$], " "));
+			throw new MasterServerException(s.idup);
+		}
+		else {
+			throw new MasterServerException(("Unrecognized error: \"" ~
+			                                        strip(line2) ~ "\"").idup);
+		}
+	}
 }
 
 
@@ -144,7 +202,7 @@ final class MasterListServerRetriever : IServerRetriever
 
 		if (error) {
 			warning("Unable to load the server list from disk, " ~
-			                 "press \'Get new list\' to download a new list.");
+			                "press \'Check for New\' to download a new list.");
 		}
 
 		return error ? 0 : master_.length;
@@ -212,19 +270,24 @@ final class QstatServerRetriever : IServerRetriever
 
 			cmdLine ~= " -maxsim " ~ getSetting("simultaneousQueries");
 
-			log("Executing '" ~ cmdLine ~ "'.");
-			proc = pipeProcess(split(cmdLine));
+			synchronized (procMutex) {
+				log("Executing '" ~ cmdLine ~ "'.");
+				proc = pipeProcess(
+				   split(cmdLine), Redirect.all, null, Config.suppressConsole);
+			}
 
 			if (arguments.dumplist)
 				dumpFile.open("refreshlist.tmp", "w");
 
-			foreach (address; addresses_) {
-				proc.stdin.writeln(address);
-				if (dumpFile.isOpen) {
-					dumpFile.writeln(address);
+			synchronized (procMutex) {
+				foreach (address; addresses_) {
+					proc.stdin.writeln(address);
+					if (dumpFile.isOpen) {
+						dumpFile.writeln(address);
+					}
 				}
+				proc.stdin.close();
 			}
-			proc.stdin.close();
 			log("Fed %s addresses to qstat.", addresses_.length);
 		}
 		catch (ProcessException e) {
@@ -266,7 +329,6 @@ final class QstatServerRetriever : IServerRetriever
 		bool replace_;
 	}
 }
-
 
 
 /**

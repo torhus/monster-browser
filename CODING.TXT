@@ -56,7 +56,9 @@ allservers - For benchmarking: don't filter servers on mod.
 build      - Used by the bud and dsss/rebuild build tools.
 Final      - Use the real version number for release builds
              (common.FINAL_VERSION).
-redirect   - Redirect stdout and stderr to the file DEBUG.OUT.
+console    - Enable console output.  Logging will be done both to the console
+             and the log file.
+redirect   - Redirect stdout and stderr to the file CONSOLE.OUT.
 
 
 Command line arguments (for testing/benchmarking)
@@ -67,7 +69,6 @@ fromfile  - Get servers from disk instead of through the network.
 norefresh - Don't refresh the server table GUI while receiving servers.
 quit      - Print time since startup and then quit, after loading the server
             list from disk.
-colortest - Enable extended color codes for Smokin' Guns (ET style, 31 colors).
 
 
 -----------

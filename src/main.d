@@ -1,6 +1,7 @@
-﻿module main;
+module main;
 
 import core.thread;
+import std.exception : ErrnoException;
 import std.file;
 import std.path;
 import std.stdio;
@@ -22,12 +23,11 @@ import common;
 import link;
 import mainwindow;
 import messageboxes;
+import runtools: runtoolsInit;
 import serveractions;
 import servertable;
 import settings;
 import threadmanager;
-
-extern (Windows) HWND GetConsoleWindow();
 
 
 int main(string[] args) ///
@@ -132,6 +132,7 @@ private void _main(string[] args)
 	mainWindow.open();
 
 	serverTable.getTable.setFocus();
+	runtoolsInit();
 	switchToGame(filterBar.selectedGame);
 
 	// main loop
@@ -200,30 +201,21 @@ private void detectDirectories(string firstArg)
 ///
 void checkConsoleOutput()
 {
-	version (redirect) {
+	version (console) {
+		haveConsole = true;
+	}
+	else version (redirect) {
 		haveConsole = false;
 		assert(logDir.length);
-		redirectOutput(logDir ~ "stdout.txt", logDir ~ "stderr.txt");
+		redirectOutput(logDir ~ "STDOUT.TXT", logDir ~ "STDERR.TXT");
 	}
 	else {
-		haveConsole = testConsole();
-		if (!haveConsole) {
-			version (Windows)
-				redirectOutput("NUL", "NUL");
-			else
-				redirectOutput("/dev/null", "/dev/null");
-		}
+		haveConsole = false;
+		version (Windows)
+			redirectOutput("NUL", "NUL");
+		else
+			redirectOutput("/dev/null", "/dev/null");
 	}
-}
-
-
-/// Is there a console available for output?
-private bool testConsole()
-{
-	version (Windows)
-		return GetConsoleWindow() != null;
-	else
-		return true;
 }
 
 
@@ -236,13 +228,21 @@ private bool redirectOutput(string stdout_, string stderr_)
 {
 	bool failed = false;
 
-	if (!freopen(toStringz(stdout_), "w", stdout.getFP())) {
-		warning("Unable to redirect stdout.");
+	try {
+		stdout.reopen(stdout_, "w");
+	}
+	catch (ErrnoException e)
+	{
+		warning("Unable to redirect stdout: " ~ e.toString());
 		failed = true;
 	}
 
-	if (!freopen(toStringz(stderr_), "w", stderr.getFP())) {
-		warning("Unable to redirect stderr.");
+	try {
+		stderr.reopen(stderr_, "w");
+	}
+	catch (ErrnoException e)
+	{
+		warning("Unable to redirect stderr: " ~ e.toString());
 		failed = true;
 	}
 

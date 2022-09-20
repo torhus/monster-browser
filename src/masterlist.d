@@ -7,6 +7,7 @@ import std.file;
 import std.path;
 import std.stdio;
 import Integer = tango.text.convert.Integer;
+import tango.text.xml.DocEntity;
 import tango.text.xml.SaxParser;
 
 import colorednames;
@@ -34,11 +35,11 @@ final class MasterList
 
 	
 	/// Name, as given to the constructor.
-	string name() { return name_; }
+	string name() const { return name_; }
 	
 	
 	/// The name of the file this master server's data is stored in.
-	string fileName() { return fileName_; }
+	string fileName() const { return fileName_; }
 
 
 	/// Add a server, and return its ServerHandle.
@@ -120,10 +121,9 @@ final class MasterList
 	{
 		synchronized (this) {
 			assert(sh < servers_.length);
-			ServerData* sd = &servers_[sh];
-			assert(!isEmpty(sd));
-			debug isValid(sd);
-			return *sd;
+			assert(!isEmpty(&servers_[sh]));
+			debug isValid(&servers_[sh]);
+			return servers_[sh];
 		}
 	}
 
@@ -142,13 +142,13 @@ final class MasterList
 
 
 	/// Total number of servers.
-	size_t length() { return servers_.length; }
+	size_t length() const { return servers_.length; }
 
 
 	/**
 	* Foreach support.  Skips servers for which isEmpty(sd) returns true.
 	*/
-	int opApply(int delegate(ref ServerHandle) dg)
+	int opApply(int delegate(ref ServerHandle) dg) const
 	{
 		synchronized (this) {
 			int result = 0;
@@ -236,7 +236,7 @@ final class MasterList
 
 
 	///
-	private bool isValid(in ServerData* sd)
+	private bool isValid(in ServerData* sd) const
 	{
 		if (!isValidIpAddress(sd.server[ServerColumn.ADDRESS])) {
 			debug print("MasterList.isValid()" , *sd);
@@ -292,14 +292,14 @@ private final class XmlDumper
 	///
 	void serverToXml(in ServerData* sd)
 	{
-		output_.writef(`  <server name="%s"`, sd.rawName);
-		output_.writef(` country_code="%s"`,  sd.server[ServerColumn.COUNTRY]);
-		output_.writef(` address="%s"`,       sd.server[ServerColumn.ADDRESS]);
-		output_.writef(` protocol_version="%s"`, sd.protocolVersion);
-		output_.writef(` ping="%s"`,          sd.server[ServerColumn.PING]);
-		output_.writef(` player_count="%s"`,  sd.server[ServerColumn.PLAYERS]);
-		output_.writef(` map="%s"`,           sd.server[ServerColumn.MAP]);
-		output_.writef(` persistent="%s"`,    sd.persistent ? "true" : "false");
+		outputXml(`  <server name=`, sd.rawName);
+		outputXml(` country_code=`,  sd.server[ServerColumn.COUNTRY]);
+		outputXml(` address=`,       sd.server[ServerColumn.ADDRESS]);
+		outputXml(` protocol_version=`, sd.protocolVersion);
+		outputXml(` ping=`,          sd.server[ServerColumn.PING]);
+		outputXml(` player_count=`,  sd.server[ServerColumn.PLAYERS]);
+		outputXml(` map=`,           sd.server[ServerColumn.MAP]);
+		outputXml(` persistent=`,    sd.persistent ? "true" : "false");
 		output_.writef(` fail_count="%s"`,    sd.failCount);
 		output_.writeln(">");
 
@@ -321,20 +321,34 @@ private final class XmlDumper
 
 	private void cvarsToXml(in ServerData* sd)
 	{
-		foreach (cvar; sd.cvars)
-			output_.writefln(`      <cvar key="%s" value="%s"/>`,
-			                                                 cvar[0], cvar[1]);
+		foreach (cvar; sd.cvars) {
+			outputXml(`      <cvar key=`, cvar[0]);
+			outputXml(` value=`, cvar[1]);
+			output_.writeln("/>");
+		}
 	}
 
 
 	private void playersToXml(in ServerData* sd)
 	{
 		foreach (player; sd.players) {
-			output_.writefln(`      <player name="%s" score="%s" ping="%s"/>`,
-                                               player[PlayerColumn.RAWNAME],
-											   player[PlayerColumn.SCORE],
-											   player[PlayerColumn.PING]);
+			outputXml(`      <player name=`, player[PlayerColumn.RAWNAME]);
+			outputXml(` score=`, player[PlayerColumn.SCORE]);
+			outputXml(` ping=`, player[PlayerColumn.PING]);
+			output_.writeln("/>");
 		}
+	}
+
+
+	// Outputs prefix as-is, value in quotes and after encoding entities.
+	private void outputXml(in char[] prefix, in char[] value)
+	{
+		char[100] buf = void;
+
+		output_.write(prefix);
+		output_.write("\"");
+		output_.write(toEntity(value, buf));
+		output_.write("\"");
 	}
 
 
@@ -384,27 +398,28 @@ private final class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 
 		foreach (ref attr; attributes) {
 			if (attr.localName == "name") {
-				sd.rawName = attr.value.idup;
-				sd.server[ServerColumn.NAME] = stripColorCodes(attr.value);
+				sd.rawName = fromEntityCopy(attr.value);
+				sd.server[ServerColumn.NAME] =
+				           cast(string)fromEntity(stripColorCodes(attr.value));
 			}
 			else if (attr.localName == "country_code")
-				sd.server[ServerColumn.COUNTRY] = attr.value.idup;
+				sd.server[ServerColumn.COUNTRY] = fromEntityCopy(attr.value);
 			else if (attr.localName == "address")
-				sd.server[ServerColumn.ADDRESS] = attr.value.idup;
+				sd.server[ServerColumn.ADDRESS] = fromEntityCopy(attr.value);
 			else if (attr.localName == "protocol_version")
-				sd.protocolVersion = attr.value.idup;
+				sd.protocolVersion = fromEntityCopy(attr.value);
 			else if (attr.localName == "ping")
-				sd.server[ServerColumn.PING] = attr.value.idup;
+				sd.server[ServerColumn.PING] = fromEntityCopy(attr.value);
 			else if (attr.localName == "player_count")
-				sd.server[ServerColumn.PLAYERS] = attr.value.idup;
+				sd.server[ServerColumn.PLAYERS] = fromEntityCopy(attr.value);
 			else if (attr.localName == "map")
-				sd.server[ServerColumn.MAP] = attr.value.idup;
+				sd.server[ServerColumn.MAP] = fromEntityCopy(attr.value);
 			else if (attr.localName == "persistent")
 				sd.persistent = attr.value == "true";
 			else if (attr.localName == "fail_count")
 				sd.failCount = cast(int)Integer.convert(attr.value);
 		}
-		
+
 		// Make sure there's a protocol version.  This makes it less likely the
 		// server is being 'forgotten' and never queried or deleted.
 		// It also takes care of upgrading from the old XML files, where there
@@ -422,9 +437,9 @@ private final class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 
 		foreach (ref attr; attributes) {
 			if (attr.localName == "key")
-				cvar[0] = attr.value.idup;
+				cvar[0] = fromEntityCopy(attr.value);
 			else if (attr.localName == "value")
-				cvar[1] = attr.value.idup;
+				cvar[1] = fromEntityCopy(attr.value);
 
 			if (icmp(cvar[0], "g_gametype") == 0)
 				servers[$-1].server[ServerColumn.GAMETYPE] = cvar[1];
@@ -445,14 +460,24 @@ private final class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 
 		foreach (ref attr; attributes) {
 			if (attr.localName == "name")
-				player[PlayerColumn.RAWNAME] = attr.value.idup;
+				player[PlayerColumn.RAWNAME] = fromEntityCopy(attr.value);
 			else if (attr.localName == "score")
-				player[PlayerColumn.SCORE] = attr.value.idup;
+				player[PlayerColumn.SCORE] = fromEntityCopy(attr.value);
 			else if (attr.localName == "ping")
-				player[PlayerColumn.PING] = attr.value.idup;
+				player[PlayerColumn.PING] = fromEntityCopy(attr.value);
 		}
 
 		servers[$-1].players ~= player;
+	}
+
+	// Convert XML entities to characters, unconditionally copying the source.
+	string fromEntityCopy(in char[] s)
+	{	
+		const(char)[] r = fromEntity(s);
+		if (r.ptr != s.ptr)
+			return cast(string)r;
+		else
+			return s.idup;
 	}
 
 }

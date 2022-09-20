@@ -4,11 +4,14 @@ module settings;
 
 import core.stdc.stdio;
 import std.conv;
+import std.exception : ErrnoException;
 import std.file;
+import std.stdio;
 import std.string;
 
 import common;
 import ini;
+import messageboxes;
 
 version (Windows) {
 	import std.string;
@@ -34,9 +37,9 @@ struct GameConfig
 		return section.getValue("mod", name);
 	}
 
-	string masterServer() const  /// Like "master3.idsoftware.com".
-	{		
-		return section.getValue("masterServer", "master3.idsoftware.com");
+	string masterServer() const   /// Like "master3.idsoftware.com".
+	{
+		return section.getValue("masterServer", "master.ioquake3.org");
 	}
 
 	string protocolVersion() const  /// Defaults to 68.
@@ -89,14 +92,27 @@ struct GameConfig
 	bool useGslist() const
 	{
 		string r = section["useGslist"];
-		return r ? (r == "true") : true;
+		return r ? (r == "true") : false;
 	}
 
 	/// Enable Enemy Territory-style extended color codes (31 colors)?
+	/// Off by default.
 	bool useEtColors() const
 	{
-		// just testing for now
-		return arguments.colortest && mod == "smokinguns";
+		string r = section["etColors"];
+		return r ? (r == "true") : false;
+	}
+
+	/// Value to use for Qstat's -cfg parameter.
+	string qstatConfigFile() const
+	{
+		return section.getValue("qstatConfigFile", null);
+	}
+
+	/// Defaults to "q3m".
+	string qstatMasterServerType() const
+	{
+		return section.getValue("qstatMasterServerType", "q3m");
 	}
 
 	private string name_;
@@ -104,10 +120,9 @@ struct GameConfig
 }
 
 
-/// The names of all games loaded from the config file.
-__gshared string[] gameNames;
-/// Name of the file containing options for each game.
-__gshared string gamesFileName;
+__gshared string[] gameNames;  /// The names of all games loaded from the config file.
+__gshared string gamesFileName;  /// Name of the file containing options for each game.
+__gshared string backupGamesFileName;  /// ditto
 
 private {
 	__gshared string settingsFileName;
@@ -125,8 +140,12 @@ private {
 ; exePath - Only used if regKey or exeName are missing. If exePath is missing
 ;           too, gamePath from the global settings is used instead.
 ;           example: exePath=C:\Program Files\My Game\mygame.exe
-; masterServer    - defaults to master3.idsoftware.com
+; masterServer    - defaults to master.ioquake3.org
 ; protocolVersion - defaults to 68
+; etColors - Set to true to enable Enemy Territory-style extended color codes (31 colors).
+;            See http://wolfwiki.anime.net/index.php/Color_Codes for more information.
+; qstatMasterServerType - Defaults to q3m.
+; qstatConfigFile - Value to use for Qstat's -cfg parameter.
 ;
 ; Lines beginning with a ";" are comments.
 
@@ -135,14 +154,18 @@ mod=smokinguns
 regKey=HKEY_LOCAL_MACHINE\SOFTWARE\Smokin' Guns Productions\Smokin' Guns\InstallPath
 exeName=smokinguns.exe
 exePath=%ProgramFiles%\Smokin' Guns\smokinguns.exe
+masterServer=master.smokin-guns.org
+etColors=true
 
 [World of Padman]
-mod=wop
-regKey=HKEY_LOCAL_MACHINE\SOFTWARE\World of Padman\Path
+mod=WorldofPadman
+regKey=HKEY_LOCAL_MACHINE\SOFTWARE\Padworld Entertainment\Path
 exeName=wop.exe
-exePath=%ProgramFiles%\World of Padman\wop.exe
-useGslist=false
-masterServer=wopmaster.kickchat.com:27955
+exePath=%ProgramFiles%\World of Padman 1.5\wop.exe
+masterServer=master.worldofpadman.com:27955
+protocolVersion=71
+qstatMasterServerType=worldofpadmanm
+qstatConfigFile=worldofpadman.cfg
 
 [Urban Terror]
 mod=q3ut4
@@ -155,7 +178,6 @@ exeName=tremulous.exe
 exePath=%ProgramFiles%\Tremulous\tremulous.exe
 masterServer=master.tremulous.net:30710
 protocolVersion=69
-useGslist=false
 
 [baseq3]
 
@@ -184,7 +206,8 @@ useGslist=false
 	                      {"windowSize", "800x568"},
 	                     ];
 
-	enum Setting[] defaultSessionState = [{"filterState", "0"},
+	enum Setting[] defaultSessionState = [{"programVersion", "0.0"},
+	                                 {"filterState", "0"},
 	                                 {"playerSortOrder", "0"},
 	                                 {"resolution", "0, 0"},
 	                                 {"serverSortOrder", "1"},
@@ -252,6 +275,8 @@ void loadGamesFile()
 
 	if (!exists(gamesFileName))
 		writeDefaultGamesFile();
+	else if (!gamesIni && getSessionState("programVersion") < "0.8a")
+		updateGameConfiguration();
 
 	gamesIni = new Ini(gamesFileName);
 
@@ -266,6 +291,7 @@ void loadGamesFile()
 		gamesIni.remove("");
 	}
 
+	gameNames = null;
 	foreach (sec; gamesIni)
 		gameNames ~= sec.name;
 }
@@ -278,10 +304,14 @@ private void writeDefaultGamesFile()
 	version (Windows)
 		text = replace(text, "%ProgramFiles%", getProgramFilesDirectory());
 
-	// Use C IO to get line ending translation.
-	FILE* f = fopen((gamesFileName ~ '\0').ptr, "w");
-	fwrite(text.ptr, 1, text.length, f);
-	fclose(f);
+	try {
+		File(gamesFileName, "w").write(text);
+	}
+	catch (ErrnoException e) {
+		error("Creating \"%s\" failed.  Monster Browser will not function " ~
+		      "properly without this file.\n\nError: \"%s\"",
+		      gamesFileName, e);
+	}
 }
 
 
@@ -329,6 +359,7 @@ void loadSettings()
 	loadSessionState();
 
 	gamesFileName = dataDir ~ "mods.ini";
+	backupGamesFileName = gamesFileName ~ ".autobackup";
 	loadGamesFile();
 }
 
@@ -338,6 +369,9 @@ void loadSettings()
  */
 void saveSettings()
 {
+	if (getSessionState("programVersion") != FINAL_VERSION)
+		setSessionState("programVersion", FINAL_VERSION);
+
 	if (settingsIni.modified) {
 		settingsIni.save();
 	}
@@ -475,6 +509,26 @@ void setSessionState(in char[] key, string value)
 }
 
 
+/**
+ *
+ */
+private void updateGameConfiguration()
+{
+	assert(exists(gamesFileName));
+	try {
+		rename(gamesFileName, backupGamesFileName);
+		info("The game configuration was updated.\n\nYour old configuration " ~
+		     "was backed up to \"%s\".", backupGamesFileName);
+		writeDefaultGamesFile();
+	}
+	catch (FileException e) {
+		warning("Renaming \"%s\" to \"%s\" failed.  The game configuration " ~
+		        "was not updated.\n\nError: \"%s\"",
+		        gamesFileName, backupGamesFileName, e);
+	}
+}
+
+
 private string autodetectQuake3Path()
 {
 	version (Windows) {
@@ -553,7 +607,7 @@ version (Windows) private string getRegistryStringValue(in char[] key)
 		RegCloseKey(hKey);
 	}
 
-	// need to cast to void* because of a DMD bug
+	// FIXME: need to cast to void* because of a DMD bug
 	return (cast(void*)retval.ptr == cast(void*)buf.ptr) ? retval.idup :
 	                                                        cast(string)retval;
 }

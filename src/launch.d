@@ -8,8 +8,6 @@ version (Windows) {
 	import std.windows.charset;
 	import std.windows.syserror;
 	import core.sys.windows.windows;
-	extern (Windows)
-		HINSTANCE ShellExecuteA(HWND, LPCSTR, LPCSTR, LPCSTR, LPCSTR, INT);
 }
 
 import org.eclipse.swt.SWT;
@@ -30,14 +28,14 @@ import settings;
  *
  * Displays an error message if the game executable was not found.
  */
-void joinServer(string gameName, ServerData sd)
+void joinServer(in char[] gameName, ServerData sd)
 {
 	string argv;
 	string address = sd.server[ServerColumn.ADDRESS];
-	GameConfig game = getGameConfig(gameName);
+	GameConfig game = getGameConfig(gameName.idup);
 	string pathString = game.exePath;
 	bool launch = true;
-	bool showDialog = false;
+	int i;
 
 	if (!pathString) {
 		error("No path found for " ~ gameName ~
@@ -45,34 +43,39 @@ void joinServer(string gameName, ServerData sd)
 		return;
 	}
 
-	if (MOD_ONLY) {
-		argv = "+set fs_game " ~ game.mod;
+	i = findString(sd.cvars, "game", 0);
+	if (i != -1) {
+		string s = sd.cvars[i][1];
+		if (s.length > 0)
+			argv = "+set fs_game " ~ s;
 	}
-	argv ~= " +connect " ~ address;
 
-	int i = findString(sd.cvars, "g_needpass", 0);
+	argv ~= "+connect " ~ address;
+
+	i = findString(sd.cvars, "g_needpass", 0);
 	if (i != -1 && sd.cvars[i][1] == "1" && getPassword(address).length == 0) {
 		string message = "Join \"" ~ sd.server[ServerColumn.NAME] ~ "\"\n\n" ~
 		                          "You need a password to join this server.\n";
 		scope dialog = new ServerPasswordDialog(mainWindow.handle,
 		                          "Join Server", message, address, true, true);
 
-		if (dialog.open()) {
-			if (dialog.password.length)
-				argv ~= " +set password " ~ dialog.password;
-		}
-		else {
+		if (!dialog.open() || dialog.password.length == 0)
 			launch = false;
-		}
 	}
 
 	if (launch) {
+		string pw = getPassword(address);
+		if (pw.length > 0)
+			argv ~= " +set password " ~ pw;
+
+		log("Launching game: " ~ pathString ~ " " ~ argv);
+
 		version (Windows) {
 			const char* ansiPath = toMBSz(pathString);
 			const char* ansiDir = toMBSz(dirName(pathString));
 
 			int r = cast(int)ShellExecuteA(null, "open", ansiPath,
-			                               toStringz(argv), ansiDir, SW_SHOW);
+			                                toStringz(argv), ansiDir, SW_SHOW);
 			if (r <= 32) {
 				auto code = GetLastError();
 				error("Unable to execute \"%s\".\n\nError %s: %s",

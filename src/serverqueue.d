@@ -3,7 +3,7 @@ module serverqueue;
 import java.lang.Runnable;
 import org.eclipse.swt.widgets.Display;
 
-import common;
+import common : arguments;
 import masterlist;
 import servertable;
 

@@ -20,8 +20,16 @@ import mainwindow;
 /// Displays a message box.
 void messageBox(string msg, string title, int style)
 {
+	if (Display.getDefault().isDisposed())
+		return;
+
 	Display.getDefault().syncExec(dgRunnable({
 		MessageBox mb;
+
+		
+		if (mainWindow && mainWindow.handle.isDisposed())
+			return;
+
 		if (mainWindow !is null)
 			mb = new MessageBox(mainWindow.handle, style);
 		else

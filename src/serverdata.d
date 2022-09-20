@@ -5,8 +5,6 @@ import core.stdc.ctype;
 import std.conv;
 import std.string;
 
-import org.eclipse.swt.graphics.TextLayout;
-
 import common;
 import settings;
 
@@ -24,8 +22,6 @@ struct ServerData {
 	string[][] players;
 	/// list of cvars, with key and value for each
 	string[][] cvars;
-
-	TextLayout customData = null;  ///
 
 	int failCount = 0;  ///
 
@@ -146,12 +142,31 @@ bool matchGame(in ServerData* sd, in GameConfig game)
 	if (sd.protocolVersion != game.protocolVersion)
 		return false;
 
+	debug bool gameMatched = false;
+
 	// FIXME: use binary search?
 	foreach (cvar; sd.cvars) {
-		if (cvar[0] == "game" || cvar[0] == "gamename") {
-			if (icmp(cvar[1], game.mod) == 0)
+		if (cvar[0] == "gamename") {
+			if (icmp(cvar[1], game.mod) == 0) {
 				return true;
+			}
+			else {
+				debug {
+					/* do nothing */
+				}
+				else {
+					break;
+				}
+			}
 		}
+		debug if (cvar[0] == "game" && icmp(cvar[1], game.mod) == 0) {
+			gameMatched = true;
+		}
+	}
+
+	debug if (gameMatched) {
+		log("Skipped (game matched) %s (%s)",
+		        sd.server[ServerColumn.NAME], sd.server[ServerColumn.ADDRESS]);
 	}
 
 	static if (MOD_ONLY)
@@ -184,6 +199,7 @@ shared static this() {
 	gameTypes["smokinguns"] = split("FFA Duel 2 TDM RTP BR", " ");
 	gameTypes["westernq3"]  = split("FFA Duel 2 TDM RTP BR", " ");
 	gameTypes["wop"] = split("FFA 1v1 2 SyC LPS TDM 6 SyCT BB", " ");
+	gameTypes["WorldofPadman"] = split("FFA 1v1 2 SyC LPS TDM CtL SyCT BB", " ");
 }
 
 

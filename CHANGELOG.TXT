@@ -1,10 +1,41 @@
-Latest changes
---------------
-- New: Infinity signs changed to use red font, to make it easier to see servers
-  that timed out.
+Work in progress - 2012-07-03
+-----------------------------
+- New: A new application icon, made by Biondo.
+- Change: Don't repopulate the game list dropdown unless mods.ini was edited.
+          Check the file modification time to know.
+- Fix: Report the error if unable to create mods.ini.  Related to the issue
+       some people where having on Windows XP.
+- Fix: Fixed a bug that caused getting new servers to fail when running on
+       Wine.
+- Fix: Remove some potentials hangs when interrupting the Qstat process.
 
 
-v0.7 - 2010-05-05
+v0.8a - 2012-04-21
+------------------
+- New: Support for World of Padman 1.6, plus updated settings.
+- New: Support Smokin' Guns extended color codes for player and server names.
+- New: The "Add..." dialog now accepts host names.
+- Change: Updated Smokin' Guns master server to master.smokin-guns.org.
+- Change: Use master.ioquake3.org as the default master server.
+- Change: The progress bar is only filled once when querying servers in
+          multiple batches.
+- Fix: A couple of crashes fixed.
+
+
+v0.8 - 2012-01-01
+-----------------
+- New: Display progress on the task bar in Windows 7.
+- Change: Keep the old server list if unable to retrieve a new on from the
+          master.
+- Change: Infinity signs changed to use red font, to make it easier to see
+  server that timed out.
+- Change: More informative status bar messages when checking for new servers.
+- Fix: Password was not used when joining. Thanks to rane for reporting this.
+- Fix: MB had problems with servers with certain characters (like '&') in their
+       name.
+
+
+v0.7 - 2010-04-05
 -----------------
 - New: Improved status bar.
 - New: Can now use .bat or .lnk files instead of an .exe when launching a game.

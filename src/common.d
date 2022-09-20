@@ -6,8 +6,10 @@ import core.stdc.string;
 import core.stdc.time;
 import std.ascii : newline;
 import std.file;
+import std.range;
 import std.stdio;
 import std.string;
+import std.traits;
 import tango.core.Array;
 import Integer = tango.text.convert.Integer;
 import tango.text.Util : delimiters;
@@ -34,7 +36,6 @@ __gshared:
 	bool fromfile  = false;  ///
 	bool norefresh = false;  ///
 	bool quit      = false;  ///
-	bool colortest = false;  ///
 }
 
 
@@ -49,7 +50,7 @@ enum APPNAME = "Monster Browser";
 
 enum SVN = import("svnversion.txt");
 
-enum FINAL_VERSION = "0.7";
+enum FINAL_VERSION = "0.8a";
 
 debug {
 	enum VERSION = __DATE__ ~ " (svnversion " ~ SVN ~ ") *DEBUG BUILD*";
@@ -68,7 +69,7 @@ __gshared Timer globalTimer;
 shared bool userAbort = false;
 
 /// Is there a console available for output?
-shared bool haveConsole;
+shared bool haveConsole = false;
 
 
 // Add dispose() methods etc. to this array, and they will be called at
@@ -112,8 +113,10 @@ void log(T...)(T args)
 	logFile.writefln(args);
 	version (redirect) { }
 	else {
-		write("LOG: ");
-		writefln(args);
+		if (haveConsole) {
+			write("LOG: ");
+			writefln(args);
+		}
 	}
 }
 
@@ -128,12 +131,6 @@ void logx(in char[] file, int line, Exception e)
 		log("ThreadManager's thread is %s.",
 		                      threadManager.sleeping ? "sleeping" : "working");
 	}
-
-	// output stack trace
-	/*char[] buf;
-	// FIXME: should probably avoid allocating memory here.
-	e.writeOut((char[] s) { buf ~= s; });
-	Log.root.info(buf);*/
 }
 
 
@@ -400,27 +397,36 @@ int[] getColumnWidths(Table table)
  * Collect IP addresses into a set.
  *
  * The format of each address is IP:PORT, where the port number is
- * optional.  One address each line. If no valid address is found, the line is
- * skipped.
+ * optional. Strings that are not valid IP addresses are skipped.
  *
  * Returns: A set of strings containing the IP and port of each server.
- *
- * Throws: StdioException.
  */
-Set!(string) collectIpAddresses(File stream, uint startColumn=0)
+Set!(string) collectIpAddresses(R)(R strings, uint startColumn=0)
+	if (isInputRange!R && isSomeString!(ElementType!R))
 {
 	Set!(string) addresses;
 
-	foreach (char[] line; stream.byLine(KeepTerminator.no, newline)) {
-		if (startColumn >= line.length)
+	foreach (s; strings) {
+		if (startColumn >= s.length)
 			continue;
 
-		line = line[startColumn..$];
-		if (isValidIpAddress(line))
-			addresses.add(line.idup);
+		s = s[startColumn..$];
+		if (isValidIpAddress(s))
+			addresses.add(s.idup);
 	}
 
 	return addresses;
+}
+
+/**
+ * See the above version, one address per line.
+ *
+ * Throws StdioException.
+ */
+Set!(string) collectIpAddresses(File stream, uint startColumn=0)
+{
+	return collectIpAddresses(
+			                    stream.byLine(KeepTerminator.no, newline), startColumn);
 }
 
 
@@ -443,9 +449,6 @@ void parseCmdLine(in char[][] args)
 				break;
 			case "quit":
 				arguments.quit = true;
-				break;
-			case "colortest":
-				arguments.colortest = true;
 				break;
 			default:
 				log("UNRECOGNIZED ARGUMENT: " ~ arg);
