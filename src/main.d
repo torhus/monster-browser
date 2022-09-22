@@ -20,7 +20,6 @@ import org.eclipse.swt.widgets.Listener;
 
 import colorednames : disposeNameColors;
 import common;
-import link;
 import mainwindow;
 import messageboxes;
 import runtools: runtoolsInit;
