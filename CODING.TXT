@@ -45,9 +45,7 @@ dub build --arch=x86
 
 Building on Linux
 -----------------
-This hasn't been tested for some time, but the dsss.conf file that is included
-might still work.  It can be used to build Monster Browser without building
-DWT as a library first.  See the instructions for building on Windows.
+FIXME
 
 
 Version IDs
