@@ -649,7 +649,7 @@ public:
 
 	//reuse same object for another file
 	/// Open an INI _file.
-	void open(char[] file)
+	void open(in char[] file)
 	{
 		if(_modified)
 			save();
@@ -823,7 +823,7 @@ public:
 
 unittest
 {
-	char[] inifile = "unittest.ini";
+	string inifile = "unittest.ini";
 	Ini ini;
 
 	ini = new Ini(inifile);
