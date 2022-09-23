@@ -69,7 +69,7 @@ private {
 ///
 string getVersionString()
 {
-	string revision = strip(import("revision.txt"));
+	string revision = lineSplitter(import("revision.txt")).join(':');
 
 	debug {
 		return __DATE__ ~ " (" ~ revision ~ ") *DEBUG BUILD*";

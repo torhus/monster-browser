@@ -12,6 +12,8 @@ buildRequirements "silenceWarnings" "silenceDeprecations"
 importPaths "src"
 excludedSourceFiles "src/monitor.d"
 stringImportPaths "." "flags" "icons"
+preBuildCommands "git rev-parse --abbrev-ref HEAD > revision.txt" \
+                 "git describe --always --dirty >> revision.txt"
 
 buildType "debug" {
 	buildOptions "debugMode" "debugInfo"
