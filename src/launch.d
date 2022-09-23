@@ -9,10 +9,8 @@ version (Windows) {
 	import std.windows.syserror;
 	import core.sys.windows.windows;
 }
-
 import org.eclipse.swt.SWT;
 
-import colorednames;
 import common;
 import dialogs;
 import mainwindow;
@@ -50,7 +48,7 @@ void joinServer(in char[] gameName, ServerData sd)
 			argv = "+set fs_game " ~ s;
 	}
 
-	argv ~= "+connect " ~ address;
+	argv ~= " +connect " ~ address;
 
 	i = findString(sd.cvars, "g_needpass", 0);
 	if (i != -1 && sd.cvars[i][1] == "1" && getPassword(address).length == 0) {
@@ -78,8 +76,11 @@ void joinServer(in char[] gameName, ServerData sd)
 			                                toStringz(argv), ansiDir, SW_SHOW);
 			if (r <= 32) {
 				auto code = GetLastError();
-				error("Unable to execute \"%s\".\n\nError %s: %s",
-				                       pathString, code, sysErrorString(code));
+				log("Launch error %s: %s", code, sysErrorString(code));
+				error("Unable to execute \"%s\".\n\nPlease check that the " ~
+				      "correct location for Quake 3 is set in the settings, " ~
+				      "or the exePath value in the game configuration for " ~
+				      "other games.", pathString);
 			}
 			else if (getSetting("minimizeOnGameLaunch") == "true") {
 				mainWindow.minimized = true;

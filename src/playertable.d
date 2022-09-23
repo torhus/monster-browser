@@ -171,7 +171,7 @@ class PlayerTable
 	 */
 	void setItems(int[] serverIndices, ServerList serverList)
 	{
-		assert(serverIndices.length > 0 && serverList !is null);
+		assert(serverList !is null);
 
 		moreThanOneServer_ = serverIndices.length > 1;
 

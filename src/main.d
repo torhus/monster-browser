@@ -65,24 +65,6 @@ private void _main(string[] args)
 
 	loadSettings;
 
-	// FIXME: make function for this
-	// check for presence of Gslist
-	string gslistExe;
-	version (Windows) {
-		gslistExe = appDir ~ "gslist.exe";
-	}
-	else version(linux) {
-		gslistExe = appDir ~ "gslist";
-	}
-	else {
-		static assert(0);
-	}
-
-	common.haveGslist = exists(gslistExe);
-
-	if (common.haveGslist)
-		log("Found gslist, using it for faster server list retrieval.");
-
 	mainWindow = new MainWindow;
 
 	// Set the application's window icon.
@@ -111,12 +93,16 @@ private void _main(string[] args)
 					}
 					break;
 				case SWT.F4:
-					threadManager.run(&checkForNewServers);
-					e.type = SWT.None;
+					if ((e.stateMask & SWT.MODIFIER_MASK) == 0) {
+						threadManager.run(&checkForNewServers);
+						e.type = SWT.None;
+					}
 					break;
 				case SWT.F5:
-					threadManager.run(&refreshAll);
-					e.type = SWT.None;
+					if ((e.stateMask & SWT.MODIFIER_MASK) == 0) {
+						threadManager.run(&refreshAll);
+						e.type = SWT.None;
+					}
 					break;
 				default:
 					break;
@@ -132,7 +118,11 @@ private void _main(string[] args)
 
 	serverTable.getTable.setFocus();
 	runtoolsInit();
-	switchToGame(filterBar.selectedGame);
+	
+	if (settings.gameNames.length == 0)
+		error("No valid game configurations were found.");
+	else
+		switchToGame(filterBar.selectedGame);
 
 	// main loop
 	Display display = Display.getDefault;
@@ -161,8 +151,7 @@ private void _main(string[] args)
 
 	log("Saving server lists...");
 	foreach (entry; masterLists)
-		if (entry.save)
-			entry.masterList.save();
+		entry.masterList.save();
 
 	log("Exit.");
 }

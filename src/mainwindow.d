@@ -44,10 +44,9 @@ import servertable;
 import settings;
 import threadmanager;
 
-// For the Windows 7 taskbar progress feature
+// For the taskbar progress display feature of Windows 7 and later
 version (Windows) {
 	import mswindows.taskbarprogress;
-	import mswindows.util;
 }
 
 __gshared StatusBar statusBar;  ///
@@ -70,7 +69,7 @@ class MainWindow
 	this()
 	{
 		shell_ = new Shell(Display.getDefault);
-		shell_.setText(APPNAME ~ " " ~ VERSION);
+		shell_.setText(APPNAME ~ " " ~ getVersionString());
 		shell_.addShellListener(new MyShellListener);
 
 		// restore window size and state
@@ -106,7 +105,7 @@ class MainWindow
 		topLayout.horizontalSpacing = 50;
 		topComposite.setLayout(topLayout);
 
-		ToolBar toolBar = createToolbar(topComposite);
+		ToolBar toolBar = (new ToolBarWrapper(topComposite)).getToolBar();
 
 		// filtering options
 		filterBar = new FilterBar(topComposite);
@@ -310,12 +309,14 @@ class StatusBar : Composite
 			layout();
 		}
 
-		if (useWin7Taskbar_) {
-			if (indeterminate)
+		version (Windows) if (tbProgress_) {
+			if (indeterminate) {
 				tbProgress_.setProgressState(TBPF_INDETERMINATE);
-			else
+			}
+			else {
 				tbProgress_.setProgressState(TBPF_NORMAL);
 				tbProgress_.setProgressValue(progress, total);
+			}
 		}
 
 		setProgressLabel(label);
@@ -332,7 +333,7 @@ class StatusBar : Composite
 		if (isDisposed())
 			return;
 		progressBar_.setVisible(false);
-		if (useWin7Taskbar_)
+		version (Windows) if (tbProgress_)
 				tbProgress_.setProgressState(TBPF_NOPROGRESS);
 		setLeft(text);
 	}
@@ -352,7 +353,7 @@ class StatusBar : Composite
 		progressBar_.setMaximum(total);
 		progressBar_.setSelection(current);
 
-		if (useWin7Taskbar_) {
+		version (Windows) if (tbProgress_) {
 			if (!(progressBar_.getStyle() & SWT.INDETERMINATE))
 				tbProgress_.setProgressValue(current, total);
 		}
@@ -366,7 +367,7 @@ class StatusBar : Composite
 		
 		progressBar_.setState(SWT.ERROR);
 
-		if (useWin7Taskbar_)
+		version (Windows) if (tbProgress_)
 			tbProgress_.setProgressState(TBPF_ERROR);
 	}
 
@@ -393,23 +394,18 @@ class StatusBar : Composite
 	}
 
 
-	// For the Windows 7 taskbar.
+	// For the Windows 7 and later taskbar.
 	version (Windows) private void initTaskbarProgress()
 	{
-		if (!isWindows7OrLater) {
-			useWin7Taskbar_ = false;
-			return;
-		}
-
-		try
+		try {
 			tbProgress_ = new TaskbarProgress(parent.getShell().handle);
-		catch (Exception e)
-			logx(__FILE__, __LINE__, e);
+		}
+		catch (Exception e) {
+			//logx(__FILE__, __LINE__, e);
+		}
 
 		if (tbProgress_)
 			callAtShutdown ~= &tbProgress_.dispose;
-
-		useWin7Taskbar_ = tbProgress_ !is null;
 	}
 
 
@@ -419,11 +415,7 @@ private:
 	Label progressLabel_;
 	ProgressBar progressBar_;
 	version (Windows) {
-		TaskbarProgress tbProgress_;
-		bool useWin7Taskbar_;
-	}
-	else {
-		enum { useWin7Taskbar_ = false };
+		TaskbarProgress tbProgress_ = null;
 	}
 }
 
@@ -575,7 +567,8 @@ class FilterBar : Group
 			n = 8;
 		gamesCombo_.setVisibleItemCount(max(n, 5));
 
-		gamesCombo_.select(gamesCombo_.indexOf(lastSelectedGame_));
+		int i = gamesCombo_.indexOf(lastSelectedGame_);
+		gamesCombo_.select((i == -1) ? 0 : i);
 	}
 
 
@@ -618,71 +611,71 @@ private:
  *       Composite.setTabList in this case.  A more involved solution would be
  *       needed.
  */
-private ToolBar createToolbar(Composite parent)
+private class ToolBarWrapper
 {
-	auto toolBar = new ToolBar(parent, SWT.HORIZONTAL);
+	this(Composite parent)
+	{
+		auto toolBar_ = new ToolBar(parent, SWT.HORIZONTAL);
 
-	auto button1 = new ToolItem(toolBar, SWT.PUSH);
-	button1.setText("Check for New");
-	button1.setImage(loadImage!("box_download_32.png"));
-	button1.addSelectionListener(new class SelectionAdapter {
-		public override void widgetSelected(SelectionEvent e)
-		{
-			threadManager.run(&checkForNewServers);
-		}
-	});
+		auto checkForNewButton_ = new ToolItem(toolBar_, SWT.PUSH);
+		checkForNewButton_.setText("Check for new");
+		checkForNewButton_.setImage(loadImage!("box_download_32.png"));
+		checkForNewButton_.addSelectionListener(new class SelectionAdapter {
+			public override void widgetSelected(SelectionEvent e)
+			{
+				threadManager.run(&checkForNewServers);
+			}
+		});
 
-	new ToolItem(toolBar, SWT.SEPARATOR);
-	ToolItem button2 = new ToolItem(toolBar, SWT.PUSH);
-	button2.setText("Refresh All");
-	button2.setImage(loadImage!("refresh_32.png"));
-	button2.addSelectionListener(new class SelectionAdapter {
-		public override void widgetSelected(SelectionEvent e)
-		{
-			threadManager.run(&refreshAll);
-		}
-	});
+		new ToolItem(toolBar_, SWT.SEPARATOR);
+		refreshAllButton_ = new ToolItem(toolBar_, SWT.PUSH);
+		refreshAllButton_.setText("Refresh all");
+		refreshAllButton_.setImage(loadImage!("refresh_32.png"));
+		refreshAllButton_.addSelectionListener(new class SelectionAdapter {
+			public override void widgetSelected(SelectionEvent e)
+			{
+				threadManager.run(&refreshAll);
+			}
+		});
 
-	new ToolItem(toolBar, SWT.SEPARATOR);
+		new ToolItem(toolBar_, SWT.SEPARATOR);
 
-	auto button3 = new ToolItem(toolBar, SWT.PUSH);
-	button3.setText("   Add... ");
-	button3.setImage(loadImage!("add_32.png"));
-	button3.addSelectionListener(new class SelectionAdapter {
-		public override void widgetSelected(SelectionEvent e)
-		{
-			auto dialog = new SpecifyServerDialog(mainWindow.handle);
-			dialog.open();
-		}
-	});
-/+
-	new ToolItem(toolBar, SWT.SEPARATOR);
+		addButton_ = new ToolItem(toolBar_, SWT.PUSH);
+		addButton_.setText("   Add... ");
+		addButton_.setImage(loadImage!("add_32.png"));
+		addButton_.addSelectionListener(new class SelectionAdapter {
+			public override void widgetSelected(SelectionEvent e)
+			{
+				auto dialog = new SpecifyServerDialog(mainWindow.handle);
+				dialog.open();
+			}
+		});
 
-	auto button4 = new ToolItem(toolBar, SWT.PUSH);
-	button4.setText("Monitor...");
-	button4.setEnabled(false);
-	button4.addSelectionListener(new class SelectionAdapter {
-		public void widgetSelected(SelectionEvent e)
-		{
-			startMonitor(mainWindow.handle);
-		}
-	});
-+/
-	new ToolItem(toolBar, SWT.SEPARATOR);
+		new ToolItem(toolBar_, SWT.SEPARATOR);
 
-	auto button5 = new ToolItem(toolBar, SWT.PUSH);
-	button5.setText(" Settings");
-	button5.setImage(loadImage!("spanner_32.png"));
-	button5.addSelectionListener(new class SelectionAdapter {
-		public override void widgetSelected(SelectionEvent e)
-		{
-			SettingsDialog dialog = new SettingsDialog(mainWindow.handle);
-			if (dialog.open())
-				saveSettings();
-		}
-	});
+		settingsButton_ = new ToolItem(toolBar_, SWT.PUSH);
+		settingsButton_.setText(" Settings");
+		settingsButton_.setImage(loadImage!("spanner_32.png"));
+		settingsButton_.addSelectionListener(new class SelectionAdapter {
+			public override void widgetSelected(SelectionEvent e)
+			{
+				SettingsDialog dialog = new SettingsDialog(mainWindow.handle);
+				if (dialog.open())
+					saveSettings();
+			}
+		});
 
-	return toolBar;
+	}
+
+	ToolBar getToolBar() { return toolBar_; }
+
+	private {
+		ToolBar toolBar_;
+		ToolItem checkForNewButton_;
+		ToolItem refreshAllButton_;
+		ToolItem addButton_;
+		ToolItem settingsButton_;
+	}
 }
 
 

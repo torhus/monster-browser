@@ -1,0 +1,27 @@
+# Monster Browser build dependencies
+dwt
+res
+
+# Monster Browser runtime dependencies
+qstat.exe
+GeoLite2-Country.mmdb
+libmaxminddb.dll
+
+# Files and directories created by build tools, etc
+build
+docs
+Debug
+MonsterBrowser.exe
+MonsterBrowser.exe_cv
+MonsterBrowser.obj
+MonsterBrowser.pdb
+MonsterBrowser.map
+*.suo
+revision.txt
+
+# Files created by Monster Browser when running
+mods.ini
+settings.ini
+LOG.TXT
+CONSOLE.OUT
+*.xml

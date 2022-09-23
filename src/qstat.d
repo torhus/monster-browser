@@ -37,7 +37,6 @@ private enum Field {
 bool parseOutput(in char[] modName, File input,
                  bool delegate(ServerData*, bool replied) deliver)
 {
-	string[] gtypes;
 	File outfile;
 	debug Timer timer2;
 	debug timer2.start();
@@ -53,13 +52,6 @@ bool parseOutput(in char[] modName, File input,
 			error("Unable to create file, qstat output will not be saved " ~
 			                                                       "to disk.");
 		}
-	}
-
-	if (modName in gameTypes) {
-		gtypes = gameTypes[modName];
-	}
-	else {
-		gtypes = defaultGameTypes;
 	}
 
 	while (keepGoing) {
@@ -94,7 +86,7 @@ bool parseOutput(in char[] modName, File input,
 				if (outfile.isOpen)
 					outfile.writeln(line);
 
-				parseCvars(line, &sd, gtypes);
+				parseCvars(line, &sd);
 
 				sortStringArray(sd.cvars);
 
@@ -147,22 +139,18 @@ debug private void checkTime(ref Timer t, string name)
 /**
  * Parses a line of cvars, each cvar of the form "name=value".  If there's more
  * than one cvar, FIELDSEP is expected to separate each name/value pair.  The
- * cvars are appended to sd.cvars.  The gametype and password fields of
- * sd.server are also set.
+ * cvars are appended to sd.cvars.
  *
  * The strings that are the output of this function will be slices into the
  * line parameter.
  *
  * Params:
  *     line     = String to parse.
- *     sd       = Output, only sd.cvars, sd.server, and sd.protocolVersion are
- *                changed.  sd.rawName is used for error reporting, but not
- *                written to.
- *     gtypes   = Game type names, indexed with the value of the 'gametype'
- *                cvar to find the value of sd.server's Game type column.  If
- *                gametype >= gtypes.length, the number is used instead.
+ *     sd       = Output, only sd.cvars, sd.server, sd.numericGameType,
+ *                and sd.protocolVersion are changed.  sd.rawName is used for
+ *                error reporting, but not written to.
  */
-private void parseCvars(string line, ServerData* sd, string[] gtypes=null)
+private void parseCvars(string line, ServerData* sd)
 in {
 	assert(ServerColumn.GAMETYPE < sd.server.length &&
 	                               ServerColumn.PASSWORDED < sd.server.length);
@@ -183,15 +171,12 @@ body {
 			case "gametype":
 				uint ate;
 				int gt = cast(int)Integer.parse(cvar[1], 10, &ate);
-				if (ate < cvar[1].length) {
-					invalidInteger(sd.rawName, cvar[1]);
-					sd.server[ServerColumn.GAMETYPE] = "???";
-				}
-				else if (gt < gtypes.length) {
-					sd.server[ServerColumn.GAMETYPE] = gtypes[gt];
+				if (ate == cvar[1].length) {
+					sd.numericGameType = gt;
 				}
 				else {
-					sd.server[ServerColumn.GAMETYPE] = to!string(gt);
+					invalidInteger(sd.rawName, cvar[1]);
+					sd.numericGameType = -1;
 				}
 				break;
 			case "g_needpass":

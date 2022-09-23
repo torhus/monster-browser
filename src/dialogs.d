@@ -51,33 +51,6 @@ alias Tuple!(75, 23) BUTTON_SIZE;
 const BUTTON_SPACING = 6;
 
 
-/+class MonitorNotify
-{
-	char[] password; ///
-
-	///
-	this(Shell parent, char[] message)
-	{
-		parent_ = parent;
-		shell_ = new Shell(parent_, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL/* | SWT.ON_TOP*/);
-		shell_.setLayout(new GridLayout);
-		shell_.setText("Join Server");
-
-		shell_.open();
-		shell_.forceActive();
-		Display display = Display.getDefault;
-		while (!shell_.isDisposed()) {
-			if (!display.readAndDispatch()) {
-				display.sleep ();
-			}
-		}
-
-private:
-	Shell parent_, shell_;
-
-}+/
-
-
 /**
  * A generic dialog with OK and Cancel buttons, that asks for a password and
  * optionally whether to save it.
@@ -306,7 +279,7 @@ class SpecifyServerDialog
 				addressText_.selectAll();
 			}
 
-			if (address) {
+			if (address && input.length) {
 				ServerList serverList = serverTable.serverList;
 				MasterList master = serverList.master;
 				ServerHandle sh = master.findServer(address);
@@ -340,8 +313,9 @@ class SpecifyServerDialog
 						queryServers([address], true, true);
 					}
 				}
-				shell_.close();
 			}
+
+			shell_.close();
 		}
 	}
 
@@ -462,8 +436,11 @@ class SettingsDialog
 				if (checkGameConfig_) {
 					try {
 						if (timeLastModified(gamesFileName) > lastModified_) {
+							string name = serverTable.serverList.gameName;
 							settings.loadGamesFile();
 							filterBar.setGames(settings.gameNames);
+							switchToGame((findString(settings.gameNames, name)
+							            != -1) ? name : settings.gameNames[0]);
 						}
 					}
 					catch (FileException e) {

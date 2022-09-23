@@ -34,7 +34,6 @@ final class ServerList
 	 * true if list contains all servers for the mod, that replied when queried.
 	 * Meaning that the server querying process was not interrupted.
 	 */
-	// FIXME: how does MasterList relate to this?
 	bool complete = false;
 
 
@@ -68,19 +67,7 @@ final class ServerList
 	 */
 	bool add(ServerHandle sh)
 	{
-		bool refresh = false;
-
-		synchronized (this) synchronized (master_) {
-			ServerData sd = master_.getServerData(sh);
-			sd.server[ServerColumn.COUNTRY] = getCountryCode(&sd);
-			ipHash_[sd.server[ServerColumn.ADDRESS]] = -1;
-			if (!isFilteredOut(&sd)) {
-				insertSorted(sh);
-				refresh = true;
-			}
-		}
-
-		return refresh;
+		return addOrReplace(sh);
 	}
 
 
@@ -91,23 +78,7 @@ final class ServerList
 	*/
 	bool replace(ServerHandle sh)
 	{
-		synchronized (this) synchronized (master_) {
-			ServerData sd = master_.getServerData(sh);
-			bool removed = removeFromFiltered(sd.server[ServerColumn.ADDRESS]);
-
-			if (!removed) {
-				// adding as a new server
-				ipHash_[sd.server[ServerColumn.ADDRESS]] = -1;
-				sd.server[ServerColumn.COUNTRY] = getCountryCode(&sd);
-			}
-			if (!isFilteredOut(&sd)) {
-				insertSorted(sh);
-				return true;
-			}
-			else {
-				return removed;
-			}
-		}
+		return addOrReplace(sh, true);
 	}
 
 
@@ -131,6 +102,8 @@ final class ServerList
 
 			if (address in ipHash_ && matchGame(&sd, game)) {
 				newHash[address] = -1;
+				sd.server[ServerColumn.GAMETYPE] =
+				                     getGameTypeName(game, sd.numericGameType);
 				if (!isFilteredOut(&sd))
 					filteredList ~= sh;
 			}
@@ -359,6 +332,47 @@ private:
 		}
 	}
 
+	/**
+	* Add or replace a server in the list.
+	*
+	* Returns true if the filtered list was altered.
+	*/
+	bool addOrReplace(ServerHandle sh, bool replace=false)
+	{
+		synchronized (this) synchronized (master_) {
+			ServerData sd = master_.getServerData(sh);
+			GameConfig game = getGameConfig(gameName_);
+			bool removed = false;
+
+			if (replace) {
+				removed = removeFromFiltered(sd.server[ServerColumn.ADDRESS]);
+			}
+
+			sd.server[ServerColumn.GAMETYPE] =
+			                         getGameTypeName(game, sd.numericGameType);
+
+			if (!removed) {
+				// adding as a new server
+				string ip = sd.server[ServerColumn.ADDRESS];
+				GeoInfo geo = getGeoInfo(ip[0..findChar(ip, ':')]);
+
+				sd.server[ServerColumn.COUNTRY] = geo.countryCode;
+				sd.countryName = geo.countryName;
+				master_.setServerData(sh, sd);
+
+				ipHash_[ip] = -1;
+			}
+
+			if (!isFilteredOut(&sd)) {
+				insertSorted(sh);
+				return true;
+			}
+			else {
+				return removed;
+			}
+		}
+	}
+
 
 	/// Updates sort column and order for the filtered list.
 	void setSort(int column, bool reversed=false)
@@ -504,14 +518,6 @@ private:
 
 		ipHashValid_ = false;
 		return true;
-	}
-
-	string getCountryCode(in ServerData* sd)
-	{
-		string address = sd.server[ServerColumn.ADDRESS];
-		string code = countryCodeByAddr(address[0..findChar(address, ':')]);
-
-		return code;
 	}
 
 	bool isFilteredOut(ServerHandle sh)

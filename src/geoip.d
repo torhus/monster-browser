@@ -4,7 +4,11 @@
 
 module geoip;
 
+import core.stdc.stdarg;
+import core.stdc.stdint;
 import core.stdc.string;
+import core.stdc.time;
+import std.ascii;
 import std.conv;
 import std.string;
 
@@ -16,10 +20,17 @@ import org.eclipse.swt.widgets.Display;
 
 import common;
 import flagdata;
+import maxminddb;
 
+/** The result of a GeoIp lookup */
+struct GeoInfo {
+	string countryCode;
+	string countryName;
+}
 
 private __gshared {
-	GeoIP* gi;
+	MMDB_s mmdb;
+	bool geoIpReady = false;
 	Display display;
 	Image[string] flagCache;
 }
@@ -35,89 +46,123 @@ private void bindFunc(alias funcPtr)(ExeModule lib)
 }
 
 
+private string getString(MMDB_entry_s* start, ...)
+{
+	MMDB_entry_data_s entry_data;
+	va_list args;
+
+version (X86) {
+	va_start(args, start);
+}
+else {
+	assert(0);
+}
+	scope (exit) va_end(args);
+
+	c_int result = MMDB_vget_value(start, &entry_data, args);
+
+	if (result == MMDB_SUCCESS && entry_data.has_data) {
+		return cast(string)entry_data.utf8_string[0..entry_data.data_size];
+	}
+	else {
+		log("MMDB_get_value failed.");
+		log("GeoIP: " ~ to!string(MMDB_strerror(result)));
+		return null;
+	}
+}
+
+
 ///
 bool initGeoIp()
 {
+	static bool firstTime = true;
+	string libName = "libmaxminddb.dll";
+	string dbName = "GeoLite2-Country.mmdb";
 	ExeModule geoIpLib;
+	c_int result;
 
-	assert(gi is null, "Can't call initGeoIp() more than once.");
+	assert(firstTime, "Can't call initGeoIp() more than once.");
+	if (!firstTime)
+		return false;
+	firstTime = false;
 
 	display = Display.getDefault();
 
 	try {
-		geoIpLib = new ExeModule("GeoIP.dll");
-		bindFunc!(GeoIP_lib_version)(geoIpLib);
-		bindFuncOrThrow!(GeoIP_open)(geoIpLib);
-		bindFuncOrThrow!(GeoIP_delete)(geoIpLib);
-		bindFuncOrThrow!(GeoIP_database_info)(geoIpLib);
-		bindFuncOrThrow!(GeoIP_country_code_by_addr)(geoIpLib);
-		bindFuncOrThrow!(GeoIP_country_name_by_addr)(geoIpLib);
+		geoIpLib = new ExeModule(libName);
+		bindFuncOrThrow!(MMDB_lib_version)(geoIpLib);
+		bindFuncOrThrow!(MMDB_open)(geoIpLib);
+		bindFuncOrThrow!(MMDB_close)(geoIpLib);
+		bindFuncOrThrow!(MMDB_lookup_string)(geoIpLib);
+		bindFuncOrThrow!(MMDB_get_value)(geoIpLib);
+		bindFuncOrThrow!(MMDB_vget_value)(geoIpLib);
+		bindFuncOrThrow!(MMDB_get_metadata_as_entry_data_list)(geoIpLib);
+		bindFuncOrThrow!(MMDB_get_entry_data_list)(geoIpLib);
+		bindFuncOrThrow!(MMDB_free_entry_data_list)(geoIpLib);
+		bindFuncOrThrow!(MMDB_strerror)(geoIpLib);
 	}
 	catch (ExeModuleException e) {
-		log("Error when loading GeoIP.dll, flags will not be shown.");
-		geoIpLib.close();
+		log("Unable to load the GeoIP library (" ~ libName ~ "), server " ~
+			"locations will not be shown.");
 		return false;
 	}
-	if (GeoIP_lib_version !is null)
-		log("Loaded GeoIP DLL version " ~ fromStringz(GeoIP_lib_version()));
+	log("Loaded GeoIP2 library (" ~ libName ~ ") version " ~
+	    fromStringz(MMDB_lib_version()) ~ ".");
 
-	gi = GeoIP_open(toStringz(appDir ~ "GeoIP.dat"), GEOIP_MEMORY_CACHE);
-	if (gi is null) {
-		log("Unable to load the GeoIP database, flags will not be shown.");
+	result = MMDB_open(toStringz(appDir ~ dbName), 0, &mmdb);
+	if (result != MMDB_SUCCESS) {
+		log("GeoIP: " ~ to!string(MMDB_strerror(result)));
 		geoIpLib.close();
 	}
 	else {
-		string info = to!string(GeoIP_database_info(gi));
+		time_t build_epoch = cast(time_t)mmdb.metadata.build_epoch;
 
-		log("Loaded GeoIP database: " ~ info);
+		log("Loaded GeoIP2 database: " ~
+		    to!string(mmdb.metadata.database_type) ~ ", " ~
+		    strip(to!string(asctime(gmtime(&build_epoch)))) ~ ".");
+
 		initFlagFiles;
-		if (flagFiles is null || flagFiles.length == 0) {
-			log("No flag data was found.");
-			GeoIP_delete(gi);
-			gi = null;
-			geoIpLib.close();
-		}
-		// This probably isn't needed just for country names.
-		//GeoIP_set_charset(gi, GEOIP_CHARSET_UTF8);
+		geoIpReady = true;
 	}
 
-	return gi && flagFiles;
+	return geoIpReady;
 }
 
 
 ///
-string countryCodeByAddr(in char[] addr)
+GeoInfo getGeoInfo(in char[] addr)
 {
-	if (gi is null)
-		return null;
+	if (!geoIpReady)
+		return GeoInfo(null, null);
 
-	const(char)* code = GeoIP_country_code_by_addr(gi, toStringz(addr));
-	if (code is null) {
-		log("GeoIP: no country found for " ~ addr ~ ".");
-		return null;
+	c_int gai_error = 0, mmdb_error;
+	bool error = false;
+
+	MMDB_lookup_result_s result = MMDB_lookup_string(&mmdb,
+	                                                 toStringz(addr),
+	                                                 &gai_error,
+	                                                 &mmdb_error);
+
+	if (gai_error != 0) {
+		log("GeoIP: " ~ to!string(gai_strerror(gai_error)));
+		error = true;
+	}
+	if (mmdb_error != MMDB_SUCCESS) {
+		log("GeoIP: " ~ to!string(MMDB_strerror(mmdb_error)));
+		error = true;
+	}
+	if (!result.found_entry) {
+		error = true;
+	}
+	if (error) {
+		log("GeoIp: No info for address " ~ addr ~ ".");
+		return GeoInfo(null, null);
 	}
 	else {
-		char[] s = code[0..strlen(code)].dup;
-		assert(s.length == 2);
-		toLowerInPlace(s);
-		return cast(string)s;
-	}
-}
-
-
-///
-string countryNameByAddr(in char[] addr)
-{
-	if (gi is null)
-		return null;
-
-	char* name = GeoIP_country_name_by_addr(gi, toStringz(addr));
-	if (name is null) {
-		log("GeoIP: no country name for " ~ addr ~ ".");
-		return null;
-	}
-	else {
-		return to!string(name);
+		string code = getString(&result.entry, "country".ptr, "iso_code".ptr, null);
+		assert(code.length == 2);
+		string name = getString(&result.entry, "country".ptr, "names".ptr, "en".ptr, null);
+		return GeoInfo(toLower(code), name);
 	}
 }
 
@@ -168,28 +213,37 @@ void disposeFlagImages()
 		if (val)
 			val.dispose;
 
-	if (gi) {
-		GeoIP_delete(gi);
-		gi = null;
+	if (geoIpReady) {
+		MMDB_close(&mmdb);;
 	}
 }
 
 
-struct GeoIP { }
-
-enum /*GeoIPOptions*/ {
-	GEOIP_STANDARD = 0,
-	GEOIP_MEMORY_CACHE = 1,
-	GEOIP_CHECK_CACHE = 2,
-	GEOIP_INDEX_CACHE = 4,
-	GEOIP_MMAP_CACHE = 8,
-}
-
 extern (C) __gshared {
-	GeoIP* function(in char* filename, int flags) GeoIP_open;
-	void function(GeoIP* gi) GeoIP_delete;
-	char* function(GeoIP* gi) GeoIP_database_info;
-	char* function(GeoIP* gi, in char* addr) GeoIP_country_code_by_addr;
-	char* function(GeoIP* gi, in char* addr) GeoIP_country_name_by_addr;
-	char* function() GeoIP_lib_version;
+	c_int function(in char */*const*/ filename, uint32_t flags,
+	               MMDB_s */*const*/ mmdb)
+	    MMDB_open;
+	void function(MMDB_s */*const*/ mmdb) MMDB_close;
+	MMDB_lookup_result_s function(MMDB_s */*const*/ mmdb,
+	                              in char */*const*/ ipstr,
+	                              c_int */*const*/ gai_error,
+	                              c_int */*const*/ mmdb_error)
+	    MMDB_lookup_string;
+	c_int function(MMDB_entry_s */*const*/ start,
+	                     MMDB_entry_data_s */*const*/ entry_data, ...)
+	    MMDB_get_value;
+	c_int function(MMDB_entry_s */*const*/ start,
+	                     MMDB_entry_data_s */*const*/ entry_data,
+	                     va_list va_path)
+	    MMDB_vget_value;
+	c_int function(MMDB_s */*const*/ mmdb,
+	               MMDB_entry_data_list_s **/*const*/ entry_data_list)
+	    MMDB_get_metadata_as_entry_data_list;
+	c_int function(MMDB_entry_s *start, MMDB_entry_data_list_s
+	                               **/*const*/ entry_data_list)
+	    MMDB_get_entry_data_list;
+	void function(MMDB_entry_data_list_s */*const*/ entry_data_list)
+	    MMDB_free_entry_data_list;
+	/*const*/ char *function() MMDB_lib_version;
+	/*const*/ char *function(c_int error_code) MMDB_strerror;
 }

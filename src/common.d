@@ -43,24 +43,8 @@ shared string appDir;  /// Absolute path to where the application is installed.
 shared string dataDir;  /// Absolute path to where settings and data is stored.
 shared string logDir;  /// Absolute path to where the log file is.
 
-shared bool haveGslist;  /// Will be true if gslist was found during startup.
-
-
 enum APPNAME = "Monster Browser";
-
-enum SVN = import("svnversion.txt");
-
-enum FINAL_VERSION = "0.8a";
-
-debug {
-	enum VERSION = __DATE__ ~ " (svnversion " ~ SVN ~ ") *DEBUG BUILD*";
-}
-else {
-	version (Final)
-		enum VERSION = FINAL_VERSION;
-	else
-		enum VERSION = __DATE__ ~  " (svnversion " ~ SVN ~ ")";
-}
+enum FINAL_VERSION = "0.9e";
 
 __gshared Clipboard clipboard;
 __gshared Timer globalTimer;
@@ -79,6 +63,23 @@ __gshared void delegate()[] callAtShutdown;
 
 private {
 	__gshared File logFile;
+}
+
+
+///
+string getVersionString()
+{
+	string revision = strip(import("revision.txt"));
+
+	debug {
+		return __DATE__ ~ " (" ~ revision ~ ") *DEBUG BUILD*";
+	}
+	else {
+		version (Final)
+			return FINAL_VERSION;
+		else
+			return __DATE__ ~  " (" ~ revision ~ ")";
+	}
 }
 
 
@@ -102,8 +103,8 @@ void initLogging(string fileName="LOG.TXT")
 	time_t t = time(null);
 	char[] timestamp = ctime(&t)[0..24];
 	logFile = File(path, "a");
-	logFile.writeln('\n' ~ sep ~ '\n' ~ APPNAME ~ " " ~ VERSION ~
-	                     " started at " ~ timestamp ~ '\n' ~ sep);
+	logFile.writeln('\n' ~ sep ~ '\n' ~ APPNAME ~ " " ~ getVersionString() ~
+	                                  " started at " ~ timestamp ~ '\n' ~ sep);
 }
 
 

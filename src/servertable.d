@@ -88,15 +88,13 @@ class ServerTable
 		table_.addKeyListener(new MyKeyListener);
 
 		coloredNames_ = getSetting("coloredNames") == "true";
-		showFlags_ = (getSetting("showFlags") == "true") && initGeoIp();
+		showFlags_ = initGeoIp() && (getSetting("showFlags") == "true");
 
-		if (showFlags_ || coloredNames_) {
+		if (coloredNames_) {
 			table_.addListener(SWT.EraseItem, new EraseItemListener);
 			table_.addListener(SWT.PaintItem, new PaintItemListener);
 		}
 
-		if (showFlags_)
-			table_.addListener(SWT.MouseMove, new MouseMoveListener);
 
 		Listener sortListener = new SortListener;
 
@@ -297,17 +295,8 @@ class ServerTable
 				indices ~= i;
 		}
 
-		if (indices.length) {
-			table_.setSelection(indices);
-			playerTable.setItems(indices, serverList_);
-			int cvarIndex = table_.getSelectionIndex();
-			cvarTable.setItems(serverList_.getFiltered(cvarIndex).cvars);
-		}
-		else {
-			table_.deselectAll();
-			playerTable.clear();
-			cvarTable.clear();
-		}
+		table_.setSelection(indices);
+		setPlayersAndCvars(indices);
 
 		updateStatusBar();
 	}
@@ -331,15 +320,7 @@ class ServerTable
 			}
 		}
 		table_.setSelection(validIndices);
-		if (validIndices.length > 0) {
-			playerTable.setItems(validIndices, serverList_);
-			int cvarIndex = table_.getSelectionIndex();
-			cvarTable.setItems(serverList_.getFiltered(cvarIndex).cvars);
-		}
-		else {
-			playerTable.clear();
-			cvarTable.clear();
-		}
+		setPlayersAndCvars(validIndices);
 
 		if (takeFocus)
 			table_.setFocus();
@@ -413,9 +394,20 @@ private:
 			assert(index < serverList_.filteredLength);
 			auto sd = serverList_.getFiltered(index);
 
-			// add text
-			for (int i = ServerColumn.COUNTRY + 1; i <= ServerColumn.max; i++)
+			for (int i = ServerColumn.NAME; i <= ServerColumn.max; i++) {
 				item.setText(i, sd.server[i]);
+			}
+
+			string countryCode = sd.server[ServerColumn.COUNTRY];
+			string ip = sd.server[ServerColumn.ADDRESS];
+
+			if (sd.countryName.length)
+				item.setText(ServerColumn.COUNTRY, sd.countryName);
+			else if (countryCode.length)
+				item.setText(ServerColumn.COUNTRY, countryCode);
+
+			if (showFlags_ && countryCode.length)
+				item.setImage(ServerColumn.COUNTRY, getFlagImage(countryCode));
 
 			if (timedOut(&sd)) {
 				item.setText(ServerColumn.PING, "\&infin;");
@@ -436,16 +428,8 @@ private:
 						auto sd = serverList_.getFiltered(i);
 						selectedIps_[sd.server[ServerColumn.ADDRESS]] = i;
 					}
-
-					auto sd =
-					         serverList_.getFiltered(table_.getSelectionIndex);
-					cvarTable.setItems(sd.cvars);
-					playerTable.setItems(indices, serverList_);
 				}
-				else {
-					cvarTable.clear;
-					playerTable.clear;
-				}
+				setPlayersAndCvars(indices);
 			}
 		}
 
@@ -491,7 +475,6 @@ private:
 	class EraseItemListener : Listener {
 		void handleEvent(Event e) {
 			if (e.index == ServerColumn.NAME && coloredNames_ ||
-			                   e.index == ServerColumn.COUNTRY && showFlags_ ||
 			                   e.index == ServerColumn.PASSWORDED)
 				e.detail &= ~SWT.FOREGROUND;
 		}
@@ -500,7 +483,6 @@ private:
 	class PaintItemListener : Listener {
 		void handleEvent(Event e) {
 			if (!((e.index == ServerColumn.NAME && coloredNames_) ||
-					(e.index == ServerColumn.COUNTRY && showFlags_) ||
 					 e.index == ServerColumn.PASSWORDED))
 				return;
 
@@ -511,16 +493,6 @@ private:
 			enum { leftMargin = 2 }
 
 			switch (e.index) {
-				case ServerColumn.COUNTRY:
-					string country = sd.server[ServerColumn.COUNTRY];
-					if (showFlags_ && country.length) {
-						if (Image flag = getFlagImage(country))
-							// could cache the flag Image here
-							e.gc.drawImage(flag, e.x+1, e.y+1);
-						else
-							e.gc.drawString(country, e.x + leftMargin, e.y);
-					}
-					break;
 				case ServerColumn.NAME:
 					auto textX = e.x + leftMargin;
 					if (!(e.detail & SWT.SELECTED)) {
@@ -547,24 +519,6 @@ private:
 				default:
 					assert(0);
 			}
-		}
-	}
-
-	class MouseMoveListener : Listener {
-		void handleEvent(Event event) {
-			string text = null;
-			scope point = new Point(event.x, event.y);
-			TableItem item = table_.getItem(point);
-			if (item && item.getBounds(ServerColumn.COUNTRY).contains(point)) {
-				int i = table_.indexOf(item);
-				ServerData sd = serverList_.getFiltered(i);
-				if (sd.server[ServerColumn.COUNTRY].length) {
-					string ip = sd.server[ServerColumn.ADDRESS];
-					text = countryNameByAddr(ip[0..findChar(ip, ':')]);
-				}
-			}
-			if (table_.getToolTipText() != text)
-				table_.setToolTipText(text);
 		}
 	}
 
@@ -610,7 +564,6 @@ private:
 						// In SWT, it marks all items, and fires the
 						// widgetSelected event, neither of which happens
 						// here.
-						table_.selectAll();
 						onSelectAll();
 						e.doit = false;
 					}
@@ -840,6 +793,7 @@ private:
 
 	void onSelectAll()
 	{
+		table_.selectAll();
 		selectedIps_ = null;
 
 		synchronized (serverList_) {
@@ -850,10 +804,19 @@ private:
 				selectedIps_[sd.server[ServerColumn.ADDRESS]] = i;
 				indices ~= i;
 			}
+			setPlayersAndCvars(indices);
+		}
+	}
 
-			auto sd = serverList_.getFiltered(table_.getSelectionIndex);
+	void setPlayersAndCvars(int[] selectedServers)
+	{
+		playerTable.setItems(selectedServers, serverList_);
+		if (table_.getSelectionCount() == 1) {
+			auto sd = serverList_.getFiltered(table_.getSelectionIndex());
 			cvarTable.setItems(sd.cvars);
-			playerTable.setItems(indices, serverList_);
+		}
+		else {
+			cvarTable.clear();
 		}
 	}
 

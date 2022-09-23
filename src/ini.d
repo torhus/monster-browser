@@ -56,7 +56,11 @@ Differences with Windows' profile (INI) functions:
 /// Portable module for reading and writing _INI files. _ini.d version 0.6
 module ini;
 
-private import std.file, std.string, undead.stream;
+private import core.stdc.string;
+private import std.file;
+private import std.string;
+private import std.windows.charset;
+private import undead.stream;
 
 
 //debug = INI; //show file being parsed
@@ -320,14 +324,14 @@ protected:
 		debug(INI)
 			printf("INI parsing file '%.*s'\n", _file);
 
-		char[] data;
+		string data;
 		int i = -1;
 		IniSection isec;
 		uint lineStartIndex = 0; 
 
 		try
 		{
-			data = cast(char[])std.file.read(_file);
+			data = cast(string)std.file.read(_file);
 			/+
 			File f = new File(_file, FileMode.In);
 			data = f.readString(f.size());
@@ -480,7 +484,12 @@ protected:
 									if(ch2 == secEnd) // ']'
 									{
 										isecs ~= isec;
-										isec = new IniSection(this, cast(string)data[i2 .. i]);
+										version (Windows) {
+											isec = new IniSection(this, ansiToUtf8(data[i2 .. i]));
+										}
+										else {
+											isec = new IniSection(this, data[i2 .. i]);
+										}
 										debug(INI)
 											printf("INI section: '%.*s'\n", isec._name);
 										for(;;)
@@ -554,8 +563,14 @@ protected:
 	
 									void addKey()
 									{
-										ikey.data = cast(string)data[lineStartIndex .. i];
-										ikey._value = cast(string)data[i2 .. i];
+										version (Windows) {
+											ikey.data = ansiToUtf8(data[lineStartIndex .. i]);
+											ikey._value = ansiToUtf8(data[i2 .. i]);
+										}
+										else {
+											ikey.data = data[lineStartIndex .. i];
+											ikey._value = data[i2 .. i];
+										}
 										isec.lines ~= ikey;
 										debug(INI)
 											printf("INI key: '%.*s' = '%.*s'\n", ikey._name, ikey._value);
@@ -709,7 +724,14 @@ public:
 		for(; i != isecs.length; i++)
 		{
 			write_name:
-			f.printf(cast(char[])"%c%.*s%c\r\n", secStart, isecs[i]._name, secEnd);
+			version (Windows) {
+				f.printf(cast(char[])"%c%.*s%c\r\n", secStart,
+				                                       isecs[i]._name, secEnd);
+			}
+			else {
+				f.printf(cast(char[])"%c%.*s%c\r\n", secStart,
+				                           utf8ToAnsi(isecs[i]._name), secEnd);
+			}
 			after_name:
 			isec = isecs[i];
 			for(j = 0; j != isec.lines.length; j++)
@@ -720,7 +742,12 @@ public:
 					if(ikey)
 						ikey.data = ikey._name ~ "=" ~ ikey._value;
 				}
-				f.writeString(isec.lines[j].data);
+				version (Windows) {
+					f.writeString(utf8ToAnsi(isec.lines[j].data));
+				}
+				else {
+					f.writeString(isec.lines[j].data);
+				}
 				f.writeString("\r\n");
 			}
 		}
@@ -818,6 +845,19 @@ public:
 			}
 		}
 	}
+}
+
+
+private string ansiToUtf8(string source)
+{
+	return fromMBSz(toStringz(source));
+}
+
+
+private const(char)[] utf8ToAnsi(in char[] source)
+{
+	const(char)* s = toMBSz(source);
+	return s[0..strlen(s)];
 }
 
 

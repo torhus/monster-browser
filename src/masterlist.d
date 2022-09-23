@@ -6,6 +6,7 @@ import std.array;
 import std.file;
 import std.path;
 import std.stdio;
+import std.uni;
 import Integer = tango.text.convert.Integer;
 import tango.text.xml.DocEntity;
 import tango.text.xml.SaxParser;
@@ -59,7 +60,7 @@ final class MasterList
 	 * Update the data for a server in the master list.
 	 *
 	 * Will update the first server found whose address matches the one of sd.
-	 * The country code will be kept, since it's not suppposed to change.
+	 * The country code and name, and the persistency state, will be kept.
 	 *
 	 * Returns: The server's handle if it was found in the list, or
 	 *          InvalidServerHandle if not.
@@ -73,9 +74,13 @@ final class MasterList
 
 			if (sh != InvalidServerHandle) {
 				ServerData* old = &servers_[sh];
-				// country code is calculated locally, so we keep it
+
+				// some data is be kept between refreshes
 				sd.server[ServerColumn.COUNTRY] =
 				                              old.server[ServerColumn.COUNTRY];
+				sd.countryName = old.countryName;
+				sd.persistent = old.persistent;
+
 				if (timedOut(&sd)) {
 					old.server[ServerColumn.PING] =
 					                              sd.server[ServerColumn.PING];
@@ -441,9 +446,16 @@ private final class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 			else if (attr.localName == "value")
 				cvar[1] = fromEntityCopy(attr.value);
 
-			if (icmp(cvar[0], "g_gametype") == 0)
-				servers[$-1].server[ServerColumn.GAMETYPE] = cvar[1];
-			else if (icmp(cvar[0], "g_needpass") == 0) {
+			if (sicmp(cvar[0], "g_gametype") == 0) {
+				uint ate;
+				int gt = cast(int)Integer.parse(cvar[1], 10, &ate);
+
+				if (ate == cvar[1].length)
+					servers[$-1].numericGameType = gt;
+				else
+					servers[$-1].numericGameType = -1;
+			}
+			else if (sicmp(cvar[0], "g_needpass") == 0) {
 				string s = cvar[1] == "0" ? PASSWORD_NO : PASSWORD_YES;
 				servers[$-1].server[ServerColumn.PASSWORDED] = s;
 			}

@@ -1,5 +1,5 @@
 /**
- * Functions for running qstat and gslist, while capturing their output
+ * Functions for running qstat and capturing its output
  */
 
 module runtools;
@@ -25,6 +25,7 @@ __gshared private ProcessPipes proc;
 __gshared private Object procMutex;
 
 
+/// Thrown if there's an error when communicating with a master server.
 class MasterServerException : Exception {
 	this(string msg) { super(msg); }
 }
@@ -36,12 +37,14 @@ void runtoolsInit()
 }
 
 /**
- * Run qstat or gslist to retrieve a list of servers from the game's master
+ * Run qstat to retrieve a list of servers from the game's master
  * server.
  *
  * Returns: A set containing the IP addresses of the servers.
+ *
+ * Throws: MasterServerException.
  */
-Set!(string) browserGetNewList(in GameConfig game, bool gslist)
+Set!(string) browserGetNewList(in GameConfig game)
 {
 	char[] cmdLine;
 	Set!(string) addresses;
@@ -49,25 +52,14 @@ Set!(string) browserGetNewList(in GameConfig game, bool gslist)
 	version (linux)
 		cmdLine ~= "./";
 
-	if (gslist) {
-		cmdLine ~= "gslist -n quake3 -o 5";
-	}
-	else {
-		cmdLine ~= "qstat";
-		// This has to be the first argument.
-		if (game.qstatConfigFile)
-			cmdLine ~= " -cfg " ~ game.qstatConfigFile;
+	cmdLine ~= "qstat";
+	// This has to be the first argument.
+	if (game.qstatConfigFile)
+		cmdLine ~= " -cfg " ~ game.qstatConfigFile;
 
-		cmdLine ~= " -" ~ game.qstatMasterServerType ~
-		           "," ~ game.protocolVersion ~ ",outfile " ~
-		           game.masterServer ~ ",-";
-	}
-
-	// use gslist's server-sider filtering
-	// Note: gslist returns no servers if filtering on "baseq3"
-	if (gslist && MOD_ONLY && game.mod != "baseq3")
-		cmdLine ~= " -f \"(gametype='" ~ game.mod ~ "')" ~
-		           " AND (protocol=" ~ game.protocolVersion ~ ")\"";
+	cmdLine ~= " -" ~ game.qstatMasterServerType ~
+			   "," ~ game.protocolVersion ~ ",outfile " ~
+			   game.masterServer ~ ",-";
 
 	try {
 		synchronized (procMutex) {
@@ -77,21 +69,18 @@ Set!(string) browserGetNewList(in GameConfig game, bool gslist)
 		}
 	}
 	catch (ProcessException e) {
-		string s = gslist ? "gslist" : "qstat";
-		error(s ~ " not found! Please reinstall " ~ APPNAME ~ ".");
+		error("qstat not found! Please reinstall " ~ APPNAME ~ ".");
 		logx(__FILE__, __LINE__, e);
 	}
 
 	if (proc != ProcessPipes.init && proc.pid.processID >= 0) {
 		try {
-			size_t start = gslist ? 0 : "q3s ".length;
+			size_t start = "q3s ".length;
 			auto lines = proc.stdout.byLine(KeepTerminator.no, newline);
 
-			if (!gslist) {
-				char[] firstLine = lines.front.dup;
-				lines.popFront();
-				throwIfQstatError(firstLine, lines.front, proc.stderr, game);
-			}
+			char[] firstLine = lines.front.dup;
+			lines.popFront();
+			throwIfQstatError(firstLine, lines.front, proc.stderr, game);
 
 			addresses = collectIpAddresses(lines, start);
 		}
@@ -190,22 +179,7 @@ final class MasterListServerRetriever : IServerRetriever
 	///
 	int prepare()
 	{
-		bool error = false;
-
-		try {
-			if (master_.length == 0 && !master_.load(game_.protocolVersion))
-				error = true;
-		}
-		catch (FileException o) {
-			error = true;
-		}
-
-		if (error) {
-			warning("Unable to load the server list from disk, " ~
-			                "press \'Check for New\' to download a new list.");
-		}
-
-		return error ? 0 : master_.length;
+		return master_.length;
 	}
 
 

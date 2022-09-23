@@ -39,7 +39,8 @@ struct GameConfig
 
 	string masterServer() const   /// Like "master3.idsoftware.com".
 	{
-		return section.getValue("masterServer", "master.ioquake3.org");
+		return section.getValue(
+		                       "masterServer", "master.quake3arena.com:27950");
 	}
 
 	string protocolVersion() const  /// Defaults to 68.
@@ -47,9 +48,22 @@ struct GameConfig
 		return section.getValue("protocolVersion", "68");
 	}
 
-	string extraServersFile() const /// Like "baseq3.extra".
+	string[] gameTypes() const ///
 	{
-		return appDir ~ mod ~ ".extra";  // FIXME: check dataDir too?
+		string s = section.getValue("gameTypes");
+
+		if (s is null)
+			return null;
+
+		string[] r = split(strip(s), " ");
+
+		return r[0].length > 0 ? r : r[0..0];
+	}
+
+	string extraServersFile() /// Like "baseq3.extra".
+	{
+		string base = mod.length > 0 ? mod : name;
+		return appDir ~ base ~ ".extra";
 	}
 
 	/**
@@ -88,13 +102,6 @@ struct GameConfig
 		                                                                  null;
 	}
 
-	/// Use gslist instead of qstat when querying master?
-	bool useGslist() const
-	{
-		string r = section["useGslist"];
-		return r ? (r == "true") : false;
-	}
-
 	/// Enable Enemy Territory-style extended color codes (31 colors)?
 	/// Off by default.
 	bool useEtColors() const
@@ -109,7 +116,7 @@ struct GameConfig
 		return section.getValue("qstatConfigFile", null);
 	}
 
-	/// Defaults to "q3m".
+	/// Qstat master server type.
 	string qstatMasterServerType() const
 	{
 		return section.getValue("qstatMasterServerType", "q3m");
@@ -134,24 +141,29 @@ private {
 ;
 ; Available options:
 ;
-; mod     - defaults to being the same as the section name
+; mod     - defaults to being the same as the section name. This is matched
+;           against the game and gamename cvars. Set to empty value (mod=) to
+;           disable filtering.
 ; regKey  - need to set exeName too if using this
 ; exeName - combined with the value found through regKey to form the full path
 ; exePath - Only used if regKey or exeName are missing. If exePath is missing
-;           too, gamePath from the global settings is used instead.
-;           example: exePath=C:\Program Files\My Game\mygame.exe
-; masterServer    - defaults to master.ioquake3.org
+;           too, gamePath from the global settings is used instead. This can be
+;           set a to shortcut (.lnk) or batch file (.bat) to get more
+;           flexibility. In batch files you have to pass MB's arguments to the
+;           executable on explicitly, like this: C:\TheGame\game.exe %*
+; masterServer    - defaults to master.quake3arena.com:27950.
 ; protocolVersion - defaults to 68
+; gameTypes       - List of game type names, seperated by spaces.
 ; etColors - Set to true to enable Enemy Territory-style extended color codes (31 colors).
 ;            See http://wolfwiki.anime.net/index.php/Color_Codes for more information.
 ; qstatMasterServerType - Defaults to q3m.
-; qstatConfigFile - Value to use for Qstat's -cfg parameter.
+; qstatConfigFile - For setting Qstat's -cfg parameter.
 ;
 ; Lines beginning with a ";" are comments.
 
 [Smokin' Guns]
 mod=smokinguns
-regKey=HKEY_LOCAL_MACHINE\SOFTWARE\Smokin' Guns Productions\Smokin' Guns\InstallPath
+regKey=HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Smokin' Guns Productions\Smokin' Guns\InstallPath
 exeName=smokinguns.exe
 exePath=%ProgramFiles%\Smokin' Guns\smokinguns.exe
 masterServer=master.smokin-guns.org
@@ -159,33 +171,57 @@ etColors=true
 
 [World of Padman]
 mod=WorldofPadman
-regKey=HKEY_LOCAL_MACHINE\SOFTWARE\Padworld Entertainment\Path
-exeName=wop.exe
-exePath=%ProgramFiles%\World of Padman 1.5\wop.exe
+regKey=HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Padworld Entertainment\World of Padman 1.6.2\Path
+exeName=wop.x86_64.exe
+exePath=%ProgramFiles%\Padworld Entertainment\World of Padman 1.6.2\wop.x86_64.exe
 masterServer=master.worldofpadman.com:27955
 protocolVersion=71
 qstatMasterServerType=worldofpadmanm
-qstatConfigFile=worldofpadman.cfg
+qstatConfigFile=qstat_mb.cfg
 
-[Urban Terror]
+[Urban Terror 4.3]
 mod=q3ut4
-masterServer=master.urbanterror.net
+exePath=%ProgramFiles%\UrbanTerror43\Quake3-UrT.exe
+masterServer=master.urbanterror.info:27900
+gameTypes=FFA LMS 2 TDM TS FTL C&H CTF Bomb Jump FT Gun
+
+[OpenArena]
+mod=
+exePath=C:\Games\openarena-0.8.8\openarena.exe
+masterServer=dpmaster.deathmask.net:27950
+protocolVersion=71
+gameTypes=FFA 1v1 SP TDM CTF OFC Ovl Harv Elim CTFE LMS DD Dom Pos
 
 [Tremulous]
-mod=base
+mod=
 regKey=HKEY_LOCAL_MACHINE\SOFTWARE\Tremulous\InstallDir
 exeName=tremulous.exe
 exePath=%ProgramFiles%\Tremulous\tremulous.exe
 masterServer=master.tremulous.net:30710
 protocolVersion=69
 
+[Quake III (all servers)]
+mod=
+
 [baseq3]
 
-[osp]
+[OSP]
+gameTypes=FFA 1v1 SP TDM CTF CA
 
-[cpma]
+[CPMA]
+gameTypes=FFA 1v1 DA TDM CTF CA FTAG CTFS 2v2
 
-[InstaUnlagged]
+[Excessive Plus]
+mod=excessiveplus
+gameTypes=FFA 1on1 SP TDM CTF RTF 1FCTF CA FTAG PTL
+
+[DeFRaG]
+
+[Q3Plus]
+gameTypes=FFA 1on1 SP TDM CTF RTF 1FCTF CA FTAG PTL
+
+[Rocket Arena 3]
+mod=arena
 `;
 
 	__gshared Ini settingsIni;
@@ -202,6 +238,7 @@ protocolVersion=69
 	                      {"showFlags", "true"},
 	                      {"simultaneousQueries", "10"},
 	                      {"startWithLastMod", "true"},
+	                      {"startupAction", "1"},
 	                      {"windowMaximized", "false"},
 	                      {"windowSize", "800x568"},
 	                     ];
@@ -275,7 +312,7 @@ void loadGamesFile()
 
 	if (!exists(gamesFileName))
 		writeDefaultGamesFile();
-	else if (!gamesIni && getSessionState("programVersion") < "0.8a")
+	else if (!gamesIni && getSessionState("programVersion") < "0.9e")
 		updateGameConfiguration();
 
 	gamesIni = new Ini(gamesFileName);
@@ -292,8 +329,10 @@ void loadGamesFile()
 	}
 
 	gameNames = null;
-	foreach (sec; gamesIni)
-		gameNames ~= sec.name;
+	foreach (sec; gamesIni) {
+		if (sec.name.length > 0)
+			gameNames ~= sec.name;
+	}
 }
 
 

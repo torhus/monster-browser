@@ -4,6 +4,7 @@ debug import core.thread;
 import core.stdc.ctype;
 import std.conv;
 import std.string;
+import std.uni;
 
 import common;
 import settings;
@@ -13,6 +14,8 @@ import settings;
 struct ServerData {
 	/// server name, with any color codes intact
 	string rawName;
+	/// g_gametype cvar's value, or -1 if missing or invalid.
+	int numericGameType = -1;
 	/// name (without color codes), ping, playercount, map, etc.
 	/// Note: If this is a zero-length array, this object is considered to be
 	/// empty, and can be deleted.
@@ -22,6 +25,8 @@ struct ServerData {
 	string[][] players;
 	/// list of cvars, with key and value for each
 	string[][] cvars;
+
+	string countryName;  ///
 
 	int failCount = 0;  ///
 
@@ -119,9 +124,11 @@ enum TIMEOUT = "9999";
 void setEmpty(ServerData* sd)
 {
 	sd.rawName = null;
+	sd.numericGameType = -1;
 	sd.server  = null;
 	sd.players = null;
 	sd.cvars   = null;
+	sd.countryName = null;
 }
 
 
@@ -142,39 +149,67 @@ bool matchGame(in ServerData* sd, in GameConfig game)
 	if (sd.protocolVersion != game.protocolVersion)
 		return false;
 
-	debug bool gameMatched = false;
+	debug version (matchOnlyGamename)
+		bool gameMatched = false;
 
 	// FIXME: use binary search?
 	foreach (cvar; sd.cvars) {
-		if (cvar[0] == "gamename") {
-			if (icmp(cvar[1], game.mod) == 0) {
-				return true;
-			}
-			else {
-				debug {
-					/* do nothing */
-				}
-				else {
-					break;
-				}
+		version (matchOnlyGamename) {
+			if (cvar[0] == "gamename" && sicmp(cvar[1], game.mod) == 0)
+					return true;
+			if (cvar[0] == "game" && sicmp(cvar[1], game.mod) == 0) {
+				debug
+					gameMatched = true;
+				else
+					return true;
 			}
 		}
-		debug if (cvar[0] == "game" && icmp(cvar[1], game.mod) == 0) {
-			gameMatched = true;
+		else {
+			if (cvar[0] == "game" || cvar[0] == "gamename") {
+				if (sicmp(cvar[1], game.mod) == 0)
+					return true;
+			}
 		}
 	}
 
-	debug if (gameMatched) {
-		log("Skipped (game matched) %s (%s)",
+	debug version (matchOnlyGamename) {
+		if (gameMatched) {
+			log("Skipped (game matched) %s (%s)",
 		        sd.server[ServerColumn.NAME], sd.server[ServerColumn.ADDRESS]);
+		}
 	}
 
 	static if (MOD_ONLY)
-		return false;
+		return game.mod.length == 0 && sd.cvars.length > 0;
 	else
 		return true;
 }
 
+
+/**
+ * Returns the game type name corresponding to the given the numeric type.
+ */
+string getGameTypeName(in GameConfig game, int type)
+{
+	string[] gtypes = game.gameTypes;
+
+	if (type < 0) {
+		return "???";
+	}
+
+	if (gtypes is null) {
+		// Fall back to hardcoded names or Q3 defaults.
+		string[]* t = game.mod in gameTypes;
+		gtypes = t ? *t : defaultGameTypes;
+	}
+
+	if (type < gtypes.length) {
+		return gtypes[type];
+	}
+	else {
+		return to!string(type);
+	}
+}
 
 /// Did this server time out when last queried?
 bool timedOut(in ServerData* sd)
@@ -193,12 +228,10 @@ __gshared string[][string] gameTypes;
 
 
 shared static this() {
+	// Initialize game type mappings.
 	gameTypes["osp"] = split("FFA 1v1 SP TDM CTF CA", " ");
-	gameTypes["q3ut3"] = split("FFA FFA FFA TDM TS FtL C&H CTF B&D", " ");
-	gameTypes["q3ut4"] = split("FFA FFA FFA TDM TS FtL C&H CTF B&D", " ");
 	gameTypes["smokinguns"] = split("FFA Duel 2 TDM RTP BR", " ");
 	gameTypes["westernq3"]  = split("FFA Duel 2 TDM RTP BR", " ");
-	gameTypes["wop"] = split("FFA 1v1 2 SyC LPS TDM 6 SyCT BB", " ");
 	gameTypes["WorldofPadman"] = split("FFA 1v1 2 SyC LPS TDM CtL SyCT BB", " ");
 }
 

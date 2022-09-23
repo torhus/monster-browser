@@ -1,6 +1,8 @@
 This program is written in the Digital Mars D programming language.  It should
 be easy to pick up, due to its similarity to C/C++ and Java.
 
+Some of the dependencies mentioned below are included in this package:
+https://github.com/torhus/monster-browser/files/9473908/monsterbrowser_deps.zip
 
 Useful links
 ------------
@@ -70,16 +72,8 @@ quit      - Print time since startup and then quit, after loading the server
 
 
 -----------
-Two external programs are used, the first one is optional and not included in
-the download:
-http://directory.fsf.org/All_Packages_in_Directory/gslist.html
-http://qstat.org/
-
-Please be aware that gslist is subject to some legal controversy, please read
-this link before redistributing it from a US server:
-http://aluigi.altervista.org/papers.htm#distrust
-
-PathfinderET is also included, as a source of ideas for this project.
+This external tool is required for Monster Browser to operate:
+https://github.com/Unity-Technologies/qstat
 
 
 -torhu at yahoo com

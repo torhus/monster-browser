@@ -33,7 +33,6 @@ import threadmanager;
 struct MasterListCacheEntry
 {
 	MasterList masterList;  ///
-	bool save = true;  ///
 	Set!(string) retryProtocols;  ///
 }
 
@@ -49,7 +48,7 @@ __gshared ServerList[char[]] serverListCache;
  *
  * Takes care of everything, updating the GUI as necessary, querying servers or
  * a master server if there's no pre-existing data for the game, etc.  Most of
- * the work is done in a new thread.
+ * the work is done in the secondary thread.
  */
 void switchToGame(string name)
 {
@@ -58,17 +57,15 @@ void switchToGame(string name)
 	void f() {
 		ServerList serverList;
 		GameConfig game = getGameConfig(gameName);
-		bool gslist = haveGslist && game.useGslist;
-		bool needRefresh;
+		bool firstTime = true;
 
 		// make sure we have a ServerList object
 		if (ServerList* list = gameName in serverListCache) {
 			serverList = *list;
-			needRefresh = !serverList.complete;
+			firstTime = false;
 		}
 		else {
-			string masterName = gslist ? "gslist-" ~ gameName :
-			                                                 game.masterServer;
+			string masterName = game.masterServer;
 			MasterList master;
 
 			// make sure we have a MasterList object
@@ -80,13 +77,22 @@ void switchToGame(string name)
 				auto entry = new MasterListCacheEntry;
 				// see http://d.puremagic.com/issues/show_bug.cgi?id=1860
 				entry.masterList = master;
-				entry.save = !gslist;
 				masterLists[masterName] = entry;
+
+				try {
+					master.load(game.protocolVersion);
+				}
+				catch (FileException e) {
+					error("There was an error reading " ~ master.fileName);
+				}
+				catch (XmlException e) {
+					error("Syntax error in " ~ master.fileName);
+				}
+
 			}
 
 			serverList = new ServerList(gameName, master, game.useEtColors);
 			serverListCache[gameName] = serverList;
-			needRefresh = true;
 
 			// Add servers from the extra servers file, if found.
 			auto file = game.extraServersFile;
@@ -103,45 +109,32 @@ void switchToGame(string name)
 		}
 
 		serverTable.setServerList(serverList);
-		// refill the list, in case servers where removed in the mean time
-		serverTable.serverList.refillFromMaster();
+		if (!firstTime) {
+			// refill the list, in case servers where removed in the mean time
+			serverTable.serverList.refillFromMaster();
+		}
 		serverTable.clear();
 
-		if (needRefresh) {
-			if (arguments.fromfile)
+		if (serverList.complete) {
+			serverTable.forgetSelection();
+			serverTable.fullRefresh();
+			statusBar.setLeft("Ready");
+		}
+		else {
+			string startupAction = getSetting("startupAction");
+
+			if (startupAction == "0" || arguments.fromfile)
 				threadManager.run(&loadSavedList);
-			else if (gslist)
+			else if (startupAction == "2")
 				threadManager.run(&checkForNewServers);
 			else {
-				// try to refresh if we can, otherwise get a new list
-				MasterList master = serverList.master;
-				bool canRefresh = master.length > 0;
-				if (!canRefresh) {
-					try {
-						canRefresh = master.load(game.protocolVersion)
-						                                  && master.length > 0;
-					}
-					catch (FileException e) {
-						error("There was an error reading " ~ master.fileName
-						                    ~ "\nPress OK to get a new list.");
-					}
-					catch (XmlException e) {
-						error("Syntax error in " ~ master.fileName
-						                    ~ "\nPress OK to get a new list.");
-					}
-				}
-
-				if (canRefresh)
+				if (serverList.master.length > 0)
 					threadManager.run(&refreshAll);
 				else
 					threadManager.run(&checkForNewServers);
 			}
 		}
-		else {
-			serverTable.forgetSelection();
-			serverTable.fullRefresh();
-			statusBar.setLeft("Ready");
-		}
+
 	}
 
 	gameName = name;
@@ -163,19 +156,11 @@ void loadSavedList()
 	GC.collect();
 
 	GameConfig game = getGameConfig(serverList.gameName);
-	if (exists(dataDir ~ master.fileName)) {
-		auto retriever = new MasterListServerRetriever(game, master);
-		auto contr = new ServerRetrievalController(retriever);
-		contr.disableQueue();
-		Display.getDefault().syncExec(dgRunnable({
-			statusBar.setLeft("Loading saved server list...");
-		}));
-		contr.run();
-	}
-	else {
-		statusBar.setLeft(
-		                "Unable to find a file for this game's master server");
-	}
+	auto retriever = new MasterListServerRetriever(game, master);
+	auto contr = new ServerRetrievalController(retriever);
+	contr.disableQueue();
+	contr.progressLabel = "Loading saved server list...";
+	contr.run();
 }
 
 
@@ -256,7 +241,8 @@ void refreshAll()
 	}
 
 	log("Refreshing server list for " ~ game.name ~ "...");
-	log("Found %s servers.", addresses.length);
+	log("%s servers to refresh, %s to retry.", addresses.length,
+	                                                        addresses2.length);
 
 	// merge in the extra servers
 	Set!(string) extraServers = serverList.extraServers;
@@ -315,12 +301,8 @@ void checkForNewServers()
 {
 	ServerList serverList = serverTable.serverList;
 
-	if (serverList.master.length > 0) {
-		log("Checking for new servers for " ~ serverList.gameName ~ "...");
-	}
-	else {
-		log("Getting new server list for " ~ serverList.gameName ~ "...");
-	}
+	log("Checking for new servers for " ~ serverList.gameName ~ "...");
+
 	Display.getDefault().syncExec(dgRunnable({
 		serverTable.notifyRefreshStarted((bool) {
 			threadManager.abort = true;
@@ -332,9 +314,7 @@ void checkForNewServers()
 	try {
 		MasterList master = serverList.master;
 		GameConfig game = getGameConfig(serverList.gameName);
-		bool gslist = haveGslist && game.useGslist;
-		string masterName = gslist ? "master" :
-		                             split(game.masterServer, ":")[0];
+		string masterName = split(game.masterServer, ":")[0];
 		Set!(string) addresses;
 		bool serverError = false;
 
@@ -343,7 +323,7 @@ void checkForNewServers()
 		}));
 		
 		try {
-			addresses = browserGetNewList(game, gslist);
+			addresses = browserGetNewList(game);
 		}
 		catch (MasterServerException e) {
 			Display.getDefault().syncExec(dgRunnable( {
