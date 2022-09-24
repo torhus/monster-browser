@@ -160,15 +160,11 @@ ColoredName parseColors(in char[] s, bool useEtColors=false)
 
 
 unittest {
-	printf("colorednames.parseColors unit test starting...\n");
-
 	assert(parseColors("mon^1S^7ter").cleanName == "monSter");
 	assert(parseColors("^wwhite^0black").cleanName == "whiteblack");
 	assert(parseColors("1a2b3c4^").cleanName == "1a2b3c4");
 	assert(parseColors("^^0blackie").cleanName == "^blackie");
 	assert(parseColors("^1").cleanName == "UnnamedPlayer");
-
-	printf("colorednames.parseColors unit test succeeded.\n");
 }
 
 
