@@ -6,62 +6,31 @@ copyright "Copyright © 2022, torhu"
 #dependency "dwt" version="~>1.0.5"
 dependency "dwt" path="dwt-master"
 targetName "MonsterBrowser"
+targetType "executable"
 lflags "/rc:misc\\dwt.res" "/rc:misc\\mb.res" platform="x86_omf"
 lflags "misc\\dwt.res" "misc\\mb.res" platform="x86_mscoff"
 buildRequirements "silenceWarnings" "silenceDeprecations"
-importPaths "src"
+mainSourceFile "src/main.d"
 excludedSourceFiles "src/monitor.d"
 stringImportPaths "." "flags" "icons"
 preBuildCommands "git rev-parse --abbrev-ref HEAD > revision.txt" \
                  "git describe --always --dirty >> revision.txt"
 
-buildType "debug" {
-	buildOptions "debugMode" "debugInfo"
+configuration "console" {
+	versions "console"
 	lflags "/subsystem:console:4" platform="x86_omf"
 	lflags "/subsystem:console,5.01" platform="x86_mscoff"
-	versions "console"
 }
 
-buildType "debug-gui" {
-	buildOptions "debugMode" "debugInfo"
+configuration "windows" {
 	lflags "/subsystem:windows:4" platform="x86_omf"
 	lflags "/subsystem:windows,5.01" platform="x86_mscoff"
 	lflags "/entry:mainCRTStartup" platform="x86_mscoff"
 }
 
-buildType "release" {
-	buildOptions "releaseMode" "optimize" "inline"
-	lflags "/subsystem:windows:4" platform="x86_omf"
-	lflags "/subsystem:windows,5.01" platform="x86_mscoff"
-	lflags "/entry:mainCRTStartup" platform="x86_mscoff"
-}
-
-buildType "release-console" {
-	buildOptions "releaseMode" "optimize" "inline"
-	lflags "/subsystem:console:4" platform="x86_omf"
-	lflags "/subsystem:console,5.01" platform="x86_mscoff"
-	versions "console"
-}
-
-buildType "release-final" {
-	buildOptions "releaseMode" "optimize" "inline"
-	lflags "/subsystem:windows:4" platform="x86_omf"
-	lflags "/subsystem:windows,5.01" platform="x86_mscoff"
-	lflags "/entry:mainCRTStartup" platform="x86_mscoff"
+configuration "final" {
 	versions "Final"
-}
-
-# This build gets an access vioation during startup, not sure why.
-buildType "profile" {
-	buildOptions "profile" "optimize" "releaseMode"
-	lflags "/subsystem:console:4" platform="x86_omf"
-	lflags "/subsystem:console,5.01" platform="x86_mscoff"
-	versions "console"
-}
-
-# This also creates docs for DWT. Need a way to exclude that, but
-# excludedSourceFiles doesn't seem to for work for dependencies.
-buildType "docs" {
-	buildOptions "syntaxOnly"
-	dflags "-c" "-Dddocs"
+	lflags "/subsystem:windows:4" platform="x86_omf"
+	lflags "/subsystem:windows,5.01" platform="x86_mscoff"
+	lflags "/entry:mainCRTStartup" platform="x86_mscoff"
 }
