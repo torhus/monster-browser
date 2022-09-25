@@ -379,9 +379,7 @@ class SettingsDialog
 		sqSpinner_ = new Spinner(sqComposite, DWT.BORDER);
 		sqSpinner_.setMinimum(1);
 		sqSpinner_.setMaximum(99);
-		uint ate;
-		int val = Integer.convert(getSetting("simultaneousQueries"), 10, &ate);
-		sqSpinner_.setSelection(ate > 0 ? val : 10);
+		sqSpinner_.setSelection(getSettingInt("simultaneousQueries"));
 
 		// game configuration
 		Button gamesButton = new Button(mainComposite, DWT.PUSH);

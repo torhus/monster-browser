@@ -476,8 +476,7 @@ class FilterBar : Group
 		});
 
 		// Restore saved filter state
-		Filter state = cast(Filter)Integer.convert(
-		                                       getSessionState("filterState"));
+		Filter state = cast(Filter)getSessionStateInt("filterState");
 		if (state & Filter.NOT_EMPTY)
 			notEmptyButton_.setSelection(true);
 		if (state & Filter.HAS_HUMANS)
