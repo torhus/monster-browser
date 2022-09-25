@@ -419,17 +419,21 @@ void saveSettings()
 
 /**
  * Returns the setting's value, or a default if not set.
- *
- * Will assert in debug mode if a non-existent key is given.
  */
 string getSetting(in char[] key)
 {
-	assert(settingsIni && settingsIni.sections.length > 0);
-	IniSection sec = settingsIni["Settings"];
+	return getSetting("Settings", key);
+}
 
-	assert(sec[key], key ~ " not found.\n\n" ~
-	                  "All settings need to have a default.");
-	return sec[key];
+
+/**
+ * Returns the setting's value, or a default if not set.
+ *
+ * Throws: IllegalArgumentException if the value is not an int.
+ */
+int getSettingInt(in char[] key)
+{
+	return getSettingInt("Settings", defaults, key);
 }
 
 
@@ -440,11 +444,7 @@ string getSetting(in char[] key)
  */
 void setSetting(string key, string value)
 {
-	assert(settingsIni && settingsIni.sections.length > 0);
-	IniSection sec = settingsIni["Settings"];
-
-	assert(sec[key]);
-	sec[key] = value;
+	setSetting("Settings", key, value);
 }
 
 
@@ -520,16 +520,10 @@ private void loadSessionState()
 
 /**
  * Returns the setting's value, or a default if not set.
- *
- * Will assert in debug mode if a non-existent key is given.
  */
 string getSessionState(in char[] key)
 {
-	IniSection sec = settingsIni.section("Session");
-	assert(sec !is null);
-	assert(sec[key], key ~ " not found.\n\n" ~
-	                  "All settings need to have a default.");
-	return sec[key];
+	return getSetting("Session", key);
 }
 
 
@@ -540,13 +534,19 @@ string getSessionState(in char[] key)
  */
 void setSessionState(in char[] key, string value)
 {
-	assert(settingsIni && settingsIni.sections.length > 0);
-	IniSection sec = settingsIni.section("Session");
-
-	assert(sec[key]);
-	sec[key] = value;
+	setSetting("Session", key, value);
 }
 
+
+/**
+ * Returns the setting's value, or a default if not set.
+ *
+ * Throws: IllegalArgumentException if the value is not an int.
+ */
+int getSessionStateInt(in char[] key)
+{
+	return getSettingInt("Session", defaultSessionState, key);
+}
 
 /**
  *
@@ -586,6 +586,54 @@ private string autodetectQuake3Path()
 		assert(0, "autodetectQuake3Path");
 	}
 }
+
+
+private string getDefault(in Setting[] defaults, in char[] key)
+{
+	foreach (s; defaults)
+	{
+		if (s.name == key)
+			return s.value;
+	}
+	assert(0);
+	return null;
+}
+
+
+private string getSetting(in char[] section, in char[] key)
+{
+	assert(settingsIni && settingsIni.sections.length > 0);
+	IniSection sec = settingsIni[section];
+
+	assert(sec !is null);
+	assert(sec[key], key ~ " not found in section " ~ section ~ ".\n\n" ~
+	                  "All settings need to have a default.");
+	return sec[key];
+}
+
+
+private int getSettingInt(in char[] section, in Setting[] defaults,
+                                                                 in char[] key)
+{
+	try {
+		return to!int(getSetting(section, key));
+	}
+	catch (ConvException e)
+	{
+		return to!int(getDefault(defaults, key));
+	}
+}
+
+
+private void setSetting(in char[] section, in char[] key, string value)
+{
+	assert(settingsIni && settingsIni.sections.length > 0);
+	IniSection sec = settingsIni[section];
+
+	assert(sec[key]);
+	sec[key] = value;
+}
+
 
 /**
  * Get the default program files directory, or an educated guess if not
