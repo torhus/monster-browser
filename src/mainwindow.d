@@ -4,8 +4,8 @@ module mainwindow;
 
 import std.algorithm : max;
 import std.conv;
+import std.regex;
 import std.string;
-import Integer = tango.text.convert.Integer;
 
 import java.io.ByteArrayInputStream;
 import java.lang.Runnable;
@@ -73,11 +73,9 @@ class MainWindow
 		shell_.addShellListener(new MyShellListener);
 
 		// restore window size and state
-		string size = getSetting("windowSize");
-		int x = indexOf(size, 'x');
-		if (x != -1)
-			shell_.setSize(cast(int)Integer.convert(size[0..x]),
-			               cast(int)Integer.convert(size[x+1..$]));
+		if (auto m = getSetting("windowSize").matchFirst(r"^(\d+)x(\d+)$"))
+			shell_.setSize(to!int(m[1]), to!int(m[2]));
+
 		if (getSetting("windowMaximized") == "true")
 			shell_.setMaximized(true);
 

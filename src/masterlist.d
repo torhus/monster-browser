@@ -3,11 +3,11 @@ module masterlist;
 import core.memory;
 import lib.phobosfixes; // DMD 2.052's icmp is broken.
 import std.array;
+import std.conv;
 import std.file;
 import std.path;
 import std.stdio;
 import std.uni;
-import Integer = tango.text.convert.Integer;
 import tango.text.xml.DocEntity;
 import tango.text.xml.SaxParser;
 
@@ -422,7 +422,7 @@ private final class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 			else if (attr.localName == "persistent")
 				sd.persistent = attr.value == "true";
 			else if (attr.localName == "fail_count")
-				sd.failCount = cast(int)Integer.convert(attr.value);
+				sd.failCount = toIntOrDefault(attr.value);
 		}
 
 		// Make sure there's a protocol version.  This makes it less likely the
@@ -447,13 +447,7 @@ private final class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 				cvar[1] = fromEntityCopy(attr.value);
 
 			if (sicmp(cvar[0], "g_gametype") == 0) {
-				uint ate;
-				int gt = cast(int)Integer.parse(cvar[1], 10, &ate);
-
-				if (ate == cvar[1].length)
-					servers[$-1].numericGameType = gt;
-				else
-					servers[$-1].numericGameType = -1;
+				servers[$-1].numericGameType = toIntOrDefault(cvar[1], -1);
 			}
 			else if (sicmp(cvar[0], "g_needpass") == 0) {
 				string s = cvar[1] == "0" ? PASSWORD_NO : PASSWORD_YES;

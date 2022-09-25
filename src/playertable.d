@@ -1,7 +1,7 @@
 module playertable;
 
+import std.conv;
 import std.string;
-import Integer = tango.text.convert.Integer;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MenuDetectEvent;
@@ -77,7 +77,6 @@ class PlayerTable
 				void handleEvent(Event e) {
 					if (e.index != PlayerColumn.NAME)
 						return;
-
 					TableItem item = cast(TableItem) e.item;
 					string[] data = players_[table_.indexOf(item)].data;
 					scope tl = new TextLayout(Display.getDefault);
@@ -123,12 +122,17 @@ class PlayerTable
 		}
 
 		// restore sort order from previous session
-		string s = getSessionState("playerSortOrder");
-		uint ate;
-		int sortCol = cast(int)Integer.convert(s, 10, &ate);
-		bool reversed = (s.length > ate && s[ate] == 'r');
-		if (sortCol >= playerHeaders.length)
-			sortCol = 0;
+		int sortCol = 0;
+		bool reversed = false;
+		try {
+			string s = getSessionState("playerSortOrder");
+			sortCol = parse!int(s);
+			reversed = s.startsWith('r');
+			if (sortCol >= playerHeaders.length)
+				sortCol = 0;
+		}
+		catch (ConvException) { }
+
 		table_.setSortColumn(table_.getColumn(sortCol));
 		table_.setSortDirection(reversed ? SWT.DOWN : SWT.UP);
 
@@ -262,8 +266,8 @@ private:
 			int result;
 
 			if (numerical) {
-				result = cast(int)Integer.parse(a.data[sortCol]) -
-				         cast(int)Integer.parse(b.data[sortCol]);
+				result = toIntOrDefault(a.data[sortCol]) -
+				         toIntOrDefault(b.data[sortCol]);
 			}
 			else {
 				result = icmp(a.data[sortCol], b.data[sortCol]);

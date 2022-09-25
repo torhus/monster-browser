@@ -21,13 +21,12 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 import core.thread;
+import std.algorithm;
 import std.conv;
 import std.socket;
 import std.string;
 version (Windows)
 	import core.sys.windows.winsock2;
-import tango.core.Array;
-import Integer = tango.text.convert.Integer;
 
 import colorednames;
 import common;
@@ -134,7 +133,9 @@ class RconWindow
 	private void storeCommand(string cmd)
 	{
 		// add cmd at the end, or move it there if already present
-		if (remove(history_, cmd) == history_.length)
+		if (history_.remove!(x => x == cmd).length < history_.length)
+			history_[$-1] = cmd;
+		else
 			history_ ~= cmd;
 		position_ = history_.length;
 	}

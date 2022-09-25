@@ -7,7 +7,6 @@ import std.datetime.systime;
 import std.file;
 import std.socket;
 import std.string;
-import Integer = tango.text.convert.Integer;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;

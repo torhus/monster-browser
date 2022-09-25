@@ -4,15 +4,15 @@ import core.thread;
 import core.stdc.ctype;
 import core.stdc.string;
 import core.stdc.time;
+import std.algorithm;
 import std.ascii : newline;
+import std.conv;
 import std.file;
 import std.range;
+import std.regex;
 import std.stdio;
 import std.string;
 import std.traits;
-import tango.core.Array;
-import Integer = tango.text.convert.Integer;
-import tango.text.Util : delimiters;
 
 import java.lang.wrappers;
 import org.eclipse.swt.SWT;
@@ -270,23 +270,16 @@ int findString(in char[][][] array, in char[] str, int column)
  *     numerical  = Set to true to get a numerical sort instead of an
  *                  alphabetical one.
  */
-void sortStringArray(string[][] arr, int column=0, bool reverse=false,
-                                                          bool numerical=false)
+void sortStringArray(string[][] arr, int column=0, bool reverse=false)
 {
 	bool less(in char[][] a, in char[][] b)
 	{
-		int result;
-
-		if (numerical)
-			result = cast(int)Integer.parse(a[column]) -
-			         cast(int)Integer.parse(b[column]);
-		else
-			result = icmp(a[column], b[column]);
+		int result = icmp(a[column], b[column]);
 
 		return reverse ? result >= 0 : result < 0;
 	}
 
-	sort(arr, &less);
+	arr.sort!(less);
 }
 
 
@@ -341,6 +334,19 @@ void mergeSort(T)(T[] a, bool delegate(T a, T b) lessOrEqual)
 
 
 /**
+ * Returns s as an int, or defaultVal if s did not parse as an int.
+ */
+int toIntOrDefault(in char[] s, int defaultVal=0)
+{
+	try {
+		return to!int(s);
+	}
+	catch (ConvException) {
+		return defaultVal;
+	}
+}
+
+/**
  * Parse a sequence of integers, separated by any combination of commas,
  * spaces, or tabs.
  *
@@ -350,14 +356,10 @@ void mergeSort(T)(T[] a, bool delegate(T a, T b) lessOrEqual)
  */
 int[] parseIntList(in char[] str, size_t forcedLength=0, int defaultVal=0)
 {
-	int[] r = null;
-
-	foreach (s; delimiters(str, cast(const(char[]))", \t")) {
-		if (s.length > 0) {
-			int val = cast(int)Integer.parse(s);
-			r ~= val;
-		}
-	}
+	int[] r = str.splitter(regex(r"[, \t]"))
+	             .filter!(x => x.length)
+	             .map!(x => x.toIntOrDefault(defaultVal))
+	             .array();
 
 	if (forcedLength != 0 && r.length != forcedLength) {
 		size_t oldLen = r.length;

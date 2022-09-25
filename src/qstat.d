@@ -9,7 +9,6 @@ import std.conv;
 import std.process;
 import std.stdio;
 import std.string;
-import Integer = tango.text.convert.Integer;
 
 import colorednames;
 import common;
@@ -95,18 +94,20 @@ bool parseOutput(in char[] modName, File input,
 				sd.players = parsePlayers(input, &humans, outfile);
 
 				// 'Players' column contents
-				uint ate;
-				int total = cast(int)Integer.parse(fields[Field.PLAYER_COUNT], 10, &ate);
-
-				if (ate < fields[Field.PLAYER_COUNT].length)
+				int total = 0;
+				try {
+					total = to!int(fields[Field.PLAYER_COUNT]);
+				}
+				catch (ConvException) {
 					invalidInteger(sd.rawName, fields[Field.PLAYER_COUNT]);
+				}
 
 				int bots = total - humans;
 				if (bots < 0)
 					bots = 0;
 
 				sd.setPlayersColumn(humans, bots,
-				                  cast(int)Integer.convert(fields[Field.MAX_PLAYERS]));
+				                    toIntOrDefault(fields[Field.MAX_PLAYERS]));
 
 				sd.server[ServerColumn.NAME] = stripColorCodes(sd.rawName);
 
@@ -169,12 +170,11 @@ body {
 
 		switch (cvar[0]) {
 			case "gametype":
-				uint ate;
-				int gt = cast(int)Integer.parse(cvar[1], 10, &ate);
-				if (ate == cvar[1].length) {
-					sd.numericGameType = gt;
+				try {
+					sd.numericGameType = to!int(cvar[1]);
 				}
-				else {
+				catch (ConvException)
+				{
 					invalidInteger(sd.rawName, cvar[1]);
 					sd.numericGameType = -1;
 				}

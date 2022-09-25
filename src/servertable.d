@@ -5,7 +5,6 @@ import std.ascii : newline;
 import std.conv;
 import std.math;
 import std.string;
-import Integer = tango.text.convert.Integer;
 
 import java.io.ByteArrayInputStream;
 import org.eclipse.swt.SWT;
@@ -104,12 +103,18 @@ class ServerTable
 		}
 
 		// restore sort order from previous session
-		string s = getSessionState("serverSortOrder");
-		uint ate;
-		int sortCol = cast(int)Integer.convert(s, 10, &ate);
-		bool reversed = (s.length > ate && s[ate] == 'r');
-		if (sortCol >= serverHeaders.length)
-			sortCol = 0;
+		int sortCol = 0;
+		bool reversed = false;
+		try {
+			string s = getSessionState("serverSortOrder");
+			sortCol = parse!int(s);
+			reversed = s.startsWith('r');
+			if (sortCol >= serverHeaders.length)
+				sortCol = 0;
+
+		}
+		catch (ConvException) { }
+
 		table_.setSortColumn(table_.getColumn(sortCol));
 		table_.setSortDirection(reversed ? SWT.DOWN : SWT.UP);
 

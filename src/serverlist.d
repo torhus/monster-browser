@@ -6,8 +6,6 @@ import std.algorithm;
 import std.conv;
 import std.string;
 
-import Integer = tango.text.convert.Integer;
-
 import common;
 import geoip;
 import masterlist;
@@ -477,8 +475,8 @@ private:
 				break;
 
 			case ServerColumn.PING:
-				result = cast(int)Integer.parse(a.server[ServerColumn.PING]) -
-				         cast(int)Integer.parse(b.server[ServerColumn.PING]);
+				result = toIntOrDefault(a.server[ServerColumn.PING]) -
+				         toIntOrDefault(b.server[ServerColumn.PING]);
 				break;
 
 			default:
