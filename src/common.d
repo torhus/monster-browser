@@ -181,52 +181,11 @@ void copyToClipboard(string s)
  *
  * No garbage at the beginning or end of the string is allowed.
  */
-/*bool isValidIpAddress(in char[] address)
+bool isValidIpAddress(in char[] address)
 {
-	__gshared Regex re = null;
-	if (re is null)
-		re = Regex(r"(\d{1,3}\.){3}\d{1,3}(:\d{1,5})?");
+	__gshared auto re = ctRegex!(r"^(\d{1,3}\.){3}\d{1,3}(:\d{1,5})?$");
 
-	return re.test(address) && (re.match(0).length == address.length);
-}*/
-
-// workaround, see http://dsource.org/projects/tango/ticket/956
-bool isValidIpAddress(const(char)[] address)
-{
-	uint skipDigits(ref const(char)[] s, uint maxDigits=uint.max) {
-		size_t i = 0;
-		while (i < s.length && isdigit(s[i]) && i < maxDigits)
-			i++;
-		s = s[i..$];
-		return i;
-	}
-
-	for (int i=0; i < 3; i++) {
-		if (address.length == 0 || !isdigit(address[0]))
-			return false;
-		if (skipDigits(address, 3) == 0)
-			return false;
-		if (address.length == 0 || address[0] != '.')
-			return false;
-		address = address[1..$];
-	}
-
-	if (address.length == 0 || !isdigit(address[0]))
-		return false;
-	if (skipDigits(address, 3) == 0)
-		return false;
-
-	if (address.length == 0)
-		return true;
-
-	if (address[0] == ':' && address.length >= 2) {
-		address = address[1..$];
-		if (isdigit(address[0]) && skipDigits(address) <= 5 &&
-		                                                   address.length == 0)
-			return true;
-	}
-
-	return false;
+	return !!matchFirst(address, re);
 }
 
 
