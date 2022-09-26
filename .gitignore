@@ -1,6 +1,5 @@
 # Monster Browser build dependencies
-dwt
-res
+dwt-master
 
 # Monster Browser runtime dependencies
 qstat.exe
@@ -8,16 +7,18 @@ GeoLite2-Country.mmdb
 libmaxminddb.dll
 
 # Files and directories created by build tools, etc
-build
+.dub
+.vscode
 docs
 Debug
+dub.selections.json
 MonsterBrowser.exe
-MonsterBrowser.exe_cv
-MonsterBrowser.obj
 MonsterBrowser.pdb
 MonsterBrowser.map
+MonsterBrowser.sln
 *.suo
 revision.txt
+unittest.ini
 
 # Files created by Monster Browser when running
 mods.ini
