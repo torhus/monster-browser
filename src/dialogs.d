@@ -263,22 +263,40 @@ class SpecifyServerDialog
 			shell_.setEnabled(false);
 
 			result_ = SWT.OK;
-			string input = strip(addressText_.getText());
-			string address = null;
+			string address;
 
 			try {
 				// Parse the address using the default Quake 3 port, 27960, as
 				// the default.
-				address = getAddress(input, 27960)[0].toString();
+				string ipOrHost = strip(addressText_.getText());
+				ushort port = 27960;
+				int colon = lastIndexOf(ipOrHost, ':');
+
+				if (colon != -1) {
+					port = to!ushort(ipOrHost[colon+1..$]);
+					ipOrHost = ipOrHost[0..colon];
+				}
+				log("User adding server: %s port: %s", ipOrHost, port);
+
+				if (ipOrHost.length) {
+					address = getAddress(ipOrHost, port)[0].toString();
+					log("getAddress returned: %s", address);
+				}
+			}
+			catch (ConvException e) {
+				error(e.msg);
 			}
 			catch (SocketOSException e) {
-				error(e.toString());
+				error(e.msg);
+			}
+
+
+			if (address.length == 0) {
 				shell_.setEnabled(true);
 				addressText_.setFocus();
 				addressText_.selectAll();
 			}
-
-			if (address && input.length) {
+			else {
 				ServerList serverList = serverTable.serverList;
 				MasterList master = serverList.master;
 				ServerHandle sh = master.findServer(address);
