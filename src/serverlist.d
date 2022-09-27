@@ -91,10 +91,9 @@ final class ServerList
 		GameConfig game = getGameConfig(gameName_);
 		typeof(ipHash_) newHash;
 
-		synchronized (this)
-		synchronized (master_)
-		foreach (sh; master_) {
 		filteredList.length = 0;
+
+		synchronized (this) synchronized (master_) foreach (sh; master_) {
 			ServerData sd = master_.getServerData(sh);
 			string address = sd.server[ServerColumn.ADDRESS];
 
