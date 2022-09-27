@@ -304,30 +304,29 @@ private:
 	Filter filters_ = Filter.NONE;
 
 
-	// invariant + synchronized doesn't work with dmd on linux
-	// see http://d.puremagic.com/issues/show_bug.cgi?id=235
-	version (Windows) invariant()
+	invariant()
 	{
 		synchronized (this) {
-			/*if (filteredList.length > list.length) {
-				log("filteredlist.length == %s\nlist.length == %s",
-				                             filteredList.length, list.length);
-				assert(0, "Details in log file.");
-			}*/
-			/*if (!(filters_ || filteredList.length == list.length ||
-			                       filteredList.length == (list.length - 1))) {
-				log("ServerList invariant broken!"
-				    "\nfilters_ & Filter.HAS_HUMANS: %s"
-				    "\nfilters_ & Filter.NOT_EMPTY: %s"
-				    "\nlist.length: %s"
+			if (filteredList.length > ipHash_.length) {
+				log("filteredlist.length == %s\nipHash_.length == %s",
+				                   filteredList.length, ipHash_.length);
+				assert(0);
+			}
+			if (!(filters_ || filteredList.length == ipHash_.length ||
+			              (filteredList.length + 1) == ipHash_.length)) {
+				log("ServerList invariant broken!" ~
+				    "\nfilters_ & Filter.HAS_HUMANS: %s" ~
+				    "\nfilters_ & Filter.NOT_EMPTY: %s" ~
+				    "\nipHash_.length: %s" ~
 				    "\nfilteredList.length: %s",
 				    filters_ & Filter.HAS_HUMANS,
 				    filters_ & Filter.NOT_EMPTY,
-				    list.length, filteredList.length));
-				assert(0, "Details in log file.");
-			}*/
+				    ipHash_.length, filteredList.length);
+				assert(0);
+			}
 		}
 	}
+
 
 	/**
 	* Add or replace a server in the list.
