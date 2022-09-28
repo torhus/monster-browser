@@ -5,6 +5,7 @@ copyright "Copyright © 2022, torhu"
 
 #dependency "dwt" version="~>1.0.5"
 dependency "dwt" path="dwt-master"
+dependency "undead" version="~>1.1.7"
 targetName "MonsterBrowser"
 targetType "executable"
 lflags "/rc:misc\\dwt.res" "/rc:misc\\mb.res" platform="x86_omf"
