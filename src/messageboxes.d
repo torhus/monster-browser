@@ -4,9 +4,9 @@
 
 module messageboxes;
 
+import std.format;
 import std.string;
 import std.utf;
-import undead.doformat;
 
 import java.lang.Runnable;
 import org.eclipse.swt.SWT;
@@ -43,17 +43,17 @@ void messageBox(string msg, string title, int style)
 }
 
 
-void _messageBox(string title, int style)(...)
+private template _messageBox(string title, int style)
 {
-	char[] msg;
-	void f(dchar c) { encode(msg, c); }
-	doFormat(&f, _arguments, _argptr);
-	messageBox(cast(string)msg, title, style);
+	void _messageBox(T...)(T args)
+	{
+		messageBox(format(args), title, style);
+	}
 }
 
 /**
  * Displays message boxes with preset titles and icons.
- * Does formatting, the argument list is (...)
+ * Does formatting, the argument list is (...).
  */
 alias _messageBox!(APPNAME, SWT.ICON_INFORMATION) info;
 alias _messageBox!("Warning", SWT.ICON_WARNING) warning;  /// ditto
@@ -61,14 +61,9 @@ alias _messageBox!("Error", SWT.ICON_ERROR) error;        /// ditto
 
 
 /// Display a debug message in a dialog box.
-void db(...)
+void db(T...)(T args)
 {
-	debug {
-		char[] msg;
-		void f(dchar c) { encode(msg, c); }
-		doFormat(&f, _arguments, _argptr);
-		messageBox(cast(string)msg, "Debug", SWT.NONE);
-	}
+	debug messageBox(format(args), "Debug", SWT.NONE);
 }
 
 
