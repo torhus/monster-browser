@@ -10,6 +10,8 @@ import std.conv;
 import std.file;
 import std.stdio;
 import std.string;
+
+import dxml.parser : XMLParsingException;
 import tango.text.xml.PullParser : XmlException;
 
 import java.lang.Runnable;
@@ -118,8 +120,9 @@ void switchToGame(string name, bool configChanged=false)
 				catch (FileException e) {
 					error("There was an error reading " ~ master.fileName);
 				}
-				catch (XmlException e) {
+				catch (XMLParsingException e) {
 					error("Syntax error in " ~ master.fileName);
+					logx(__FILE__, __LINE__, e);
 				}
 
 			}
