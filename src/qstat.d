@@ -160,7 +160,7 @@ body {
 	string[] temp = split(line, FIELDSEP);
 
 	foreach (string s; temp) {
-		int i = indexOf(s, '=');
+		ptrdiff_t i = indexOf(s, '=');
 		if (i == -1)
 			continue;
 

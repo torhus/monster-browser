@@ -257,7 +257,7 @@ class ServerTable
 				needRefresh = true;
 		}
 
-		table_.setItemCount(serverList_.filteredLength);
+		table_.setItemCount(cast(int)serverList_.filteredLength);
 
 		// Only refill the Table if visible items, or items further up have
 		// moved.  Refilling every time is very slow.
@@ -289,7 +289,7 @@ class ServerTable
 		if(table_.isDisposed())
 			return;
 
-		table_.setItemCount(serverList_.filteredLength);
+		table_.setItemCount(cast(int)serverList_.filteredLength);
 		table_.clearAll();
 
 		int[] indices;
@@ -350,8 +350,8 @@ class ServerTable
 
 		int itemCount = table_.getItemCount();
 		assert(itemCount == serverList_.filteredLength || itemCount == 0);
-		statusBar.setDefaultStatus(serverList_.totalLength, itemCount, 0,
-		                                       countHumanPlayers(serverList_));
+		statusBar.setDefaultStatus(cast(uint)serverList_.totalLength,
+		                         itemCount, 0, countHumanPlayers(serverList_));
 	}
 
 	/// Empty the server, player, and cvar tables.
@@ -467,7 +467,7 @@ private:
 
 			table_.setSortDirection(dir);
 			synchronized (serverList_) {
-				table_.setItemCount(serverList_.filteredLength());
+				table_.setItemCount(cast(int)serverList_.filteredLength());
 				table_.clearAll();
 				// keep the same servers selected
 				foreach (ip, v; selectedIps_)
@@ -806,8 +806,8 @@ private:
 
 			for (size_t i=0; i < serverList_.filteredLength; i++) {
 				auto sd = serverList_.getFiltered(i);
-				selectedIps_[sd.server[ServerColumn.ADDRESS]] = i;
-				indices ~= i;
+				selectedIps_[sd.server[ServerColumn.ADDRESS]] = cast(int)i;
+				indices ~= cast(int)i;
 			}
 			setPlayersAndCvars(indices);
 		}

@@ -1,10 +1,11 @@
 module serverlist;
 
 import core.stdc.string : memmove;
-import lib.phobosfixes; // upperBound, icmp
+import lib.phobosfixes; // upperBound
 import std.algorithm;
 import std.conv;
 import std.string;
+import std.uni : sicmp;
 
 import common;
 import geoip;
@@ -118,7 +119,7 @@ final class ServerList
 	 *
 	 * Complexity is O(1).
 	 */
-	ServerData getFiltered(int i)
+	ServerData getFiltered(size_t i)
 	{
 		synchronized (this) {
 			assert(i >= 0 && i < filteredList.length);
@@ -478,7 +479,7 @@ private:
 				break;
 
 			default:
-				result = lib.phobosfixes.icmp(a.server[sortColumn_], b.server[sortColumn_]);
+				result = sicmp(a.server[sortColumn_], b.server[sortColumn_]);
 		}
 
 		return (reversed_ ? -result : result);
@@ -568,7 +569,7 @@ int countHumanPlayers(ServerList serverList)
 {
 	int players = 0;
 	synchronized (serverList) {
-		int max = serverList.filteredLength;
+		auto max = serverList.filteredLength;
 		for (int i=0; i < max; i++)
 			players += serverList.getFiltered(i).humanCount;
 	}

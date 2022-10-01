@@ -58,7 +58,7 @@ struct ServerData {
 	int botCount() const
 	{
 		string s = server[ServerColumn.PLAYERS];
-		int plus = indexOf(s, '+');
+		ptrdiff_t plus = indexOf(s, '+');
 
 		if (plus != -1) {
 			string t = s[plus+1 .. $];
@@ -72,7 +72,7 @@ struct ServerData {
 	int maxClients() const
 	{
 		string s = server[ServerColumn.PLAYERS];
-		int slash = indexOf(s, '/');
+		ptrdiff_t slash = indexOf(s, '/');
 
 		if (slash != -1) {
 			string t = s[slash+1 .. $];
@@ -97,7 +97,7 @@ struct ServerData {
 	bool hasBots() const
 	{
 		string s = server[ServerColumn.PLAYERS];
-		int plus = indexOf(s, '+');
+		ptrdiff_t plus = indexOf(s, '+');
 		if (plus != -1)
 			return ((plus + 1) < s.length) && (s[plus+1] != '0');
 		return false;

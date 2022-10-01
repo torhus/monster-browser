@@ -67,7 +67,7 @@ private import undead.stream;
 
 
 debug(INI)
-	private import std.cstream;
+	private import std.stdio;
 
 
 private class IniLine
@@ -75,7 +75,7 @@ private class IniLine
 	~this()
 	{
 		debug(PRINT_DTORS)
-			printf("~IniLine\n");
+			writeLine("~IniLine");
 	}
 	
 	
@@ -103,7 +103,7 @@ protected:
 	~this()
 	{
 		debug(PRINT_DTORS)
-			printf("~IniKey '%.*s'\n", _name);
+			writefln("~IniKey '%s'", _name);
 	}
 
 
@@ -142,7 +142,7 @@ protected:
 	~this()
 	{
 		debug(PRINT_DTORS)
-			printf("~IniSection '%.*s'\n", _name);
+			writefln("~IniSection '%s'", _name);
 	}
 
 
@@ -322,7 +322,7 @@ protected:
 	void parse()
 	{
 		debug(INI)
-			printf("INI parsing file '%.*s'\n", _file);
+			writefln("INI parsing file '%s'", _file);
 
 		string data;
 		int i = -1;
@@ -341,13 +341,13 @@ protected:
 		catch(Throwable o)
 		{
 			debug(INI)
-				std.cstream.dout.writeString("INI no file to parse\n");
+				writeln("INI no file to parse");
 			return;
 		}
 		if(!data.length)
 		{
 			debug(INI)
-				std.cstream.dout.writeString("INI nothing to parse\n");
+				writeln("INI nothing to parse");
 			return;
 		}
 
@@ -379,7 +379,7 @@ protected:
 			IniLine iline = new IniLine;
 			iline.data = cast(string)data[lineStartIndex .. i];
 			debug(INI)
-				printf("INI line: '%.*s'\n", std.string.replace(std.string.replace(std.string.replace(iline.data, "\\", "\\\\"), "\r", "\\r"), "\n", "\\n"));
+				writefln("INI line: '%s'", std.string.replace(std.string.replace(std.string.replace(iline.data, "\\", "\\\\"), "\r", "\\r"), "\n", "\\n"));
 			isec.lines ~= iline;
 		}
 
@@ -415,8 +415,10 @@ protected:
 					isecs ~= isec;
 					if(!isecs[0].lines)
 						isecs = isecs[1 .. isecs.length];
-					debug(INI)
-						std.cstream.dout.writeString("INI done parsing\n\n");
+					debug(INI) {
+						writeln("INI done parsing");
+						writeln();
+					}
 					return;
 
 				case ' ':
@@ -491,7 +493,7 @@ protected:
 											isec = new IniSection(this, data[i2 .. i]);
 										}
 										debug(INI)
-											printf("INI section: '%.*s'\n", isec._name);
+											writefln("INI section: '%s'", isec._name);
 										for(;;)
 										{
 											ch2 = getc();
@@ -573,7 +575,7 @@ protected:
 										}
 										isec.lines ~= ikey;
 										debug(INI)
-											printf("INI key: '%.*s' = '%.*s'\n", ikey._name, ikey._value);
+											writefln("INI key: '%s' = '%s'", ikey._name, ikey._value);
 									}
 									
 									
@@ -619,7 +621,7 @@ protected:
 	void firstOpen(in char[] file)
 	{
 		//null terminated just to make it easier for the implementation
-		_file = toStringz(file)[0 .. file.length].idup;
+		_file = toStringz(file)[0 .. file.length];
 		parse();
 	}
 
@@ -645,7 +647,7 @@ public:
 	~this()
 	{
 		debug(PRINT_DTORS)
-			printf("~Ini '%.*s'\n", _file);
+			writefln("~Ini '%s'", _file);
 		
 		// The reason this is commented is explained above.
 		/+
@@ -725,12 +727,11 @@ public:
 		{
 			write_name:
 			version (Windows) {
-				f.printf(cast(char[])"%c%.*s%c\r\n", secStart,
-				                           utf8ToAnsi(isecs[i]._name), secEnd);
+				f.writefln("%s%s%s",
+				                 secStart, utf8ToAnsi(isecs[i]._name), secEnd);
 			}
 			else {
-				f.printf(cast(char[])"%c%.*s%c\r\n", secStart,
-				                                       isecs[i]._name, secEnd);
+				f.writefln("%s%s%s", secStart, isecs[i]._name, secEnd);
 			}
 			after_name:
 			isec = isecs[i];
@@ -743,12 +744,11 @@ public:
 						ikey.data = ikey._name ~ "=" ~ ikey._value;
 				}
 				version (Windows) {
-					f.writeString(utf8ToAnsi(isec.lines[j].data));
+					f.writeLine(utf8ToAnsi(isec.lines[j].data));
 				}
 				else {
-					f.writeString(isec.lines[j].data);
+					f.writeLine(isec.lines[j].data);
 				}
-				f.writeString("\r\n");
 			}
 		}
 	}

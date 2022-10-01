@@ -289,7 +289,7 @@ class RconWindow
 		Text inputText_;
 		Rcon rcon_;
 		string[] history_;
-		int position_ = 0;  // index into history_
+		ptrdiff_t position_ = 0;  // index into history_
 
 		__gshared Font fixedWidthFont;  /// A monospaced font.
 	}
@@ -388,7 +388,7 @@ private class Rcon
 	{
 		ushort port;
 
-		int colon = addr.lastIndexOf(':');
+		ptrdiff_t colon = addr.lastIndexOf(':');
 		if (colon == -1 || addr.length < colon + 2) {
 			log("Missing port number for " ~ addr ~ ", using PORT_ANY");
 			db("Missing port number for " ~ addr);

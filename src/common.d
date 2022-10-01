@@ -363,7 +363,7 @@ int[] getColumnWidths(Table table)
  *
  * Returns: A set of strings containing the IP and port of each server.
  */
-Set!(string) collectIpAddresses(R)(R strings, uint startColumn=0)
+Set!(string) collectIpAddresses(R)(R strings, size_t startColumn=0)
 	if (isInputRange!R && isSomeString!(ElementType!R))
 {
 	Set!(string) addresses;
@@ -385,7 +385,7 @@ Set!(string) collectIpAddresses(R)(R strings, uint startColumn=0)
  *
  * Throws StdioException.
  */
-Set!(string) collectIpAddresses(File stream, uint startColumn=0)
+Set!(string) collectIpAddresses(File stream, size_t startColumn=0)
 {
 	return collectIpAddresses(
 			                    stream.byLine(KeepTerminator.no, newline), startColumn);

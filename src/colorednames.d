@@ -128,13 +128,13 @@ ColoredName parseColors(in char[] s, bool useEtColors=false)
 		if (s[i] == '^' && (i == s.length-1 || s[i+1] != '^')) {
 			// terminate the previous range
 			if (name.ranges.length)
-				name.ranges[$-1].end = name.cleanName.length - 1;
+				name.ranges[$-1].end = cast(int)(name.cleanName.length - 1);
 			if (i == s.length-1)
 				break;
 
 			i++;
 
-			range.start = name.cleanName.length;
+			range.start = cast(int)name.cleanName.length;
 
 			/* The method of getting the index is straight from quake3 1.32b's
 			 * q_shared.h.
@@ -150,7 +150,7 @@ ColoredName parseColors(in char[] s, bool useEtColors=false)
 
 	// terminate the last range
 	if (name.ranges.length)
-		name.ranges[$-1].end = name.cleanName.length - 1;
+		name.ranges[$-1].end = cast(int)(name.cleanName.length - 1);
 
 	if (name.cleanName.length == 0)
 		name.cleanName = Q3_DEFAULT_NAME;

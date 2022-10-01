@@ -8,8 +8,9 @@ dependency "dwt" path="dwt-master"
 dependency "undead" version="~>1.1.7"
 targetName "MonsterBrowser"
 targetType "executable"
-lflags "/rc:misc\\dwt.res" "/rc:misc\\mb.res" platform="x86_omf"
-lflags "misc\\dwt.res" "misc\\mb.res" platform="x86_mscoff"
+lflags "/rc:misc\\mb.res" platform="x86_omf"
+lflags "misc\\mb.res" platform="x86_mscoff"
+lflags "misc\\mb.res" platform="windows-x86_64"
 buildRequirements "silenceWarnings" "silenceDeprecations"
 mainSourceFile "src/main.d"
 excludedSourceFiles "src/monitor.d"
@@ -21,12 +22,15 @@ configuration "console" {
 	versions "console"
 	lflags "/subsystem:console:4" platform="x86_omf"
 	lflags "/subsystem:console,5.01" platform="x86_mscoff"
+	lflags "/subsystem:console,5.02" platform="windows-x86_64"
 }
 
 configuration "windows" {
 	lflags "/subsystem:windows:4" platform="x86_omf"
 	lflags "/subsystem:windows,5.01" platform="x86_mscoff"
 	lflags "/entry:mainCRTStartup" platform="x86_mscoff"
+	lflags "/subsystem:windows,5.02" platform="windows-x86_64"
+	lflags "/entry:mainCRTStartup" platform="windows-x86_64"
 }
 
 configuration "final" {
@@ -34,4 +38,6 @@ configuration "final" {
 	lflags "/subsystem:windows:4" platform="x86_omf"
 	lflags "/subsystem:windows,5.01" platform="x86_mscoff"
 	lflags "/entry:mainCRTStartup" platform="x86_mscoff"
+	lflags "/subsystem:windows,5.02" platform="windows-x86_64"
+	lflags "/entry:mainCRTStartup" platform="windows-x86_64"
 }

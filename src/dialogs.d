@@ -270,7 +270,7 @@ class SpecifyServerDialog
 				// the default.
 				string ipOrHost = strip(addressText_.getText());
 				ushort port = 27960;
-				int colon = lastIndexOf(ipOrHost, ':');
+				ptrdiff_t colon = lastIndexOf(ipOrHost, ':');
 
 				if (colon != -1) {
 					port = to!ushort(ipOrHost[colon+1..$]);

@@ -261,8 +261,8 @@ void refreshAll()
 	GC.collect();
 
 	if (addresses.length || addresses2.length) {
-		auto updater = new StatusBarUpdater(addresses.length +
-		                                    addresses2.length);
+		auto updater = new StatusBarUpdater(cast(int)(addresses.length +
+		                                               addresses2.length));
 		if (addresses.length) {
 			auto retriever = new QstatServerRetriever(game.name, master,
 			                                                  addresses, true);
@@ -397,8 +397,8 @@ void checkForNewServers()
 			}));
 		}
 		else {
-			auto updater = new StatusBarUpdater(addresses.length +
-			                                    addresses2.length);
+			auto updater = new StatusBarUpdater(cast(int)(addresses.length +
+			                                              addresses2.length));
 
 			masterLists[master.name].retryProtocols.add(game.protocolVersion);
 

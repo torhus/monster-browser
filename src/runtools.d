@@ -179,7 +179,7 @@ final class MasterListServerRetriever : IServerRetriever
 	///
 	int prepare()
 	{
-		return master_.length;
+		return cast(int)master_.length;
 	}
 
 
@@ -269,7 +269,7 @@ final class QstatServerRetriever : IServerRetriever
 			return 0;
 		}
 
-		return addresses_.length;
+		return cast(int)addresses_.length;
 	}
 
 

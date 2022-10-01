@@ -14,7 +14,7 @@ import std.utf;  // for decode
 Range upperBound(alias pred = "a < b", Range, V)(Range r, V value)
 	if (isRandomAccessRange!(Range))
 {
-	auto first = 0;
+	size_t first = 0;
 	size_t count = r.length;
 	while (count > 0)
 	{
@@ -30,24 +30,6 @@ Range upperBound(alias pred = "a < b", Range, V)(Range r, V value)
 	return r[first .. r.length];
 }
 
-
-// From DMD 2.046, as the 2.052 version seems to be broken.
-int icmp(in char[] s1, in char[] s2)
-{
-	size_t i1, i2;
-	for (;;)
-	{
-		if (i1 == s1.length) return i2 - s2.length;
-		if (i2 == s2.length) return s1.length - i1;
-		auto c1 = std.utf.decode(s1, i1),
-			c2 = std.utf.decode(s2, i2);
-		if (c1 >= 'A' && c1 <= 'Z')
-			c1 += cast(int)'a' - cast(int)'A';
-		if (c2 >= 'A' && c2 <= 'Z')
-			c2 += cast(int)'a' - cast(int)'A';
-		if (c1 != c2) return cast(int) c1 - cast(int) c2;
-	}
-}
 
 // From DMD 2.046, as the 2.052 version in std.array seems to be broken.
 string join(in string[] words, string sep)

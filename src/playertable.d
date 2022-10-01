@@ -190,7 +190,7 @@ class PlayerTable
 		addCleanPlayerNames();
 
 		sort();
-		table_.setItemCount(players_.length);
+		table_.setItemCount(cast(int)players_.length);
 		table_.clearAll();
 	}
 
