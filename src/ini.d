@@ -726,11 +726,11 @@ public:
 			write_name:
 			version (Windows) {
 				f.printf(cast(char[])"%c%.*s%c\r\n", secStart,
-				                                       isecs[i]._name, secEnd);
+				                           utf8ToAnsi(isecs[i]._name), secEnd);
 			}
 			else {
 				f.printf(cast(char[])"%c%.*s%c\r\n", secStart,
-				                           utf8ToAnsi(isecs[i]._name), secEnd);
+				                                       isecs[i]._name, secEnd);
 			}
 			after_name:
 			isec = isecs[i];
