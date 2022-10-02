@@ -89,28 +89,7 @@ final class ServerList
 	 */
 	void refillFromMaster()
 	{
-		GameConfig game = getGameConfig(gameName_);
-		typeof(ipHash_) newHash;
-
-		filteredList.length = 0;
-
-		synchronized (this) synchronized (master_) foreach (sh; master_) {
-			ServerData sd = master_.getServerData(sh);
-			string address = sd.server[ServerColumn.ADDRESS];
-
-			if (address in ipHash_ && matchGame(&sd, game)) {
-				newHash[address] = -1;
-				sd.server[ServerColumn.GAMETYPE] =
-				                     getGameTypeName(game, sd.numericGameType);
-				if (!isFilteredOut(&sd))
-					filteredList ~= sh;
-			}
-		}
-
-		ipHash_ = newHash;
-		ipHashValid_ = false;
-		isSorted_ = false;
-		_sort();
+		refill();
 	}
 
 
@@ -247,19 +226,15 @@ final class ServerList
 
 	/**
 	 * Sets filters and updates the filtered list accordingly.
-	 *
-	 * If autoRefill is true, calls refillFromMaster if the new filters differ
-	 * from the old.
 	 */
-	void setFilters(Filter newFilters, bool autoRefill=true)
+	void setFilters(Filter newFilters)
 	{
 		if (newFilters == filters_)
 			return;
 
 		synchronized (this) {
 			filters_ = newFilters;
-			if (autoRefill)
-				refillFromMaster();
+			refill();
 		}
 	}
 
@@ -447,6 +422,35 @@ private:
 			}
 		}
 	}
+
+
+	/// This is private to avoid triggering the invariant.
+	void refill()
+	{
+		GameConfig game = getGameConfig(gameName_);
+		typeof(ipHash_) newHash;
+
+		filteredList.length = 0;
+
+		synchronized (this) synchronized (master_) foreach (sh; master_) {
+			ServerData sd = master_.getServerData(sh);
+			string address = sd.server[ServerColumn.ADDRESS];
+
+			if (address in ipHash_ && matchGame(&sd, game)) {
+				newHash[address] = -1;
+				sd.server[ServerColumn.GAMETYPE] =
+				                     getGameTypeName(game, sd.numericGameType);
+				if (!isFilteredOut(&sd))
+					filteredList ~= sh;
+			}
+		}
+
+		ipHash_ = newHash;
+		ipHashValid_ = false;
+		isSorted_ = false;
+		_sort();
+	}
+
 
 	/**
 	 * Compares two ServerData instances according to the current sort order.

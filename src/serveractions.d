@@ -109,10 +109,6 @@ void switchToGame(string name)
 		}
 
 		serverTable.setServerList(serverList);
-		if (!firstTime) {
-			// refill the list, in case servers where removed in the mean time
-			serverTable.serverList.refillFromMaster();
-		}
 		serverTable.clear();
 
 		if (serverList.complete) {

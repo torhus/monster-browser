@@ -185,7 +185,7 @@ class ServerTable
 		synchronized (serverList_) {
 			bool reversed = table_.getSortDirection() == SWT.DOWN;
 			serverList_.sort(sortCol, reversed, false);
-			serverList_.setFilters(filterBar.filterState, false);
+			serverList_.setFilters(filterBar.filterState);
 		}
 	}
 
