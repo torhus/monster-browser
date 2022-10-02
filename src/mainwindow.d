@@ -583,7 +583,7 @@ class FilterBar : Group
 		}
 
 		setSetting("lastMod", lastSelectedGame_);
-		setSessionState("filterState", to!string(filterState));
+		setSessionState("filterState", to!string(cast(int)filterState));
 	}
 
 
