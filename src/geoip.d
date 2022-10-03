@@ -51,12 +51,7 @@ private string getString(MMDB_entry_s* start, ...)
 	MMDB_entry_data_s entry_data;
 	va_list args;
 
-version (X86) {
 	va_start(args, start);
-}
-else {
-	assert(0);
-}
 	scope (exit) va_end(args);
 
 	c_int result = MMDB_vget_value(start, &entry_data, args);
