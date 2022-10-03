@@ -22,10 +22,6 @@ irc://irc.freenode.org/D
 DUB for building:
 https://github.com/dlang/dub
 
-DSSS, needed for building the project on Linux:
-http://dsource.org/projects/dsss
-Version 0.75 is known to work.
-
 
 Libraries used
 --------------
@@ -47,13 +43,14 @@ dub build --arch=x86
 
 Building on Linux
 -----------------
-FIXME
+dub build
+Should probably use the 4.7 branch of DWT, the master branch has some
+dependencies that are hard to find nowadays.
 
 
 Version IDs
 -----------
 allservers - For benchmarking: don't filter servers on mod.
-build      - Used by the bud and dsss/rebuild build tools.
 Final      - Use the real version number for release builds
              (common.FINAL_VERSION).
 console    - Enable console output.  Logging will be done both to the console

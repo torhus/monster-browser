@@ -18,7 +18,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
-import colorednames : disposeNameColors;
+import colorednames;
 import common;
 import mainwindow;
 import messageboxes;
@@ -117,7 +117,9 @@ private void _main(string[] args)
 	mainWindow.open();
 
 	serverTable.getTable.setFocus();
+
 	runtoolsInit();
+	initNameColors();
 	
 	if (settings.gameNames.length == 0)
 		error("No valid game configurations were found.");

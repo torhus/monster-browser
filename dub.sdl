@@ -14,6 +14,7 @@ lflags "misc\\mb.res" platform="windows-x86_64"
 buildRequirements "silenceWarnings" "silenceDeprecations"
 mainSourceFile "src/main.d"
 excludedSourceFiles "src/monitor.d"
+excludedSourceFiles "src/mswindows/*" "src/tango/sys/win32/*" platform="linux"
 stringImportPaths "." "flags" "icons"
 preBuildCommands "git rev-parse --abbrev-ref HEAD > revision.txt" \
                  "git describe --always --dirty >> revision.txt"
@@ -41,3 +42,30 @@ configuration "final" {
 	lflags "/subsystem:windows,5.02" platform="windows-x86_64"
 	lflags "/entry:mainCRTStartup" platform="windows-x86_64"
 }
+
+libs "atk-1.0" \
+     "cairo" \
+     "dl" \
+     "fontconfig" \
+     "gdk-x11-2.0" \
+     "gdk_pixbuf-2.0" \
+     "gio-2.0" \
+     "glib-2.0" \
+     "gmodule-2.0" \
+     "gobject-2.0" \
+     "gthread-2.0" \
+     "gtk-x11-2.0" \
+     "pango-1.0" \
+     "pangocairo-1.0" \
+     "X11" \
+     "Xcomposite" \
+     "Xcursor" \
+     "Xdamage" \
+     "Xext" \
+     "Xfixes" \
+     "Xi" \
+     "Xinerama" \
+     "Xrandr" \
+     "Xrender" \
+     "Xtst" \
+     platform="linux"

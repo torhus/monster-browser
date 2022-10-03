@@ -12,6 +12,7 @@ libmaxminddb.dll
 docs
 Debug
 dub.selections.json
+MonsterBrowser
 MonsterBrowser.exe
 MonsterBrowser.pdb
 MonsterBrowser.map

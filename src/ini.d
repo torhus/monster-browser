@@ -848,16 +848,18 @@ public:
 }
 
 
-private string ansiToUtf8(string source)
-{
-	return fromMBSz(toStringz(source));
-}
+version (Windows) {
+    private string ansiToUtf8(string source)
+    {
+	    return fromMBSz(toStringz(source));
+    }
 
 
-private const(char)[] utf8ToAnsi(in char[] source)
-{
-	const(char)* s = toMBSz(source);
-	return s[0..strlen(s)];
+    private const(char)[] utf8ToAnsi(in char[] source)
+    {
+	    const(char)* s = toMBSz(source);
+	    return s[0..strlen(s)];
+    }
 }
 
 
