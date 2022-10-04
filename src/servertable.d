@@ -74,7 +74,7 @@ class ServerTable
 		                                             serverHeaders.length, 50);
 
 		// add columns
-		foreach (int i, header; serverHeaders) {
+		foreach (i, header; serverHeaders) {
 			TableColumn column = new TableColumn(table_, SWT.NONE);
 			column.setText(header);
 			column.setWidth(widths[i]);

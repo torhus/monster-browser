@@ -156,7 +156,7 @@ in {
 	assert(ServerColumn.GAMETYPE < sd.server.length &&
 	                               ServerColumn.PASSWORDED < sd.server.length);
 }
-body {
+do {
 	string[] temp = split(line, FIELDSEP);
 
 	foreach (string s; temp) {

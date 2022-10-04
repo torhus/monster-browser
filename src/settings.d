@@ -596,7 +596,6 @@ private string getDefault(in Setting[] defaults, in char[] key)
 			return s.value;
 	}
 	assert(0);
-	return null;
 }
 
 

@@ -72,7 +72,7 @@ bool initGeoIp()
 {
 	version (Win32)
 		string libName = "libmaxminddb.dll";
-	version (Win64)
+	else version (Win64)
 		string libName = "maxminddb.dll";
 	else
 		string libName = "libmaxminddb.so.0";
@@ -215,7 +215,7 @@ void disposeFlagImages()
 			val.dispose;
 
 	if (geoIpReady) {
-		MMDB_close(&mmdb);;
+		MMDB_close(&mmdb);
 	}
 }
 

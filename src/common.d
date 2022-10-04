@@ -198,9 +198,9 @@ bool isValidIpAddress(in char[] address)
  */
 int findString(in char[][] array, in char[] str)
 {
-	foreach (int i, s; array) {
+	foreach (i, s; array) {
 		if (icmp(str, s) == 0)
-			return i;
+			return cast(int)i;
 	}
 	return -1;
 }
@@ -212,9 +212,9 @@ int findString(in char[][] array, in char[] str)
  */
 int findString(in char[][][] array, in char[] str, int column)
 {
-	foreach (int i, const(char[][]) s; array) {
+	foreach (i, s; array) {
 		if (icmp(str, s[column]) == 0)
-			return i;
+			return cast(int)i;
 	}
 	return -1;
 }

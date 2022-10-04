@@ -50,7 +50,7 @@ class PlayerTable
 		                                             playerHeaders.length, 50);
 
 		// add columns
-		foreach (int i, header; playerHeaders) {
+		foreach (i, header; playerHeaders) {
 			TableColumn column = new TableColumn(table_, SWT.NONE);
 			column.setText(header);
 			column.setWidth(widths[i]);

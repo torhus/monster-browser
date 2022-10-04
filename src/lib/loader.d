@@ -191,7 +191,7 @@ version(Windows)
     {
         assert(null !is moduleName);
     }
-    body
+    do
     {
         HXModule hmod = cast(HXModule)LoadLibraryA(toStringz(moduleName));
 
@@ -208,7 +208,7 @@ version(Windows)
     {
         assert(null !is hModule);
     }
-    body
+    do
     {
         return ExeModule_Load_(ExeModule_GetPath_(hModule));
     }
@@ -218,7 +218,7 @@ version(Windows)
     {
         assert(null !is hModule);
     }
-    body
+    do
     {
         if(!FreeLibrary(cast(HModule_)hModule))
         {
@@ -232,7 +232,7 @@ version(Windows)
     {
         assert(null !is hModule);
     }
-    body
+    do
     {
         void    *symbol = GetProcAddress(cast(HModule_)hModule, toStringz(symbolName));
 
@@ -313,7 +313,7 @@ else version(Posix)
     {
         assert(null !is moduleName);
     }
-    body
+    do
     {
 	ExeModuleInfo*   mi_p = moduleName in s_modules;
 	ExeModuleInfo   mi = mi_p is null ? null : *mi_p;
@@ -357,7 +357,7 @@ else version(Posix)
         assert(null !is s_modules[mi.m_name]);
         assert(mi is s_modules[mi.m_name]);
     }
-    body
+    do
     {
         ExeModuleInfo   mi = cast(ExeModuleInfo)hModule;
 
@@ -385,7 +385,7 @@ else version(Posix)
         assert(null !is s_modules[mi.m_name]);
         assert(mi is s_modules[mi.m_name]);
     }
-    body
+    do
     {
         ExeModuleInfo   mi      =   cast(ExeModuleInfo)hModule;
 
@@ -398,7 +398,6 @@ else version(Posix)
                 record_error_();
             }
             s_modules.remove(name);
-            delete mi;
         }
 
         hModule = null;
@@ -417,7 +416,7 @@ else version(Posix)
         assert(null !is s_modules[mi.m_name]);
         assert(mi is s_modules[mi.m_name]);
     }
-    body
+    do
     {
         ExeModuleInfo   mi      =   cast(ExeModuleInfo)hModule;
         void *symbol = dlsym(mi.m_hmod, toStringz(symbolName));
@@ -448,7 +447,7 @@ else version(Posix)
         assert(null !is s_modules[mi.m_name]);
         assert(mi is s_modules[mi.m_name]);
     }
-    body
+    do
     {
         ExeModuleInfo   mi = cast(ExeModuleInfo)hModule;
 
@@ -501,7 +500,7 @@ public:
     {
         assert(null !is hModule);
     }
-    body
+    do
     {
         if(bTakeOwnership)
         {
@@ -530,7 +529,7 @@ public:
     {
         assert(null !is moduleName);
     }
-    body
+    do
     {
 	version (Windows)
 	{

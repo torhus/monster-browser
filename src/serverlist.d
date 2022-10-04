@@ -42,7 +42,7 @@ final class ServerList
 		assert(gameName.length > 0);
 		assert(master !is null);
 	}
-	body {
+	do {
 		gameName_ = gameName;
 		master_ = master;
 		useEtColors_ = useEtColors;
@@ -547,9 +547,9 @@ private:
 			foreach (ref val; ipHash_)
 				val = -1;
 		}
-		foreach (int i, sh; filteredList) {
+		foreach (i, sh; filteredList) {
 			ServerData sd = master_.getServerData(sh);
-			ipHash_[sd.server[ServerColumn.ADDRESS]] = i;
+			ipHash_[sd.server[ServerColumn.ADDRESS]] = cast(int)i;
 		}
 		ipHashValid_ = true;
 	}
