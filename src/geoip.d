@@ -70,8 +70,14 @@ private string getString(MMDB_entry_s* start, ...)
 ///
 bool initGeoIp()
 {
+	version (Win32)
+		string libName = "libmaxminddb.dll";
+	version (Win64)
+		string libName = "maxminddb.dll";
+	else
+		string libName = "libmaxminddb.so.0";
+
 	static bool firstTime = true;
-	string libName = "libmaxminddb.dll";
 	string dbName = "GeoLite2-Country.mmdb";
 	ExeModule geoIpLib;
 	c_int result;
