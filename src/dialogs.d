@@ -41,10 +41,10 @@ import servertable;
 import settings;
 
 
-template Tuple(E...) { alias E Tuple; }
+template Tuple(E...) { alias Tuple = E; }
 
 /// Default Windows button size.
-alias Tuple!(75, 23) BUTTON_SIZE;
+alias BUTTON_SIZE = Tuple!(75, 23);
 
 /// Default Windows button spacing.
 const BUTTON_SPACING = 6;
@@ -173,7 +173,7 @@ private:
 				savePassword = saveButton_.getSelection();
 			shell_.close();
 		}
-	};
+	}
 }
 
 

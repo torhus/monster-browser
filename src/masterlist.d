@@ -17,7 +17,7 @@ import serverdata;
 
 
 ///
-alias size_t ServerHandle;
+alias ServerHandle = size_t;
 
 ///
 const ServerHandle InvalidServerHandle = ServerHandle.max;

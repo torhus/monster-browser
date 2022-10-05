@@ -106,11 +106,11 @@ struct ServerData {
 
 
 // should correspond to playertable.playerHeaders
-enum PlayerColumn { NAME, SCORE, PING, RAWNAME };
+enum PlayerColumn { NAME, SCORE, PING, RAWNAME }
 // should correspond to servertable.serverHeaders
 enum ServerColumn {
 	COUNTRY, NAME, PASSWORDED, PING, PLAYERS, GAMETYPE, MAP, ADDRESS
-};
+}
 
 
 enum PASSWORD_YES = "X";  ///

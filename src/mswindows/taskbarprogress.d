@@ -4,7 +4,7 @@ import core.sys.windows.windows;
 import core.sys.windows.com;
 public import mswindows.taskbarlist;
 
-alias void* HWND;
+alias HWND = void*;
 enum { NULL = null }
 
 /**

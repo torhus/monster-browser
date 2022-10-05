@@ -9,8 +9,8 @@ import std.format;
 import std.string;
 
 
-alias ptrdiff_t ssize_t;
-alias int c_int;
+alias ssize_t = ptrdiff_t;
+alias c_int = int;
 
 /* Error codes */
 enum {

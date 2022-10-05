@@ -8,9 +8,9 @@ import core.sys.windows.windows;
 import core.sys.windows.com;
 
 
-alias ulong ULONGLONG;  ///
-alias IUnknown HIMAGELIST;  ///
-private alias void* LPTHUMBBUTTON;  // just to make it compile
+alias ULONGLONG = ulong;  ///
+alias HIMAGELIST = IUnknown;  ///
+private alias LPTHUMBBUTTON = void*;  // just to make it compile
 
 ///
 const IID IID_ITaskbarList3 = {0xea1afb91, 0x9e28, 0x4b86,
