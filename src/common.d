@@ -1,12 +1,11 @@
 module common;
 
 import core.thread;
-import core.stdc.ctype;
-import core.stdc.string;
 import core.stdc.time;
 import std.algorithm;
 import std.ascii : newline;
 import std.conv;
+import std.datetime;
 import std.file;
 import std.range;
 import std.regex;
@@ -86,37 +85,35 @@ string getVersionString()
 /**
  * Initialize logging.
  *
- * Throws: StdioException.
+ * Throws: FileException, ErrnoException, and StdioException.
  */
 void initLogging(string fileName="LOG.TXT")
 {
-	const string sep =
-	           "-------------------------------------------------------------";
 	assert(logDir);
 	string path = logDir ~ fileName;
 
 	// limit file size
-	if (exists(path) && getSize(path) > 1024 * 100)
-		remove(path);
+	bool resetFile = exists(path) && getSize(path) > 1024 * 100;
 
 	// open file and add a startup message
-	time_t t = time(null);
-	char[] timestamp = ctime(&t)[0..24];
-	logFile = File(path, "a");
-	logFile.writeln('\n' ~ sep ~ '\n' ~ APPNAME ~ " " ~ getVersionString() ~
-	                                  " started at " ~ timestamp ~ '\n' ~ sep);
+	auto time = cast(DateTime)Clock.currTime();
+	logFile = File(path, resetFile ? "w" : "a");
+	logFile.writeln();
+	logFile.writeln(repeat("-", 65));
+	logFile.writefln("%s %s started at %s", APPNAME, getVersionString(), time);
+	logFile.writeln(repeat("-", 65));
 }
 
 
 /// Logging, with formatting support.
-void log(T...)(T args)
+void log(Args...)(in char[] fmt, Args args)
 {
-	logFile.writefln(args);
+	logFile.writefln(fmt, args);
 	version (redirect) { }
 	else {
 		if (haveConsole) {
 			write("LOG: ");
-			writefln(args);
+			writefln(fmt, args);
 		}
 	}
 }

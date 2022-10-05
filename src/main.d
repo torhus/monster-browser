@@ -56,7 +56,7 @@ private void _main(string[] args)
 
 	try
 		initLogging();
-	catch (StdioException e)
+	catch (Exception e)
 		debug warning(e.toString());
 
 	log("Data path is '" ~ dataDir ~ "'.");

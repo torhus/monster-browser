@@ -45,25 +45,25 @@ void messageBox(string msg, string title, int style)
 
 private template _messageBox(string title, int style)
 {
-	void _messageBox(T...)(T args)
+	void _messageBox(Args...)(in char[] fmt, Args args)
 	{
-		messageBox(format(args), title, style);
+		messageBox(format(fmt, args), title, style);
 	}
 }
 
 /**
  * Displays message boxes with preset titles and icons.
- * Does formatting, the argument list is (...).
+ * Does formatting, the argument list is (in char[] fmt, ...).
  */
-alias _messageBox!(APPNAME, SWT.ICON_INFORMATION) info;
-alias _messageBox!("Warning", SWT.ICON_WARNING) warning;  /// ditto
-alias _messageBox!("Error", SWT.ICON_ERROR) error;        /// ditto
+alias info    = _messageBox!(APPNAME,   SWT.ICON_INFORMATION);
+alias warning = _messageBox!("Warning", SWT.ICON_WARNING);  /// ditto
+alias error   = _messageBox!("Error",   SWT.ICON_ERROR);    /// ditto
 
 
 /// Display a debug message in a dialog box.
-void db(T...)(T args)
+void db(Args...)(in char[] fmt, Args args)
 {
-	debug messageBox(format(args), "Debug", SWT.NONE);
+	debug messageBox(format(fmt, args), "Debug", SWT.NONE);
 }
 
 
