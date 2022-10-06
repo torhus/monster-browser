@@ -4,6 +4,7 @@ import core.stdc.string : memmove;
 import std.algorithm;
 import std.conv;
 import std.range;
+import std.regex;
 import std.string;
 import std.uni : sicmp;
 
@@ -240,6 +241,19 @@ final class ServerList
 
 	Filter getFilters() { return filters_; } ///
 
+	void setSearchString(string s, bool autoRefill=true) ///
+	{
+		if (s == searchString_)
+			return;
+
+		synchronized (this) {
+			searchString_ = s;
+			regex_ = regex(to!string(escaper(s)), "i");
+			if (autoRefill)
+				refill();
+		}
+	}
+
 
 	///
 	void verifySorted()
@@ -303,8 +317,11 @@ private:
 
 	Filter filters_ = Filter.NONE;
 
+	string searchString_;
+	Regex!char regex_;
 
-	invariant()
+
+	invariant
 	{
 		synchronized (this) {
 			if (filteredList.length > ipHash_.length) {
@@ -313,15 +330,17 @@ private:
 				assert(0);
 			}
 			if (!(filters_ || filteredList.length == ipHash_.length ||
-			              (filteredList.length + 1) == ipHash_.length)) {
+			                  (filteredList.length + 1) == ipHash_.length ||
+			                                           searchString_.length)) {
 				log("ServerList invariant broken!" ~
 				    "\nfilters_ & Filter.HAS_HUMANS: %s" ~
 				    "\nfilters_ & Filter.NOT_EMPTY: %s" ~
 				    "\nipHash_.length: %s" ~
-				    "\nfilteredList.length: %s",
+				    "\nfilteredList.length: %s" ~
+				    "\nsearchString_.length: %s",
 				    filters_ & Filter.HAS_HUMANS,
 				    filters_ & Filter.NOT_EMPTY,
-				    ipHash_.length, filteredList.length);
+				    ipHash_.length, filteredList.length, searchString_.length);
 				assert(0);
 			}
 		}
@@ -546,13 +565,40 @@ private:
 
 	bool isFilteredOut(in ServerData* sd)
 	{
-		if (filters_ == 0)
-			return false;
+		bool matched = searchString_.length == 0;
 
-		if (sd.hasHumans)
-			return false;
-		else
-			return filters_ & Filter.HAS_HUMANS || !sd.hasBots;
+		if (searchString_.length != 0)
+		{
+			string serverName = sd.server[ServerColumn.NAME];
+
+			if (serverName.matchFirst(regex_)) {
+				matched = true;
+			}
+			else {
+				const cvars = sd.cvars;
+				int i = findString(cvars, "game", 0);
+
+				if (i != -1 && cvars[i][1].matchFirst(regex_)) {
+					matched = true;
+				}
+				else {
+					i = findString(cvars, "gamename", 0);
+					if (i != -1 && cvars[i][1].matchFirst(regex_)) {
+						matched = true;
+					}
+				}
+			}
+		}
+
+		if (matched) {
+			if (filters_ == Filter.NONE || sd.hasHumans)
+				return false;
+			else
+				return filters_ & Filter.HAS_HUMANS || !sd.hasBots;
+		}
+		else {
+			return true;
+		}
 	}
 
 	void updateIpHash(bool reset=true)

@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.ProgressBar;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 
@@ -525,6 +526,18 @@ class FilterBar : Group
 			}
 		});
 
+		filterText_ = new Text(this, SWT.SINGLE | SWT.BORDER);
+		filterText_.addSelectionListener(new class SelectionAdapter {
+			public override void widgetDefaultSelected(SelectionEvent e)
+			{
+				string s = strip((cast(Text)e.widget).getText());
+
+				serverTable.serverList.setSearchString(s);
+				refreshServerTable();
+			}
+		});
+
+
 		auto layout = new RowLayout;
 		layout.fill = true;
 		layout.marginHeight = 2;
@@ -599,6 +612,7 @@ private:
 	Button notEmptyButton_, hasHumansButton_;
 	string lastSelectedGame_;
 	Combo gamesCombo_;
+	Text filterText_;
 }
 
 
