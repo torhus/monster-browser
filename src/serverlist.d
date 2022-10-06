@@ -370,17 +370,17 @@ private:
 			timer.start();
 		}
 
-		bool lessOrEqual(ServerHandle a, ServerHandle b)
+		bool less(ServerHandle a, ServerHandle b)
 		{
 			ServerData sda = master_.getServerData(a);
 			ServerData sdb = master_.getServerData(b);
 
-			return compare(sda, sdb) <= 0;
+			return compare(sda, sdb) < 0;
 		}
 
 		if (!isSorted_) {
 			synchronized (master_) {
-				mergeSort(filteredList, &lessOrEqual);
+				filteredList.sort!(less, SwapStrategy.stable);
 			}
 			isSorted_ = true;
 			ipHashValid_ = false;
@@ -407,8 +407,8 @@ private:
 		auto r = filteredList.assumeSorted!less.upperBound(sh);
 		size_t i = filteredList.length - r.length;
 
-		// tried std.array.insert, but got a 30% slowdown
-		insertInFiltered(i, sh);
+		filteredList.insertInPlace(i, sh);
+		ipHashValid_ = false;
 
 		debug {
 			ServerData newSd = master_.getServerData(sh);
@@ -489,22 +489,6 @@ private:
 		return (reversed_ ? -result : result);
 	}
 
-	void insertInFiltered(size_t index, ServerHandle sh)
-	{
-		assert(index <= filteredList.length);
-
-		size_t oldLength = filteredList.length;
-		filteredList.length = filteredList.length + 1;
-
-		if (index < oldLength) {
-			ServerHandle* ptr = filteredList.ptr + index;
-			size_t bytes = (oldLength - index) * filteredList[0].sizeof;
-			memmove(ptr + 1, ptr, bytes);
-		}
-		filteredList[index] = sh;
-
-		ipHashValid_ = false;
-	}
 
 	bool removeFromFiltered(in char[] address)
 	{
@@ -512,10 +496,8 @@ private:
 		if (i == -1)
 			return false;
 
-		ServerHandle* ptr = filteredList.ptr + i;
-		size_t bytes = (filteredList.length - 1 - i) * filteredList[0].sizeof;
-		memmove(ptr, ptr + 1, bytes);
-		filteredList.length = filteredList.length - 1;
+		filteredList = filteredList.remove(i);
+		filteredList.assumeSafeAppend;
 
 		ipHashValid_ = false;
 		return true;
