@@ -1,7 +1,6 @@
 module masterlist;
 
 import core.memory;
-import lib.phobosfixes; // DMD 2.052's icmp is broken.
 import std.array;
 import std.conv;
 import std.file;

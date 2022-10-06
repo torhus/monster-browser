@@ -1,9 +1,9 @@
 module serverlist;
 
 import core.stdc.string : memmove;
-import lib.phobosfixes; // upperBound
 import std.algorithm;
 import std.conv;
+import std.range;
 import std.string;
 import std.uni : sicmp;
 
@@ -404,7 +404,7 @@ private:
 			return compare(sda, sdb) < 0;
 		}
 
-		auto r = lib.phobosfixes.upperBound!(less)(filteredList, sh);
+		auto r = filteredList.assumeSorted!less.upperBound(sh);
 		size_t i = filteredList.length - r.length;
 
 		// tried std.array.insert, but got a 30% slowdown
