@@ -91,6 +91,13 @@ void initLogging(string fileName="LOG.TXT")
 {
 	assert(logDir);
 	string path = logDir ~ fileName;
+	string bits = (void*).sizeof == 8 ? "64" : "32";
+	version (Windows)
+		string system = "Windows";
+	else version (linux)
+		string system = "Linux";
+	else
+		string system = "Unknown";
 
 	// limit file size
 	bool resetFile = exists(path) && getSize(path) > 1024 * 100;
@@ -99,9 +106,10 @@ void initLogging(string fileName="LOG.TXT")
 	auto time = cast(DateTime)Clock.currTime();
 	logFile = File(path, resetFile ? "w" : "a");
 	logFile.writeln();
-	logFile.writeln(repeat("-", 65));
+	logFile.writeln(replicate("-", 65));
 	logFile.writefln("%s %s started at %s", APPNAME, getVersionString(), time);
-	logFile.writeln(repeat("-", 65));
+	logFile.writefln("%s-bit version running on %s", bits, system);
+	logFile.writeln(replicate("-", 65));
 }
 
 
