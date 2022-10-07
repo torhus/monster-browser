@@ -241,6 +241,30 @@ final class ServerList
 	Filter getFilters() { return filters_; } ///
 
 
+	///
+	void verifySorted()
+	{
+		if (filteredLength < 2)
+			return;
+
+		log("Verifying sorting...");
+
+		auto servers = filteredList.map!(sh => master_.getServerData(sh));
+		bool ok = true;
+
+		synchronized (this) synchronized (master_)
+		foreach (i, data; servers.slide(2).enumerate) {
+			if (compare(data[0], data[1]) > 0) {
+				ok = false;
+				log("BAD SORTING at server index %s", i);
+			}
+		}
+		assert(ok, "ServerList verifySorted() failed.");
+		if (ok)
+			log("Sorting OK.");
+	}
+
+
 	/**
 	 * Call customData.dispose() on each of the ServerData structs.
 	 *
@@ -457,7 +481,7 @@ private:
 	 *
 	 * Returns: >0 if a is smaller, <0 if b is smaller, 0 if they are equal.
 	 */
-	int compare(ref const ServerData a, ref const ServerData b)
+	int compare(const ref ServerData a, const ref ServerData b)
 	{
 		int result;
 
@@ -487,6 +511,14 @@ private:
 		}
 
 		return (reversed_ ? -result : result);
+	}
+
+
+	/// ditto
+	/// FIXME: Use -preview=in instead of having this overload?
+	int compare(const ServerData a, const ServerData b)
+	{
+		return compare(a, b);
 	}
 
 
@@ -543,7 +575,8 @@ private:
 		                                                  filteredList.length);
 		foreach (i, sh; filteredList) {
 			ServerData sd = master_.getServerData(sh);
-			log(/*i, ": ",*/ sd.server[ServerColumn.NAME]);
+			log("%4d %-25s %4s", i, sd.server[ServerColumn.NAME],
+			                                     sd.server[ServerColumn.PING]);
 		}
 		log("");
 	}

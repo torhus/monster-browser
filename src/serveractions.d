@@ -642,6 +642,8 @@ class ServerRetrievalController
 
 	private void done()
 	{
+		debug serverList_.verifySorted();
+
 		int index = -1;
 		if (autoSelect.length) {
 			// FIXME: select them all, not just the first one
