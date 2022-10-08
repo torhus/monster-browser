@@ -25,8 +25,6 @@ import std.algorithm;
 import std.conv;
 import std.socket;
 import std.string;
-version (Windows)
-	import core.sys.windows.winsock2;
 
 import colorednames;
 import common;
@@ -309,14 +307,6 @@ private class Rcon
 	this(string address, string password)
 	{
 		address_ = address;
-
-		// Workaround for Phobos 2 calling WSACleanup in its per-thread module
-		// destructor. http://d.puremagic.com/issues/show_bug.cgi?id=4344
-		version (Windows) {
-			WSADATA wd;
-			WSAStartup(0x2020, &wd);
-		}
-
 		socket_ = new UdpSocket;
 		socket_.connect(parseAddress(address_));
 		this.password = password;
