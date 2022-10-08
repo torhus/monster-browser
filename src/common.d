@@ -248,56 +248,6 @@ void sortStringArray(string[][] arr, int column=0, bool reverse=false)
 
 
 /**
- * In-place merge sort for arrays.  This is a stable sort.
- *
- * Note: Allocates (a.length + 1) / 2 of heap memory, in order to speed up
- *       sorting.
- */
-void mergeSort(T)(T[] a, bool delegate(T a, T b) lessOrEqual)
-{
-	T[] b;
-
-	void merge(size_t lo, size_t m, size_t hi)
-	{
-		size_t i, j, k;
-
-		i = 0; j = lo;
-		// copy first half of array a to auxiliary array b
-		while (j <= m)
-			b[i++] = a[j++];
-
-		i = 0; k = lo;
-		// copy back next-greatest element at each time
-		while (k < j && j <= hi)
-			if (lessOrEqual(b[i], a[j]))
-				a[k++] = b[i++];
-			else
-				a[k++] = a[j++];
-
-		// copy back remaining elements of first half, if any
-		while (k < j)
-			a[k++] = b[i++];
-	}
-
-	void _mergeSort(size_t lo, size_t hi)
-	{
-		if (lo < hi)
-		{
-			size_t m = lo + ((hi - lo) / 2);
-			_mergeSort(lo, m);
-			_mergeSort(m + 1, hi);
-			merge(lo, m, hi);
-		}
-	}
-
-	if (a.length > 0) {
-		b = new T[(a.length + 1) / 2];
-		_mergeSort(0, a.length - 1);
-	}
-}
-
-
-/**
  * Returns s as an int, or defaultVal if s did not parse as an int.
  */
 int toIntOrDefault(in char[] s, int defaultVal=0)

@@ -1,5 +1,6 @@
 module playertable;
 
+import std.algorithm;
 import std.conv;
 import std.string;
 
@@ -261,7 +262,7 @@ private:
 		bool numerical = isScore || isPing;
 		bool reverse = (table_.getSortDirection() == SWT.DOWN) ^ isScore;
 
-		bool lessOrEqual(Player a, Player b)
+		bool less(Player a, Player b)
 		{
 			int result;
 
@@ -272,10 +273,10 @@ private:
 			else {
 				result = icmp(a.data[sortCol], b.data[sortCol]);
 			}
-			return (reverse ? -result <= 0 : result <= 0);
+			return (reverse ? -result < 0 : result < 0);
 		}
 
-		mergeSort(players_, &lessOrEqual);
+		players_.sort!(less, SwapStrategy.stable);
 	}
 
 
