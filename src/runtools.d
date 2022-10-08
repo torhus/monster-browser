@@ -256,7 +256,8 @@ final class QstatServerRetriever : IServerRetriever
 			version (linux)
 				cmdLine = "./" ~ cmdLine;
 
-			cmdLine ~= " -maxsim " ~ getSetting("simultaneousQueries");
+			cmdLine ~= " -maxsim " ~
+			            Integer.toString(getSettingInt("simultaneousQueries"));
 
 			synchronized (procMutex) {
 				proc = new Process(true, cmdLine);

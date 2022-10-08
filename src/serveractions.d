@@ -125,11 +125,11 @@ void switchToGame(in char[] name)
 			statusBar.setLeft("Ready");
 		}
 		else {
-			char[] startupAction = getSetting("startupAction");
+			int startupAction = getSettingInt("startupAction");
 
-			if (startupAction == "0" || arguments.fromfile)
+			if (startupAction == 0 || arguments.fromfile)
 				threadManager.run(&loadSavedList);
-			else if (startupAction == "2")
+			else if (startupAction == 2)
 				threadManager.run(&checkForNewServers);
 			else {
 				if (serverList.master.length > 0)
