@@ -242,7 +242,7 @@ final class QstatServerRetriever : IServerRetriever
 			version (linux)
 				cmdLine = "./" ~ cmdLine;
 
-			cmdLine ~= " -maxsim " ~ getSetting("simultaneousQueries");
+			cmdLine ~= text(" -maxsim ", getSettingInt("simultaneousQueries"));
 
 			synchronized (procMutex) {
 				log("Executing '" ~ cmdLine ~ "'.");
