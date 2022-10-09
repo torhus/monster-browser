@@ -4,41 +4,57 @@
 
 module set;
 
+import std.range;
+
 
 /**
  * A set container.
- *
- * Currently it's just a thin wrapper around an associative array, ignoring
- * the values.
  */
 struct Set(T) {
 	private bool[T] data_;
 
+	///
+	this(R)(R range)
+		if (isInputRange!R && is(ElementType!R == T))
+	{
+		add(range);
+	}
+
 	void add(T val) { data_[val] = true; }  ///
+
+	///
+	void add(R)(R range)
+		if (isInputRange!R && is(ElementType!R == T))
+	{
+		foreach (T val; range)
+			add(val);
+	}
+
+	///
+	void add(Set!(T) other)
+	{
+		add(other.data_.byKey());
+	}
+
 	void remove(T val) { data_.remove(val); } ///
-	bool opBinaryRight(string op : "in")(T val) ///
+
+	///
+	bool opBinaryRight(string op : "in")(T val) const
 	{
 		return (val in data_) != null;
 	}
-	size_t length() { return data_.length; } ///
+
+	size_t length() const { return data_.length; } ///
 	void rehash() { data_.rehash; } ///
-	void clear() { data_ = null; } ///
-	//T[] toArray() { return data_.keys; } ///
+	void clear() { data_.clear; } ///
+
+	auto opSlice() const { return data_.byKey(); } ///
 
 	///
-	static Set!(T) opCall(T[] values=null)
-	{
-		Set!(T) set;
-		foreach (T val; values)
-			set.add(val);
-		return set;
-	}
-
-	///
-	int opApply(int delegate(const ref T) dg)
+	int opApply(int delegate(const ref T) dg) const
 	{
 		int result = 0;
-		foreach (key, val; data_) {
+		foreach (key, _; data_) {
 			result = dg(key);
 			if (result)
 				break;

@@ -99,8 +99,7 @@ void switchToGame(string name)
 			try {
 				if (exists(file)) {
 					auto addresses = collectIpAddresses(File(file));
-					foreach (addr; addresses)
-						serverList.addExtraServer(addr);
+					serverList.addExtraServers(addresses[]);
 				}
 			}
 			catch (StdioException e) {
@@ -243,8 +242,7 @@ void refreshAll()
 	// merge in the extra servers
 	Set!(string) extraServers = serverList.extraServers;
 	auto oldLength = addresses.length;
-	foreach (server; extraServers)
-		addresses.add(server);
+	addresses.add(extraServers);
 
 	auto delta = addresses.length - oldLength;
 	log("Added %s extra servers, skipping %s duplicates.",

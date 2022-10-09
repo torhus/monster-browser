@@ -177,14 +177,14 @@ final class ServerList
 
 
 	/**
-	 * Add an extra server to be included when doing a refresh.
+	 * Add extra servers to be included when doing a refresh.
 	 *
-	 * Useful for servers that are not on the master server's list.  Multiple
-	 * servers can be added this way.
+	 * Useful for servers that are not on the master server's list.
 	 */
-	void addExtraServer(string address)
+	void addExtraServers(R)(R range)
+		if (isInputRange!R && is(ElementType!R == string))
 	{
-		synchronized (this) extraServers_.add(address);
+		synchronized (this) extraServers_.add(range);
 	}
 
 
