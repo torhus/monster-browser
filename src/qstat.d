@@ -18,7 +18,7 @@ import set;
 import settings;
 
 
-string FIELDSEP = "\x1e"; // \x1e = ascii record separator
+enum FIELDSEP = "\x1e"; // \x1e = ascii record separator
 
 private enum Field {
 	TYPE, ADDRESS, NAME, MAP, MAX_PLAYERS, PLAYER_COUNT, PING, RETRIES, GAME

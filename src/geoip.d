@@ -77,7 +77,7 @@ bool initGeoIp()
 	else
 		string libName = "libmaxminddb.so.0";
 
-	static bool firstTime = true;
+	shared static bool firstTime = true;
 	string dbName = "GeoLite2-Country.mmdb";
 	ExeModule geoIpLib;
 	c_int result;
