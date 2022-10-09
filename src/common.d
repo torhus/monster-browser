@@ -6,6 +6,7 @@ import std.algorithm;
 import std.ascii : newline;
 import std.conv;
 import std.datetime;
+import std.exception;
 import std.file;
 import std.range;
 import std.regex;
@@ -252,12 +253,7 @@ void sortStringArray(string[][] arr, int column=0, bool reverse=false)
  */
 int toIntOrDefault(in char[] s, int defaultVal=0)
 {
-	try {
-		return to!int(s);
-	}
-	catch (ConvException) {
-		return defaultVal;
-	}
+	return to!int(s).ifThrown!ConvException(defaultVal);
 }
 
 /**
@@ -300,14 +296,8 @@ string toCsv(T)(T[] a)
  */
 int[] getColumnWidths(Table table)
 {
-	int[] r;
-
-	foreach (col; table.getColumns())
-		r ~= col.getWidth();
-
-	return r;
+	return table.getColumns().map!(x => x.getWidth()).array;
 }
-
 
 
 /**
@@ -323,17 +313,15 @@ Set!(string) collectIpAddresses(R)(R strings, size_t startColumn=0)
 {
 	Set!(string) addresses;
 
-	foreach (s; strings) {
-		if (startColumn >= s.length)
-			continue;
-
+	foreach (s; strings.filter!(x => x.length > startColumn)) {
 		s = s[startColumn..$];
 		if (isValidIpAddress(s))
-			addresses.add(s.idup);
+			addresses.add(to!string(s));
 	}
 
 	return addresses;
 }
+
 
 /**
  * See the above version, one address per line.
@@ -343,7 +331,7 @@ Set!(string) collectIpAddresses(R)(R strings, size_t startColumn=0)
 Set!(string) collectIpAddresses(File stream, size_t startColumn=0)
 {
 	return collectIpAddresses(
-			                    stream.byLine(KeepTerminator.no, newline), startColumn);
+	                   stream.byLine(KeepTerminator.no, newline), startColumn);
 }
 
 
