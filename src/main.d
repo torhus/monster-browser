@@ -124,7 +124,7 @@ private void _main(string[] args)
 	if (settings.gameNames.length == 0)
 		error("No valid game configurations were found.");
 	else
-		switchToGame(filterBar.selectedGame);
+		switchToGame(gameBar.selectedGame);
 
 	// main loop
 	Display display = Display.getDefault;

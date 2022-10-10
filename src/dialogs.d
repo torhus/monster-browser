@@ -453,7 +453,7 @@ class SettingsDialog
 						if (timeLastModified(gamesFileName) > lastModified_) {
 							string name = serverTable.serverList.gameName;
 							settings.loadGamesFile();
-							filterBar.setGames(settings.gameNames);
+							gameBar.setGames(settings.gameNames);
 							switchToGame((findString(settings.gameNames, name)
 							            != -1) ? name : settings.gameNames[0]);
 						}

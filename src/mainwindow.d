@@ -51,6 +51,7 @@ version (Windows) {
 }
 
 __gshared StatusBar statusBar;  ///
+__gshared GameBar gameBar;  ///
 __gshared FilterBar filterBar;  ///
 __gshared MainWindow mainWindow;  ///
 /// The close() method will be called for these shells, before everything is
@@ -99,14 +100,14 @@ class MainWindow
 		topComposite.setLayoutData(topData);
 
 		// This layout works better when the buttons have images.
-		auto topLayout = new GridLayout(2, false);
+		auto topLayout = new GridLayout(3, false);
 		topLayout.marginHeight = 0;
-		topLayout.horizontalSpacing = 50;
+		topLayout.horizontalSpacing = 15;
 		topComposite.setLayout(topLayout);
 
-		ToolBar toolBar = (new ToolBarWrapper(topComposite)).getToolBar();
+		new ToolBarWrapper(topComposite);
 
-		// filtering options
+		gameBar = new GameBar(topComposite);
 		filterBar = new FilterBar(topComposite);
 
 		// ************** SERVER LIST, PLAYER LIST, CVARS LIST ***************
@@ -190,6 +191,7 @@ class MainWindow
 		setSessionState("middleWeights", toCsv(middleForm_.getWeights()));
 		setSessionState("rightWeights", toCsv(rightForm_.getWeights()));
 
+		gameBar.saveState();
 		filterBar.saveState();
 	}
 
@@ -420,61 +422,14 @@ private:
 
 
 ///
-class FilterBar : Group
+class GameBar : Group
 {
 	///
 	this(Composite parent)
 	{
 		super(parent, SWT.SHADOW_NONE);
-		setText("Filters and Game Selection");
+		setText("Select Game");
 		setLayoutData(new GridData);
-
-		notEmptyButton_ = new Button(this, SWT.CHECK);
-		notEmptyButton_.setText("Not empty");
-		notEmptyButton_.addSelectionListener(new class SelectionAdapter {
-			public override void widgetSelected(SelectionEvent e)
-			{
-				ServerList list = serverTable.serverList;
-				bool notEmpty = notEmptyButton_.getSelection() != 0;
-
-				if (notEmptyButton_.getSelection()) {
-					hasHumansButton_.setSelection(false);
-					list.setFilters(list.getFilters() & ~Filter.HAS_HUMANS);
-				}
-
-				if (notEmpty)
-					list.setFilters(list.getFilters() | Filter.NOT_EMPTY);
-				else
-					list.setFilters(list.getFilters() & ~Filter.NOT_EMPTY);
-
-				refreshServerTable();
-			}
-		});
-
-		hasHumansButton_ = new Button(this, SWT.CHECK);
-		hasHumansButton_.setText("Has humans");
-		hasHumansButton_.addSelectionListener(new class SelectionAdapter {
-			public override void widgetSelected(SelectionEvent e)
-			{
-				ServerList list = serverTable.serverList;
-				bool hasHumans = hasHumansButton_.getSelection() != 0;
-
-				if (hasHumans)
-					list.setFilters(list.getFilters() | Filter.HAS_HUMANS);
-				else
-					list.setFilters(list.getFilters() & ~Filter.HAS_HUMANS);
-
-				refreshServerTable();
-
-			}
-		});
-
-		// Restore saved filter state
-		Filter state = cast(Filter)getSessionStateInt("filterState");
-		if (state & Filter.NOT_EMPTY)
-			notEmptyButton_.setSelection(true);
-		if (state & Filter.HAS_HUMANS)
-			hasHumansButton_.setSelection(true);
 
 		// game selection
 		gamesCombo_ = new Combo(this, SWT.DROP_DOWN);
@@ -526,18 +481,6 @@ class FilterBar : Group
 			}
 		});
 
-		filterText_ = new Text(this, SWT.SINGLE | SWT.BORDER);
-		filterText_.addSelectionListener(new class SelectionAdapter {
-			public override void widgetDefaultSelected(SelectionEvent e)
-			{
-				string s = strip((cast(Text)e.widget).getText());
-
-				serverTable.serverList.setSearchString(s);
-				refreshServerTable();
-			}
-		});
-
-
 		auto layout = new RowLayout;
 		layout.fill = true;
 		layout.marginHeight = 2;
@@ -550,20 +493,6 @@ class FilterBar : Group
 	string selectedGame()
 	{
 		return lastSelectedGame_;
-	}
-
-
-	/// State of filter selection buttons.
-	Filter filterState()
-	{
-		Filter f;
-
-		if(notEmptyButton_.getSelection())
-			f |= Filter.NOT_EMPTY;
-		if (hasHumansButton_.getSelection())
-			f |= Filter.HAS_HUMANS;
-
-		return f;
 	}
 
 
@@ -596,6 +525,110 @@ class FilterBar : Group
 		}
 
 		setSetting("lastMod", lastSelectedGame_);
+	}
+
+
+private:
+	string lastSelectedGame_;
+	Combo gamesCombo_;
+}
+
+
+///
+class FilterBar : Group
+{
+	///
+	this(Composite parent)
+	{
+		super(parent, SWT.SHADOW_NONE);
+		setText("Filter Servers");
+		setLayoutData(new GridData);
+
+		notEmptyButton_ = new Button(this, SWT.CHECK);
+		notEmptyButton_.setText("Not empty");
+		notEmptyButton_.addSelectionListener(new class SelectionAdapter {
+			public override void widgetSelected(SelectionEvent e)
+			{
+				ServerList list = serverTable.serverList;
+				bool notEmpty = notEmptyButton_.getSelection() != 0;
+
+				if (notEmptyButton_.getSelection()) {
+					hasHumansButton_.setSelection(false);
+					list.setFilters(list.getFilters() & ~Filter.HAS_HUMANS);
+				}
+
+				if (notEmpty)
+					list.setFilters(list.getFilters() | Filter.NOT_EMPTY);
+				else
+					list.setFilters(list.getFilters() & ~Filter.NOT_EMPTY);
+
+				refreshServerTable();
+			}
+		});
+
+		hasHumansButton_ = new Button(this, SWT.CHECK);
+		hasHumansButton_.setText("Has humans");
+		hasHumansButton_.addSelectionListener(new class SelectionAdapter {
+			public override void widgetSelected(SelectionEvent e)
+			{
+				ServerList list = serverTable.serverList;
+				bool hasHumans = hasHumansButton_.getSelection() != 0;
+
+				if (hasHumans)
+					list.setFilters(list.getFilters() | Filter.HAS_HUMANS);
+				else
+					list.setFilters(list.getFilters() & ~Filter.HAS_HUMANS);
+
+				refreshServerTable();
+
+			}
+		});
+
+		// Restore saved filter state
+		Filter state = cast(Filter)getSessionStateInt("filterState");
+		if (state & Filter.NOT_EMPTY)
+			notEmptyButton_.setSelection(true);
+		if (state & Filter.HAS_HUMANS)
+			hasHumansButton_.setSelection(true);
+
+		filterText_ = new Text(this, SWT.SINGLE | SWT.BORDER | SWT.SEARCH /*|
+		                                  SWT.ICON_SEARCH | SWT.ICON_CANCEL*/);
+		filterText_.setMessage("Search");
+		filterText_.addSelectionListener(new class SelectionAdapter {
+			public override void widgetDefaultSelected(SelectionEvent e)
+			{
+				string s = strip((cast(Text)e.widget).getText());
+
+				serverTable.serverList.setSearchString(s);
+				refreshServerTable();
+			}
+		});
+
+		auto layout = new RowLayout;
+		layout.fill = true;
+		layout.marginHeight = 2;
+		layout.marginWidth = 2;
+		setLayout(layout);
+	}
+
+
+	/// State of filter selection buttons.
+	Filter filterState()
+	{
+		Filter f;
+
+		if(notEmptyButton_.getSelection())
+			f |= Filter.NOT_EMPTY;
+		if (hasHumansButton_.getSelection())
+			f |= Filter.HAS_HUMANS;
+
+		return f;
+	}
+
+
+	///  Saves the session state.
+	private void saveState()
+	{
 		setSessionState("filterState", to!string(cast(int)filterState));
 	}
 
@@ -610,8 +643,6 @@ class FilterBar : Group
 
 private:
 	Button notEmptyButton_, hasHumansButton_;
-	string lastSelectedGame_;
-	Combo gamesCombo_;
 	Text filterText_;
 }
 
