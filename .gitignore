@@ -5,9 +5,11 @@ dwt-master
 qstat.exe
 GeoLite2-Country.mmdb
 libmaxminddb.dll
+maxminddb.dll
 
 # Files and directories created by build tools, etc
 .dub
+.vs
 .vscode
 docs
 Debug
@@ -21,9 +23,10 @@ MonsterBrowser.sln
 revision.txt
 unittest.ini
 
-# Files created by Monster Browser when running
+# Monster Browser configuration and data files
 mods.ini
 settings.ini
 LOG.TXT
 CONSOLE.OUT
+*.extra
 *.xml
