@@ -241,7 +241,7 @@ final class ServerList
 
 	Filter getFilters() { return filters_; } ///
 
-	void setSearchString(string s, bool servers=true) ///
+	void setSearchString(string s, bool servers) ///
 	{
 		if (s == searchString_ && servers == searchServers_)
 			return;

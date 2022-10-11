@@ -21,6 +21,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
@@ -221,7 +222,7 @@ class MainWindow
 
 
 ///
-class StatusBar : Composite
+final class StatusBar : Composite
 {
 	///
 	this(Composite parent)
@@ -422,7 +423,7 @@ private:
 
 
 ///
-class GameBar : Group
+final class GameBar : Group
 {
 	///
 	this(Composite parent)
@@ -535,7 +536,7 @@ private:
 
 
 ///
-class FilterBar : Group
+final class FilterBar : Group
 {
 	///
 	this(Composite parent)
@@ -594,12 +595,27 @@ class FilterBar : Group
 		filterText_ = new Text(this, SWT.SINGLE | SWT.BORDER | SWT.SEARCH /*|
 		                                  SWT.ICON_SEARCH | SWT.ICON_CANCEL*/);
 		filterText_.setMessage("Search");
+		auto filterTextData = new RowData();
+		filterTextData.width = 80;
+		filterText_.setLayoutData(filterTextData);
 		filterText_.addSelectionListener(new class SelectionAdapter {
 			public override void widgetDefaultSelected(SelectionEvent e)
 			{
 				string s = strip((cast(Text)e.widget).getText());
 
 				serverTable.serverList.setSearchString(s,
+				                           serverFilterButton_.getSelection());
+				refreshServerTable();
+			}
+		});
+
+		auto clearButton = new Button(this, 0);
+		clearButton.setText("Clear");
+		clearButton.addSelectionListener(new class SelectionAdapter {
+			public override void widgetSelected(SelectionEvent _)
+			{
+				clearSearch();
+				serverTable.serverList.setSearchString("",
 				                           serverFilterButton_.getSelection());
 				refreshServerTable();
 			}

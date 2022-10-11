@@ -240,7 +240,7 @@ mod=arena
 	                      {"startWithLastMod", "true"},
 	                      {"startupAction", "1"},
 	                      {"windowMaximized", "false"},
-	                      {"windowSize", "800x568"},
+	                      {"windowSize", "884x568"},
 	                     ];
 
 	enum Setting[] defaultSessionState = [{"programVersion", "0.0"},
