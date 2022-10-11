@@ -4,7 +4,8 @@ authors "torhu"
 copyright "Copyright © 2022, torhu"
 
 #dependency "dwt" version="~>1.0.5"
-dependency "dwt" path="dwt-master"
+dependency "dwt" repository="git+https://github.com/torhus/dwt.git" \
+                 version="19f219e"
 dependency "undead" version="~>1.1.7"
 targetName "MonsterBrowser"
 targetType "executable"
