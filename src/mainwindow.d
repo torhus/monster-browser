@@ -11,6 +11,8 @@ import java.io.ByteArrayInputStream;
 import java.lang.Runnable;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.ShellAdapter;
@@ -601,11 +603,18 @@ final class FilterBar : Group
 		filterText_.addSelectionListener(new class SelectionAdapter {
 			public override void widgetDefaultSelected(SelectionEvent e)
 			{
-				string s = strip((cast(Text)e.widget).getText());
-
-				serverTable.serverList.setSearchString(s,
-				                           serverFilterButton_.getSelection());
-				refreshServerTable();
+				updateSearchResults();
+			}
+		});
+		filterText_.addModifyListener(new class ModifyListener {
+			public override void modifyText(ModifyEvent e)
+			{
+				Display.getDefault().timerExec(500, dgRunnable(
+				{
+					string s = (cast(Text)e.widget).getText();
+					if (s == filterText_.getText())
+						updateSearchResults();
+				}));
 			}
 		});
 
@@ -615,9 +624,7 @@ final class FilterBar : Group
 			public override void widgetSelected(SelectionEvent _)
 			{
 				clearSearch();
-				serverTable.serverList.setSearchString("",
-				                           serverFilterButton_.getSelection());
-				refreshServerTable();
+				updateSearchResults();
 			}
 		});
 
@@ -630,6 +637,7 @@ final class FilterBar : Group
 		serverFilterButton_.setSelection(true);
 		auto playerFilterButton = new Button(filterTypes, SWT.RADIO);
 		playerFilterButton.setText("Players");
+		playerFilterButton.setEnabled(false);
 
 		auto layout = new RowLayout;
 		layout.center = true;
@@ -674,6 +682,13 @@ final class FilterBar : Group
 		Display.getDefault.asyncExec(dgRunnable( {
 			serverTable.fullRefresh;
 		}));
+	}
+
+	private void updateSearchResults()
+	{
+		serverTable.serverList.setSearchString(filterText_.getText(),
+		                                   serverFilterButton_.getSelection());
+		refreshServerTable();
 	}
 
 
