@@ -241,16 +241,16 @@ final class ServerList
 
 	Filter getFilters() { return filters_; } ///
 
-	void setSearchString(string s, bool autoRefill=true) ///
+	void setSearchString(string s, bool servers=true) ///
 	{
-		if (s == searchString_)
+		if (s == searchString_ && servers == searchServers_)
 			return;
 
 		synchronized (this) {
 			searchString_ = s;
+			searchServers_ = servers;
 			regex_ = regex(to!string(escaper(s)), "i");
-			if (autoRefill)
-				refill();
+			refill();
 		}
 	}
 
@@ -318,6 +318,7 @@ private:
 	Filter filters_ = Filter.NONE;
 
 	string searchString_;
+	bool searchServers_ = true;
 	Regex!char regex_;
 
 

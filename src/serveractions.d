@@ -109,6 +109,7 @@ void switchToGame(string name)
 
 		serverTable.setServerList(serverList);
 		serverTable.clear();
+		filterBar.clearSearch();
 
 		if (serverList.complete) {
 			serverTable.forgetSelection();

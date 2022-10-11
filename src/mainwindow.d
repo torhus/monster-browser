@@ -102,7 +102,7 @@ class MainWindow
 		// This layout works better when the buttons have images.
 		auto topLayout = new GridLayout(3, false);
 		topLayout.marginHeight = 0;
-		topLayout.horizontalSpacing = 15;
+		topLayout.horizontalSpacing = 20;
 		topComposite.setLayout(topLayout);
 
 		new ToolBarWrapper(topComposite);
@@ -428,11 +428,11 @@ class GameBar : Group
 	this(Composite parent)
 	{
 		super(parent, SWT.SHADOW_NONE);
-		setText("Select Game");
-		setLayoutData(new GridData);
+		setText("Game");
+		setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, true));
 
 		// game selection
-		gamesCombo_ = new Combo(this, SWT.DROP_DOWN);
+		gamesCombo_ = new Combo(this, SWT.DROP_DOWN | SWT.READ_ONLY);
 		setGames(settings.gameNames);
 		if (getSetting("startWithLastMod") == "true") {
 			string s = getSetting("lastMod");
@@ -541,7 +541,7 @@ class FilterBar : Group
 	this(Composite parent)
 	{
 		super(parent, SWT.SHADOW_NONE);
-		setText("Filter Servers");
+		setText("Filters");
 		setLayoutData(new GridData);
 
 		notEmptyButton_ = new Button(this, SWT.CHECK);
@@ -599,15 +599,28 @@ class FilterBar : Group
 			{
 				string s = strip((cast(Text)e.widget).getText());
 
-				serverTable.serverList.setSearchString(s);
+				serverTable.serverList.setSearchString(s,
+				                           serverFilterButton_.getSelection());
 				refreshServerTable();
 			}
 		});
 
+		auto filterTypes = new Composite(this, 0);
+		filterTypes.setLayout(new GridLayout(1, false));
+		filterTypes.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER,
+		                                                      false, false));
+		serverFilterButton_ = new Button(filterTypes, SWT.RADIO);
+		serverFilterButton_.setText("Servers");
+		serverFilterButton_.setSelection(true);
+		auto playerFilterButton = new Button(filterTypes, SWT.RADIO);
+		playerFilterButton.setText("Players");
+
 		auto layout = new RowLayout;
-		layout.fill = true;
-		layout.marginHeight = 2;
+		layout.center = true;
+		layout.marginHeight = 0;
 		layout.marginWidth = 2;
+		layout.spacing = 0,
+		layout.pack = true;
 		setLayout(layout);
 	}
 
@@ -623,6 +636,13 @@ class FilterBar : Group
 			f |= Filter.HAS_HUMANS;
 
 		return f;
+	}
+
+
+	/// Empty the search field.
+	void clearSearch()
+	{
+		filterText_.setText("");
 	}
 
 
@@ -644,6 +664,7 @@ class FilterBar : Group
 private:
 	Button notEmptyButton_, hasHumansButton_;
 	Text filterText_;
+	Button serverFilterButton_;
 }
 
 
