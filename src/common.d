@@ -18,6 +18,8 @@ import java.lang.wrappers;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.graphics.Drawable;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.widgets.Table;
 
 import set;
@@ -297,6 +299,16 @@ string toCsv(T)(T[] a)
 int[] getColumnWidths(Table table)
 {
 	return table.getColumns().map!(x => x.getWidth()).array;
+}
+
+
+///
+int calcFieldWidth(Drawable drawable, int charCount)
+{
+	auto gc = new GC(drawable);
+	scope (exit) gc.dispose;
+
+	return gc.getFontMetrics().getAverageCharWidth() * charCount;
 }
 
 

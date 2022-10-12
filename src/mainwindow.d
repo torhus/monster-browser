@@ -598,7 +598,7 @@ final class FilterBar : Group
 		                                  SWT.ICON_SEARCH | SWT.ICON_CANCEL*/);
 		filterText_.setMessage("Search");
 		auto filterTextData = new RowData();
-		filterTextData.width = 80;
+		filterTextData.width = calcFieldWidth(filterText_, 13);
 		filterText_.setLayoutData(filterTextData);
 		filterText_.addSelectionListener(new class SelectionAdapter {
 			public override void widgetDefaultSelected(SelectionEvent e)
