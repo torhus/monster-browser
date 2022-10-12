@@ -240,7 +240,6 @@ mod=arena
 	                      {"startWithLastMod", "true"},
 	                      {"startupAction", "1"},
 	                      {"windowMaximized", "false"},
-	                      {"windowSize", "884x568"},
 	                     ];
 
 	enum Setting[] defaultSessionState = [{"programVersion", "0.0"},
@@ -255,6 +254,8 @@ mod=arena
 	                                 {"serverColumnWidths",
 	                                              "27,250,21,32,50,40,90,130"},
 	                                 {"windowPosition", "150, 150"},
+	                          // No default width, calculated on first startup.
+	                                 {"windowSize", "-1, 640"},
 	                                 {"rconWindowPosition", "100, 100"},
 	                                 {"rconWindowSize", "640, 480"},
 	                                 {"addServersAsPersistent", "true"},

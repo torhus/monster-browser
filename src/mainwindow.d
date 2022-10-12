@@ -77,28 +77,12 @@ class MainWindow
 		shell_.setText(APPNAME ~ " " ~ getVersionString());
 		shell_.addShellListener(new MyShellListener);
 
-		// restore window size and state
-		if (auto m = getSetting("windowSize").matchFirst(r"^(\d+)x(\d+)$"))
-			shell_.setSize(to!int(m[1]), to!int(m[2]));
-
-		if (getSetting("windowMaximized") == "true")
-			shell_.setMaximized(true);
-
-		// restore window position
-		int[] oldres = parseIntList(getSessionState("resolution"), 2);
-		Rectangle res = Display.getDefault().getBounds();
-		if (oldres[0] == res.width && oldres[1] == res.height) {
-			int[] pos = parseIntList(getSessionState("windowPosition"), 2);
-			shell_.setLocation(pos[0], pos[1]);
-		}
-
 		auto layout = new GridLayout(2, false);
 		layout.horizontalSpacing = 0;
 		shell_.setLayout(layout);
 
-
 		// *********** MAIN WINDOW TOP ***************
-		Composite topComposite = new Composite(shell_, SWT.NONE);
+		auto topComposite = new Composite(shell_, SWT.NONE);
 		auto topData = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
 		topComposite.setLayoutData(topData);
 
@@ -148,6 +132,29 @@ class MainWindow
 		auto statusData = new GridData(SWT.FILL, SWT.CENTER, true, false);
 		statusData.horizontalSpan = 2;
 		statusBar.setLayoutData(statusData);
+
+
+		// restore window size and state
+		int[] windowSize = parseIntList(getSessionState("windowSize"), 2);
+		if (windowSize[0] > 0) {
+			shell_.setSize(windowSize[0], windowSize[1]);
+		}
+		else {
+			Point size = topComposite.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+			// FIXME: Not sure how to get the actual needed width here.
+			shell_.setSize(size.x + 23, windowSize[1]);
+		}
+
+		if (getSetting("windowMaximized") == "true")
+			shell_.setMaximized(true);
+
+		// restore window position
+		int[] oldres = parseIntList(getSessionState("resolution"), 2);
+		Rectangle res = Display.getDefault().getBounds();
+		if (oldres[0] == res.width && oldres[1] == res.height) {
+			int[] pos = parseIntList(getSessionState("windowPosition"), 2);
+			shell_.setLocation(pos[0], pos[1]);
+		}
 	}
 
 	Shell handle() { return shell_; }  ///
@@ -186,9 +193,8 @@ class MainWindow
 			Point pos = shell_.getLocation();
 			setSessionState("windowPosition", toCsv([pos.x, pos.y]));
 
-			string width  = to!string(shell_.getSize().x);
-			string height = to!string(shell_.getSize().y);
-			setSetting("windowSize", width ~ "x" ~ height);
+			Point size = shell_.getSize();
+			setSessionState("windowSize", toCsv([size.x, size.y]));
 		}
 
 		setSessionState("middleWeights", toCsv(middleForm_.getWeights()));
