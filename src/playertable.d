@@ -279,15 +279,14 @@ private:
 		players_.sort!(less, SwapStrategy.stable);
 	}
 
-
 	void addCleanPlayerNames()
 	{
-		foreach (p; players_)
+		foreach (p; players_) {
 			if (p.data[PlayerColumn.NAME] is null)
 				p.data[PlayerColumn.NAME] =
 				                 stripColorCodes(p.data[PlayerColumn.RAWNAME]);
+		}
 	}
-
 }
 
 

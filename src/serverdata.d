@@ -6,6 +6,7 @@ import std.conv;
 import std.string;
 import std.uni;
 
+import colorednames : stripColorCodes;
 import common;
 import settings;
 
@@ -136,6 +137,16 @@ void setEmpty(ServerData* sd)
 bool isEmpty(in ServerData* sd)
 {
 	return sd.server.length == 0;
+}
+
+
+///
+void addCleanPlayerNames(string[][] players)
+{
+	foreach (p; players) {
+		if (p[PlayerColumn.NAME] is null)
+			p[PlayerColumn.NAME] = stripColorCodes(p[PlayerColumn.RAWNAME]);
+	}
 }
 
 

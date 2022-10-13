@@ -47,6 +47,7 @@ final class ServerList
 		gameName_ = gameName;
 		master_ = master;
 		useEtColors_ = useEtColors;
+		searchDg_ = &filterServer;
 	}
 
 
@@ -241,16 +242,20 @@ final class ServerList
 
 	Filter getFilters() { return filters_; } ///
 
-	void setSearchString(string s, bool servers) ///
+	bool setSearchString(string s, bool servers) ///
 	{
-		if (s == searchString_ && servers == searchServers_)
-			return;
+		if (s == searchString_ && (servers && searchDg_ == &filterServer ||
+		                            !servers && searchDg_ == &filterPlayer))
+			return false;
 
 		synchronized (this) {
+			searchDg_ = servers ? &filterServer : &filterPlayer;
+			if (searchString_.length == 0 && s.length == 0)
+				return false;
 			searchString_ = s;
-			searchServers_ = servers;
 			regex_ = regex(to!string(escaper(s)), "i");
 			refill();
+			return true;
 		}
 	}
 
@@ -318,7 +323,7 @@ private:
 	Filter filters_ = Filter.NONE;
 
 	string searchString_;
-	bool searchServers_ = true;
+	bool delegate(ServerData*) searchDg_;
 	Regex!char regex_;
 
 
@@ -564,32 +569,9 @@ private:
 		return isFilteredOut(&sd);
 	}
 
-	bool isFilteredOut(in ServerData* sd)
+	bool isFilteredOut(ServerData* sd)
 	{
-		bool matched = searchString_.length == 0;
-
-		if (searchString_.length != 0)
-		{
-			string serverName = sd.server[ServerColumn.NAME];
-
-			if (serverName.matchFirst(regex_)) {
-				matched = true;
-			}
-			else {
-				const cvars = sd.cvars;
-				int i = findString(cvars, "game", 0);
-
-				if (i != -1 && cvars[i][1].matchFirst(regex_)) {
-					matched = true;
-				}
-				else {
-					i = findString(cvars, "gamename", 0);
-					if (i != -1 && cvars[i][1].matchFirst(regex_)) {
-						matched = true;
-					}
-				}
-			}
-		}
+		bool matched = searchString_.length == 0 ? true : searchDg_(sd);
 
 		if (matched) {
 			if (filters_ == Filter.NONE || sd.hasHumans)
@@ -601,6 +583,51 @@ private:
 			return true;
 		}
 	}
+
+	bool filterServer(ServerData* sd)
+	{
+		string serverName = sd.server[ServerColumn.NAME];
+		bool matched = false;
+
+		if (serverName.matchFirst(regex_)) {
+			matched = true;
+		}
+		else {
+			const cvars = sd.cvars;
+			int i = findString(cvars, "game", 0);
+
+			if (i != -1 && cvars[i][1].matchFirst(regex_)) {
+				matched = true;
+			}
+			else {
+				i = findString(cvars, "gamename", 0);
+				if (i != -1 && cvars[i][1].matchFirst(regex_)) {
+					matched = true;
+				}
+			}
+		}
+
+		return matched;
+	}
+
+	bool filterPlayer(ServerData* sd)
+	{
+		if (sd.players.length == 0)
+			return false;
+
+		if (sd.players[0][PlayerColumn.NAME] is null)
+		{
+			addCleanPlayerNames(sd.players);
+		}
+
+		foreach (player; sd.players) {
+			if (player[PlayerColumn.NAME].matchFirst(regex_))
+				return true;
+		}
+
+		return false;
+	}
+
 
 	void updateIpHash(bool reset=true)
 	{

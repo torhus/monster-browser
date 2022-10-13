@@ -641,9 +641,10 @@ final class FilterBar : Group
 		serverFilterButton_ = new Button(filterTypes, SWT.RADIO);
 		serverFilterButton_.setText("Servers");
 		serverFilterButton_.setSelection(true);
+		serverFilterButton_.addSelectionListener(new SearchTypeHandler);
 		auto playerFilterButton = new Button(filterTypes, SWT.RADIO);
 		playerFilterButton.setText("Players");
-		playerFilterButton.setEnabled(false);
+		playerFilterButton.addSelectionListener(new SearchTypeHandler);
 
 		auto layout = new RowLayout;
 		layout.center = true;
@@ -692,11 +693,19 @@ final class FilterBar : Group
 
 	private void updateSearchResults()
 	{
-		serverTable.serverList.setSearchString(filterText_.getText(),
+		bool r = serverTable.serverList.setSearchString(filterText_.getText(),
 		                                   serverFilterButton_.getSelection());
-		refreshServerTable();
+		if (r)
+			refreshServerTable();
 	}
 
+
+	private class SearchTypeHandler : SelectionAdapter {
+		public override void widgetSelected(SelectionEvent e)
+		{
+			updateSearchResults();
+		}
+	}
 
 private:
 	Button notEmptyButton_, hasHumansButton_;
