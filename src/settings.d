@@ -244,6 +244,7 @@ mod=arena
 
 	enum Setting[] defaultSessionState = [{"programVersion", "0.0"},
 	                                 {"filterState", "0"},
+	                                 {"searchType", "0"},
 	                                 {"playerSortOrder", "0"},
 	                                 {"resolution", "0, 0"},
 	                                 {"serverSortOrder", "1"},

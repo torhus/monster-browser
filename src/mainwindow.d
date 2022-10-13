@@ -640,11 +640,18 @@ final class FilterBar : Group
 		                                                      false, false));
 		serverFilterButton_ = new Button(filterTypes, SWT.RADIO);
 		serverFilterButton_.setText("Servers");
-		serverFilterButton_.setSelection(true);
 		serverFilterButton_.addSelectionListener(new SearchTypeHandler);
 		auto playerFilterButton = new Button(filterTypes, SWT.RADIO);
 		playerFilterButton.setText("Players");
 		playerFilterButton.addSelectionListener(new SearchTypeHandler);
+
+		// Restore saved search type
+		if (getSessionStateInt("searchType") == 0)
+			serverFilterButton_.setSelection(true);
+		else
+			playerFilterButton.setSelection(true);
+
+
 
 		auto layout = new RowLayout;
 		layout.center = true;
@@ -681,6 +688,8 @@ final class FilterBar : Group
 	private void saveState()
 	{
 		setSessionState("filterState", to!string(cast(int)filterState));
+		setSessionState("searchType", serverFilterButton_.getSelection() ?
+		                                                            "0" : "1");
 	}
 
 
