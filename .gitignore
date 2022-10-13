@@ -1,5 +1,5 @@
 # Monster Browser build dependencies
-dwt-master
+dwt*
 
 # Monster Browser runtime dependencies
 qstat.exe
