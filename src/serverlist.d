@@ -386,7 +386,7 @@ private:
 			ipHashValid_ = false;
 		}
 
-		debug log("ServerList._sort() took ", timer.millis, " milliseconds.");
+		debug log("ServerList._sort() took %s milliseconds.", timer.millis);
 	}
 
 	/**
