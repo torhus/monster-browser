@@ -16,10 +16,10 @@ import serverdata;
 
 
 ///
-alias ServerHandle = size_t;
+alias ServerHandle = string;
 
 ///
-const ServerHandle InvalidServerHandle = ServerHandle.max;
+const ServerHandle InvalidServerHandle = "";
 
 
 ///
@@ -46,11 +46,14 @@ final class MasterList
 	ServerHandle addServer(ServerData sd)
 	{
 		synchronized (this) {
+			string address = sd.server[ServerColumn.ADDRESS];
 			debug isValid(&sd);
 			if (timedOut(&sd))
 				sd.failCount = 1;
-			servers_ ~= sd;
-			return cast(ServerHandle)(servers_.length - 1);
+
+			assert(!(address in servers_));
+			servers_[address] = sd;
+			return address;
 		}
 	}
 
@@ -69,32 +72,31 @@ final class MasterList
 		synchronized (this) {
 			string address = sd.server[ServerColumn.ADDRESS];
 			debug isValid(&sd);
-			ServerHandle sh = findServer(address);
+			ServerData* oldSd = address in servers_;
 
-			if (sh != InvalidServerHandle) {
-				ServerData* old = &servers_[sh];
+			if (oldSd is null)
+				return InvalidServerHandle;
 
-				// some data is be kept between refreshes
-				sd.server[ServerColumn.COUNTRY] =
-				                              old.server[ServerColumn.COUNTRY];
-				sd.countryName = old.countryName;
-				sd.persistent = old.persistent;
+			// some data is be kept between refreshes
+			sd.server[ServerColumn.COUNTRY] =
+				                        oldSd.server[ServerColumn.COUNTRY];
+			sd.countryName = oldSd.countryName;
+			sd.persistent = oldSd.persistent;
 
-				if (timedOut(&sd)) {
-					old.server[ServerColumn.PING] =
-					                              sd.server[ServerColumn.PING];
-					// clear player count
-					old.setPlayersColumn(0, 0, old.maxClients);
-					old.players = null;
+			if (timedOut(&sd)) {
+				oldSd.server[ServerColumn.PING] =
+					                            sd.server[ServerColumn.PING];
+				// clear player count
+				oldSd.setPlayersColumn(0, 0, oldSd.maxClients);
+				oldSd.players = null;
 
-					old.failCount++;
-				}
-				else {
-					setServerData(sh, sd);
-				}
+				oldSd.failCount++;
+			}
+			else {
+				setServerData(address, sd);
 			}
 
-			return sh;
+			return address;
 		}
 	}
 
@@ -104,16 +106,14 @@ final class MasterList
 	 *
 	 * Returns InvalidServerHandle in case a server with the given address was
 	 * not found.
-	 *
-	 * Complexity is O(n).
 	 */
 	ServerHandle findServer(in char[] address)
 	{
 		synchronized (this) {
-			foreach (sh, sd; servers_) {
-				if (sd.server.length > 0 &&
-				                    sd.server[ServerColumn.ADDRESS] == address)
-					return cast(ServerHandle)sh;
+			if (ServerData* sd = address in servers_) {
+				assert(sd.server.length > 0 &&
+				                   sd.server[ServerColumn.ADDRESS] == address);
+				return sd.server[ServerColumn.ADDRESS];
 			}
 			return InvalidServerHandle;
 		}
@@ -124,10 +124,11 @@ final class MasterList
 	ServerData getServerData(ServerHandle sh)
 	{
 		synchronized (this) {
-			assert(sh < servers_.length);
-			assert(!isEmpty(&servers_[sh]));
-			debug isValid(&servers_[sh]);
-			return servers_[sh];
+			ServerData* sd = sh in servers_;
+			assert(sh !is null);
+			assert(!isEmpty(sd));
+			debug isValid(sd);
+			return *sd;
 		}
 	}
 
@@ -136,8 +137,8 @@ final class MasterList
 	void setServerData(ServerHandle sh, ServerData sd)
 	{
 		synchronized (this) {
-			assert(sh < servers_.length);
-			ServerData* old = &servers_[sh];
+			assert(sh in servers_);
+			ServerData* old = sh in servers_;
 			assert(!isEmpty(old));
 			debug isValid(old);
 			*old = sd;
@@ -160,7 +161,7 @@ final class MasterList
 			foreach (sh, sd; servers_) {
 				if (isEmpty(&sd))
 					continue;
-				result = dg(cast(ServerHandle)sh);
+				result = dg(sh);
 				if (result)
 					break;
 			}
@@ -267,7 +268,7 @@ final class MasterList
 	private {
 		string name_;
 		string fileName_;
-		ServerData[] servers_;
+		ServerData[string] servers_;
 	}
 }
 
@@ -364,7 +365,8 @@ private final class XmlDumper
 
 private final class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 {
-	ServerData[] servers;
+	ServerData[string] servers;
+	ServerData sd;
 
 	private string defaultProtocolVersion_;
 
@@ -389,15 +391,16 @@ private final class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 	override void endElement(const(Ch)[] uri, const(Ch)[] localName,
 	                         const(Ch)[] qName)
 	{
-
+		if (localName == "server") {
+			servers[sd.server[ServerColumn.ADDRESS]] = sd;
+			sd = ServerData.init;
+		}
 	}
 
 
 	// Allocate a new server and add server attributes.
 	private void startServer(Attribute!(Ch)[] attributes)
 	{
-		ServerData sd;
-
 		sd.server.length = ServerColumn.max + 1;
 
 		foreach (ref attr; attributes) {
@@ -430,7 +433,7 @@ private final class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 		// were no protocol_version attribute.
 		if (sd.protocolVersion.length == 0)
 			sd.protocolVersion = defaultProtocolVersion_;
-		servers ~= sd;
+		servers[sd.server[ServerColumn.ADDRESS]] = sd;
 	}
 
 
@@ -446,15 +449,15 @@ private final class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 				cvar[1] = fromEntityCopy(attr.value);
 
 			if (sicmp(cvar[0], "g_gametype") == 0) {
-				servers[$-1].numericGameType = toIntOrDefault(cvar[1], -1);
+				sd.numericGameType = toIntOrDefault(cvar[1], -1);
 			}
 			else if (sicmp(cvar[0], "g_needpass") == 0) {
 				string s = cvar[1] == "0" ? PASSWORD_NO : PASSWORD_YES;
-				servers[$-1].server[ServerColumn.PASSWORDED] = s;
+				sd.server[ServerColumn.PASSWORDED] = s;
 			}
 		}
 
-		servers[$-1].cvars ~= cvar;
+		sd.cvars ~= cvar;
 	}
 
 
@@ -472,7 +475,7 @@ private final class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 				player[PlayerColumn.PING] = fromEntityCopy(attr.value);
 		}
 
-		servers[$-1].players ~= player;
+		sd.players ~= player;
 	}
 
 	// Convert XML entities to characters, unconditionally copying the source.
