@@ -23,7 +23,6 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
@@ -438,7 +437,9 @@ final class GameBar : Group
 	{
 		super(parent, SWT.SHADOW_NONE);
 		setText("Game");
-		setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, true));
+		auto layoutData = new GridData(SWT.CENTER, SWT.CENTER, false, true);
+		layoutData.verticalAlignment = GridData.FILL;
+		setLayoutData(layoutData);
 
 		// game selection
 		gamesCombo_ = new Combo(this, SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -490,9 +491,10 @@ final class GameBar : Group
 			}
 		});
 
-		auto layout = new RowLayout;
+		auto layout = new RowLayout();
+		layout.center = true;
 		layout.fill = true;
-		layout.marginHeight = 2;
+		layout.marginTop = 11;
 		layout.marginWidth = 2;
 		setLayout(layout);
 	}
@@ -603,8 +605,9 @@ final class FilterBar : Group
 		filterText_ = new Text(this, SWT.SINGLE | SWT.BORDER | SWT.SEARCH /*|
 		                                  SWT.ICON_SEARCH | SWT.ICON_CANCEL*/);
 		filterText_.setMessage("Search");
-		auto filterTextData = new RowData();
-		filterTextData.width = calcFieldWidth(filterText_, 13);
+		auto filterTextData = new GridData();
+		filterTextData.horizontalIndent = 3;
+		filterTextData.widthHint = calcFieldWidth(filterText_, 13);
 		filterText_.setLayoutData(filterTextData);
 		filterText_.addSelectionListener(new class SelectionAdapter {
 			public override void widgetDefaultSelected(SelectionEvent e)
@@ -635,9 +638,10 @@ final class FilterBar : Group
 		});
 
 		auto filterTypes = new Composite(this, 0);
-		filterTypes.setLayout(new GridLayout(1, false));
-		filterTypes.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER,
-		                                                      false, false));
+		auto filterTypesLayout = new GridLayout(1, false);
+		filterTypesLayout.marginLeft = 5;
+		filterTypes.setLayout(filterTypesLayout);
+
 		serverFilterButton_ = new Button(filterTypes, SWT.RADIO);
 		serverFilterButton_.setText("Servers");
 		serverFilterButton_.addSelectionListener(new SearchTypeHandler);
@@ -653,12 +657,10 @@ final class FilterBar : Group
 
 
 
-		auto layout = new RowLayout;
-		layout.center = true;
+		auto layout = new GridLayout(5, false);
 		layout.marginHeight = 0;
-		layout.marginWidth = 2;
-		layout.spacing = 0,
-		layout.pack = true;
+		layout.marginLeft = 2;
+		layout.horizontalSpacing = 0;
 		setLayout(layout);
 	}
 
