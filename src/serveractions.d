@@ -644,6 +644,9 @@ class ServerRetrievalController
 	{
 		debug serverList_.verifySorted();
 
+		// FIXME: Ugly workaround for sorting bug, #33.
+		serverList_.sort();
+
 		int index = -1;
 		if (autoSelect.length) {
 			// FIXME: select them all, not just the first one
