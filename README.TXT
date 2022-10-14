@@ -4,10 +4,9 @@ Monster Browser Instructions
 Basic Usage
 -----------
 Select a game from the drop down box on the right, where it says "Smokin' Guns"
-the first time you run the program. If the game or mod you want is not listed,
-just type its gamename there and press <Enter>. If it doesn't use Id's Quake 3
-master server, you need to create a custom config for it, see 'Customizing the
-Game List' below.
+the first time you run the program. If it doesn't use Id's Quake 3 master
+server, you need to create a custom config for it, see 'Customizing the Game
+List' below.
 
 To update the server list, press the 'Refresh all' button. This happens
 automatically at startup, or the first time each session you switch to a game.
