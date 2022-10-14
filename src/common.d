@@ -46,7 +46,7 @@ shared string dataDir;  /// Absolute path to where settings and data is stored.
 shared string logDir;  /// Absolute path to where the log file is.
 
 enum APPNAME = "Monster Browser";
-enum FINAL_VERSION = "0.9e";
+enum FINAL_VERSION = "0.9f";
 
 __gshared Clipboard clipboard;
 __gshared Timer globalTimer;

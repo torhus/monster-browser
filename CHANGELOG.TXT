@@ -1,6 +1,6 @@
-Work in progress
-----------------
-- New: Filter servers on name, game/gamename cvars, or on player names.
+v0.9f - 2022-10-14
+------------------
+- New: Filter servers on name and game/gamename cvars, or on player names.
 - Change: Game selection dropdown is no no longer editable, use the new filter
           feature instead.
 
