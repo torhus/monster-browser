@@ -37,6 +37,7 @@ class ThreadManager
 	this()
 	{
 		thread_ = new Thread(&dispatch);
+		thread_.isDaemon(true);
 		thread_.name = "secondary";
 		semaphore_ = new Semaphore;
 		thread_.start();

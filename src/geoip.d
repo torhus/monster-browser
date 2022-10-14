@@ -210,13 +210,15 @@ Image getFlagImage(in char[] countryCode)
 /// To be called before program exit.
 void disposeFlagImages()
 {
+	if (geoIpReady) {
+		geoIpReady = false;
+		MMDB_close(&mmdb);
+	}
+
 	foreach (key, val; flagCache)
 		if (val)
 			val.dispose;
 
-	if (geoIpReady) {
-		MMDB_close(&mmdb);
-	}
 }
 
 
