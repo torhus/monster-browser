@@ -436,10 +436,14 @@ private:
 
 		void widgetDefaultSelected(SelectionEvent e)
 		{
+			int index = table_.getSelectionIndex();
+
+			if (index < 0)
+				return;
+
 			widgetSelected(e);
 			if (stopServerRefresh_ !is null)
 				stopServerRefresh_(true);
-			int index = table_.getSelectionIndex();
 			joinServer(serverList_.gameName, serverList_.getFiltered(index));
 		}
 	}
