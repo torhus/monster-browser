@@ -44,8 +44,6 @@ dub build --arch=x86
 Building on Linux
 -----------------
 dub build
-Should probably use the 4.7 branch of DWT, the master branch has some
-dependencies that are hard to find nowadays.
 
 
 Version IDs
