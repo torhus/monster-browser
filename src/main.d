@@ -20,6 +20,7 @@ import org.eclipse.swt.widgets.Listener;
 
 import colorednames;
 import common;
+import filewatcher;
 import mainwindow;
 import messageboxes;
 import runtools: runtoolsInit;
@@ -128,6 +129,8 @@ private void _main(string[] args)
 		error("No valid game configurations were found.");
 	else
 		switchToGame(gameBar.selectedGame);
+
+	startFileWatching();
 
 	// main loop
 	Display display = Display.getDefault;

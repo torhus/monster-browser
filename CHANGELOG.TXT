@@ -1,6 +1,7 @@
 Work in progress
 ----------------
 - New: Automatic check for new releases on startup.
+- New: The server list is updated automatically whenever mods.ini is edited.
 - Fix: Server lists were not properly updated after editing game configuration.
 
 v0.9f - 2022-10-14

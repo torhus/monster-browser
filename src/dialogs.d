@@ -411,14 +411,7 @@ class SettingsDialog
 		gamesButton.addSelectionListener(new class SelectionAdapter {
 			public override void widgetSelected(SelectionEvent e)
 			{
-				try {
-					lastModified_ = timeLastModified(settings.gamesFileName);
-					Program.launch(settings.gamesFileName);
-					checkGameConfig_ = true;
-				}
-				catch (FileException e) {
-					error(e.toString());
-				}
+				Program.launch(settings.gamesFileName);
 			}
 		});
 
@@ -460,27 +453,6 @@ class SettingsDialog
 					setSetting("checkForUpdates", s);
 				}
 
-				// in case the game list was edited
-				if (checkGameConfig_) {
-					try {
-						if (timeLastModified(gamesFileName) > lastModified_) {
-							string name = serverTable.serverList.gameName;
-
-							settings.loadGamesFile();
-							gameBar.setGames(settings.gameNames);
-
-							int i = findString(settings.gameNames, name);
-							string switchTo = (i != -1) ? name :
-							                             settings.gameNames[0];
-							switchToGame(switchTo, true);
-							updateCachedServerLists(settings.gameNames);
-						}
-					}
-					catch (FileException e) {
-						error(e.toString());
-					}
-				}
-
 				shell_.close();
 			}
 		};
@@ -508,8 +480,6 @@ private:
 	Shell parent_, shell_;
 	Button okButton_, cancelButton_;
 	Button startupDefaultButton_, startupLastButton_;
-	bool checkGameConfig_ = false;
-	SysTime lastModified_;
 	Text pathText_;
 	int result_ = SWT.CANCEL;
 	Spinner sqSpinner_;

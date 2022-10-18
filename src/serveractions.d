@@ -45,7 +45,7 @@ __gshared ServerList[char[]] serverListCache;
 
 
 ///
-void updateCachedServerLists(string[] validGameNames)
+void updateServerListCache(string[] validGameNames)
 {
 	foreach (name; serverListCache.keys) {
 		auto list = serverListCache[name];
