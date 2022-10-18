@@ -13,6 +13,7 @@ import std.regex;
 import std.stdio;
 import std.string;
 import std.traits;
+import std.uni : sicmp;
 
 import java.lang.wrappers;
 import org.eclipse.swt.SWT;
@@ -243,12 +244,53 @@ void sortStringArray(string[][] arr, int column=0, bool reverse=false)
 {
 	bool less(in char[][] a, in char[][] b)
 	{
-		int result = icmp(a[column], b[column]);
+		int result = sicmp(a[column], b[column]);
 
 		return reverse ? result >= 0 : result < 0;
 	}
 
 	arr.sort!(less);
+}
+
+
+/**
+ * Find a cvar with the specified key.
+ *
+ * Returns the index, or -1 if not found.
+ *
+ * Note: Uses binary search, comparing with sicmp.
+ */
+ptrdiff_t findCvar(in char[][][] cvars, in char[] key)
+{
+	ptrdiff_t low = 0, high = cvars.length - 1;
+
+	while (low <= high) {
+		ptrdiff_t mid = low + (high - low) / 2;
+
+		// This comparison has to be the same as when the array was sorted.
+		ptrdiff_t r = sicmp(cvars[mid][0], key);
+		if (r == 0)
+			return mid;
+
+		if (r < 0)
+			low = mid + 1;
+		else
+			high = mid - 1;
+	}
+
+	return -1;
+}
+
+
+/**
+ * Find a cvar with the specified key.
+ *
+ * Returns the cvar, or null if not found.
+ */
+string[] getCvar(string[][] cvars, in char[] key)
+{
+	auto i = cvars.findCvar(key);
+	return (i != -1) ? cvars[i] : null;
 }
 
 

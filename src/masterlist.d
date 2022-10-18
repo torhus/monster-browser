@@ -398,6 +398,24 @@ private final class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 	                         const(Ch)[] qName)
 	{
 		if (localName == "server") {
+			auto cvars = sd.cvars;
+
+			sortStringArray(cvars);
+
+			if (auto cvar = cvars.getCvar("g_gametype")) {
+				sd.numericGameType = toIntOrDefault(cvar[1], -1);
+			}
+			if (auto cvar = cvars.getCvar("g_needpass")) {
+				string s = cvar[1] == "0" ? PASSWORD_NO : PASSWORD_YES;
+				sd.server[ServerColumn.PASSWORDED] = s;
+			}
+			if (auto cvar = cvars.getCvar("game")) {
+				sd.server[ServerColumn.CVAR_GAME] = cvar[1];
+			}
+			if (auto cvar = cvars.getCvar("gamename")) {
+				sd.server[ServerColumn.CVAR_GAMENAME] = cvar[1];
+			}
+
 			servers[sd.server[ServerColumn.ADDRESS]] = sd;
 			sd = ServerData.init;
 		}
@@ -439,7 +457,6 @@ private final class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 		// were no protocol_version attribute.
 		if (sd.protocolVersion.length == 0)
 			sd.protocolVersion = defaultProtocolVersion_;
-		servers[sd.server[ServerColumn.ADDRESS]] = sd;
 	}
 
 

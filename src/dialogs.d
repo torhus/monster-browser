@@ -397,6 +397,13 @@ class SettingsDialog
 		sqSpinner_.setMaximum(99);
 		sqSpinner_.setSelection(getSettingInt("simultaneousQueries"));
 
+		// Cvar columns
+		auto cvarComposite = new Composite(mainComposite, 0);
+		cvarComposite.setLayout(new GridLayout());
+		cvarButton_ = new Button(cvarComposite, SWT.CHECK);
+		cvarButton_.setText("Show columns for the game and gamename cvars");
+		cvarButton_.setSelection(getSetting("showExtraColumns") == "true");
+
 		// Update checker
 		auto updComposite = new Composite(mainComposite, 0);
 		updComposite.setLayout(new GridLayout());
@@ -440,6 +447,10 @@ class SettingsDialog
 					if (s != "0" && getSettingInt("checkForUpdates") == 0)
 						startUpdateChecker();
 					setSetting("checkForUpdates", s);
+
+					s = cvarButton_.getSelection() ? "true" : "false";
+					setSetting("showExtraColumns", s);
+					serverTable.showExtraColumns(cvarButton_.getSelection());
 				}
 
 				shell_.close();
@@ -472,7 +483,7 @@ private:
 	Text pathText_;
 	int result_ = SWT.CANCEL;
 	Spinner sqSpinner_;
-	Button updButton_;
+	Button cvarButton_, updButton_;
 }
 
 

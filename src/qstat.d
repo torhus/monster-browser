@@ -169,6 +169,12 @@ do {
 		cvar[1] = s[i+1..$];
 
 		switch (cvar[0]) {
+			case "game":
+				sd.server[ServerColumn.CVAR_GAME] = cvar[1];
+				break;
+			case "gamename":
+				sd.server[ServerColumn.CVAR_GAMENAME] = cvar[1];
+				break;
 			case "gametype":
 				try {
 					sd.numericGameType = to!int(cvar[1]);

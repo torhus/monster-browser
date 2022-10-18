@@ -237,6 +237,7 @@ mod=arena
 		{"lastMod", "Smokin' Guns"},
 		{"maxTimeouts", "3"},
 		{"minimizeOnGameLaunch", "true"},
+		{"showExtraColumns", "false"},
 		{"showFlags", "true"},
 		{"simultaneousQueries", "10"},
 		{"startWithLastMod", "true"},

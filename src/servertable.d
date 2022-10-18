@@ -3,6 +3,7 @@ module servertable;
 import std.ascii : newline;
 import std.conv;
 import std.math;
+import std.range;
 import std.string;
 
 import java.io.ByteArrayInputStream;
@@ -51,7 +52,7 @@ __gshared ServerTable serverTable;  ///
 
 // should correspond to serverlist.ServerColumn
 immutable serverHeaders = [" ", "Name", "PW", "Ping", "Players", "Game type",
-                           "Map", "IP"];
+                           "Map", "IP", "[game]", "[gamename]"];
 
 
 /**
@@ -70,10 +71,14 @@ class ServerTable
 		table_.setLinesVisible(true);
 
 		int[] widths = parseIntList(getSessionState("serverColumnWidths"),
-		                                             serverHeaders.length, 50);
+		                                             serverHeaders.length, 80);
+
+		bool showExtraColumns = getSetting("showExtraColumns") == "true";
 
 		// add columns
 		foreach (i, header; serverHeaders) {
+			if (!showExtraColumns && i > ServerColumn.ADDRESS)
+				break;
 			TableColumn column = new TableColumn(table_, SWT.NONE);
 			column.setMoveable(true);
 			column.setText(header);
@@ -100,11 +105,11 @@ class ServerTable
 		}
 
 
-		Listener sortListener = new SortListener;
+		sortListener_ = new SortListener;
 
 		for (int i = 0; i < table_.getColumnCount(); i++) {
 			TableColumn c = table_.getColumn(i);
-			c.addListener(SWT.Selection, sortListener);
+			c.addListener(SWT.Selection, sortListener_);
 		}
 
 		// restore sort order from previous session
@@ -208,7 +213,33 @@ class ServerTable
 	bool sortReversed() { return (table_.getSortDirection() == SWT.DOWN); }
 
 	/// Returns the server list's Table widget object.
-	Table getTable() { return table_; };
+	Table getTable() { return table_; }
+
+	///
+	void showExtraColumns(bool show)
+	{
+		if (!show && table_.getColumnCount() == serverHeaders.length) {
+			auto columns = table_.getColumns();
+			columns[ServerColumn.CVAR_GAME].dispose();
+			columns[ServerColumn.CVAR_GAMENAME].dispose();
+		}
+		else if (show && table_.getColumnCount() == (serverHeaders.length - 2))
+		                                                                      {
+			int start = ServerColumn.CVAR_GAME;
+			int[] widths = parseIntList(getSessionState("serverColumnWidths"),
+			                                         serverHeaders.length, 80);
+
+			foreach (header, width; zip(serverHeaders, widths)[start..$]) {
+				auto column = new TableColumn(table_, SWT.NONE);
+				column.setMoveable(true);
+				column.setText(header);
+				column.setWidth(width);
+				column.addListener(SWT.Selection, sortListener_);
+			}
+
+			table_.clearAll();
+		}
+	}
 
 	///
 	void notifyRefreshStarted(void delegate(bool) stopServerRefresh=null)
@@ -406,6 +437,7 @@ private:
 	void delegate(bool) stopServerRefresh_;
 	bool refreshInProgress_ = false;
 	Color timeOutColor_;
+	Listener sortListener_;
 
 	class SetDataListener : Listener {
 		void handleEvent(Event e)
@@ -420,7 +452,6 @@ private:
 			}
 
 			string countryCode = sd.server[ServerColumn.COUNTRY];
-			string ip = sd.server[ServerColumn.ADDRESS];
 
 			if (sd.countryName.length)
 				item.setText(ServerColumn.COUNTRY, sd.countryName);
