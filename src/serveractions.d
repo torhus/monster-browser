@@ -45,6 +45,23 @@ MasterListCacheEntry*[char[]] masterLists;
 ServerList[char[]] serverListCache;
 
 
+///
+void updateCachedServerLists(in char[][] validGameNames)
+{
+	foreach (name; serverListCache.keys) {
+		auto list = serverListCache[name];
+
+		if (list is serverTable.serverList)
+			continue;
+
+		if (validGameNames.findString(name) != -1)
+			list.refillFromMaster(true);
+		else
+			serverListCache.remove(name);
+	}
+}
+
+
 /**
  * Switches the active game.
  *
@@ -52,7 +69,7 @@ ServerList[char[]] serverListCache;
  * a master server if there's no pre-existing data for the game, etc.  Most of
  * the work is done in the secondary thread.
  */
-void switchToGame(in char[] name)
+void switchToGame(in char[] name, bool configChanged=false)
 {
 	static char[] gameName;
 
@@ -120,6 +137,7 @@ void switchToGame(in char[] name)
 		serverTable.clear();
 
 		if (serverList.complete) {
+			serverList.refillFromMaster(configChanged);
 			serverTable.forgetSelection();
 			serverTable.fullRefresh();
 			statusBar.setLeft("Ready");

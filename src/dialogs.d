@@ -436,10 +436,15 @@ class SettingsDialog
 					try {
 						if (modified(gamesFileName) > lastModified_) {
 							char[] name = serverTable.serverList.gameName;
+
 							settings.loadGamesFile();
 							filterBar.setGames(settings.gameNames);
-							switchToGame((findString(settings.gameNames, name)
-							            != -1) ? name : settings.gameNames[0]);
+
+							int i = findString(settings.gameNames, name);
+							char[] switchTo = (i != -1) ? name :
+							                             settings.gameNames[0];
+							switchToGame(switchTo, true);
+							updateCachedServerLists(settings.gameNames);
 						}
 					}
 					catch (IOException e) {

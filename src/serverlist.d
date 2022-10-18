@@ -90,10 +90,10 @@ final class ServerList
 	/**
 	 * Clear the filtered list and refill it from the master list.
 	 *
-	 * Only servers previously added by calling add() or replace() will be
-	 * considered.
+	 * By default only servers previously added by calling add() or replace()
+	 * will be considered, set checkForNew to true to include all servers.
 	 */
-	synchronized void refillFromMaster()
+	synchronized void refillFromMaster(bool checkForNew=false)
 	{
 		GameConfig game = getGameConfig(gameName_);
 		auto newHash = new typeof(ipHash_);
@@ -103,7 +103,7 @@ final class ServerList
 			ServerData sd = master_.getServerData(sh);
 			char[] address = sd.server[ServerColumn.ADDRESS];
 
-			if (address in ipHash_ && matchGame(&sd, game)) {
+			if ((address in ipHash_ || checkForNew) && matchGame(&sd, game)) {
 				newHash[address] = -1;
 				sd.server[ServerColumn.GAMETYPE] =
 				                     getGameTypeName(game, sd.numericGameType);

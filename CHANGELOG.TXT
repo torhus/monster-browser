@@ -1,3 +1,13 @@
+Work in progress
+----------------
+- Fix: Server lists were not properly updated after editing game configuration.
+
+v0.9f - 2022-10-14
+------------------
+- New: Filter servers on name and game/gamename cvars, or on player names.
+- Change: Game selection dropdown is no no longer editable, use the new filter
+          feature instead.
+
 v0.9e - 2022-09-02
 ------------------
 - New: Configuration for OpenArena was added.
