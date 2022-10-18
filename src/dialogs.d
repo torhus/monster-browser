@@ -452,10 +452,15 @@ class SettingsDialog
 					try {
 						if (timeLastModified(gamesFileName) > lastModified_) {
 							string name = serverTable.serverList.gameName;
+
 							settings.loadGamesFile();
 							gameBar.setGames(settings.gameNames);
-							switchToGame((findString(settings.gameNames, name)
-							            != -1) ? name : settings.gameNames[0]);
+
+							int i = findString(settings.gameNames, name);
+							string switchTo = (i != -1) ? name :
+							                             settings.gameNames[0];
+							switchToGame(switchTo, true);
+							updateCachedServerLists(settings.gameNames);
 						}
 					}
 					catch (FileException e) {

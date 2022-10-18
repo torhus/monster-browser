@@ -86,12 +86,12 @@ final class ServerList
 	/**
 	 * Clear the filtered list and refill it from the master list.
 	 *
-	 * Only servers previously added by calling add() or replace() will be
-	 * considered.
+	 * By default only servers previously added by calling add() or replace()
+	 * will be considered, set checkForNew to true to include all servers.
 	 */
-	void refillFromMaster()
+	void refillFromMaster(bool checkForNew=false)
 	{
-		refill();
+		refill(checkForNew);
 	}
 
 
@@ -236,7 +236,7 @@ final class ServerList
 
 		synchronized (this) {
 			filters_ = newFilters;
-			refill();
+			refill(false);
 		}
 	}
 
@@ -254,7 +254,7 @@ final class ServerList
 				return false;
 			searchString_ = s;
 			regex_ = regex(to!string(escaper(s)), "i");
-			refill();
+			refill(false);
 			return true;
 		}
 	}
@@ -474,7 +474,7 @@ private:
 
 
 	/// This is private to avoid triggering the invariant.
-	void refill()
+	void refill(bool checkForNew)
 	{
 		GameConfig game = getGameConfig(gameName_);
 		typeof(ipHash_) newHash;
@@ -485,7 +485,7 @@ private:
 			ServerData sd = master_.getServerData(sh);
 			string address = sd.server[ServerColumn.ADDRESS];
 
-			if (address in ipHash_ && matchGame(&sd, game)) {
+			if ((address in ipHash_ || checkForNew) && matchGame(&sd, game)) {
 				newHash[address] = -1;
 				sd.server[ServerColumn.GAMETYPE] =
 				                     getGameTypeName(game, sd.numericGameType);

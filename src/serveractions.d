@@ -5,6 +5,7 @@
 module serveractions;
 
 import core.memory;
+import std.algorithm;
 import std.conv;
 import std.file;
 import std.stdio;
@@ -43,6 +44,23 @@ __gshared MasterListCacheEntry*[char[]] masterLists;
 __gshared ServerList[char[]] serverListCache;
 
 
+///
+void updateCachedServerLists(string[] validGameNames)
+{
+	foreach (name; serverListCache.keys) {
+		auto list = serverListCache[name];
+
+		if (list is serverTable.serverList)
+			continue;
+
+		if (validGameNames.canFind(name))
+			list.refillFromMaster(true);
+		else
+			serverListCache.remove(name);
+	}
+}
+
+
 /**
  * Switches the active game.
  *
@@ -50,7 +68,7 @@ __gshared ServerList[char[]] serverListCache;
  * a master server if there's no pre-existing data for the game, etc.  Most of
  * the work is done in the secondary thread.
  */
-void switchToGame(string name)
+void switchToGame(string name, bool configChanged=false)
 {
 	__gshared string gameName;
 
@@ -112,6 +130,7 @@ void switchToGame(string name)
 		filterBar.clearSearch();
 
 		if (serverList.complete) {
+			serverList.refillFromMaster(configChanged);
 			serverTable.forgetSelection();
 			serverTable.fullRefresh();
 			statusBar.setLeft("Ready");
