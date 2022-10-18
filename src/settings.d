@@ -256,6 +256,7 @@ mod=arena
 		{"cvarColumnWidths", "90, 90"},
 		{"playerColumnWidths", "100, 40, 40"},
 		{"serverColumnWidths", "27, 250, 21, 32, 50, 40, 90, 130"},
+		{"serverColumnOrder", "0, 1, 2, 3, 4, 5, 6, 7"},
 		{"windowPosition", "150, 150"},
 		// No default width, calculated on first startup.
 		{"windowSize", "-1, 640"},

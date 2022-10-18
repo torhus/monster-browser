@@ -75,8 +75,14 @@ class ServerTable
 		// add columns
 		foreach (i, header; serverHeaders) {
 			TableColumn column = new TableColumn(table_, SWT.NONE);
+			column.setMoveable(true);
 			column.setText(header);
 			column.setWidth(widths[i]);
+		}
+
+		int[] order = parseIntList(getSessionState("serverColumnOrder"));
+		if (order.length == table_.getColumnCount()) {
+			table_.setColumnOrder(order);
 		}
 
 		table_.getColumn(ServerColumn.PASSWORDED).setAlignment(SWT.CENTER);
@@ -166,6 +172,9 @@ class ServerTable
 
 		string serverWidth = toCsv(getColumnWidths(serverTable.getTable()));
 		setSessionState("serverColumnWidths", serverWidth);
+
+		string columnOrder = toCsv(serverTable.getTable().getColumnOrder());
+		setSessionState("serverColumnOrder", columnOrder);
 	}
 
 

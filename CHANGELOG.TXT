@@ -6,6 +6,7 @@ v0.9g - 2022-10.21
 ------------------
 - New: Automatic check for new releases on startup.
 - New: The server list is updated automatically whenever mods.ini is edited.
+- New: Reorderable columns in the server table, just drag the headers.
 - Change: Game configuration edit button moved from settings to tool bar.
 - Fix: Server lists were not properly updated after editing game configuration.
 
