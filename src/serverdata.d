@@ -202,7 +202,7 @@ bool matchGame(in ServerData* sd, in GameConfig game)
  */
 string getGameTypeName(in GameConfig game, int type)
 {
-	string[] gtypes = game.gameTypes;
+	const(string)[] gtypes = game.gameTypes;
 
 	if (type < 0) {
 		return "???";
@@ -230,9 +230,9 @@ bool timedOut(in ServerData* sd)
 
 
 ///
-enum defaultGameTypes = ["FFA", "1v1", "SP", "TDM", "CTF",
-                         /* "OFCTF", "Overload", "Harvester", */
-                        ];
+immutable defaultGameTypes = ["FFA", "1v1", "SP", "TDM", "CTF",
+                           /* "OFCTF", "Overload", "Harvester", */
+                             ];
 
 ///
 __gshared string[][string] gameTypes;

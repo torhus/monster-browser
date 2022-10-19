@@ -50,7 +50,7 @@ import settings;
 __gshared ServerTable serverTable;  ///
 
 // should correspond to serverlist.ServerColumn
-enum serverHeaders =
+immutable serverHeaders =
                    [" ", "Name", "PW", "Ping", "Players", "Game", "Map", "IP"];
 
 
