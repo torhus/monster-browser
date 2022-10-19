@@ -231,38 +231,40 @@ mod=arena
 		string name;
 		string value;
 	}
-	enum Setting[] defaults = [{"coloredNames", "true"},
-	                      {"lastMod", "Smokin' Guns"},
-	                      {"maxTimeouts", "3"},
-	                      {"minimizeOnGameLaunch", "true"},
-	                      {"showFlags", "true"},
-	                      {"simultaneousQueries", "10"},
-	                      {"startWithLastMod", "true"},
-	                      {"startupAction", "1"},
-	                      {"windowMaximized", "false"},
-	                     ];
 
-	enum Setting[] defaultSessionState = [{"programVersion", "0.0"},
-	                                 {"filterState", "0"},
-	                                 {"searchType", "0"},
-	                                 {"playerSortOrder", "0"},
-	                                 {"resolution", "0, 0"},
-	                                 {"serverSortOrder", "1"},
-	                                 {"middleWeights", "16,5"},
-	                                 {"rightWeights", "1,1"},
-	                                 {"cvarColumnWidths", "90,90"},
-	                                 {"playerColumnWidths", "100,40,40"},
-	                                 {"serverColumnWidths",
-	                                              "27,250,21,32,50,40,90,130"},
-	                                 {"windowPosition", "150, 150"},
-	                          // No default width, calculated on first startup.
-	                                 {"windowSize", "-1, 640"},
-	                                 {"rconWindowPosition", "100, 100"},
-	                                 {"rconWindowSize", "640, 480"},
-	                                 {"addServersAsPersistent", "true"},
-	                                 {"saveRconPasswords", "true"},
-	                                 {"saveServerPasswords", "true"},
-	                                ];
+	enum Setting[] defaults = [
+		{"coloredNames", "true"},
+		{"lastMod", "Smokin' Guns"},
+		{"maxTimeouts", "3"},
+		{"minimizeOnGameLaunch", "true"},
+		{"showFlags", "true"},
+		{"simultaneousQueries", "10"},
+		{"startWithLastMod", "true"},
+		{"startupAction", "1"},
+		{"windowMaximized", "false"},
+	];
+
+	enum Setting[] defaultSessionState = [
+		{"programVersion", "0.0"},
+		{"filterState", "0"},
+		{"searchType", "0"},
+		{"playerSortOrder", "0"},
+		{"resolution", "0, 0"},
+		{"serverSortOrder", "1"},
+		{"middleWeights", "16, 5"},
+		{"rightWeights", "1, 1"},
+		{"cvarColumnWidths", "90, 90"},
+		{"playerColumnWidths", "100, 40, 40"},
+		{"serverColumnWidths", "27, 250, 21, 32, 50, 40, 90, 130"},
+		{"windowPosition", "150, 150"},
+		// No default width, calculated on first startup.
+		{"windowSize", "-1, 640"},
+		{"rconWindowPosition", "100, 100"},
+		{"rconWindowSize", "640, 480"},
+		{"addServersAsPersistent", "true"},
+		{"saveRconPasswords", "true"},
+		{"saveServerPasswords", "true"},
+	];
 }
 
 
