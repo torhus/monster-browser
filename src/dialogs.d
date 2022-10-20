@@ -39,6 +39,7 @@ import serverdata;
 import serverlist;
 import servertable;
 import settings;
+import updatecheck;
 
 
 template Tuple(E...) { alias Tuple = E; }
@@ -397,6 +398,13 @@ class SettingsDialog
 		sqSpinner_.setMaximum(99);
 		sqSpinner_.setSelection(getSettingInt("simultaneousQueries"));
 
+		// Update checker
+		auto updComposite = new Composite(mainComposite, 0);
+		updComposite.setLayout(new GridLayout());
+		updButton_ = new Button(updComposite, SWT.CHECK);
+		updButton_.setText("Check for new version on startup");
+		updButton_.setSelection(cast(bool)getSettingInt("checkForUpdates"));
+
 		// game configuration
 		Button gamesButton = new Button(mainComposite, SWT.PUSH);
 		gamesButton.setText("Game configuration");
@@ -445,6 +453,11 @@ class SettingsDialog
 
 					int sq = sqSpinner_.getSelection();
 					setSetting("simultaneousQueries", to!string(sq));
+
+					s = updButton_.getSelection() ? "1" : "0";
+					if (s != "0" && getSettingInt("checkForUpdates") == 0)
+						startUpdateChecker();
+					setSetting("checkForUpdates", s);
 				}
 
 				// in case the game list was edited
@@ -500,6 +513,7 @@ private:
 	Text pathText_;
 	int result_ = SWT.CANCEL;
 	Spinner sqSpinner_;
+	Button updButton_;
 }
 
 

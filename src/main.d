@@ -27,6 +27,7 @@ import serveractions;
 import servertable;
 import settings;
 import threadmanager;
+import updatecheck;
 
 
 int main(string[] args) ///
@@ -115,8 +116,10 @@ private void _main(string[] args)
 	threadManager = new ThreadManager;
 
 	mainWindow.open();
-
 	serverTable.getTable.setFocus();
+
+	if (getSettingInt("checkForUpdates"))
+		startUpdateChecker();
 
 	runtoolsInit();
 	initNameColors();

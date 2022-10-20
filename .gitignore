@@ -4,6 +4,7 @@ dwt*
 # Monster Browser runtime dependencies
 qstat.exe
 GeoLite2-Country.mmdb
+libcurl.dll
 libmaxminddb.dll
 maxminddb.dll
 

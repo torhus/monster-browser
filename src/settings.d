@@ -233,6 +233,7 @@ mod=arena
 	}
 
 	enum Setting[] defaults = [
+		{"checkForUpdates", "1"},
 		{"coloredNames", "true"},
 		{"lastMod", "Smokin' Guns"},
 		{"maxTimeouts", "3"},

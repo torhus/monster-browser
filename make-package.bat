@@ -1,6 +1,7 @@
 @set FILES=^
 CHANGELOG.TXT ^
 GeoLite2-Country.mmdb ^
+libcurl.dll ^
 libmaxminddb.dll ^
 MonsterBrowser.exe ^
 portable.txt ^
