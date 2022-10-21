@@ -5,11 +5,11 @@ environment:
 install: |
   cd %BASEDIR%
   cd
-  curl -sS -o dmd.7z https://downloads.dlang.org/releases/2.x/2.098.1/dmd.2.098.1.windows.7z
-  curl -sSL -o deps.zip https://github.com/torhus/monster-browser/files/9473908/monsterbrowser_deps.zip
+  curl -sS -o dmd.7z https://downloads.dlang.org/releases/2.x/2.100.2/dmd.2.100.2.windows.7z
+  curl -sSL -o deps.zip https://github.com/torhus/monster-browser/files/9840031/monsterbrowser_deps-09g.zip
   7z x dmd.7z > NUL
   unzip -q deps.zip
-  for %%f in (qstat.exe libmaxminddb.dll GeoLite2-Country.mmdb) do copy %%f monster-browser\
+  for %%f in (qstat.exe libcurl.dll libmaxminddb.dll GeoLite2-Country.mmdb) do copy %%f monster-browser\
   cd monster-browser
   path %BASEDIR%\dmd2\windows\bin;%PATH%
 build_script: |

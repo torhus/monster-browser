@@ -1,14 +1,14 @@
 This program is written in the Digital Mars D programming language.  It should
 be easy to pick up, due to its similarity to C/C++ and Java.
 
-Some of the dependencies mentioned below are included in this package:
-https://github.com/torhus/monster-browser/files/9473908/monsterbrowser_deps.zip
+Runtime dependencies for the program:
+https://github.com/torhus/monster-browser/files/9840031/monsterbrowser_deps-09g.zip
 
 Useful links
 ------------
 D compiler:
 http://dlang.org/download.html
-Currently I'm using DMD 2.098.1.
+Currently I'm using DMD 2.100.2
 
 D docs:
 Language: http://dlang.org/spec/spec.html
@@ -19,7 +19,7 @@ D support:
 http://www.digitalmars.com/NewsGroup.html
 irc://irc.freenode.org/D
 
-DUB for building:
+DUB is used for building (comes with DMD):
 https://github.com/dlang/dub
 
 
@@ -67,7 +67,7 @@ quit      - Print time since startup and then quit, after loading the server
 
 
 -----------
-This external tool is required for Monster Browser to operate:
+QStat is used for most communication with master and game servers:
 https://github.com/Unity-Technologies/qstat
 
 
