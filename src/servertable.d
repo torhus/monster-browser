@@ -50,8 +50,8 @@ import settings;
 __gshared ServerTable serverTable;  ///
 
 // should correspond to serverlist.ServerColumn
-immutable serverHeaders =
-                   [" ", "Name", "PW", "Ping", "Players", "Game", "Map", "IP"];
+immutable serverHeaders = [" ", "Name", "PW", "Ping", "Players", "Game type",
+                           "Map", "IP"];
 
 
 /**
