@@ -24,6 +24,7 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
@@ -491,11 +492,18 @@ final class GameBar : Group
 			}
 		});
 
-		auto layout = new RowLayout();
-		layout.center = true;
-		layout.fill = true;
-		layout.marginTop = 11;
-		layout.marginWidth = 2;
+		auto editButton = new Button(this, 0);
+		editButton.setText("Edit");
+		editButton.addSelectionListener(new class SelectionAdapter {
+			public override void widgetSelected(SelectionEvent e)
+			{
+				Program.launch(settings.gamesFileName);
+			}
+		});
+
+		auto layout = new GridLayout(2, false);
+		layout.marginTop = 5;
+		layout.horizontalSpacing = 7;
 		setLayout(layout);
 	}
 

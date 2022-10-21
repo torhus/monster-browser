@@ -17,7 +17,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
-import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -404,16 +403,6 @@ class SettingsDialog
 		updButton_ = new Button(updComposite, SWT.CHECK);
 		updButton_.setText("Check for new version on startup");
 		updButton_.setSelection(cast(bool)getSettingInt("checkForUpdates"));
-
-		// game configuration
-		Button gamesButton = new Button(mainComposite, SWT.PUSH);
-		gamesButton.setText("Game configuration");
-		gamesButton.addSelectionListener(new class SelectionAdapter {
-			public override void widgetSelected(SelectionEvent e)
-			{
-				Program.launch(settings.gamesFileName);
-			}
-		});
 
 		// main buttons
 		Composite buttonComposite = new Composite(shell_, SWT.NONE);
