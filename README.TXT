@@ -26,10 +26,10 @@ password, or add an optional password for servers with private slots, select
 
 Customizing the Game List
 -------------------------
-By clicking on the 'Game configuration' button in the settings, you can edit
-the list displayed in the combo box. The format of this file is explained in
-the file itself. If you remove this file, or clear its contents, Monster
-Browser will create a new one containing the default configuration.
+By clicking on the Edit button you can edit the list displayed in the combo
+box. The format of this file is explained in the file itself. If you remove
+this file, or clear its contents, Monster Browser will create a new one
+containing the default configuration.
 
 
 Adding Extra Servers
