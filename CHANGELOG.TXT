@@ -1,5 +1,5 @@
-Work in progress
-----------------
+v0.9g - 2022-10.21
+------------------
 - New: Automatic check for new releases on startup.
 - New: The server list is updated automatically whenever mods.ini is edited.
 - Change: Game configuration edit button moved from settings to tool bar.
