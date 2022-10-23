@@ -34,8 +34,7 @@ configuration "windows" {
 	lflags "/entry:mainCRTStartup" platform="x86_mscoff-dmd"
 	lflags "/entry:mainCRTStartup" platform="windows-x86_64-dmd"
 	# LDC uses wmain instead of main
-	lflags "/entry:wmainCRTStartup" platform="x86_mscoff-ldc"
-	lflags "/entry:wmainCRTStartup" platform="windows-x86_64-ldc"
+	lflags "/entry:wmainCRTStartup" platform="windows-ldc"
 }
 
 configuration "final" {
@@ -46,8 +45,7 @@ configuration "final" {
 	lflags "/entry:mainCRTStartup" platform="x86_mscoff-dmd"
 	lflags "/entry:mainCRTStartup" platform="windows-x86_64-dmd"
 	# LDC uses wmain instead of main
-	lflags "/entry:wmainCRTStartup" platform="x86_mscoff-ldc"
-	lflags "/entry:wmainCRTStartup" platform="windows-x86_64-ldc"
+	lflags "/entry:wmainCRTStartup" platform="windows-ldc"
 }
 
 libs "atk-1.0" \
