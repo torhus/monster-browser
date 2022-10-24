@@ -111,8 +111,9 @@ void initLogging(string fileName="LOG.TXT")
 	logFile.writeln();
 	logFile.writeln(replicate("-", 65));
 	logFile.writefln("%s %s started at %s", APPNAME, getVersionString(), time);
-	logFile.writefln("%s-bit version running on %s", bits, system);
 	logFile.writeln(replicate("-", 65));
+	log("%s-bit | compiled by %s %s | running on %s",
+	                                    bits, __VENDOR__, __VERSION__, system);
 }
 
 
