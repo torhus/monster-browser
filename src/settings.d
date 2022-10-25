@@ -14,13 +14,12 @@ import ini;
 import messageboxes;
 
 version (Windows) {
+	import core.sys.windows.windows;
 	import std.string;
 	import std.windows.charset;
-	import core.sys.windows.windows;
-	import tango.sys.win32.SpecialPath;
+	import std.windows.syserror : WindowsException;
 
-	extern (Windows)
-		LONG RegQueryValueExA(HKEY, LPCSTR, LPDWORD, LPDWORD, LPBYTE, LPDWORD);
+	import mswindows.util;
 }
 
 
@@ -647,9 +646,12 @@ private void setSetting(in char[] section, in char[] key, string value)
  */
 version (Windows) private string getProgramFilesDirectory()
 {
-	string path = getSpecialPath(CSIDL_PROGRAM_FILES);
-	assert(path.length);
-	return path.length ? path : "C:\\Program Files";
+	try {
+		return getSpecialPath!CSIDL_PROGRAM_FILES;
+	}
+	catch (WindowsException _) {
+		return "C:\\Program Files";
+	}
 }
 
 

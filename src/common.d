@@ -119,7 +119,8 @@ void initLogging(string fileName="LOG.TXT")
 /// Logging, with formatting support.
 void log(Args...)(in char[] fmt, Args args)
 {
-	logFile.writefln(fmt, args);
+	if (logFile.isOpen)
+		logFile.writefln(fmt, args);
 	version (redirect) { }
 	else {
 		if (haveConsole) {
