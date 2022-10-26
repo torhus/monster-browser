@@ -2,7 +2,7 @@
 
 module mainwindow;
 
-import std.algorithm : max;
+import std.algorithm : each, max;
 import std.conv;
 import std.regex;
 import std.string;
@@ -300,6 +300,13 @@ final class StatusBar : Composite
 
 		layout();
 		setRedraw(true);
+	}
+
+
+	override void setToolTipText(string s) ///
+	{
+		super.setToolTipText(s);
+		getChildren().each!(child => child.setToolTipText(s));
 	}
 
 

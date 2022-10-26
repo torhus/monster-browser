@@ -1,3 +1,7 @@
+Work in progress
+----------------
+-New: Status bar tool tip that shows master server name and server count.
+
 v0.9g - 2022-10.21
 ------------------
 - New: Automatic check for new releases on startup.
