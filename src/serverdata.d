@@ -121,18 +121,6 @@ enum PASSWORD_NO  = "";  ///
 enum TIMEOUT = "9999";
 
 
-/// Set sd to the empty state.
-void setEmpty(ServerData* sd)
-{
-	sd.rawName = null;
-	sd.numericGameType = -1;
-	sd.server  = null;
-	sd.players = null;
-	sd.cvars   = null;
-	sd.countryName = null;
-}
-
-
 /// Is sd empty?
 bool isEmpty(in ServerData* sd)
 {

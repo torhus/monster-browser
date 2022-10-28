@@ -740,11 +740,7 @@ private:
 			if (mb.open() == SWT.YES) {
 				// do the actual removal
 				foreach (string ip; toRemove) {
-					int index = selectedIps_[ip];
-					ServerHandle sh = serverList_.getServerHandle(index);
-					ServerData sd = master.getServerData(sh);
-					setEmpty(&sd);
-					master.setServerData(sh, sd);
+					master.removeServer(ip);
 					selectedIps_.remove(ip);
 				}
 

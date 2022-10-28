@@ -382,8 +382,7 @@ void checkForNewServers()
 					addresses2.add(address);
 			}
 			else if (!sd.persistent) {
-				setEmpty(&sd);
-				master.setServerData(sh, sd);
+				master.removeServer(sh);
 				removed++;
 			}
 		}
@@ -641,8 +640,7 @@ class ServerRetrievalController
 				matched = matchGame(&sd, game);
 			}
 			else {
-				setEmpty(&sd);
-				serverList_.master.setServerData(sh, sd);
+				serverList_.master.removeServer(sh);
 				if (replace_)
 					refillAndRefresh();  // make server disappear from GUI
 				matched = false;

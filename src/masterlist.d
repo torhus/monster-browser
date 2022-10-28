@@ -100,6 +100,12 @@ final class MasterList
 		}
 	}
 
+	///
+	void removeServer(ServerHandle sh)
+	{
+		servers_.remove(sh);
+	}
+
 
 	/**
 	 * Given a server address, returns the handle.
