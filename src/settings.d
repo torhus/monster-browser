@@ -135,30 +135,11 @@ private {
 
 	enum defaultGamesFile =
 `; Monster Browser game configuration
-;
-; Just put each game in square brackets, then you can list options under it.
-;
-; Available options:
-;
-; mod     - defaults to being the same as the section name. This is matched
-;           against the game and gamename cvars. Set to empty value (mod=) to
-;           disable filtering.
-; regKey  - need to set exeName too if using this
-; exeName - combined with the value found through regKey to form the full path
-; exePath - Only used if regKey or exeName are missing. If exePath is missing
-;           too, gamePath from the global settings is used instead. This can be
-;           set a to shortcut (.lnk) or batch file (.bat) to get more
-;           flexibility. In batch files you have to pass MB's arguments to the
-;           executable on explicitly, like this: C:\TheGame\game.exe %*
-; masterServer    - defaults to master.quake3arena.com:27950.
-; protocolVersion - defaults to 68
-; gameTypes       - List of game type names, seperated by spaces.
-; etColors - Set to true to enable Enemy Territory-style extended color codes (31 colors).
-;            See http://wolfwiki.anime.net/index.php/Color_Codes for more information.
-; qstatMasterServerType - Defaults to q3m.
-; qstatConfigFile - For setting Qstat's -cfg parameter.
-;
+
+; Each [section] represents a game or mod.
 ; Lines beginning with a ";" are comments.
+; More information: https://sites.google.com/site/monsterbrowser/#h.p_ID_75
+
 
 [Smokin' Guns]
 mod=smokinguns

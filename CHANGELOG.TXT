@@ -4,6 +4,7 @@ Work in progress
 - New: Two extra columns showing the game and gamename cvar values for each
        server can be enabled in Settings.
 - New: Server list columns can now be reordered.
+- Change: Game configuration documentation is moved to the web site.
 
 v0.9g - 2022-10.21
 ------------------
