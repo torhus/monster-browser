@@ -1,12 +1,12 @@
-Work in progress
-----------------
+v0.9h - 2022-10-28
+------------------
 - New: Status bar tool tip that shows master server name and server count.
 - New: Two extra columns showing the game and gamename cvar values for each
        server can be enabled in Settings.
 - New: Server list columns can now be reordered.
 - Change: Game configuration documentation is moved to the web site.
 
-v0.9g - 2022-10.21
+v0.9g - 2022-10-21
 ------------------
 - New: Automatic check for new releases on startup.
 - New: The server list is updated automatically whenever mods.ini is edited.
