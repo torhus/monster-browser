@@ -121,8 +121,12 @@ void initLogging(string fileName="LOG.TXT")
 /// Logging, with formatting support.
 void log(Args...)(in char[] fmt, Args args)
 {
-	if (logFile.isOpen)
+	if (logFile.isOpen) {
 		logFile.writefln(fmt, args);
+		// Microsoft's C stdio doesn't support line-buffering, calling flush
+		// instead.
+		logFile.flush();
+	}
 	version (redirect) { }
 	else {
 		if (haveConsole) {
