@@ -122,13 +122,6 @@ enum PASSWORD_NO  = "";  ///
 enum TIMEOUT = "9999";
 
 
-/// Is sd empty?
-bool isEmpty(in ServerData* sd)
-{
-	return sd.server.length == 0;
-}
-
-
 ///
 void addCleanPlayerNames(string[][] players)
 {

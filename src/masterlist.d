@@ -132,7 +132,6 @@ final class MasterList
 		synchronized (this) {
 			ServerData* sd = sh in servers_;
 			assert(sh !is null);
-			assert(!isEmpty(sd));
 			debug isValid(sd);
 			return *sd;
 		}
@@ -145,7 +144,6 @@ final class MasterList
 		synchronized (this) {
 			assert(sh in servers_);
 			ServerData* old = sh in servers_;
-			assert(!isEmpty(old));
 			debug isValid(old);
 			*old = sd;
 		}
@@ -157,7 +155,7 @@ final class MasterList
 
 
 	/**
-	* Foreach support.  Skips servers for which isEmpty(sd) returns true.
+	* Foreach support.
 	*/
 	int opApply(int delegate(ref ServerHandle) dg) const
 	{
@@ -165,8 +163,6 @@ final class MasterList
 			int result = 0;
 
 			foreach (sh, sd; servers_) {
-				if (isEmpty(&sd))
-					continue;
 				result = dg(sh);
 				if (result)
 					break;
@@ -235,10 +231,8 @@ final class MasterList
 		scope dumper = new XmlDumper(dataDir ~ fileName_);
 
 		synchronized (this) {
-			foreach (sd; servers_) {
-				if (!isEmpty(&sd))
-					dumper.serverToXml(&sd);
-			}
+			foreach (sd; servers_)
+				dumper.serverToXml(&sd);
 		}
 
 		dumper.close();
