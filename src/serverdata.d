@@ -222,9 +222,7 @@ __gshared string[][string] gameTypes;
 
 shared static this() {
 	// Initialize game type mappings.
-	gameTypes["osp"] = split("FFA 1v1 SP TDM CTF CA", " ");
 	gameTypes["smokinguns"] = split("FFA Duel 2 TDM RTP BR", " ");
-	gameTypes["westernq3"]  = split("FFA Duel 2 TDM RTP BR", " ");
 	gameTypes["WorldofPadman"] = split("FFA 1v1 2 SyC LPS TDM CtL SyCT BB", " ");
 }
 
