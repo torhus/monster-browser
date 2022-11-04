@@ -1,5 +1,7 @@
 Work in progress
 ----------------
+- Change: The status bar tool tip now also shows number of unresponsive
+          servers.
 - Change: Hardcoded game type names for OSP and westernq3 removed, use the
           gameType setting in mods.ini instead.
 

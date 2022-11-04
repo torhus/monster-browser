@@ -48,8 +48,11 @@ final class MasterList
 		synchronized (this) {
 			string address = sd.server[ServerColumn.ADDRESS];
 			debug isValid(&sd);
-			if (timedOut(&sd))
+			if (timedOut(&sd)) {
 				sd.failCount = 1;
+				if (!hasReplied(&sd))
+					downCount_++;
+			}
 
 			assert(!(address in servers_));
 			servers_[address] = sd;
@@ -93,6 +96,10 @@ final class MasterList
 				oldSd.failCount++;
 			}
 			else {
+				if (!hasReplied(oldSd)) {
+					assert(downCount_ > 0);
+					downCount_--;
+				}
 				setServerData(address, sd);
 			}
 
@@ -103,7 +110,12 @@ final class MasterList
 	///
 	void removeServer(ServerHandle sh)
 	{
-		servers_.remove(sh);
+		ServerData* sd = sh in servers_;
+		if (sd) {
+			if (!hasReplied(sd))
+				downCount_--;
+			servers_.remove(sh);
+		}
 	}
 
 
@@ -152,6 +164,9 @@ final class MasterList
 
 	/// Total number of servers.
 	size_t length() const { return servers_.length; }
+
+	/// Number of servers that have never replied.
+	size_t downCount() const { return downCount_; }
 
 
 	/**
@@ -212,6 +227,7 @@ final class MasterList
 
 		synchronized (this) {
 			servers_ = handler.servers;
+			downCount_ = handler.downCount;
 		}
 
 		return true;
@@ -269,6 +285,7 @@ final class MasterList
 		string name_;
 		string fileName_;
 		ServerData[string] servers_;
+		size_t downCount_ = 0;
 	}
 }
 
@@ -367,6 +384,7 @@ private final class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 {
 	ServerData[string] servers;
 	ServerData sd;
+	size_t downCount = 0;
 
 	private string defaultProtocolVersion_;
 
@@ -409,6 +427,9 @@ private final class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 			if (auto cvar = cvars.getCvar("gamename")) {
 				sd.server[ServerColumn.CVAR_GAMENAME] = cvar[1];
 			}
+
+			if (!hasReplied(&sd))
+				downCount++;
 
 			servers[sd.server[ServerColumn.ADDRESS]] = sd;
 			sd = ServerData.init;

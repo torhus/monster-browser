@@ -195,6 +195,7 @@ class ServerTable
 
 		serverList_ = newList;
 		masterLength_ = 0;
+		downCount_ = 0;
 
 		synchronized (serverList_) {
 			bool reversed = table_.getSortDirection() == SWT.DOWN;
@@ -392,11 +393,16 @@ class ServerTable
 		assert(itemCount == serverList_.filteredLength || itemCount == 0);
 		statusBar.setDefaultStatus(cast(uint)serverList_.totalLength,
 		                         itemCount, 0, countHumanPlayers(serverList_));
+
 		auto m = serverList_.master;
-		if (m.length != masterLength_) {
-			statusBar.setToolTipText(
-				                    text(m.name, ", ", m.length, " servers."));
+		if (m.length != masterLength_ || m.downCount != downCount_) {
+			string s = format("%s with %s servers", m.name,
+			                                         (m.length - m.downCount));
+			if (m.downCount)
+				s ~= format(" (plus %s unresponsive)", m.downCount);
+			statusBar.setToolTipText(s);
 			masterLength_ = m.length;
+			downCount_ = m.downCount;
 		}
 	}
 
@@ -430,7 +436,7 @@ private:
 	Composite parent_;
 	ServerList serverList_;
 	int[string] selectedIps_;
-	size_t masterLength_;
+	size_t masterLength_, downCount_;
 	bool showFlags_, coloredNames_;
 	Image padlockImage_;
 	MenuItem refreshSelected_;
