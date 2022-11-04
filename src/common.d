@@ -308,7 +308,7 @@ int toIntOrDefault(in char[] s, int defaultVal=0)
 
 /**
  * Parse a sequence of integers, separated by any combination of commas,
- * spaces, or tabs.
+ * spaces, and tabs.
  *
  * If forcedLength is > 0, the returned array will have been shortened or
  * extended as necessary to match that length.  If it needs to be extended,
@@ -321,14 +321,19 @@ int[] parseIntList(in char[] str, size_t forcedLength=0, int defaultVal=0)
 	             .map!(x => x.toIntOrDefault(defaultVal))
 	             .array();
 
-	if (forcedLength != 0 && r.length != forcedLength) {
-		size_t oldLen = r.length;
-		r.length = forcedLength;
-		if (forcedLength > oldLen)
-			r[oldLen .. $] = defaultVal;
-	}
+	while (forcedLength > r.length)
+		r ~= defaultVal;
 
-	return r;
+	return forcedLength ? r[0..forcedLength] : r;
+}
+
+unittest {
+	assert(parseIntList("1 2\t3 ,0999") == [1, 2, 3, 999]);
+	assert(parseIntList("1, 2,øks, 3, 4.5") == [1, 2, 0, 3, 0]);
+	assert(parseIntList(",1, 2,") == [1, 2]);
+	assert(parseIntList("1, 2, 3", 5) == [1, 2, 3, 0, 0]);
+	assert(parseIntList("1, 2, 3, 4, 5", 3) == [1, 2, 3]);
+	assert(parseIntList("1, 2, 3", 5, 42) == [1, 2, 3, 42, 42]);
 }
 
 
