@@ -39,7 +39,6 @@ Source: "libcurl.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "libmaxminddb.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "qstat.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "qstat_mb.cfg"; DestDir: "{app}"; Flags: ignoreversion
-Source: "worldofpadman.cfg"; DestDir: "{app}"; Flags: ignoreversion onlyifdestfileexists
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
