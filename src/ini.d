@@ -892,7 +892,6 @@ unittest
 	ini["test"]["value"] = "true";
 	assert(ini["Foo"]["yes"] == "no");
 	ini.save();
-	delete ini;
 
 	ini = new Ini(inifile);
 	assert(ini["FOO"]["Bar"] == "wee!");
@@ -912,6 +911,5 @@ unittest
 	ini.remove("foo");
 	assert(ini["foo"] is null);
 	ini.save();
-	delete ini;
 }
 
