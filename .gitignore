@@ -20,6 +20,7 @@ MonsterBrowser.exe
 MonsterBrowser.pdb
 MonsterBrowser.map
 MonsterBrowser.sln
+monster-browser-test-*
 *.suo
 revision.txt
 unittest.ini
