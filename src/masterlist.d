@@ -485,14 +485,6 @@ private final class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 				cvar[0] = fromEntityCopy(attr.value);
 			else if (attr.localName == "value")
 				cvar[1] = fromEntityCopy(attr.value);
-
-			if (sicmp(cvar[0], "g_gametype") == 0) {
-				sd.numericGameType = toIntOrDefault(cvar[1], -1);
-			}
-			else if (sicmp(cvar[0], "g_needpass") == 0) {
-				string s = cvar[1] == "0" ? PASSWORD_NO : PASSWORD_YES;
-				sd.server[ServerColumn.PASSWORDED] = s;
-			}
 		}
 
 		sd.cvars ~= cvar;
