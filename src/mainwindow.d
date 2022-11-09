@@ -249,8 +249,17 @@ final class GameBar : Group
 			public override void widgetSelected(SelectionEvent e)
 			{
 				serverTable.getTable.setFocus();
-				lastSelectedGame_ = (cast(Combo)e.widget).getText();
-				switchToGame(lastSelectedGame_);
+				string s = (cast(Combo)e.widget).getText();
+
+				if (s.all!"a == '-'") {
+					// Can't select a separator.
+					int i = findString(settings.gameNames, lastSelectedGame_);
+					gamesCombo_.select(i);
+				}
+				else {
+					lastSelectedGame_ = s;
+					switchToGame(lastSelectedGame_);
+				}
 			}
 		});
 
