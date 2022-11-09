@@ -475,28 +475,6 @@ final class GameBar : Group
 				lastSelectedGame_ = (cast(Combo)e.widget).getText();
 				switchToGame(lastSelectedGame_);
 			}
-
-			public override void widgetDefaultSelected(SelectionEvent e)
-			{
-				string s = strip((cast(Combo)e.widget).getText());
-				if (s.length == 0)
-					return;
-
-				Combo combo = cast(Combo)e.widget;
-				int i = findString(combo.getItems(), s);
-				if (i == -1) {
-					combo.add(s);
-					combo.select(combo.getItemCount() - 1);
-					createGameConfig(s);
-				}
-				else {
-					combo.select(i);
-				}
-
-				serverTable.getTable.setFocus();
-				lastSelectedGame_ = s;
-				switchToGame(s);
-			}
 		});
 
 		auto editButton = new Button(this, 0);
