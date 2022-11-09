@@ -2,6 +2,7 @@ Work in progress
 ----------------
 - Change: The default game list has been reordered by popularity, or roughly
           server count. Quake 3 and its mods are now at the top.
+- Change: The game drop-down lists up to 25 entries without adding scroll bars.
 - Change: The status bar tool tip now also shows number of unresponsive
           servers.
 - Change: Game type names for Smokin' Guns and World of Padman have been added

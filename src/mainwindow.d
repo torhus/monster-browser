@@ -2,7 +2,7 @@
 
 module mainwindow;
 
-import std.algorithm : max;
+import std.algorithm;
 import std.conv;
 import std.regex;
 import std.string;
@@ -29,7 +29,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Group : Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
@@ -283,9 +283,7 @@ final class GameBar : Group
 		gamesCombo_.setItems(list);
 
 		int n = gamesCombo_.getItemCount();
-		if (n > 8)
-			n = 8;
-		gamesCombo_.setVisibleItemCount(max(n, 5));
+		gamesCombo_.setVisibleItemCount(max(n, 25));
 
 		int i = gamesCombo_.indexOf(lastSelectedGame_);
 		gamesCombo_.select((i == -1) ? 0 : i);
