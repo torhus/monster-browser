@@ -146,7 +146,7 @@ private {
 	enum Setting[] defaults = [
 		{"checkForUpdates", "1"},
 		{"coloredNames", "true"},
-		{"lastMod", "Smokin' Guns"},
+		{"lastMod", ""},
 		{"maxTimeouts", "3"},
 		{"minimizeOnGameLaunch", "true"},
 		{"showExtraColumns", "false"},

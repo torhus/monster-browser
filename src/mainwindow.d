@@ -455,14 +455,7 @@ final class GameBar : Group
 		if (getSetting("startWithLastMod") == "true") {
 			string s = getSetting("lastMod");
 			int i = findString(settings.gameNames, s);
-			if (i == -1) {
-				gamesCombo_.add(s);
-				gamesCombo_.select(gamesCombo_.getItemCount() - 1);
-				createGameConfig(s);
-			}
-			else {
-				gamesCombo_.select(i);
-			}
+			gamesCombo_.select(i != -1 ? i : 0);
 		}
 
 		lastSelectedGame_ = gamesCombo_.getText();
