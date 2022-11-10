@@ -169,7 +169,6 @@ final class ServerList
 	void clear()
 	{
 		synchronized (this) {
-			disposeCustomData();
 			filteredList.length = 0;
 			ipHash_ = null;
 			isSorted_ = true;
@@ -281,23 +280,6 @@ final class ServerList
 		assert(ok, "ServerList verifySorted() failed.");
 		if (ok)
 			log("Sorting OK.");
-	}
-
-
-	/**
-	 * Call customData.dispose() on each of the ServerData structs.
-	 *
-	 * Does nothing if "coloredNames" is not set to "true".
-	 */
-	void disposeCustomData()
-	{
-		if (getSetting("coloredNames") != "true")
-			return;
-
-		/*foreach (ref sd; list) {
-			if (sd.customData)
-				sd.customData.dispose();
-		}*/
 	}
 
 

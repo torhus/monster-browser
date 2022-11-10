@@ -141,8 +141,6 @@ private void _main(string[] args)
 
 
 	// call all necessary dispose methods
-	foreach (slist; serverListCache)
-		slist.disposeCustomData();
 	mainWindow.disposeAll();
 	disposeNameColors();
 	foreach (icon; appIcons)
