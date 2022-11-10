@@ -27,6 +27,7 @@ import serverqueue;
 import servertable;
 import set;
 import settings;
+import syncaa;
 import threadmanager;
 
 
@@ -41,8 +42,7 @@ struct MasterListCacheEntry
 __gshared MasterListCacheEntry*[char[]] masterLists;
 
 /// ServerList cache indexed by game config name.
-__gshared ServerList[char[]] serverListCache;
-
+shared serverListCache = new SyncAA!(string, ServerList);
 
 ///
 void updateServerListCache(string[] validGameNames)
@@ -78,8 +78,8 @@ void switchToGame(string name, bool configChanged=false)
 		bool firstTime = true;
 
 		// make sure we have a ServerList object
-		if (ServerList* list = gameName in serverListCache) {
-			serverList = *list;
+		if (ServerList list = serverListCache.get(gameName)) {
+			serverList = list;
 			firstTime = false;
 		}
 		else {
