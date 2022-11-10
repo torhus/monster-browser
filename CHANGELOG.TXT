@@ -2,6 +2,8 @@ Work in progress
 ----------------
 - Change: The status bar tool tip now also shows number of unresponsive
           servers.
+- Change: Game type names for Smokin' Guns and World of Padman have been added
+          to the default configuration.
 - Change: Hardcoded game type names for OSP and westernq3 removed, use the
           gameType setting in mods.ini instead.
 - Change: When there is no gametype cvar for a server the game type column will
