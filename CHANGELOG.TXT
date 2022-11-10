@@ -1,3 +1,14 @@
+Work in progress
+----------------
+- Change: Hardcoded game type names for Smokin' Guns and World of Padman have
+          been removed, please use the gameType setting in mods.ini instead.
+- Note: If you are updating MB and wish to keep seeing the correct game type
+        names for Smokin' Guns and World of Padman, you can either reset the
+        game configuration, or add these lines to their respective
+        configuration sections:
+        For SG: gameTypes=FFA Duel 2 TDM RTP BR
+        For WoP: gameTypes=FFA 1v1 2 SyC LPS TDM CtL SyCT BB
+
 v0.9j - 2022-12-16
 ------------------
 - New: A column showing the numerical game type can now be enabled in Settings.

@@ -187,14 +187,8 @@ string getGameTypeName(in GameConfig game, int type)
 	if (type < 0)
 		return "";
 
-	const(string)[] gtypes = game.gameTypes;
-
-	if (gtypes is null) {
-		// Fall back to hardcoded names or Q3 defaults.
-		string[]* t = game.mod in gameTypes;
-		gtypes = t ? *t : defaultGameTypes;
-	}
-
+	const(string)[] gtypes = game.gameTypes ? game.gameTypes
+	                                        : defaultGameTypes;
 	return type < gtypes.length ? gtypes[type] : to!string(type);
 }
 
@@ -214,16 +208,6 @@ bool hasReplied(in ServerData* sd)
 immutable defaultGameTypes = ["FFA", "1v1", "SP", "TDM", "CTF",
                            /* "OFCTF", "Overload", "Harvester", */
                              ];
-
-///
-__gshared string[][string] gameTypes;
-
-
-shared static this() {
-	// Initialize game type mappings.
-	gameTypes["smokinguns"] = split("FFA Duel 2 TDM RTP BR", " ");
-	gameTypes["WorldofPadman"] = split("FFA 1v1 2 SyC LPS TDM CtL SyCT BB", " ");
-}
 
 
 /// Print contents of sd to stdout.  Debugging tool.
