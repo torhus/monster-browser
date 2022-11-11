@@ -39,7 +39,7 @@ struct MasterListCacheEntry
 }
 
 /// Master server lists indexed by master list name.
-__gshared MasterListCacheEntry*[char[]] masterLists;
+shared masterLists = new SyncAA!(string, MasterListCacheEntry*);
 
 /// ServerList cache indexed by game config name.
 shared serverListCache = new SyncAA!(string, ServerList);
@@ -87,8 +87,8 @@ void switchToGame(string name, bool configChanged=false)
 			MasterList master;
 
 			// make sure we have a MasterList object
-			if (auto m = masterName in masterLists) {
-				master = (*m).masterList;
+			if (auto m = masterLists.get(masterName)) {
+				master = m.masterList;
 			}
 			else {
 				master = new MasterList(masterName);
