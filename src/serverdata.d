@@ -184,11 +184,10 @@ bool matchGame(in ServerData* sd, in GameConfig game)
  */
 string getGameTypeName(in GameConfig game, int type)
 {
-	const(string)[] gtypes = game.gameTypes;
+	if (type < 0)
+		return "";
 
-	if (type < 0) {
-		return "???";
-	}
+	const(string)[] gtypes = game.gameTypes;
 
 	if (gtypes is null) {
 		// Fall back to hardcoded names or Q3 defaults.
@@ -196,12 +195,7 @@ string getGameTypeName(in GameConfig game, int type)
 		gtypes = t ? *t : defaultGameTypes;
 	}
 
-	if (type < gtypes.length) {
-		return gtypes[type];
-	}
-	else {
-		return to!string(type);
-	}
+	return type < gtypes.length ? gtypes[type] : to!string(type);
 }
 
 /// Did this server time out when last queried?

@@ -4,6 +4,9 @@ Work in progress
           servers.
 - Change: Hardcoded game type names for OSP and westernq3 removed, use the
           gameType setting in mods.ini instead.
+- Change: When there is no gametype cvar for a server the game type column will
+          be empty instead instead of containing "???". This is meant to make
+          the server list for Tremulous look a bit cleaner.
 
 v0.9h - 2022-10-28
 ------------------
