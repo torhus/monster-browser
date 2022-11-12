@@ -228,7 +228,7 @@ final class GameBar : Group
 	this(Composite parent)
 	{
 		super(parent, SWT.SHADOW_NONE);
-		setText("Game");
+		setText("Games and mods");
 		auto layoutData = new GridData(SWT.CENTER, SWT.CENTER, false, true);
 		layoutData.verticalAlignment = GridData.FILL;
 		setLayoutData(layoutData);
