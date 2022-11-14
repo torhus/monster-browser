@@ -60,6 +60,15 @@ void updateServerListCache(string[] validGameNames)
 	}
 }
 
+///
+private void refillServerLists(in MasterList master, in ServerList skip)
+{
+	foreach (list; serverListCache) {
+		if (list.master !is master || list is skip)
+			continue;
+		list.refillFromMaster(true);
+	}
+}
 
 /**
  * Switches the active game.
@@ -392,6 +401,7 @@ void checkForNewServers()
 
 		if (removed > 0) {
 			Display.getDefault().syncExec(dgRunnable( {
+				refillServerLists(master, serverList);
 				serverList.refillFromMaster();
 				serverTable.fullRefresh();
 			}));
