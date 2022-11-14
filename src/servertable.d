@@ -775,7 +775,7 @@ private:
 		synchronized (serverList_) synchronized (master) {
 			// ask user for confirmation
 			int style = SWT.ICON_QUESTION | SWT.YES | SWT.NO;
-			MessageBox mb = new MessageBox(mainWindow.handle, style);
+			MessageBox mb = new MessageBox(mainShell, style);
 			if (toRemove.length == 1) {
 				mb.setText("Remove server");
 				int index = selectedIps_[toRemove[0]];
@@ -820,8 +820,8 @@ private:
 		          "To delete the stored password, clear the password field\n" ~
 		          "and press OK.";
 
-		scope dialog = new ServerPasswordDialog(mainWindow.handle,
-		                                     "Set Password", message, address);
+		scope dialog = new ServerPasswordDialog(mainShell, "Set Password",
+		                                                     message, address);
 		if (dialog.open() && !dialog.password.length)
 			removePassword(address);
 	}
@@ -842,8 +842,7 @@ private:
 			openRconWindow(name, address, pw);
 		}
 		else {
-			auto dialog = new RconPasswordDialog(mainWindow.handle, name,
-			                                                          address);
+			auto dialog = new RconPasswordDialog(mainShell, name, address);
 			if (dialog.open())
 				openRconWindow(name, address, dialog.password);
 		}

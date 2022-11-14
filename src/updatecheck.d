@@ -15,7 +15,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
 
 import common;
-import mainwindow;
 
 
 ///
@@ -60,7 +59,7 @@ private void checkForUpdate()
 
 private void showNewVersionMessage()
 {
-    auto mb = new MessageBox(mainWindow.handle, SWT.ICON_INFORMATION | SWT.OK |
+    auto mb = new MessageBox(mainShell, SWT.ICON_INFORMATION | SWT.OK |
                                         SWT.CANCEL);
     mb.setText("New Version");
     mb.setMessage ("A new version of " ~ APPNAME ~ " is available!" ~

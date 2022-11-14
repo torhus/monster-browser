@@ -29,7 +29,6 @@ import std.string;
 import colorednames;
 import common;
 import dialogs;
-import mainwindow;
 import messageboxes;
 import settings;
 
@@ -81,7 +80,7 @@ class RconWindow
 			shell_.setLocation(pos[0], pos[1]);
 		}
 
-		shell_.setImages(mainWindow.handle.getImages());
+		shell_.setImages(mainShell.getImages());
 		shell_.setLayout(new GridLayout(2, false));
 
 		outputText_ = new Text(shell_, SWT.MULTI | SWT.READ_ONLY | SWT.BORDER |
@@ -123,7 +122,6 @@ class RconWindow
 				saveSessionState();
 			}
 		});
-		subWindows ~= shell_;
 		shell_.open();
 	}
 

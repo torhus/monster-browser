@@ -30,7 +30,6 @@ import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 
 import common;
-import mainwindow;
 import masterlist;
 import messageboxes;
 import serveractions;

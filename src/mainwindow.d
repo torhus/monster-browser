@@ -57,9 +57,6 @@ __gshared StatusBar statusBar;  ///
 __gshared GameBar gameBar;  ///
 __gshared FilterBar filterBar;  ///
 __gshared MainWindow mainWindow;  ///
-/// The close() method will be called for these shells, before everything is
-/// disposed of.
-__gshared Shell[] subWindows;
 
 // Image objects that needs to be disposed of before shut down.
 __gshared private Image[] imageList;
@@ -215,8 +212,8 @@ class MainWindow
 			statusBar.setLeft("Exiting...");
 			log("Shutting down...");
 			killServerBrowser();
-			foreach (shell; subWindows) {
-				if (!shell.isDisposed())
+			foreach (shell; Display.getDefault.getShells) {
+				if (shell !is shell_)
 					shell.close();
 			}
 			saveState();
@@ -753,7 +750,7 @@ private class ToolBarWrapper
 		addButton_.addSelectionListener(new class SelectionAdapter {
 			public override void widgetSelected(SelectionEvent e)
 			{
-				auto dialog = new SpecifyServerDialog(mainWindow.handle);
+				auto dialog = new SpecifyServerDialog(mainShell);
 				dialog.open();
 			}
 		});
@@ -766,7 +763,7 @@ private class ToolBarWrapper
 		settingsButton_.addSelectionListener(new class SelectionAdapter {
 			public override void widgetSelected(SelectionEvent e)
 			{
-				SettingsDialog dialog = new SettingsDialog(mainWindow.handle);
+				SettingsDialog dialog = new SettingsDialog(mainShell);
 				if (dialog.open())
 					saveSettings();
 			}

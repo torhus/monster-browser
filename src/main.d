@@ -76,13 +76,13 @@ private void _main(string[] args)
 	Image[] appIcons;
 	foreach (stream; streams)
 		appIcons ~= new Image(Display.getDefault, stream);
-	mainWindow.handle.setImages(appIcons);
+	mainShell.setImages(appIcons);
 
 	// Handle global keyboard shortcuts.
 	Display.getDefault().addFilter(SWT.KeyDown, new class Listener {
 		void handleEvent(Event e)
 		{
-			if ((cast(Control)e.widget).getShell() !is mainWindow.handle)
+			if ((cast(Control)e.widget).getShell() !is mainShell)
 				return;
 
 			switch (e.keyCode) {
@@ -132,7 +132,7 @@ private void _main(string[] args)
 
 	// main loop
 	Display display = Display.getDefault;
-	while (!mainWindow.handle.isDisposed) {
+	while (!mainShell.isDisposed) {
 		if (!display.readAndDispatch())
 			display.sleep();
 	}
