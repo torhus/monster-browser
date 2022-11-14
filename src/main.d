@@ -22,7 +22,6 @@ import common;
 import filewatcher;
 import mainwindow;
 import messageboxes;
-import runtools: runtoolsInit;
 import serveractions;
 import servertable;
 import settings;
@@ -122,7 +121,6 @@ private void _main(string[] args)
 	if (getSettingInt("checkForUpdates"))
 		startUpdateChecker();
 
-	runtoolsInit();
 	initNameColors();
 	
 	if (settings.gameNames.length == 0)

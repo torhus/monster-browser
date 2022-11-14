@@ -22,7 +22,7 @@ import settings;
 
 
 __gshared private ProcessPipes proc;
-__gshared private Object procMutex;
+private shared procMutex = new Object;
 
 
 /// Thrown if there's an error when communicating with a master server.
@@ -30,11 +30,6 @@ class MasterServerException : Exception {
 	this(string msg) { super(msg); }
 }
 
-
-void runtoolsInit()
-{
-	procMutex = new Object();
-}
 
 /**
  * Run qstat to retrieve a list of servers from the game's master
