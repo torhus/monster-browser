@@ -7,6 +7,9 @@ module syncaa;
 
 synchronized final class SyncAA(K, V) ///
 {
+    // FIXME: Can initialize with new K[V] with DMD 2.101.
+    this() { data_[K.init] = V.init; data_.remove(K.init); }
+
     ///
     V opIndex(K key) { return unshare[key]; }
 
@@ -52,5 +55,5 @@ synchronized final class SyncAA(K, V) ///
 
 private:
     V[K] data_;
-    ref V[K] unshare() inout { return *cast(V[K]*)&data_; }
+    V[K] unshare() inout { return cast(V[K])data_; }
 }

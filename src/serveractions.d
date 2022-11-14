@@ -39,10 +39,14 @@ struct MasterListCacheEntry
 }
 
 /// Master server lists indexed by master list name.
-shared masterLists = new SyncAA!(string, MasterListCacheEntry*);
-
+shared SyncAA!(string, MasterListCacheEntry*) masterLists;
 /// ServerList cache indexed by game config name.
-shared serverListCache = new SyncAA!(string, ServerList);
+shared SyncAA!(string, ServerList) serverListCache;
+
+shared static this() {
+	masterLists = new SyncAA!(string, MasterListCacheEntry*);
+	serverListCache = new SyncAA!(string, ServerList);
+}
 
 ///
 void updateServerListCache(string[] validGameNames)
