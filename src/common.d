@@ -21,6 +21,7 @@ import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.graphics.Drawable;
 import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 
 import set;
@@ -50,6 +51,7 @@ enum APPNAME = "Monster Browser";
 enum FINAL_VERSION = "0.9h";
 
 __gshared Clipboard clipboard;
+__gshared Shell mainShell;  ///
 __gshared Timer globalTimer;
 
 ///

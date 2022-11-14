@@ -14,7 +14,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
 
 import common;
-import mainwindow;
 
 
 /// Displays a message box.
@@ -26,12 +25,11 @@ void messageBox(string msg, string title, int style)
 	Display.getDefault().syncExec(dgRunnable({
 		MessageBox mb;
 
-		
-		if (mainWindow && mainWindow.handle.isDisposed())
+		if (mainShell && mainShell.isDisposed())
 			return;
 
-		if (mainWindow !is null)
-			mb = new MessageBox(mainWindow.handle, style);
+		if (mainShell !is null)
+			mb = new MessageBox(mainShell, style);
 		else
 			mb = new MessageBox(style);
 

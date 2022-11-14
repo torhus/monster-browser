@@ -74,6 +74,7 @@ class MainWindow
 	this()
 	{
 		shell_ = new Shell(Display.getDefault);
+		mainShell = shell_;
 		shell_.setText(APPNAME ~ " " ~ getVersionString());
 		shell_.addShellListener(new MyShellListener);
 
