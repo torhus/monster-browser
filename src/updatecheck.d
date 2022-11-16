@@ -15,18 +15,19 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
 
 import common;
+import messageboxes;
 
 
 ///
-void startUpdateChecker()
+void startUpdateChecker(bool quiet=true)
 {
-    auto t = new Thread(&checkForUpdate);
+    auto t = new Thread({ checkForUpdate(quiet); });
     t.isDaemon(true);
     t.start();
 }
 
 
-private void checkForUpdate()
+private void checkForUpdate(bool quiet)
 {
     char[] content;
 
@@ -49,10 +50,14 @@ private void checkForUpdate()
         }
         else {
             log("[Update check] No newer version found.");
+            if (!quiet)
+                info("There was no new version.");
         }
     }
     else {
             log("[Update check] There was an error.");
+            if (!quiet)
+                error("Update check failed!");
     }
 }
 

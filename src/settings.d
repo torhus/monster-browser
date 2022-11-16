@@ -254,7 +254,7 @@ void loadGamesFile()
 }
 
 
-private void writeDefaultGamesFile()
+void writeDefaultGamesFile()
 {
 	string text = defaultGamesFile;
 
@@ -469,19 +469,25 @@ int getSessionStateInt(in char[] key)
 /**
  *
  */
-private void updateGameConfiguration()
+void updateGameConfiguration()
 {
-	assert(exists(gamesFileName));
-	try {
-		rename(gamesFileName, backupGamesFileName);
-		info("The game configuration was updated.\n\nYour old configuration " ~
-		     "was backed up to \"%s\".", backupGamesFileName);
-		writeDefaultGamesFile();
+	if (exists(gamesFileName)) {
+		try {
+			rename(gamesFileName, backupGamesFileName);
+			info("The game configuration file was replaced.\n\n" ~
+			     "Your old configuration was backed up to \"%s\".",
+			                                    backupGamesFileName);
+			writeDefaultGamesFile();
+		}
+		catch (FileException e) {
+			warning("Renaming \"%s\" to \"%s\" failed.  The game " ~
+					"configuration was not changed.\n\nError: \"%s\"",
+					gamesFileName, backupGamesFileName, e);
+		}
 	}
-	catch (FileException e) {
-		warning("Renaming \"%s\" to \"%s\" failed.  The game configuration " ~
-		        "was not updated.\n\nError: \"%s\"",
-		        gamesFileName, backupGamesFileName, e);
+	else {
+		writeDefaultGamesFile();
+		info("Created game configuration file.");
 	}
 }
 

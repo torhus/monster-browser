@@ -50,6 +50,8 @@ shared string logDir;  /// Absolute path to where the log file is.
 enum APPNAME = "Monster Browser";
 enum FINAL_VERSION = "0.9h";
 
+enum logFileName = "LOG.TXT";
+
 __gshared Clipboard clipboard;
 __gshared Shell mainShell;  ///
 __gshared Timer globalTimer;
@@ -93,10 +95,10 @@ string getVersionString()
  *
  * Throws: FileException, ErrnoException, and StdioException.
  */
-void initLogging(string fileName="LOG.TXT")
+void initLogging()
 {
 	assert(logDir);
-	string path = logDir ~ fileName;
+	string path = logDir ~ logFileName;
 	string bits = (void*).sizeof == 8 ? "64" : "32";
 	version (Windows)
 		string system = "Windows";

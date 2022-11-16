@@ -31,6 +31,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group : Group;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.ToolBar;
@@ -46,7 +49,9 @@ import serverlist;
 import servertable;
 import settings;
 import statusbar;
+import swtutil;
 import threadmanager;
+import updatecheck;
 
 __gshared GameBar gameBar;  ///
 __gshared FilterBar filterBar;  ///
@@ -538,7 +543,7 @@ private class ToolBarWrapper
 		new ToolItem(toolBar_, SWT.SEPARATOR);
 
 		addButton_ = new ToolItem(toolBar_, SWT.PUSH);
-		addButton_.setText("   Add... ");
+		addButton_.setText("  Add... ");
 		addButton_.setImage(loadImage!("add_32.png"));
 		addButton_.addSelectionListener(new class SelectionAdapter {
 			public override void widgetSelected(SelectionEvent e)
@@ -551,20 +556,86 @@ private class ToolBarWrapper
 		new ToolItem(toolBar_, SWT.SEPARATOR);
 
 		settingsButton_ = new ToolItem(toolBar_, SWT.PUSH);
-		settingsButton_.setText(" Settings");
+		settingsButton_.setText(" Tools ");
 		settingsButton_.setImage(loadImage!("spanner_32.png"));
-		settingsButton_.addSelectionListener(new class SelectionAdapter {
-			public override void widgetSelected(SelectionEvent e)
-			{
-				SettingsDialog dialog = new SettingsDialog(mainShell);
-				if (dialog.open())
-					saveSettings();
-			}
-		});
-
+		settingsButton_.addSelectionListener(new ToolsButtonListener(toolBar_));
 	}
 
 	ToolBar getToolBar() { return toolBar_; }
+
+	private class ToolsButtonListener : SelectionAdapter {
+		this(ToolBar toolBar)
+		{
+			menu_ = new Menu(toolBar);
+			menu_.addItem("Settings").register("settings");
+			menu_.addSeparator();
+			menu_.addItem("Open settings and data folder")
+			     .register("data folder");
+			menu_.addItem("Open log file").register("log file");
+			menu_.addSeparator();
+			menu_.addItem("Reset game configuration").register("reset config");
+			menu_.addSeparator();
+			menu_.addItem("Check for updates").register("update check");
+			menu_.addItem("Visit web site").register("web site");
+
+			auto listener = new MenuItemListener;
+
+			foreach (item; menu_.getItems)
+				item.addSelectionListener(listener);
+		}
+
+		override void widgetSelected(SelectionEvent e)
+		{
+			// Align the menu to the button and show it
+			auto parent = (cast(ToolItem)e.widget).getParent();
+			Rectangle rect = (cast(ToolItem)e.widget).getBounds();
+			menu_.setLocation(parent.toDisplay(rect.x, rect.y + rect.height));
+			menu_.setVisible(true);
+		}
+
+		private {
+			Menu menu_;
+		}
+	}
+
+	private class MenuItemListener : SelectionAdapter
+	{
+		override void widgetSelected(SelectionEvent e)
+		{
+			switch (lookUp(cast(MenuItem)e.widget)) {
+				case "settings": {
+					auto dialog = new SettingsDialog(mainShell);
+					if (dialog.open())
+						saveSettings();
+					break;
+				}
+				case "data folder":
+					Program.launch(dataDir);
+					break;
+				case "log file":
+					Program.launch(logDir ~ logFileName);
+					break;
+				case "reset config":
+					auto mb = new MessageBox(mainShell, SWT.ICON_WARNING |
+					                                         SWT.YES | SWT.NO);
+					mb.setText("Reset Game Configuration");
+					mb.setMessage("The game configuration file will be " ~
+					       " backed up, and a new one created. Are you sure?");
+					if (mb.open() == SWT.YES)
+						updateGameConfiguration();
+					break;
+				case "update check":
+					startUpdateChecker(false);
+					break;
+				case "web site":
+					Program.launch(
+					          "https://sites.google.com/site/monsterbrowser/");
+					break;
+				default:
+					assert(0);
+			}
+		}
+	}
 
 	private {
 		ToolBar toolBar_;
