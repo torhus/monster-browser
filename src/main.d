@@ -171,8 +171,8 @@ private void detectDirectories(string firstArg)
 {
 	appDir = dirName(absolutePath(firstArg));
 
-	if (appDir[$-1] != '/')
-		appDir ~= '/';
+	if (!isDirSeparator(appDir[$-1]))
+		appDir ~= dirSeparator;
 
 	if (exists(appDir ~ "portable.txt")) {
 		dataDir = logDir = appDir;
