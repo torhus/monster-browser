@@ -27,6 +27,7 @@ import serverqueue;
 import servertable;
 import set;
 import settings;
+import statusbar;
 import syncaa;
 import threadmanager;
 

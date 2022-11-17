@@ -46,6 +46,7 @@ import serveractions;
 import serverdata;
 import serverlist;
 import settings;
+import statusbar;
 
 
 __gshared ServerTable serverTable;  ///
