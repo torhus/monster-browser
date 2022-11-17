@@ -714,26 +714,6 @@ private:
 			}
 		});
 
-		item = new MenuItem(menu, SWT.PUSH);
-		item.setText("Remove selected\tDel");
-		item.addSelectionListener(new class SelectionAdapter {
-			override void widgetSelected(SelectionEvent e)
-			{
-				onRemoveSelected();
-			}
-		});
-
-		new MenuItem(menu, SWT.SEPARATOR);
-
-		item = new MenuItem(menu, SWT.PUSH);
-		item.setText("Remote console\tF9");
-		item.addSelectionListener(new class SelectionAdapter {
-			override void widgetSelected(SelectionEvent e)
-			{
-				onRemoteConsole();
-			}
-		});
-
 		return menu;
 	}
 
