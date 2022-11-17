@@ -753,7 +753,7 @@ private class ToolBarWrapper
 {
 	this(Shell shell, Composite parent)
 	{
-		toolBar_ = new ToolBar(parent, SWT.HORIZONTAL);
+		toolBar_ = new ToolBar(parent, SWT.HORIZONTAL | SWT.FLAT);
 
 		checkForNewButton_ = new ToolItem(toolBar_, SWT.PUSH);
 		checkForNewButton_.setText("Check for new");
@@ -765,19 +765,11 @@ private class ToolBarWrapper
 			}
 		});
 
-		// Need some space between the buttons to reduce the chance of the
-		// drop down part getting stuck in the hot state.
-		(new ToolItem(toolBar_, SWT.SEPARATOR)).setWidth(5);
-
 		refreshAllButton_ = new ToolItem(toolBar_, SWT.DROP_DOWN);
 		refreshAllButton_.setText("Refresh all");
 		refreshAllButton_.setImage(loadImage!("refresh_32.png"));
 		refreshAllButton_.addSelectionListener(
 		                       new RefreshButtonListener(shell));
-
-		// Need some space between the buttons to reduce the chance of the
-		// drop down part getting stuck in the hot state.
-		(new ToolItem(toolBar_, SWT.SEPARATOR)).setWidth(5);
 
 		addButton_ = new ToolItem(toolBar_, SWT.PUSH);
 		addButton_.setText("   Add... ");
@@ -790,8 +782,6 @@ private class ToolBarWrapper
 			}
 		});
 
-		(new ToolItem(toolBar_, SWT.SEPARATOR)).setWidth(16);
-
 		stopButton_ = new ToolItem(toolBar_, SWT.PUSH);
 		stopButton_.setText("   Stop   ");
 		stopButton_.setImage(loadImage!("cancel_32.png"));
@@ -802,8 +792,6 @@ private class ToolBarWrapper
 				stopAction();
 			}
 		});
-
-		(new ToolItem(toolBar_, SWT.SEPARATOR)).setWidth(16);
 
 		settingsButton_ = new ToolItem(toolBar_, SWT.PUSH);
 		settingsButton_.setText("Settings");
