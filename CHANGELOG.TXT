@@ -2,13 +2,12 @@ Work in progress
 ----------------
 - New: A Tools menu, replacing the Settings button.
 - New: mods-default.ini is included, containing the default game configuration.
+- New: The status bar tool tip now also shows number of unresponsive servers.
+- New: Game type names for Smokin' Guns and World of Padman have been added to
+       the default configuration.
 - Change: The default game list has been reordered by popularity, or roughly
           server count. Quake 3 and its mods are now at the top.
 - Change: The game drop-down lists up to 25 entries without adding scroll bars.
-- Change: The status bar tool tip now also shows number of unresponsive
-          servers.
-- Change: Game type names for Smokin' Guns and World of Padman have been added
-          to the default configuration.
 - Change: Hardcoded game type names for OSP and westernq3 removed, use the
           gameType setting in mods.ini instead.
 - Change: When there is no gametype cvar for a server the game type column will
@@ -34,7 +33,7 @@ v0.9g - 2022-10-21
 v0.9f - 2022-10-14
 ------------------
 - New: Filter servers on name and game/gamename cvars, or on player names.
-- Change: Game selection dropdown is no no longer editable, use the new filter
+- Change: Game selection dropdown is no longer editable, use the new filter
           feature instead.
 
 v0.9e - 2022-09-02
