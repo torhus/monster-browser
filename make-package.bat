@@ -13,6 +13,6 @@ README.TXT
 md package\MonsterBrowser\
 for %%f in (%FILES%) do copy %%f package\MonsterBrowser\
 cd package
-7z a ..\MonsterBrowser09h.zip MonsterBrowser
+7z a ..\MonsterBrowser09i.zip MonsterBrowser
 cd ..
 rd /S /Q package

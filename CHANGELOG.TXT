@@ -1,5 +1,5 @@
-Work in progress
-----------------
+v0.9i - 2022-11-18
+------------------
 - New: A Tools menu, replacing the Settings button.
 - New: mods-default.ini is included, containing the default game configuration.
 - New: The status bar tool tip now also shows number of unresponsive servers.
