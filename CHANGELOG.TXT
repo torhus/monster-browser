@@ -1,6 +1,7 @@
 Work in progress
 ----------------
 - New: A Tools menu, replacing the Settings button.
+- New: mods-default.ini is included, containing the default game configuration.
 - Change: The default game list has been reordered by popularity, or roughly
           server count. Quake 3 and its mods are now at the top.
 - Change: The game drop-down lists up to 25 entries without adding scroll bars.

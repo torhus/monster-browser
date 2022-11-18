@@ -3,6 +3,7 @@ CHANGELOG.TXT ^
 GeoLite2-Country.mmdb ^
 libcurl.dll ^
 libmaxminddb.dll ^
+mods-default.ini ^
 MonsterBrowser.exe ^
 portable.txt ^
 qstat.exe ^

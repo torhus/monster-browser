@@ -37,6 +37,7 @@ Source: "CHANGELOG.TXT"; DestDir: "{app}"; Flags: ignoreversion
 Source: "GeoLite2-Country.mmdb"; DestDir: "{app}"; Flags: ignoreversion
 Source: "libcurl.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "libmaxminddb.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "mods-default.ini"; DestDir: "{userappdata}\{#MyAppName}"; Flags: ignoreversion
 Source: "qstat.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "qstat_mb.cfg"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
