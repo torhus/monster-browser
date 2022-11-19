@@ -620,7 +620,7 @@ private class ToolBarWrapper
 					                                         SWT.YES | SWT.NO);
 					mb.setText("Reset Game Configuration");
 					mb.setMessage("The game configuration file will be " ~
-					       " backed up, and a new one created. Are you sure?");
+					        "backed up, and a new one created. Are you sure?");
 					if (mb.open() == SWT.YES)
 						updateGameConfiguration();
 					break;
