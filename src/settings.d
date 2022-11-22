@@ -264,6 +264,7 @@ private void createGamesFile()
 
 	try {
 		File(gamesFileName, "w").write(text);
+		log("Created %s.", gamesFileName);
 	}
 	catch (ErrnoException e) {
 		error("Creating \"%s\" failed.  Monster Browser will not function " ~
