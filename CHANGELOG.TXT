@@ -5,6 +5,10 @@ Work in progress
           accessible through the Tools menu, and, unlike the installation
           folder, is not write protected. This does not affect portable
           installations.
+- Change: mods-default.ini is now created on first startup after installation
+          or upgrade, instead of being included in the installer. This should
+          work better when multiple user accounts are involved. It is still
+          included in the ZIP package.
 
 v0.9i - 2022-11-18
 ------------------

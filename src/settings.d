@@ -133,7 +133,8 @@ __gshared string backupGamesFileName;  /// ditto
 private {
 	__gshared string settingsFileName;
 
-	enum defaultGamesFile = import("mods-default.ini");
+	enum defaultGamesFileName = "mods-default.ini";
+	enum defaultGamesFileContents = import(defaultGamesFileName);
 
 	__gshared Ini settingsIni;
 	__gshared Ini gamesIni;
@@ -229,7 +230,7 @@ void loadGamesFile()
 	assert(gamesFileName.length);
 
 	if (!exists(gamesFileName))
-		writeDefaultGamesFile();
+		createGamesFile();
 	else if (!gamesIni && getSessionState("programVersion") < "0.9e")
 		updateGameConfiguration();
 
@@ -241,7 +242,7 @@ void loadGamesFile()
 	if (gamesIni.sections.length < 1) {
 		// Invalid format, probably the old version.  Just overwrite with
 		// defaults and try again.
-		writeDefaultGamesFile();
+		createGamesFile();
 		gamesIni = new Ini(gamesFileName);
 		gamesIni.remove("");
 	}
@@ -254,9 +255,9 @@ void loadGamesFile()
 }
 
 
-void writeDefaultGamesFile()
+private void createGamesFile()
 {
-	string text = defaultGamesFile;
+	string text = defaultGamesFileContents;
 
 	version (Windows)
 		text = replace(text, "%ProgramFiles%", getProgramFilesDirectory());
@@ -268,6 +269,25 @@ void writeDefaultGamesFile()
 		error("Creating \"%s\" failed.  Monster Browser will not function " ~
 		      "properly without this file.\n\nError: \"%s\"",
 		      gamesFileName, e);
+	}
+}
+
+
+private void createDefaultGamesFile()
+{
+	if (getSessionState("programVersion") == FINAL_VERSION)
+		return;
+
+	string path = dataDir ~ defaultGamesFileName;
+
+	try {
+		if (!exists(path)) {
+			File(path, "w").write(defaultGamesFileContents);
+			log("Created %s.", path);
+		}
+	}
+	catch (ErrnoException e) {
+		error("Creating \"%s\" failed.\n\n\"%s\"", path, e);
 	}
 }
 
@@ -318,6 +338,8 @@ void loadSettings()
 	gamesFileName = dataDir ~ "mods.ini";
 	backupGamesFileName = gamesFileName ~ ".autobackup";
 	loadGamesFile();
+
+	createDefaultGamesFile();
 }
 
 
@@ -477,7 +499,7 @@ void updateGameConfiguration()
 			info("The game configuration file was replaced.\n\n" ~
 			     "Your old configuration was backed up to \"%s\".",
 			                                    backupGamesFileName);
-			writeDefaultGamesFile();
+			createGamesFile();
 		}
 		catch (FileException e) {
 			warning("Renaming \"%s\" to \"%s\" failed.  The game " ~
@@ -486,7 +508,7 @@ void updateGameConfiguration()
 		}
 	}
 	else {
-		writeDefaultGamesFile();
+		createGamesFile();
 		info("Created game configuration file.");
 	}
 }
