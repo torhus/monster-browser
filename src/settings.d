@@ -127,11 +127,11 @@ struct GameConfig
 
 
 __gshared string[] gameNames;  /// The names of all games loaded from the config file.
-__gshared string gamesFileName;  /// Name of the file containing options for each game.
-__gshared string backupGamesFileName;  /// ditto
+shared string gamesFilePath;  /// Name of the file containing options for each game.
+shared string backupGamesFilePath;  /// ditto
 
 private {
-	__gshared string settingsFileName;
+	shared string settingsFilePath;
 
 	enum defaultGamesFileName = "mods-default.ini";
 	enum defaultGamesFileContents = import(defaultGamesFileName);
@@ -227,14 +227,14 @@ GameConfig createGameConfig(string name)
  */
 void loadGamesFile()
 {
-	assert(gamesFileName.length);
+	assert(gamesFilePath.length);
 
-	if (!exists(gamesFileName))
+	if (!exists(gamesFilePath))
 		createGamesFile();
 	else if (!gamesIni && getSessionState("programVersion") < "0.9e")
 		updateGameConfiguration();
 
-	gamesIni = new Ini(gamesFileName);
+	gamesIni = new Ini(gamesFilePath);
 
 	// remove the nameless section caused by comments
 	gamesIni.remove("");
@@ -243,7 +243,7 @@ void loadGamesFile()
 		// Invalid format, probably the old version.  Just overwrite with
 		// defaults and try again.
 		createGamesFile();
-		gamesIni = new Ini(gamesFileName);
+		gamesIni = new Ini(gamesFilePath);
 		gamesIni.remove("");
 	}
 
@@ -263,13 +263,13 @@ private void createGamesFile()
 		text = replace(text, "%ProgramFiles%", getProgramFilesDirectory());
 
 	try {
-		File(gamesFileName, "w").write(text);
-		log("Created %s.", gamesFileName);
+		File(gamesFilePath, "w").write(text);
+		log("Created %s.", gamesFilePath);
 	}
 	catch (ErrnoException e) {
 		error("Creating \"%s\" failed.  Monster Browser will not function " ~
 		      "properly without this file.\n\nError: \"%s\"",
-		      gamesFileName, e);
+		      gamesFilePath, e);
 	}
 }
 
@@ -305,9 +305,9 @@ private void createDefaultGamesFile()
 void loadSettings()
 {
 	assert(dataDir.length);
-	settingsFileName = dataDir ~ "settings.ini";
+	settingsFilePath = dataDir ~ "settings.ini";
 
-	settingsIni = new Ini(settingsFileName);
+	settingsIni = new Ini(settingsFilePath);
 	IniSection sec = settingsIni.addSection("Settings");
 
 	settingsIni.remove(""); // Remove nameless section from v0.1
@@ -336,8 +336,8 @@ void loadSettings()
 
 	loadSessionState();
 
-	gamesFileName = dataDir ~ "mods.ini";
-	backupGamesFileName = gamesFileName ~ ".autobackup";
+	gamesFilePath = dataDir ~ "mods.ini";
+	backupGamesFilePath = gamesFilePath ~ ".autobackup";
 	loadGamesFile();
 
 	createDefaultGamesFile();
@@ -494,18 +494,18 @@ int getSessionStateInt(in char[] key)
  */
 void updateGameConfiguration()
 {
-	if (exists(gamesFileName)) {
+	if (exists(gamesFilePath)) {
 		try {
-			rename(gamesFileName, backupGamesFileName);
+			rename(gamesFilePath, backupGamesFilePath);
 			info("The game configuration file was replaced.\n\n" ~
 			     "Your old configuration was backed up to \"%s\".",
-			                                    backupGamesFileName);
+			                                    backupGamesFilePath);
 			createGamesFile();
 		}
 		catch (FileException e) {
 			warning("Renaming \"%s\" to \"%s\" failed.  The game " ~
 					"configuration was not changed.\n\nError: \"%s\"",
-					gamesFileName, backupGamesFileName, e);
+		                         gamesFilePath, backupGamesFilePath, e);
 		}
 	}
 	else {

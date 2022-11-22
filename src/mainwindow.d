@@ -273,7 +273,7 @@ final class GameBar : Group
 		editButton.addSelectionListener(new class SelectionAdapter {
 			public override void widgetSelected(SelectionEvent e)
 			{
-				Program.launch(settings.gamesFileName);
+				Program.launch(gamesFilePath);
 			}
 		});
 

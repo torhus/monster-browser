@@ -21,7 +21,7 @@ void startFileWatching()
     shared static firstTime = true;
     assert(firstTime);
 
-    FileWatch watcher = FileWatch(gamesFileName);
+    FileWatch watcher = FileWatch(gamesFilePath);
 
     void reloadGameConfig()
     {
