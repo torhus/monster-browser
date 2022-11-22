@@ -62,7 +62,7 @@ struct GameConfig
 	string extraServersFile() /// Like "baseq3.extra".
 	{
 		string base = mod.length > 0 ? mod : name;
-		return appDir ~ base ~ ".extra";
+		return dataDir ~ base ~ ".extra";
 	}
 
 	/**

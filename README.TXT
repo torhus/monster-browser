@@ -59,7 +59,7 @@ time you check for new servers. If you don't want this to happen, make sure
 removed automatically if it times out too many times.
 
 If you have more than a couple of servers to add, it's easier to add them 
-directly to a file called '<mod>.extra' in the Monster Browser directory. If 
+directly to a file called '<mod>.extra' in the settings and data folder. If
 mod is set to nothing, use '<section name>.extra' instead. The format is just 
 one IP address per line, with or without a port number. For instance, when 
 refreshing a list or checking for new servers for the cpma mod, Monster 
