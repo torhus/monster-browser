@@ -10,9 +10,9 @@ import java.lang.Runnable;
 import org.eclipse.swt.widgets.Display;
 
 import common;
+import gameconfig;
 import serveractions;
 import servertable;
-import settings;
 import mainwindow;
 
 
@@ -27,12 +27,11 @@ void startFileWatching()
     {
         log("Reloading game config...");
         string name = serverTable.serverList.gameName;
-        settings.loadGamesFile();
-        gameBar.setGames(settings.gameNames);
-        switchToGame((findString(settings.gameNames, name)
-                                  != -1) ? name : settings.gameNames[0], true);
-        updateServerListCache(settings.gameNames);
-
+        loadGamesFile();
+        gameBar.setGames(gameNames);
+        switchToGame((findString(gameNames, name) != -1) ? name
+                                                         : gameNames[0], true);
+        updateServerListCache(gameNames);
     }
 
     void check()

@@ -16,6 +16,7 @@ import java.lang.Runnable;
 import org.eclipse.swt.widgets.Display;
 
 import common;
+import gameconfig;
 import masterlist;
 import mainwindow;
 import messageboxes;

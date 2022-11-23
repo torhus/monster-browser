@@ -9,11 +9,11 @@ import std.string;
 import std.uni : sicmp;
 
 import common;
+import gameconfig;
 import geoip;
 import masterlist;
 import serverdata;
 import set;
-import settings;
 
 
 /// Server filter bitflags.

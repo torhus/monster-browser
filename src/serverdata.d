@@ -8,7 +8,7 @@ import std.uni;
 
 import colorednames : stripColorCodes;
 import common;
-import settings;
+import gameconfig;
 
 
 /** Stores all data for a server. */

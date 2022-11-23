@@ -13,6 +13,7 @@ import std.stdio;
 import std.string;
 
 import common;
+import gameconfig;
 import messageboxes;
 import qstat;
 import masterlist;

@@ -13,6 +13,7 @@ import org.eclipse.swt.SWT;
 
 import common;
 import dialogs;
+import gameconfig;
 import mainwindow;
 import messageboxes;
 import serverdata;

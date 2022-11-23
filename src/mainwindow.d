@@ -42,6 +42,7 @@ import org.eclipse.swt.widgets.ToolItem;
 import common;
 import cvartable;
 import dialogs;
+import gameconfig;
 import playertable;
 import runtools : killServerBrowser;
 import serveractions;
@@ -240,10 +241,10 @@ final class GameBar : Group
 
 		// game selection
 		gamesCombo_ = new Combo(this, SWT.DROP_DOWN | SWT.READ_ONLY);
-		setGames(settings.gameNames);
+		setGames(gameNames);
 		if (getSetting("startWithLastMod") == "true") {
 			string s = getSetting("lastMod");
-			int i = findString(settings.gameNames, s);
+			int i = findString(gameNames, s);
 			gamesCombo_.select(i != -1 ? i : 0);
 		}
 
@@ -258,7 +259,7 @@ final class GameBar : Group
 
 				if (s.all!"a == '-'") {
 					// Can't select a separator.
-					int i = findString(settings.gameNames, lastSelectedGame_);
+					int i = findString(gameNames, lastSelectedGame_);
 					gamesCombo_.select(i);
 				}
 				else {

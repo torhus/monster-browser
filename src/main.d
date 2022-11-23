@@ -20,6 +20,7 @@ import org.eclipse.swt.widgets.Listener;
 import colorednames;
 import common;
 import filewatcher;
+import gameconfig;
 import mainwindow;
 import messageboxes;
 import serveractions;
@@ -65,6 +66,7 @@ private void _main(string[] args)
 	parseCmdLine(args);
 
 	loadSettings;
+	initGameConfig();
 
 	mainWindow = new MainWindow;
 
@@ -123,7 +125,7 @@ private void _main(string[] args)
 
 	initNameColors();
 	
-	if (settings.gameNames.length == 0)
+	if (gameNames.length == 0)
 		error("No valid game configurations were found.");
 	else
 		switchToGame(gameBar.selectedGame);
