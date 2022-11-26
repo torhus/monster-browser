@@ -15,7 +15,7 @@ lflags "misc\\mb.res" platform="x86_mscoff"
 lflags "misc\\mb.res" platform="windows-x86_64"
 mainSourceFile "src/main.d"
 excludedSourceFiles "src/monitor.d"
-excludedSourceFiles "src/mswindows/*" "src/tango/sys/win32/*" platform="linux"
+excludedSourceFiles "src/mswindows/*" platform="linux"
 stringImportPaths "." "flags" "icons"
 preBuildCommands "git rev-parse --abbrev-ref HEAD > revision.txt" \
                  "git describe --always --dirty >> revision.txt"
