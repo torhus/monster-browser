@@ -117,8 +117,8 @@ void initLogging()
 	logFile.writeln(replicate("-", 65));
 	logFile.writefln("%s %s started at %s", APPNAME, getVersionString(), time);
 	logFile.writeln(replicate("-", 65));
-	log("%s-bit | compiled by %s %s | running on %s",
-	                                    bits, __VENDOR__, __VERSION__, system);
+	log("On %s | %s-bit build | SWT %,?d | %s %,?d", system, bits,
+	                      '.', SWT.getVersion(), __VENDOR__, '.', __VERSION__);
 }
 
 
