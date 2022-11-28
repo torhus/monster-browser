@@ -99,7 +99,8 @@ class ServerTable
 		table_.addKeyListener(new MyKeyListener);
 
 		coloredNames_ = getSetting("coloredNames") == "true";
-		showFlags_ = initGeoIp() && (getSetting("showFlags") == "true");
+		showFlags_ = getSetting("showFlags") == "true" &&
+		                                initGeoIp(getSetting("geoIpDatabase"));
 
 		table_.addListener(SWT.EraseItem, new EraseItemListener);
 		table_.addListener(SWT.PaintItem, new PaintItemListener);

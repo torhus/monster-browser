@@ -48,7 +48,7 @@ private void bindFunc(alias funcPtr)(ExeModule lib)
 
 
 ///
-bool initGeoIp()
+bool initGeoIp(in char[] dbName)
 {
 	version (Win32)
 		string libName = "libmaxminddb.dll";
@@ -58,7 +58,6 @@ bool initGeoIp()
 		string libName = "libmaxminddb.so.0";
 
 	shared static bool firstTime = true;
-	string dbName = "GeoLite2-Country.mmdb";
 	ExeModule geoIpLib;
 	c_int result;
 
@@ -66,8 +65,6 @@ bool initGeoIp()
 	if (!firstTime)
 		return false;
 	firstTime = false;
-
-	display = Display.getDefault();
 
 	try {
 		geoIpLib = new ExeModule(libName);

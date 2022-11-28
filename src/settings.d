@@ -24,6 +24,7 @@ private {
 	enum Setting[] defaults = [
 		{"checkForUpdates", "1"},
 		{"coloredNames", "true"},
+		{"geoIpDatabase", "GeoLite2-Country.mmdb"},
 		{"lastMod", ""},
 		{"maxTimeouts", "3"},
 		{"minimizeOnGameLaunch", "true"},
