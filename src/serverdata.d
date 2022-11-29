@@ -27,7 +27,7 @@ struct ServerData {
 	/// list of cvars, with key and value for each
 	string[][] cvars;
 
-	string countryName;  ///
+	string locationName;  ///
 
 	int failCount = 0;  ///
 

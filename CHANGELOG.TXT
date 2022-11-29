@@ -1,3 +1,9 @@
+Work in progress
+----------------
+- New: Show city names in addition to country names. If you want city names you
+       need to replace the included geolocation database with one that has this
+       information, and update settings.ini with the new database file name.
+
 v0.9k - 2025-11-09
 ------------------
 This release is just to update the geolocation database.

@@ -83,7 +83,7 @@ final class MasterList
 			// some data is be kept between refreshes
 			sd.server[ServerColumn.COUNTRY] =
 				                        oldSd.server[ServerColumn.COUNTRY];
-			sd.countryName = oldSd.countryName;
+			sd.locationName = oldSd.locationName;
 			sd.persistent = oldSd.persistent;
 
 			if (timedOut(&sd)) {

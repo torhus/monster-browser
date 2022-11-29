@@ -356,7 +356,7 @@ private:
 				GeoInfo geo = getGeoInfo(ip[0..findChar(ip, ':')]);
 
 				sd.server[ServerColumn.COUNTRY] = geo.countryCode;
-				sd.countryName = geo.countryName;
+				sd.locationName = geo.locationName;
 				master_.setServerData(sh, sd);
 
 				ipHash_[ip] = -1;
