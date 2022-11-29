@@ -26,7 +26,7 @@ import maxminddb;
 /** The result of a GeoIp lookup */
 struct GeoInfo {
 	string countryCode;
-	string countryName;
+	string locationName;
 }
 
 private __gshared {
@@ -139,7 +139,8 @@ GeoInfo getGeoInfo(in char[] addr)
 		string code = getString(&result.entry, "country", "iso_code", null);
 		assert(code.length == 2);
 		string name = getString(&result.entry, "country", "names", "en", null);
-		return GeoInfo(toLower(code), name);
+		string city = getString(&result.entry, "city", "names", "en", null);
+		return GeoInfo(toLower(code), city ? text(city, ", ", name) : name);
 	}
 }
 

@@ -471,8 +471,8 @@ private:
 
 			string countryCode = sd.server[ServerColumn.COUNTRY];
 
-			if (sd.countryName.length)
-				item.setText(ServerColumn.COUNTRY, sd.countryName);
+			if (sd.locationName.length)
+				item.setText(ServerColumn.COUNTRY, sd.locationName);
 			else if (countryCode.length)
 				item.setText(ServerColumn.COUNTRY, countryCode);
 
