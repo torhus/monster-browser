@@ -8,6 +8,7 @@ import core.stdc.stdarg;
 import core.stdc.stdint;
 import core.stdc.string;
 import core.stdc.time;
+import std.algorithm.iteration : map;
 import std.ascii;
 import std.conv;
 import std.string;
@@ -46,27 +47,6 @@ private void bindFunc(alias funcPtr)(ExeModule lib)
 }
 
 
-private string getString(MMDB_entry_s* start, ...)
-{
-	MMDB_entry_data_s entry_data;
-	va_list args;
-
-	va_start(args, start);
-	scope (exit) va_end(args);
-
-	c_int result = MMDB_vget_value(start, &entry_data, args);
-
-	if (result == MMDB_SUCCESS && entry_data.has_data) {
-		return cast(string)entry_data.utf8_string[0..entry_data.data_size];
-	}
-	else {
-		log("MMDB_get_value failed.");
-		log("GeoIP: " ~ to!string(MMDB_strerror(result)));
-		return null;
-	}
-}
-
-
 ///
 bool initGeoIp()
 {
@@ -95,8 +75,7 @@ bool initGeoIp()
 		bindFuncOrThrow!(MMDB_open)(geoIpLib);
 		bindFuncOrThrow!(MMDB_close)(geoIpLib);
 		bindFuncOrThrow!(MMDB_lookup_string)(geoIpLib);
-		bindFuncOrThrow!(MMDB_get_value)(geoIpLib);
-		bindFuncOrThrow!(MMDB_vget_value)(geoIpLib);
+		bindFuncOrThrow!(MMDB_aget_value)(geoIpLib);
 		bindFuncOrThrow!(MMDB_get_metadata_as_entry_data_list)(geoIpLib);
 		bindFuncOrThrow!(MMDB_get_entry_data_list)(geoIpLib);
 		bindFuncOrThrow!(MMDB_free_entry_data_list)(geoIpLib);
@@ -164,6 +143,22 @@ GeoInfo getGeoInfo(in char[] addr)
 		assert(code.length == 2);
 		string name = getString(&result.entry, "country".ptr, "names".ptr, "en".ptr, null);
 		return GeoInfo(toLower(code), name);
+	}
+}
+
+
+private string getString(MMDB_entry_s* start, in char*[] args ...)
+{
+	MMDB_entry_data_s entry_data;
+	c_int result = MMDB_aget_value(start, &entry_data, args.ptr);
+
+	if (result == MMDB_SUCCESS && entry_data.has_data) {
+		return cast(string)entry_data.utf8_string[0..entry_data.data_size];
+	}
+	else {
+		log("MMDB_aget_value failed getting %s", args.map!(to!string));
+		log("GeoIP: " ~ to!string(MMDB_strerror(result)));
+		return null;
 	}
 }
 
@@ -239,6 +234,10 @@ extern (C) __gshared {
 	                     MMDB_entry_data_s */*const*/ entry_data,
 	                     va_list va_path)
 	    MMDB_vget_value;
+	c_int function(MMDB_entry_s */*const*/ start,
+	               MMDB_entry_data_s */*const*/ entry_data,
+	               in /*const*/ char */*const*/ */*const*/ path)
+	    MMDB_aget_value;
 	c_int function(MMDB_s */*const*/ mmdb,
 	               MMDB_entry_data_list_s **/*const*/ entry_data_list)
 	    MMDB_get_metadata_as_entry_data_list;
