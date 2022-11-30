@@ -2,6 +2,7 @@ module servertable;
 
 import std.ascii : newline;
 import std.conv;
+import std.exception : ifThrown;
 import std.math;
 import std.range;
 import std.string;
@@ -114,17 +115,13 @@ class ServerTable
 		}
 
 		// restore sort order from previous session
-		int sortCol = 0;
+		int sortCol;
 		bool reversed = false;
-		try {
-			string s = getSessionState("serverSortOrder");
-			sortCol = parse!int(s);
-			reversed = s.startsWith('r');
-			if (sortCol >= serverHeaders.length)
-				sortCol = 0;
-
-		}
-		catch (ConvException) { }
+		string s = getSessionState("serverSortOrder");
+		sortCol = parse!int(s).ifThrown!ConvException(1);
+		reversed = s.startsWith('r');
+		if (sortCol >= serverHeaders.length)
+			sortCol = 0;
 
 		table_.setSortColumn(table_.getColumn(sortCol));
 		table_.setSortDirection(reversed ? SWT.DOWN : SWT.UP);
