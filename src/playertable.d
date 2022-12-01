@@ -57,6 +57,8 @@ class PlayerTable
 			column.setWidth(widths[i]);
 		}
 
+		coloredNames_ = getSetting("coloredNames") == "true";
+
 		table_.addListener(SWT.SetData, new class Listener {
 			public void handleEvent(Event e)
 			{
@@ -66,36 +68,35 @@ class PlayerTable
 			}
 		});
 
-		if (getSetting("coloredNames") == "true") {
-			table_.addListener(SWT.EraseItem, new class Listener {
-				void handleEvent(Event e) {
-					if (e.index == PlayerColumn.NAME &&
-					                                !(e.detail & SWT.SELECTED))
-						e.detail &= ~SWT.FOREGROUND;
+		table_.addListener(SWT.EraseItem, new class Listener {
+			void handleEvent(Event e) {
+				if (e.index == PlayerColumn.NAME && coloredNames_ &&
+				                                  !(e.detail & SWT.SELECTED)) {
+					e.detail &= ~SWT.FOREGROUND;
 				}
-			});
+			}
+		});
 
-			table_.addListener(SWT.PaintItem, new class Listener {
-				void handleEvent(Event e) {
-					if (e.index != PlayerColumn.NAME ||
-					                               (e.detail & SWT.SELECTED)) {
-						return;
-					}
-					TableItem item = cast(TableItem) e.item;
-					string[] data = players_[table_.indexOf(item)].data;
-					scope tl = new TextLayout(Display.getDefault);
-
-					tl.setText(data[PlayerColumn.NAME]);
-					string rawName = data[PlayerColumn.RAWNAME];
-					bool useEtColors = serverList_.useEtColors;
-					foreach (r; parseColors(rawName, useEtColors).ranges)
-						tl.setStyle(r.style, r.start, r.end);
-
-					tl.draw(e.gc, e.x + 2, e.y + 2);
-					tl.dispose();
+		table_.addListener(SWT.PaintItem, new class Listener {
+			void handleEvent(Event e) {
+				if (e.index != PlayerColumn.NAME || !coloredNames_ ||
+				                                   (e.detail & SWT.SELECTED)) {
+					return;
 				}
-			});
-		}
+				TableItem item = cast(TableItem) e.item;
+				string[] data = players_[table_.indexOf(item)].data;
+				scope tl = new TextLayout(Display.getDefault);
+
+				tl.setText(data[PlayerColumn.NAME]);
+				string rawName = data[PlayerColumn.RAWNAME];
+				bool useEtColors = serverList_.useEtColors;
+				foreach (r; parseColors(rawName, useEtColors).ranges)
+					tl.setStyle(r.style, r.start, r.end);
+
+				tl.draw(e.gc, e.x + 2, e.y + 2);
+				tl.dispose();
+			}
+		});
 
 		Listener sortListener = new class Listener {
 			public void handleEvent(Event e)
@@ -158,6 +159,12 @@ class PlayerTable
 		});
 	}
 
+	///
+	void showColoredNames(bool show)
+	{
+		coloredNames_ = show;
+	}
+
 	/// The index of the currently active sort column.
 	int sortColumn() { return table_.indexOf(table_.getSortColumn()); }
 
@@ -211,6 +218,7 @@ private:
 	ServerList serverList_;
 	Player[] players_;
 	bool moreThanOneServer_;
+	bool coloredNames_;
 
 
 	class MouseMoveListener : Listener {

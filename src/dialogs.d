@@ -397,6 +397,13 @@ class SettingsDialog
 		sqSpinner_.setMaximum(99);
 		sqSpinner_.setSelection(getSettingInt("simultaneousQueries"));
 
+		// Colored names
+		auto colorComposite = new Composite(mainComposite, 0);
+		colorComposite.setLayout(new GridLayout());
+		colorButton_ = new Button(colorComposite, SWT.CHECK);
+		colorButton_.setText("Show server and player name colors");
+		colorButton_.setSelection(getSetting("coloredNames") == "true");
+
 		// Cvar columns
 		auto cvarComposite = new Composite(mainComposite, 0);
 		cvarComposite.setLayout(new GridLayout());
@@ -448,6 +455,10 @@ class SettingsDialog
 						startUpdateChecker();
 					setSetting("checkForUpdates", s);
 
+					s = colorButton_.getSelection() ? "true" : "false";
+					setSetting("coloredNames", s);
+					serverTable.showColoredNames(colorButton_.getSelection());
+
 					s = cvarButton_.getSelection() ? "true" : "false";
 					setSetting("showExtraColumns", s);
 					serverTable.showExtraColumns(cvarButton_.getSelection());
@@ -483,7 +494,7 @@ private:
 	Text pathText_;
 	int result_ = SWT.CANCEL;
 	Spinner sqSpinner_;
-	Button cvarButton_, updButton_;
+	Button colorButton_, cvarButton_, updButton_;
 }
 
 

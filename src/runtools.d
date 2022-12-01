@@ -230,11 +230,9 @@ final class QstatServerRetriever : IServerRetriever
 	{
 		try {
 			string cmdLine = "qstat -f - -raw,game " ~ FIELDSEP ~ " -P -R" ~
-			                                                   " -default q3s";
+			                                           " -default q3s -carets";
 			File dumpFile;
 
-			if (getSetting("coloredNames") == "true")
-				cmdLine ~= " -carets";
 			version (linux)
 				cmdLine = "./" ~ cmdLine;
 

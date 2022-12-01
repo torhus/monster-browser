@@ -1,5 +1,7 @@
 Work in progress
 ----------------
+- New: Added an on/off setting for the display of server and player name
+       colors.
 - Change: Files with extra servers are now looked for in the settings and data
           folder instead of the installation folder. This folder is easily
           accessible through the Tools menu, and, unlike the installation

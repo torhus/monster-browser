@@ -101,10 +101,8 @@ class ServerTable
 		coloredNames_ = getSetting("coloredNames") == "true";
 		showFlags_ = initGeoIp() && (getSetting("showFlags") == "true");
 
-		if (coloredNames_) {
-			table_.addListener(SWT.EraseItem, new EraseItemListener);
-			table_.addListener(SWT.PaintItem, new PaintItemListener);
-		}
+		table_.addListener(SWT.EraseItem, new EraseItemListener);
+		table_.addListener(SWT.PaintItem, new PaintItemListener);
 
 		sortListener_ = new SortListener;
 
@@ -212,6 +210,14 @@ class ServerTable
 
 	/// Returns the server list's Table widget object.
 	Table getTable() { return table_; }
+
+	/// Also updates the player table accordingly.
+	void showColoredNames(bool show)
+	{
+		coloredNames_ = show;
+		playerTable.showColoredNames(show);
+		fullRefresh();
+	}
 
 	///
 	void showExtraColumns(bool show)
