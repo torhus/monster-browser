@@ -106,7 +106,6 @@ class ServerTable
 			table_.addListener(SWT.PaintItem, new PaintItemListener);
 		}
 
-
 		sortListener_ = new SortListener;
 
 		for (int i = 0; i < table_.getColumnCount(); i++) {
@@ -534,44 +533,37 @@ private:
 
 	class EraseItemListener : Listener {
 		void handleEvent(Event e) {
-			if (e.index == ServerColumn.NAME && coloredNames_ ||
-			                   e.index == ServerColumn.PASSWORDED)
+			if ((e.index == ServerColumn.NAME && coloredNames_ &&
+			                                     !(e.detail & SWT.SELECTED)) ||
+			                                e.index == ServerColumn.PASSWORDED)
 				e.detail &= ~SWT.FOREGROUND;
 		}
 	}
 
 	class PaintItemListener : Listener {
 		void handleEvent(Event e) {
-			if (!((e.index == ServerColumn.NAME && coloredNames_) ||
-					 e.index == ServerColumn.PASSWORDED))
+			if (!((e.index == ServerColumn.NAME && coloredNames_ &&
+			                                     !(e.detail & SWT.SELECTED)) ||
+			                               e.index == ServerColumn.PASSWORDED))
 				return;
 
 			TableItem item = cast(TableItem) e.item;
-			auto i = table_.indexOf(item);
-			ServerData sd = serverList_.getFiltered(i);
-
-			enum { leftMargin = 2 }
+			ServerData sd = serverList_.getFiltered(table_.indexOf(item));
 
 			switch (e.index) {
-				case ServerColumn.NAME:
-					auto textX = e.x + leftMargin;
-					if (!(e.detail & SWT.SELECTED)) {
-						TextLayout tl = new TextLayout(Display.getDefault);
-						tl.setText(sd.server[ServerColumn.NAME]);
+				case ServerColumn.NAME: {
+					TextLayout tl = new TextLayout(Display.getDefault);
+					tl.setText(sd.server[ServerColumn.NAME]);
 
-						bool useEtColors = serverList_.useEtColors;
-						auto name = parseColors(sd.rawName, useEtColors);
-						foreach (r; name.ranges)
-							tl.setStyle(r.style, r.start, r.end);
+					bool useEtColors = serverList_.useEtColors;
+					auto name = parseColors(sd.rawName, useEtColors);
+					foreach (r; name.ranges)
+						tl.setStyle(r.style, r.start, r.end);
 
-						tl.draw(e.gc, textX, e.y);
-						tl.dispose();
-					}
-					else {
-						auto name = sd.server[ServerColumn.NAME];
-						e.gc.drawString(name, textX, e.y);
-					}
+					tl.draw(e.gc, e.x + 5, e.y + 2);
+					tl.dispose();
 					break;
+				}
 				case ServerColumn.PASSWORDED:
 					if (sd.server[ServerColumn.PASSWORDED] == PASSWORD_YES)
 						e.gc.drawImage(padlockImage_, e.x+4, e.y+1);

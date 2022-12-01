@@ -69,15 +69,18 @@ class PlayerTable
 		if (getSetting("coloredNames") == "true") {
 			table_.addListener(SWT.EraseItem, new class Listener {
 				void handleEvent(Event e) {
-					if (e.index == PlayerColumn.NAME)
+					if (e.index == PlayerColumn.NAME &&
+					                                !(e.detail & SWT.SELECTED))
 						e.detail &= ~SWT.FOREGROUND;
 				}
 			});
 
 			table_.addListener(SWT.PaintItem, new class Listener {
 				void handleEvent(Event e) {
-					if (e.index != PlayerColumn.NAME)
+					if (e.index != PlayerColumn.NAME ||
+					                               (e.detail & SWT.SELECTED)) {
 						return;
+					}
 					TableItem item = cast(TableItem) e.item;
 					string[] data = players_[table_.indexOf(item)].data;
 					scope tl = new TextLayout(Display.getDefault);
@@ -88,10 +91,7 @@ class PlayerTable
 					foreach (r; parseColors(rawName, useEtColors).ranges)
 						tl.setStyle(r.style, r.start, r.end);
 
-					if (e.detail & SWT.SELECTED)
-						e.gc.drawString(tl.getText, e.x+2, e.y);
-					else
-						tl.draw(e.gc, e.x+2, e.y);
+					tl.draw(e.gc, e.x + 2, e.y + 2);
 					tl.dispose();
 				}
 			});

@@ -9,6 +9,8 @@ Work in progress
           or upgrade, instead of being included in the installer. This should
           work better when multiple user accounts are involved. It is still
           included in the ZIP package.
+- Fix: The name column is no longer highlighted in dark blue for selected
+       servers or players.
 
 v0.9i - 2022-11-18
 ------------------
