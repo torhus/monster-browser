@@ -124,16 +124,17 @@ class PlayerTable
 		}
 
 		// restore sort order from previous session
-		int sortCol = 0;
-		bool reversed = false;
+		string s = getSessionState("playerSortOrder");
+		int sortCol = int.max;
 		try {
-			string s = getSessionState("playerSortOrder");
+			// Can't use ifThrown her because of some weird bug.
 			sortCol = parse!int(s);
-			reversed = s.startsWith('r');
-			if (sortCol >= playerHeaders.length)
-				sortCol = 0;
 		}
-		catch (ConvException) { }
+		catch (ConvException) {
+		}
+		if (sortCol >= playerHeaders.length)
+			sortCol = 0;
+		bool reversed = s.startsWith('r');
 
 		table_.setSortColumn(table_.getColumn(sortCol));
 		table_.setSortDirection(reversed ? SWT.DOWN : SWT.UP);

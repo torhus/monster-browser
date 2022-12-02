@@ -112,13 +112,11 @@ class ServerTable
 		}
 
 		// restore sort order from previous session
-		int sortCol;
-		bool reversed = false;
 		string s = getSessionState("serverSortOrder");
-		sortCol = parse!int(s).ifThrown!ConvException(1);
-		reversed = s.startsWith('r');
+		int sortCol = parse!int(s).ifThrown!ConvException(int.max);
 		if (sortCol >= serverHeaders.length)
-			sortCol = 0;
+			sortCol = 1;
+		bool reversed = s.startsWith('r');
 
 		table_.setSortColumn(table_.getColumn(sortCol));
 		table_.setSortDirection(reversed ? SWT.DOWN : SWT.UP);
