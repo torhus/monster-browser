@@ -3,13 +3,11 @@
 module launch;
 
 import std.path;
-import std.string;
 version (Windows) {
-	import std.windows.charset;
+	import std.utf : toUTF16z;
 	import std.windows.syserror;
 	import core.sys.windows.windows;
 }
-import org.eclipse.swt.SWT;
 
 import common;
 import dialogs;
@@ -70,11 +68,8 @@ void joinServer(in char[] gameName, ServerData sd)
 		log("Launching game: " ~ pathString ~ " " ~ argv);
 
 		version (Windows) {
-			const char* ansiPath = toMBSz(pathString);
-			const char* ansiDir = toMBSz(dirName(pathString));
-
-			int r = cast(int)ShellExecuteA(null, "open", ansiPath,
-			                                toStringz(argv), ansiDir, SW_SHOW);
+			int r = cast(int)ShellExecuteW(null, "open", toUTF16z(pathString),
+			           toUTF16z(argv), toUTF16z(dirName(pathString)), SW_SHOW);
 			if (r <= 32) {
 				auto code = GetLastError();
 				log("Launch error %s: %s", code, sysErrorString(code));

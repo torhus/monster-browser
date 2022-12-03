@@ -8,6 +8,7 @@ public import core.sys.windows.shlobj;
 import core.sys.windows.windows;
 import std.conv;
 import std.string;
+import std.utf : toUTF16z;
 import std.windows.syserror;
 
 
@@ -64,11 +65,11 @@ string getRegistryStringValue(in char[] key)
         throw new Exception("Invalid registry key: " ~ cast(string)key);
 
     HKEY keyConst = hkeyFromString(parts[0]);
-    wchar* subKey = join(parts[1..$-1], "\\").dup.ptr;
+    const(wchar)* subKey = toUTF16z(join(parts[1..$-1], "\\"));
     status = RegOpenKeyExW(keyConst, subKey, 0, KEY_ALL_ACCESS, &hKey);
 
     if (status == ERROR_SUCCESS) {
-        wchar* name = parts[$-1].dup.ptr;
+        const(wchar)* name = toUTF16z(parts[$-1]);
         status = RegQueryValueExW(hKey, name, null, &dwType, lpData, &dwSize);
 
         if (status == ERROR_MORE_DATA) {
