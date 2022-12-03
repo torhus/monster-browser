@@ -3,7 +3,6 @@
 module dialogs;
 
 import std.conv;
-import std.datetime.systime;
 import std.file;
 import std.socket;
 import std.string;

@@ -6,7 +6,6 @@ import std.file;
 import std.path;
 import std.stdio;
 import std.string;
-import core.sys.windows.windows;
 
 import java.io.ByteArrayInputStream;
 import org.eclipse.swt.SWT;
