@@ -139,9 +139,9 @@ GeoInfo getGeoInfo(in char[] addr)
 		return GeoInfo(null, null);
 	}
 	else {
-		string code = getString(&result.entry, "country".ptr, "iso_code".ptr, null);
+		string code = getString(&result.entry, "country", "iso_code", null);
 		assert(code.length == 2);
-		string name = getString(&result.entry, "country".ptr, "names".ptr, "en".ptr, null);
+		string name = getString(&result.entry, "country", "names", "en", null);
 		return GeoInfo(toLower(code), name);
 	}
 }
@@ -149,6 +149,8 @@ GeoInfo getGeoInfo(in char[] addr)
 
 private string getString(MMDB_entry_s* start, in char*[] args ...)
 {
+	assert(args.length && args[$-1] is null);
+
 	MMDB_entry_data_s entry_data;
 	c_int result = MMDB_aget_value(start, &entry_data, args.ptr);
 
