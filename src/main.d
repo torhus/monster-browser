@@ -49,6 +49,8 @@ int main(string[] args) ///
 
 private void _main(string[] args)
 {
+	auto display = Display.getDefault();
+
 	globalTimer.start();
 
 	detectDirectories(args[0]);
@@ -76,11 +78,11 @@ private void _main(string[] args)
 
 	Image[] appIcons;
 	foreach (stream; streams)
-		appIcons ~= new Image(Display.getDefault, stream);
+		appIcons ~= new Image(display, stream);
 	mainShell.setImages(appIcons);
 
 	// Handle global keyboard shortcuts.
-	Display.getDefault().addFilter(SWT.KeyDown, new class Listener {
+	display.addFilter(SWT.KeyDown, new class Listener {
 		void handleEvent(Event e)
 		{
 			if ((cast(Control)e.widget).getShell() !is mainShell)
@@ -112,7 +114,7 @@ private void _main(string[] args)
 		}
 	});
 
-	clipboard = new Clipboard(Display.getDefault);
+	clipboard = new Clipboard(display);
 
 	threadManager = new ThreadManager;
 
@@ -132,7 +134,6 @@ private void _main(string[] args)
 	startFileWatching();
 
 	// main loop
-	Display display = Display.getDefault;
 	while (!mainShell.isDisposed) {
 		if (!display.readAndDispatch())
 			display.sleep();
