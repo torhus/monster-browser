@@ -88,7 +88,6 @@ void loadSettings()
 	}
 
 	// make sure we have a path for quake3.exe
-	sec = settingsIni["Settings"];
 	if (!sec.getValue("gamePath")) {
 		string path;
 		version (Windows) {	
