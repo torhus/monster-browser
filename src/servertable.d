@@ -127,7 +127,7 @@ class ServerTable
 		table_.addMenuDetectListener(new class MenuDetectListener {
 			void menuDetected(MenuDetectEvent e)
 			{
-				if (table_.getSelectionCount == 0)
+				if (this.outer.table_.getSelectionCount == 0)
 					e.doit = false;
 			}
 		});

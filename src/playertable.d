@@ -2,6 +2,7 @@ module playertable;
 
 import std.algorithm;
 import std.conv;
+import std.exception : ifThrown;
 import std.string;
 
 import org.eclipse.swt.SWT;
@@ -99,22 +100,23 @@ class PlayerTable
 		});
 
 		Listener sortListener = new class Listener {
-			public void handleEvent(Event e)
+			void handleEvent(Event e)
 			{
-				auto oldColumn = table_.getSortColumn();
+				auto table = this.outer.table_;
+				auto oldColumn = table.getSortColumn();
 				auto newColumn = cast(TableColumn)e.widget;
-				int dir = table_.getSortDirection();
+				int dir = table.getSortDirection();
 
 				if (newColumn is oldColumn) {
 					dir = (dir == SWT.UP) ? SWT.DOWN : SWT.UP;
 				} else {
-					table_.setSortColumn(newColumn);
+					table.setSortColumn(newColumn);
 					dir = SWT.UP;
 				}
 
-				table_.setSortDirection(dir);
+				table.setSortDirection(dir);
 				sort();
-				table_.clearAll();
+				table.clearAll();
 			}
 		};
 
@@ -125,13 +127,7 @@ class PlayerTable
 
 		// restore sort order from previous session
 		string s = getSessionState("playerSortOrder");
-		int sortCol = int.max;
-		try {
-			// Can't use ifThrown her because of some weird bug.
-			sortCol = parse!int(s);
-		}
-		catch (ConvException) {
-		}
+		int sortCol = parse!int(s).ifThrown!ConvException(int.max);
 		if (sortCol >= playerHeaders.length)
 			sortCol = 0;
 		bool reversed = s.startsWith('r');
