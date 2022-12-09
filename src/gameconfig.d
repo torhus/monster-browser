@@ -266,10 +266,8 @@ private void createDefaultGamesFile()
     string path = dataDir ~ defaultGamesFileName;
 
     try {
-        if (!exists(path)) {
-            File(path, "w").write(defaultGamesFileContents);
-            log("Created %s.", path);
-        }
+        File(path, "w").write(defaultGamesFileContents);
+        log("Created %s.", path);
     }
     catch (ErrnoException e) {
         error("Creating \"%s\" failed.\n\n\"%s\"", path, e);
