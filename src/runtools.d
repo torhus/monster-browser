@@ -60,8 +60,8 @@ Set!(string) browserGetNewList(in GameConfig game)
 	try {
 		synchronized (procMutex) {
 			log("Executing '" ~ cmdLine ~ "'.");
-			proc = pipeProcess(
-			       split(cmdLine), Redirect.all, null, Config.suppressConsole);
+			proc = pipeProcess(split(cmdLine), Redirect.all, null,
+			                                   Config.suppressConsole, appDir);
 		}
 	}
 	catch (ProcessException e) {
@@ -240,8 +240,8 @@ final class QstatServerRetriever : IServerRetriever
 
 			synchronized (procMutex) {
 				log("Executing '" ~ cmdLine ~ "'.");
-				proc = pipeProcess(
-				   split(cmdLine), Redirect.all, null, Config.suppressConsole);
+				proc = pipeProcess(split(cmdLine), Redirect.all, null,
+				                               Config.suppressConsole, appDir);
 			}
 
 			if (arguments.dumplist)
