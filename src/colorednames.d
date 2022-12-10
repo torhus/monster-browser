@@ -126,11 +126,11 @@ ColoredName parseColors(in char[] s, bool useEtColors=false)
 	int bitMask = useEtColors ? 31 : 7;
 
 	for (int i=0; i < s.length; i++) {
-		if (s[i] == '^' && (i == s.length-1 || s[i+1] != '^')) {
+		if (s[i] == '^' && (i + 1 == s.length || s[i+1] != '^')) {
 			// terminate the previous range
 			if (name.ranges.length)
-				name.ranges[$-1].end = cast(int)(name.cleanName.length - 1);
-			if (i == s.length-1)
+				name.ranges[$-1].end = cast(int)name.cleanName.length - 1;
+			if (i + 1 == s.length)
 				break;
 
 			i++;
@@ -151,7 +151,7 @@ ColoredName parseColors(in char[] s, bool useEtColors=false)
 
 	// terminate the last range
 	if (name.ranges.length)
-		name.ranges[$-1].end = cast(int)(name.cleanName.length - 1);
+		name.ranges[$-1].end = cast(int)name.cleanName.length - 1;
 
 	if (name.cleanName.length == 0)
 		name.cleanName = Q3_DEFAULT_NAME;
@@ -177,7 +177,7 @@ string stripColorCodes(in char[] s)
 	char[] name;
 
 	for (int i=0; i < s.length; i++) {
-		if (s[i] == '^' && (i == s.length-1 || s[i+1] != '^')) {
+		if (s[i] == '^' && (i + 1 == s.length || s[i+1] != '^')) {
 			i++;
 			continue;
 		}

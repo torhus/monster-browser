@@ -19,7 +19,7 @@ import serverdata;
 alias ServerHandle = string;
 
 ///
-const ServerHandle InvalidServerHandle = "";
+const ServerHandle invalidServerHandle = "";
 
 
 ///
@@ -68,7 +68,7 @@ final class MasterList
 	 * The country code and name, and the persistency state, will be kept.
 	 *
 	 * Returns: The server's handle if it was found in the list, or
-	 *          InvalidServerHandle if not.
+	 *          invalidServerHandle if not.
 	 */
 	ServerHandle updateServer(ServerData sd)
 	{
@@ -78,7 +78,7 @@ final class MasterList
 			ServerData* oldSd = address in servers_;
 
 			if (oldSd is null)
-				return InvalidServerHandle;
+				return invalidServerHandle;
 
 			// some data is be kept between refreshes
 			sd.server[ServerColumn.COUNTRY] =
@@ -122,7 +122,7 @@ final class MasterList
 	/**
 	 * Given a server address, returns the handle.
 	 *
-	 * Returns InvalidServerHandle in case a server with the given address was
+	 * Returns invalidServerHandle in case a server with the given address was
 	 * not found.
 	 */
 	ServerHandle findServer(in char[] address)
@@ -133,7 +133,7 @@ final class MasterList
 				                   sd.server[ServerColumn.ADDRESS] == address);
 				return sd.server[ServerColumn.ADDRESS];
 			}
-			return InvalidServerHandle;
+			return invalidServerHandle;
 		}
 	}
 

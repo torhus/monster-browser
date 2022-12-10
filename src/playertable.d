@@ -169,7 +169,7 @@ class PlayerTable
 	bool sortReversed() { return (table_.getSortDirection() == SWT.DOWN); }
 
 	/// Returns the player list's Table widget object.
-	Table getTable() { return table_; };
+	Table getTable() { return table_; }
 
 	/**
 	 * Set the contents of this table.

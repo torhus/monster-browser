@@ -215,30 +215,16 @@ void checkConsoleOutput()
 
 /*
  * Redirect stdout and stderr to files.
- *
- * Returns true if it succeeded redirecting both.
  */
-private bool redirectOutput(string stdout_, string stderr_)
+private void redirectOutput(string stdout_, string stderr_)
 {
-	bool failed = false;
-
-	try {
+	try
 		stdout.reopen(stdout_, "w");
-	}
 	catch (ErrnoException e)
-	{
 		warning("Unable to redirect stdout: " ~ e.toString());
-		failed = true;
-	}
 
-	try {
+	try
 		stderr.reopen(stderr_, "w");
-	}
 	catch (ErrnoException e)
-	{
 		warning("Unable to redirect stderr: " ~ e.toString());
-		failed = true;
-	}
-
-	return !failed;
 }

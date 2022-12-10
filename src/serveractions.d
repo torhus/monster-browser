@@ -631,7 +631,7 @@ class ServerRetrievalController
 
 	private bool deliver(ServerHandle sh, bool replied)
 	{
-		assert(sh != InvalidServerHandle);
+		assert(sh != invalidServerHandle);
 		
 		ServerData sd = serverList_.master.getServerData(sh);
 		GameConfig game = getGameConfig(serverList_.gameName);
@@ -705,7 +705,7 @@ class ServerRetrievalController
 
 	// Just a workaround for ServerQueue.add and ServerList.add and replace
 	// not having the same signatures.
-	private final void deliverDgWrapper(ServerHandle sh)
+	private void deliverDgWrapper(ServerHandle sh)
 	{
 		assert(deliverDg2_ !is null);
 		deliverDg2_(sh);

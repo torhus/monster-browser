@@ -304,7 +304,7 @@ class SpecifyServerDialog
 				setSessionState("addServersAsPersistent",
 				                                persistent ? "true" : "false");
 
-				if (sh == InvalidServerHandle) {
+				if (sh == invalidServerHandle) {
 					ServerData sd;
 
 					sd.server.length = ServerColumn.max + 1;

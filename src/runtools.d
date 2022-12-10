@@ -276,7 +276,7 @@ final class QstatServerRetriever : IServerRetriever
 
 			if (replace_) {
 				sh = master_.updateServer(*sd);
-				if (sh == InvalidServerHandle)
+				if (sh == invalidServerHandle)
 					sh = master_.addServer(*sd);
 			}
 			else {

@@ -56,7 +56,7 @@ bool openRconWindow(string serverName, string address, string password) {
 
 
 ///
-class RconWindow
+final class RconWindow
 {
 	///
 	this(string serverName, Rcon rcon)
@@ -207,7 +207,7 @@ class RconWindow
 					if ((e.stateMask & SWT.MODIFIER_MASK) == 0) {
 						e.doit = false;
 						if (history_.length > 0 &&
-						                     position_ < history_.length - 1) {
+						                     position_ + 1 < history_.length) {
 							inputText_.setText(history_[++position_]);
 						}
 						else {

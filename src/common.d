@@ -270,7 +270,7 @@ void sortStringArray(string[][] arr, int column=0, bool reverse=false)
  */
 ptrdiff_t findCvar(in char[][][] cvars, in char[] key)
 {
-	ptrdiff_t low = 0, high = cvars.length - 1;
+	ptrdiff_t low = 0, high = cast(ptrdiff_t)cvars.length - 1;
 
 	while (low <= high) {
 		ptrdiff_t mid = low + (high - low) / 2;

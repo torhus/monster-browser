@@ -226,7 +226,7 @@ class ServerTable
 			columns[ServerColumn.CVAR_GAME].dispose();
 			columns[ServerColumn.CVAR_GAMENAME].dispose();
 		}
-		else if (show && table_.getColumnCount() == (serverHeaders.length - 2))
+		else if (show && (table_.getColumnCount() + 2) == serverHeaders.length)
 		                                                                      {
 			int start = ServerColumn.CVAR_GAME;
 			int[] widths = parseIntList(getSessionState("serverColumnWidths"),

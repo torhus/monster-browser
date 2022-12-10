@@ -447,7 +447,7 @@ private:
 				ServerData before = getFiltered(i - 1);
 				assert(compare(newSd, before) >= 0);
 			}
-			if (filteredList.length > 0 && i < filteredList.length - 1) {
+			if (filteredList.length > 0 && i + 1 < filteredList.length) {
 				ServerData after = getFiltered(i + 1);
 				assert(compare(newSd, after) < 0);
 			}
