@@ -61,7 +61,7 @@ immutable serverHeaders = [" ", "Name", "PW", "Ping", "Players", "Game type",
  * GUI for displaying the server list.  Also controls what the cvar and
  * player tables displays.
  */
-class ServerTable
+final class ServerTable
 {
 	///
 	this(Composite parent)
@@ -74,17 +74,16 @@ class ServerTable
 
 		int[] widths = parseIntList(getSessionState("serverColumnWidths"),
 		                                             serverHeaders.length, 80);
-
-		bool showExtraColumns = getSetting("showExtraColumns") == "true";
+		columnShown_ = parseIntList(getSessionState("serverColumnsShown"),
+		                                                 serverHeaders.length);
 
 		// add columns
 		foreach (i, header; serverHeaders) {
-			if (!showExtraColumns && i > ServerColumn.ADDRESS)
-				break;
 			TableColumn column = new TableColumn(table_, SWT.NONE);
 			column.setMoveable(true);
 			column.setText(header);
-			column.setWidth(widths[i]);
+			column.setWidth(columnShown_[i] ? widths[i] : 0);
+			column.setResizable(columnShown_[i] != 0);
 		}
 
 		int[] order = parseIntList(getSessionState("serverColumnOrder"));
@@ -169,8 +168,17 @@ class ServerTable
 		string playerWidth = toCsv(getColumnWidths(playerTable.getTable()));
 		setSessionState("playerColumnWidths", playerWidth);
 
-		string serverWidth = toCsv(getColumnWidths(serverTable.getTable()));
-		setSessionState("serverColumnWidths", serverWidth);
+		int[] serverWidths = getColumnWidths(table_);
+		int[] oldWidths = parseIntList(getSessionState("serverColumnWidths"),
+		                                              serverWidths.length, 80);
+
+		foreach (i, ref w; serverWidths) {
+			if (!columnShown_[i])
+				w = oldWidths[i];
+		}
+		setSessionState("serverColumnWidths", toCsv(serverWidths));
+
+		setSessionState("serverColumnsShown", toCsv(columnShown_));
 
 		string columnOrder = toCsv(serverTable.getTable().getColumnOrder());
 		setSessionState("serverColumnOrder", columnOrder);
@@ -221,27 +229,15 @@ class ServerTable
 	///
 	void showExtraColumns(bool show)
 	{
-		if (!show && table_.getColumnCount() == serverHeaders.length) {
-			auto columns = table_.getColumns();
-			columns[ServerColumn.CVAR_GAME].dispose();
-			columns[ServerColumn.CVAR_GAMENAME].dispose();
-		}
-		else if (show && (table_.getColumnCount() + 2) == serverHeaders.length)
-		                                                                      {
-			int start = ServerColumn.CVAR_GAME;
-			int[] widths = parseIntList(getSessionState("serverColumnWidths"),
-			                                         serverHeaders.length, 80);
+		showColumn(ServerColumn.CVAR_GAME, show);
+		showColumn(ServerColumn.CVAR_GAMENAME, show);
+	}
 
-			foreach (header, width; zip(serverHeaders, widths)[start..$]) {
-				auto column = new TableColumn(table_, SWT.NONE);
-				column.setMoveable(true);
-				column.setText(header);
-				column.setWidth(width);
-				column.addListener(SWT.Selection, sortListener_);
-			}
-
-			table_.clearAll();
-		}
+	///
+	bool extraColumnsShown()
+	{
+		return columnShown_[ServerColumn.CVAR_GAME] &&
+		       columnShown_[ServerColumn.CVAR_GAMENAME];
 	}
 
 	///
@@ -447,6 +443,7 @@ private:
 	bool refreshInProgress_ = false;
 	Color timeOutColor_;
 	Listener sortListener_;
+	int[] columnShown_;
 
 	class SetDataListener : Listener {
 		void handleEvent(Event e)
@@ -781,6 +778,26 @@ private:
 		}
 	}
 
+	void showColumn(int index, bool show)
+	{
+		assert(index >= 0 && index < table_.getColumnCount());
+
+		if (show == columnShown_[index])
+			return;
+
+		auto column = table_.getColumn(index);
+
+		if (show) {
+			int[] widths = parseIntList(getSessionState("serverColumnWidths"),
+			                                         serverHeaders.length, 80);
+			column.setWidth(widths[index]);
+		}
+		else {
+			column.setWidth(0);
+		}
+		column.setResizable(show);
+		columnShown_[index] = show;
+	}
 
 	void onSetPassword()
 	{

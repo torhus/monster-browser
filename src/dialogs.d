@@ -408,7 +408,7 @@ class SettingsDialog
 		cvarComposite.setLayout(new GridLayout());
 		cvarButton_ = new Button(cvarComposite, SWT.CHECK);
 		cvarButton_.setText("Show columns for the game and gamename cvars");
-		cvarButton_.setSelection(getSetting("showExtraColumns") == "true");
+		cvarButton_.setSelection(serverTable.extraColumnsShown());
 
 		// Update checker
 		auto updComposite = new Composite(mainComposite, 0);
@@ -458,8 +458,6 @@ class SettingsDialog
 					setSetting("coloredNames", s);
 					serverTable.showColoredNames(colorButton_.getSelection());
 
-					s = cvarButton_.getSelection() ? "true" : "false";
-					setSetting("showExtraColumns", s);
 					serverTable.showExtraColumns(cvarButton_.getSelection());
 				}
 
