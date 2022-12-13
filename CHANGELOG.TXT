@@ -12,6 +12,7 @@ Work in progress
           or upgrade, instead of being included in the installer. This should
           work better when multiple user accounts are involved. It is still
           included in the ZIP package.
+- Change: The "IP" column was renamed to "IP address".
 - Fix: The name column is no longer highlighted in dark blue for selected
        servers or players.
 - Fix: Comes with a new qstat.exe that doesn't crash on Windows XP.

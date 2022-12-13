@@ -54,7 +54,7 @@ __gshared ServerTable serverTable;  ///
 
 // should correspond to serverlist.ServerColumn
 immutable serverHeaders = [" ", "Name", "PW", "Ping", "Players", "Game type",
-                           "Map", "IP", "[game]", "[gamename]"];
+                           "Map", "IP address", "[game]", "[gamename]"];
 
 
 /**
