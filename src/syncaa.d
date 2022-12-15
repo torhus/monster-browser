@@ -11,13 +11,13 @@ synchronized final class SyncAA(K, V) ///
     this() { data_[K.init] = V.init; data_.remove(K.init); }
 
     ///
-    V opIndex(K key) { return unshare[key]; }
+    V opIndex(K key) => unshare[key];
 
     ///
-    V opIndexAssign(V value, K key) { return unshare[key] = value; }
+    V opIndexAssign(V value, K key) => unshare[key] = value;
 
     ///
-    K[] keys() { return unshare.keys; }
+    K[] keys() => unshare.keys;
 
     ///
     void remove(K key) { data_.remove(key); }
@@ -55,5 +55,5 @@ synchronized final class SyncAA(K, V) ///
 
 private:
     V[K] data_;
-    V[K] unshare() inout { return cast(V[K])data_; }
+    V[K] unshare() inout => cast(V[K])data_;
 }

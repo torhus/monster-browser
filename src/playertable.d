@@ -163,13 +163,13 @@ class PlayerTable
 	}
 
 	/// The index of the currently active sort column.
-	int sortColumn() { return table_.indexOf(table_.getSortColumn()); }
+	int sortColumn() => table_.indexOf(table_.getSortColumn());
 
 	/// Is the sort order reversed?
-	bool sortReversed() { return (table_.getSortDirection() == SWT.DOWN); }
+	bool sortReversed() => table_.getSortDirection() == SWT.DOWN;
 
 	/// Returns the player list's Table widget object.
-	Table getTable() { return table_; }
+	Table getTable() => table_;
 
 	/**
 	 * Set the contents of this table.

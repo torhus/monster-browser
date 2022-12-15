@@ -39,16 +39,14 @@ struct Set(T) {
 	void remove(T val) { data_.remove(val); } ///
 
 	///
-	bool opBinaryRight(string op : "in")(T val) const
-	{
-		return (val in data_) != null;
-	}
+	bool opBinaryRight(string op : "in")(T val) const =>
+	                                            (val in data_) != null;
 
-	size_t length() const { return data_.length; } ///
+	size_t length() const => data_.length; ///
 	void rehash() { data_.rehash; } ///
 	void clear() { data_.clear; } ///
 
-	auto opSlice() const { return data_.byKey(); } ///
+	auto opSlice() const => data_.byKey(); ///
 
 	///
 	int opApply(int delegate(const ref T) dg) const

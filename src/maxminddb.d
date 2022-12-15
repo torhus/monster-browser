@@ -128,10 +128,8 @@ struct MMDB_s {
 /* For interpreting the gai_error argument of MMDB lookup functions */
 version (Windows) {
 	// It's an inline function on Windows, defined in WS2tcpip.h
-	const(char) * gai_strerror(c_int ecode)
-	{
-		return toStringz(format("gai_strerror(%s)", ecode));
-	}
+	const(char) * gai_strerror(c_int ecode) =>
+	                              toStringz(format("gai_strerror(%s)", ecode));
 }
 else {
 	extern (C) char * gai_strerror(c_int ecode);

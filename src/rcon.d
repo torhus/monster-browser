@@ -332,7 +332,7 @@ private class Rcon
 
 
 	///
-	string address() { return address_; }
+	string address() => address_;
 
 
 	///

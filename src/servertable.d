@@ -199,16 +199,16 @@ class ServerTable
 	}
 
 	/// The ServerList currently being used.
-	ServerList serverList() { return serverList_; }
+	ServerList serverList() => serverList_;
 
 	/// The index of the currently active sort column.
-	int sortColumn() { return table_.indexOf(table_.getSortColumn()); }
+	int sortColumn() => table_.indexOf(table_.getSortColumn());
 
 	/// Is the sort order reversed?
-	bool sortReversed() { return (table_.getSortDirection() == SWT.DOWN); }
+	bool sortReversed() => (table_.getSortDirection() == SWT.DOWN);
 
 	/// Returns the server list's Table widget object.
-	Table getTable() { return table_; }
+	Table getTable() => table_;
 
 	/// Also updates the player table accordingly.
 	void showColoredNames(bool show)

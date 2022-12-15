@@ -199,16 +199,10 @@ string getGameTypeName(in GameConfig game, int type)
 }
 
 /// Did this server time out when last queried?
-bool timedOut(in ServerData* sd)
-{
-	return sd.server[ServerColumn.PING] == TIMEOUT;
-}
+bool timedOut(in ServerData* sd) => sd.server[ServerColumn.PING] == TIMEOUT;
 
 /// Has this server ever responded?
-bool hasReplied(in ServerData* sd)
-{
-	return sd.cvars.length > 0;
-}
+bool hasReplied(in ServerData* sd) => sd.cvars.length > 0;
 
 ///
 immutable defaultGameTypes = ["FFA", "1v1", "SP", "TDM", "CTF",

@@ -35,11 +35,11 @@ final class MasterList
 
 	
 	/// Name, as given to the constructor.
-	string name() const { return name_; }
+	string name() const => name_;
 	
 	
 	/// The name of the file this master server's data is stored in.
-	string fileName() const { return fileName_; }
+	string fileName() const => fileName_;
 
 
 	/// Add a server, and return its ServerHandle.
@@ -163,10 +163,10 @@ final class MasterList
 
 
 	/// Total number of servers.
-	size_t length() const { return servers_.length; }
+	size_t length() const => servers_.length;
 
 	/// Number of servers that have never replied.
-	size_t downCount() const { return downCount_; }
+	size_t downCount() const => downCount_;
 
 
 	/**

@@ -122,10 +122,7 @@ void saveSettings()
 /**
  * Returns the setting's value, or a default if not set.
  */
-string getSetting(in char[] key)
-{
-	return getSetting("Settings", key);
-}
+string getSetting(in char[] key) => getSetting("Settings", key);
 
 
 /**
@@ -133,10 +130,7 @@ string getSetting(in char[] key)
  *
  * Throws: IllegalArgumentException if the value is not an int.
  */
-int getSettingInt(in char[] key)
-{
-	return getSettingInt("Settings", defaults, key);
-}
+int getSettingInt(in char[] key) => getSettingInt("Settings", defaults, key);
 
 
 /**
@@ -223,10 +217,7 @@ private void loadSessionState()
 /**
  * Returns the setting's value, or a default if not set.
  */
-string getSessionState(in char[] key)
-{
-	return getSetting("Session", key);
-}
+string getSessionState(in char[] key) => getSetting("Session", key);
 
 
 /**
@@ -245,10 +236,8 @@ void setSessionState(in char[] key, string value)
  *
  * Throws: IllegalArgumentException if the value is not an int.
  */
-int getSessionStateInt(in char[] key)
-{
-	return getSettingInt("Session", defaultSessionState, key);
-}
+int getSessionStateInt(in char[] key) =>
+                            getSettingInt("Session", defaultSessionState, key);
 
 
 private string autodetectQuake3Path()

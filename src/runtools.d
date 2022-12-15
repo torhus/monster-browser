@@ -173,10 +173,7 @@ final class MasterListServerRetriever : IServerRetriever
 
 
 	///
-	int prepare()
-	{
-		return cast(int)master_.length;
-	}
+	int prepare() => cast(int)master_.length;
 
 
 	///

@@ -52,13 +52,13 @@ final class ServerList
 
 
 	///
-	string gameName() { return gameName_; }
+	string gameName() => gameName_;
 
 	///
-	MasterList master() { return master_; }
+	MasterList master() => master_;
 
 	///
-	bool useEtColors() { return useEtColors_; }
+	bool useEtColors() => useEtColors_;
 
 
 	/**
@@ -66,10 +66,7 @@ final class ServerList
 	 *
 	 * Returns true if the filtered list was altered.
 	 */
-	bool add(ServerHandle sh)
-	{
-		return addOrReplace(sh);
-	}
+	bool add(ServerHandle sh) => addOrReplace(sh);
 
 
 	/**
@@ -77,10 +74,7 @@ final class ServerList
 	*
 	* Returns true if the filtered list was altered.
 	*/
-	bool replace(ServerHandle sh)
-	{
-		return addOrReplace(sh, true);
-	}
+	bool replace(ServerHandle sh) => addOrReplace(sh, true);
 
 
 	/**
@@ -239,7 +233,7 @@ final class ServerList
 		}
 	}
 
-	Filter getFilters() { return filters_; } ///
+	Filter getFilters() => filters_; ///
 
 	bool setSearchString(string s, bool servers) ///
 	{
@@ -523,10 +517,7 @@ private:
 
 	/// ditto
 	/// FIXME: Use -preview=in instead of having this overload?
-	int compare(const ServerData a, const ServerData b)
-	{
-		return compare(a, b);
-	}
+	int compare(const ServerData a, const ServerData b) => compare(a, b);
 
 
 	bool removeFromFiltered(in char[] address)

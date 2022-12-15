@@ -19,26 +19,18 @@ version (Windows) import mswindows.util;
 /// Configuration for a game.
 struct GameConfig
 {
-    string name() const /// Section name in the game config file.
-    {
-        return name_;
-    }
+    string name() const => name_; /// Section name in the game config file.
 
-    string mod() const  /// Quake 3 gamename, like "baseq3".  Defaults to name.
-    {
-        return section.getValue("mod", name);
-    }
+    /// Quake 3 gamename, like "baseq3".  Defaults to name.
+    string mod() const => section.getValue("mod", name);
 
-    string masterServer() const   /// Like "master3.idsoftware.com".
-    {
-        return section.getValue(
-                               "masterServer", "master.quake3arena.com:27950");
-    }
+    /// Like "master3.idsoftware.com".
+    string masterServer() const =>
+              section.getValue("masterServer", "master.quake3arena.com:27950");
 
-    string protocolVersion() const  /// Defaults to 68.
-    {
-        return section.getValue("protocolVersion", "68");
-    }
+    /// Defaults to 68.
+    string protocolVersion() const =>
+                                     section.getValue("protocolVersion", "68");
 
     string[] gameTypes() const ///
     {
@@ -103,16 +95,12 @@ struct GameConfig
     }
 
     /// Value to use for Qstat's -cfg parameter.
-    string qstatConfigFile() const
-    {
-        return section.getValue("qstatConfigFile", null);
-    }
+    string qstatConfigFile() const =>
+                                     section.getValue("qstatConfigFile", null);
 
     /// Qstat master server type.
-    string qstatMasterServerType() const
-    {
-        return section.getValue("qstatMasterServerType", "q3m");
-    }
+    string qstatMasterServerType() const =>
+                              section.getValue("qstatMasterServerType", "q3m");
 
     private string name_;
     private IniSection section;

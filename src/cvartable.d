@@ -36,7 +36,7 @@ class CvarTable
 		table_.getColumn(1).setWidth(widths[1]);
 	}
 
-	Table getTable() { return table_; }  ///
+	Table getTable() => table_;  ///
 
 	void setItems(string[][] items)  ///
 	{

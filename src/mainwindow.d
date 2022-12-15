@@ -155,13 +155,13 @@ class MainWindow
 		}
 	}
 
-	Shell handle() { return shell_; }  ///
+	Shell handle() => shell_;  ///
 
 	void open() { shell_.open; }  ///
 
 	void close() { shell_.close; }  ///
 
-	bool minimized()       { return shell_.getMinimized; }  ///
+	bool minimized() => shell_.getMinimized;  ///
 	void minimized(bool v) { shell_.setMinimized(v); }  ///
 
 
@@ -286,10 +286,7 @@ final class GameBar : Group
 
 
 	/// The last selected game name.
-	string selectedGame()
-	{
-		return lastSelectedGame_;
-	}
+	string selectedGame() => lastSelectedGame_;
 
 
 	/// Set the contents of the game name drop-down list.
@@ -562,7 +559,7 @@ private class ToolBarWrapper
 		settingsButton_.addSelectionListener(new ToolsButtonListener(toolBar_));
 	}
 
-	ToolBar getToolBar() { return toolBar_; }
+	ToolBar getToolBar() => toolBar_;
 
 	private class ToolsButtonListener : SelectionAdapter {
 		this(ToolBar toolBar)
@@ -648,10 +645,7 @@ private class ToolBarWrapper
 }
 
 
-private Image loadImage(string name)()
-{
-	return _loadImage(cast(byte[])import(name));
-}
+private Image loadImage(string name)() => _loadImage(cast(byte[])import(name));
 
 private Image _loadImage(byte[] data)
 {

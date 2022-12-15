@@ -97,7 +97,7 @@ class ThreadManager
 
 
 	/// Is the secondary thread sleeping or working?
-	bool sleeping() { return sleeping_; }
+	bool sleeping() => sleeping_;
 
 
 	private void dispatch()

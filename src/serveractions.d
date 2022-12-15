@@ -739,8 +739,8 @@ class StatusBarUpdater : Runnable {
 		total_ = totalServers;
 	}
 
-	int total() { return total_; } ///
-	int progress() { return progress_; } ///
+	int total() => total_; ///
+	int progress() => progress_; ///
 
 	///
 	void increment(int amount=1)
