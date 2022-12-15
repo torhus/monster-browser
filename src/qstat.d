@@ -176,6 +176,7 @@ do {
 				sd.server[ServerColumn.CVAR_GAMENAME] = cvar[1];
 				break;
 			case "gametype":
+				sd.server[ServerColumn.GAMETYPE_NUM] = cvar[1];
 				try {
 					sd.numericGameType = to!int(cvar[1]);
 				}

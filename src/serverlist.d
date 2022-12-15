@@ -509,8 +509,9 @@ private:
 				break;
 
 			case ServerColumn.PING:
-				result = toIntOrDefault(a.server[ServerColumn.PING]) -
-				         toIntOrDefault(b.server[ServerColumn.PING]);
+			case ServerColumn.GAMETYPE_NUM:
+				result = toIntOrDefault(a.server[sortColumn_]) -
+				         toIntOrDefault(b.server[sortColumn_]);
 				break;
 
 			default:

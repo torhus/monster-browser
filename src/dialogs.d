@@ -403,6 +403,13 @@ class SettingsDialog
 		colorButton_.setText("Show server and player name colors");
 		colorButton_.setSelection(getSetting("coloredNames") == "true");
 
+		// Numerical game type column
+		auto gtComposite = new Composite(mainComposite, 0);
+		gtComposite.setLayout(new GridLayout());
+		numGtButton_ = new Button(gtComposite, SWT.CHECK);
+		numGtButton_.setText("Show numerical game type column");
+		numGtButton_.setSelection(serverTable.numericalGtColumnShown());
+
 		// Cvar columns
 		auto cvarComposite = new Composite(mainComposite, 0);
 		cvarComposite.setLayout(new GridLayout());
@@ -458,6 +465,8 @@ class SettingsDialog
 					setSetting("coloredNames", s);
 					serverTable.showColoredNames(colorButton_.getSelection());
 
+					serverTable.showNumericalGtColumn(
+						                          numGtButton_.getSelection());
 					serverTable.showExtraColumns(cvarButton_.getSelection());
 				}
 
@@ -491,7 +500,7 @@ private:
 	Text pathText_;
 	int result_ = SWT.CANCEL;
 	Spinner sqSpinner_;
-	Button colorButton_, cvarButton_, updButton_;
+	Button colorButton_, numGtButton_, cvarButton_, updButton_;
 }
 
 

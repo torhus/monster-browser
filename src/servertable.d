@@ -54,7 +54,7 @@ __gshared ServerTable serverTable;  ///
 
 // should correspond to serverlist.ServerColumn
 immutable serverHeaders = [" ", "Name", "PW", "Ping", "Players", "Game type",
-                           "Map", "IP address", "[game]", "[gamename]"];
+                   "Game type #", "Map", "IP address", "[game]", "[gamename]"];
 
 
 /**
@@ -114,9 +114,9 @@ final class ServerTable
 		// restore sort order from previous session
 		string s = getSessionState("serverSortOrder");
 		int sortCol = parse!int(s).ifThrown!ConvException(int.max);
-		if (sortCol >= serverHeaders.length)
+		bool reversed = columnShown_[sortCol] ? s.startsWith('r') : false;
+		if (sortCol >= serverHeaders.length || !columnShown_[sortCol])
 			sortCol = 1;
-		bool reversed = s.startsWith('r');
 
 		table_.setSortColumn(table_.getColumn(sortCol));
 		table_.setSortDirection(reversed ? SWT.DOWN : SWT.UP);
@@ -224,6 +224,18 @@ final class ServerTable
 		coloredNames_ = show;
 		playerTable.showColoredNames(show);
 		fullRefresh();
+	}
+
+	///
+	void showNumericalGtColumn(bool show)
+	{
+		showColumn(ServerColumn.GAMETYPE_NUM, show);
+	}
+
+	///
+	bool numericalGtColumnShown()
+	{
+		return columnShown_[ServerColumn.GAMETYPE_NUM] != 0;
 	}
 
 	///

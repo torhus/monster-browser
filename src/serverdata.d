@@ -110,8 +110,8 @@ struct ServerData {
 enum PlayerColumn { NAME, SCORE, PING, RAWNAME }
 // should correspond to servertable.serverHeaders
 enum ServerColumn {
-	COUNTRY, NAME, PASSWORDED, PING, PLAYERS, GAMETYPE, MAP, ADDRESS,
-	CVAR_GAME, CVAR_GAMENAME
+	COUNTRY, NAME, PASSWORDED, PING, PLAYERS, GAMETYPE, GAMETYPE_NUM, MAP,
+	ADDRESS, CVAR_GAME, CVAR_GAMENAME
 }
 
 

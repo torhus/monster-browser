@@ -415,6 +415,7 @@ private final class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 			sortStringArray(cvars);
 
 			if (auto cvar = cvars.getCvar("g_gametype")) {
+				sd.server[ServerColumn.GAMETYPE_NUM] = cvar[1];
 				sd.numericGameType = toIntOrDefault(cvar[1], -1);
 			}
 			if (auto cvar = cvars.getCvar("g_needpass")) {
