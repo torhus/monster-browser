@@ -1,5 +1,5 @@
-Work in progress
-----------------
+v0.9j - 2022-12-16
+------------------
 - New: A column showing the numerical game type can now be enabled in Settings.
 - New: Added an on/off setting for the display of server and player name
        colors.

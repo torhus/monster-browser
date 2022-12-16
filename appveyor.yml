@@ -1,4 +1,4 @@
-version: 0.9i.{branch}.{build}
+version: 0.9j.{branch}.{build}
 image: Visual Studio 2022
 environment:
   BASEDIR: C:\projects
@@ -20,5 +20,5 @@ build_script: |
 test: off
 artifacts:
 - path: MonsterBrowser.exe
-- path: MonsterBrowser09i.zip
-- path: misc\Monster Browser 0.9i Setup.exe
+- path: MonsterBrowser09j.zip
+- path: misc\Monster Browser 0.9j Setup.exe
