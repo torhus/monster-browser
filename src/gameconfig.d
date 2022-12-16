@@ -42,14 +42,15 @@ struct GameConfig
 
     string[] gameTypes() const ///
     {
+        __gshared string[0] empty;
         string s = section.getValue("gameTypes");
 
         if (s is null)
             return null;
 
-        string[] r = split(strip(s), " ");
+        string[] r = split(strip(s));
 
-        return r[0].length > 0 ? r : r[0..0];
+        return r.length > 0 ? r : empty;
     }
 
     string extraServersFile() /// Like "baseq3.extra".
