@@ -10,14 +10,8 @@ D compiler:
 http://dlang.org/download.html
 Currently I'm using DMD 2.100.2
 
-D docs:
-Language: http://dlang.org/spec/spec.html
-http://www.prowiki.org/wiki4d/wiki.cgi?LanguageSpecification/KeywordIndex
-http://www.prowiki.org/wiki4d/wiki.cgi?FaqRoadmap
-
-D support:
-http://www.digitalmars.com/NewsGroup.html
-irc://irc.freenode.org/D
+D docs, support, etc.:
+http://dlang.org
 
 DUB is used for building (comes with DMD):
 https://github.com/dlang/dub
@@ -31,15 +25,14 @@ http://www.dprogramming.com/ini.php
 DWT GUI library. DWT is a D port of IBM's SWT 3.4.1 for Java.
 
 https://github.com/d-widget-toolkit/dwt
-http://help.eclipse.org/ganymede/nftopic/org.eclipse.platform.doc.isv/reference/api/org/eclipse/swt/widgets/package-tree.html
-There's also a DWT news group on news.digitalmars.com, and a #dwt channel on
-freenode (IRC).
-
+https://help.eclipse.org/latest/topic/org.eclipse.platform.doc.isv/reference/api/org/eclipse/swt/package-summary.html
 
 Building on Windows
 -------------------
 dub build --arch=x86
 
+A final release is built like this:
+dub build --arch=x86 --build=release --config=final --compiler=ldc2 --force
 
 Building on Linux
 -----------------
