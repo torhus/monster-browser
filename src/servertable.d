@@ -378,15 +378,15 @@ class ServerTable
 	 * Updates the status main status bar info to show the current number of
 	 * servers and players.
 	 *
-	 * Any method that alters the number of visible servers, or the number of
-	 * players on those servers, should call this when it is done making
-	 * changes.
+	 * Also update the status bar tool tip. Any method that alters the number
+	 * of visible servers, or the number of players on those servers, should
+	 * call this when it is done making changes.
 	 *
 	 * Note:
 	 *     Changes to the player or cvar tables do not affect the status bar,
 	 *     so it's not necessary to call this method in those cases.
 	 */
-	void updateStatusBar()
+	void updateStatusBar(bool resetToolTip=false)
 	{
 		if (table_.isDisposed())
 			return;
@@ -397,7 +397,8 @@ class ServerTable
 		                         itemCount, 0, countHumanPlayers(serverList_));
 
 		auto m = serverList_.master;
-		if (m.length != masterLength_ || m.downCount != downCount_) {
+		if (m.length != masterLength_ || m.downCount != downCount_ ||
+		                                                        resetToolTip) {
 			string s = format("%s with %s servers", m.name,
 			                                         (m.length - m.downCount));
 			if (m.downCount)
@@ -420,7 +421,7 @@ class ServerTable
 		cvarTable.clear;
 		playerTable.clear;
 
-		updateStatusBar();
+		updateStatusBar(true);
 	}
 
 	///

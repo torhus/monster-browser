@@ -16,6 +16,8 @@ Work in progress
 - Fix: The name column is no longer highlighted in dark blue for selected
        servers or players.
 - Fix: Comes with a new qstat.exe that doesn't crash on Windows XP.
+- Fix: Update status bar tool tip when switching to a game with no master list
+       yet.
 
 v0.9i - 2022-11-18
 ------------------
