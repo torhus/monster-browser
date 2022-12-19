@@ -1,13 +1,3 @@
-[01:28]	<Aelf>	btw -- it would be nice to be able to follow a teamgame (color the player's lines according to the team they are in -> red or blue --- and another field where it shows red and blue score)
-[01:29]	<Aelf>	that's actually the only feature i am missing in monsterbrowser right now
-[01:30]	<Aelf>	in qxmon it looks like this e.g. : http://www.qxmon.net/q3mon-spy.pl?91.121.106.200:7777
-[01:30]	<BJ_Ketchum>	i woulde like to now how long a map hav been played and whats the score is (br), cus people ofen disconect at map switches thus giving room to me
-
-- clear tables when the active game has been deleted from the dropdown, since
-  many actions will cause a crash, like changing filters
-
-- should optimize countHumanPlayers?  Profile it.
-
 - When interrupting a check for new servers, the press of Refresh all won't
   query the servers the were not tried already.
 
@@ -26,14 +16,6 @@
 - Ability to change persistence state of manually added servers by adding them
   again?
 
-- Change taskbar text when working, to keep user informed?
-
-- See if ServerData.customData really is needed, cache TextLayouts in
-  ServerTable instead if there is a noticable speedup?
-
-- Fix the name of extra servers files, use game or mod name, maybe a
-  customizable name?
-
 - Number of removed servers printed by getNewList() is wrong when extra servers
   are being used.
 
@@ -47,5 +29,3 @@
 
 - If loading servers without refreshing the GUI, there is no point in calling
   _insertSorted, or to get country codes.
-
-- Don't select (mark) a server twice (Specify server).
