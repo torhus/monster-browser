@@ -129,8 +129,8 @@ shared string backupGamesFilePath;  /// ditto
 
 private
 {
-    enum defaultGamesFileName = "mods-template.ini";
-    enum defaultGamesFileContents = import(defaultGamesFileName);
+    enum defaultGamesFileName = "mods-default.ini";
+    enum defaultGamesFileContents = import("mods-template.ini");
 
     __gshared Ini gamesIni;
 }
@@ -264,10 +264,14 @@ private void createGamesFile()
 
 private void createDefaultGamesFile()
 {
+    string text = defaultGamesFileContents;
     string path = dataDir ~ defaultGamesFileName;
 
+    version (Windows)
+        text = replace(text, "%ProgramFiles%", getProgramFilesDirectory());
+
     try {
-        File(path, "w").write(defaultGamesFileContents);
+        File(path, "w").write(text);
         log("Created %s.", path);
     }
     catch (ErrnoException e) {
