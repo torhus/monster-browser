@@ -576,15 +576,14 @@ private:
 			matched = true;
 		}
 		else {
-			const cvars = sd.cvars;
-			int i = findString(cvars, "game", 0);
+			string[] cvar = sd.cvars.getCvar("game");
 
-			if (i != -1 && cvars[i][1].matchFirst(regex_)) {
+			if (cvar && cvar[1].matchFirst(regex_)) {
 				matched = true;
 			}
 			else {
-				i = findString(cvars, "gamename", 0);
-				if (i != -1 && cvars[i][1].matchFirst(regex_)) {
+				cvar = sd.cvars.getCvar("gamename");
+				if (cvar && cvar[1].matchFirst(regex_)) {
 					matched = true;
 				}
 			}

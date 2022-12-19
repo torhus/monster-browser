@@ -32,7 +32,7 @@ void joinServer(in char[] gameName, ServerData sd)
 	GameConfig game = getGameConfig(gameName.idup);
 	string pathString = game.exePath;
 	bool launch = true;
-	int i;
+	string[] cvar;
 
 	if (!pathString) {
 		error("No path found for " ~ gameName ~
@@ -40,17 +40,14 @@ void joinServer(in char[] gameName, ServerData sd)
 		return;
 	}
 
-	i = findString(sd.cvars, "game", 0);
-	if (i != -1) {
-		string s = sd.cvars[i][1];
-		if (s.length > 0)
-			argv = "+set fs_game " ~ s;
-	}
+	cvar = sd.cvars.getCvar("game");
+	if (cvar && cvar[1].length > 0)
+		argv = "+set fs_game " ~ cvar[1];
 
 	argv ~= " +connect " ~ address;
 
-	i = findString(sd.cvars, "g_needpass", 0);
-	if (i != -1 && sd.cvars[i][1] == "1" && getPassword(address).length == 0) {
+	cvar = sd.cvars.getCvar("g_needpass");
+	if (cvar && cvar[1] == "1" && getPassword(address).length == 0) {
 		string message = "Join \"" ~ sd.server[ServerColumn.NAME] ~ "\"\n\n" ~
 		                          "You need a password to join this server.\n";
 		scope dialog = new ServerPasswordDialog(mainShell, "Join Server",
