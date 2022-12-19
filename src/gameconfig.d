@@ -129,7 +129,7 @@ shared string backupGamesFilePath;  /// ditto
 
 private
 {
-    enum defaultGamesFileName = "mods-default.ini";
+    enum defaultGamesFileName = "mods-template.ini";
     enum defaultGamesFileContents = import(defaultGamesFileName);
 
     __gshared Ini gamesIni;
