@@ -568,16 +568,15 @@ private class ToolBarWrapper
 		this(ToolBar toolBar)
 		{
 			menu_ = new Menu(toolBar);
-			menu_.addItem("Settings").register("settings");
+			menu_.addItem("Settings").tag("settings");
 			menu_.addSeparator();
-			menu_.addItem("Open settings and data folder")
-			     .register("data folder");
-			menu_.addItem("Open log file").register("log file");
+			menu_.addItem("Open settings and data folder").tag("data folder");
+			menu_.addItem("Open log file").tag("log file");
 			menu_.addSeparator();
-			menu_.addItem("Reset game configuration").register("reset config");
+			menu_.addItem("Reset game configuration").tag("reset config");
 			menu_.addSeparator();
-			menu_.addItem("Check for updates").register("update check");
-			menu_.addItem("Visit web site").register("web site");
+			menu_.addItem("Check for updates").tag("update check");
+			menu_.addItem("Visit web site").tag("web site");
 
 			auto listener = new MenuItemListener;
 

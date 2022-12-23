@@ -7,11 +7,6 @@ import org.eclipse.swt.widgets.MenuItem;
 
 private string[MenuItem] menuItemRegistry;
 
-class RegistryException : Exception
-{
-    this(string msg) { super(msg); }
-}
-
 
 ///
 MenuItem addItem(Menu menu, string text, int style=SWT.NONE)
@@ -27,7 +22,7 @@ MenuItem addSeparator(Menu menu) {
 }
 
 ///
-void register(MenuItem item, string name)
+void tag(MenuItem item, string name)
 {
     menuItemRegistry[item] = name;
 }
@@ -37,6 +32,6 @@ string lookUp(MenuItem item)
 {
     auto p = item in menuItemRegistry;
     if (p is null)
-        throw new RegistryException("Item not found.");
+        throw new Exception("No tag for item: " ~ item.getText());
     return *p;
 }
