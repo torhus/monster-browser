@@ -1,3 +1,7 @@
+Work in progress
+----------------
+Change: The server data is now saved to JSON files instead of XML.
+
 v0.9j - 2022-12-16
 ------------------
 - New: A column showing the numerical game type can now be enabled in Settings.

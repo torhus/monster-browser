@@ -5,6 +5,7 @@ import std.array;
 import std.conv;
 import std.file;
 import std.path;
+import std.range : isInputRange;
 import std.stdio;
 import std.uni;
 import tango.text.xml.DocEntity;
@@ -241,18 +242,15 @@ final class MasterList
 	 */
 	void save()
 	{
+		string jsonFileName = setExtension(fileName_, "json");
 		Timer timer;
 		timer.start();
 
-		scope dumper = new XmlDumper(dataDir ~ fileName_);
-
 		synchronized (this) {
-			foreach (sd; servers_)
-				dumper.serverToXml(&sd);
+			servers_.byValue().dumpJson(dataDir ~ jsonFileName);
 		}
 
-		dumper.close();
-		log("Saved %s in %s seconds.", fileName_, timer.seconds);
+		log("Saved %s in %s seconds.", jsonFileName, timer.seconds);
 	}
 
 
@@ -291,92 +289,62 @@ final class MasterList
 
 
 ///
-private final class XmlDumper
+void dumpJson(R)(R servers, string path)
+	if (isInputRange!R)
 {
+	bool first = true;
+	auto f = File(path, "w");
 
-	///
-	this(string fileName)
+	void cvarsToJson(const ref ServerData sd, bool last)
 	{
-		output_ = File(fileName, "w");
-		output_.writeln(`<?xml version="1.0" encoding="UTF-8"?>`);
-		output_.writeln("<masterserver>");
+		f.writeln(`    "cvars": {`);
+		foreach (i, cvar; sd.cvars) {
+			f.writef(`      "%s": "%s"`, cvar[0], cvar[1]);
+			f.writeln((i + 1 < sd.cvars.length) ? "," : "");
+		}
+		f.writeln(last ? "    }" : "    },");
 	}
 
-
-	///
-	void close()
+	void playersToJson(const ref ServerData sd)
 	{
-		output_.writeln("</masterserver>");
-		output_.close();
+		f.writeln(`    "players": [`);
+		foreach (i, player; sd.players) {
+			f.writef(`      {"name": "%s", "score": "%s", "ping": "%s"}`,
+			               player[PlayerColumn.RAWNAME],
+			               player[PlayerColumn.SCORE],
+			               player[PlayerColumn.PING]);
+			f.writeln((i + 1 < sd.players.length) ? "," : "");
+		}
+		f.writeln("    ]");
 	}
 
+	f.writeln(`[`);
 
-	///
-	void serverToXml(in ServerData* sd)
-	{
-		outputXml(`  <server name=`, sd.rawName);
-		outputXml(` country_code=`,  sd.server[ServerColumn.COUNTRY]);
-		outputXml(` address=`,       sd.server[ServerColumn.ADDRESS]);
-		outputXml(` protocol_version=`, sd.protocolVersion);
-		outputXml(` ping=`,          sd.server[ServerColumn.PING]);
-		outputXml(` player_count=`,  sd.server[ServerColumn.PLAYERS]);
-		outputXml(` map=`,           sd.server[ServerColumn.MAP]);
-		outputXml(` persistent=`,    sd.persistent ? "true" : "false");
-		output_.writef(` fail_count="%s"`,    sd.failCount);
-		output_.writeln(">");
-
-		if (sd.cvars.length) {
-			output_.writeln("    <cvars>");
-			cvarsToXml(sd);
-			output_.writeln("    </cvars>");
+	foreach (sd; servers) {
+		with (ServerColumn) {
+			f.writeln(first ? "  {" : "  },\n  {");
+			f.writefln(`    "name": "%s",`, sd.rawName);
+			f.writefln(`    "countryCode": "%s",`,     sd.server[COUNTRY]);
+			f.writefln(`    "address": "%s",`,         sd.server[ADDRESS]);
+			f.writefln(`    "protocolVersion": "%s",`, sd.protocolVersion);
+			f.writefln(`    "ping": "%s",`,            sd.server[PING]);
+			f.writefln(`    "playerCount": "%s",`,     sd.server[PLAYERS]);
+			f.writefln(`    "map": "%s",`,             sd.server[MAP]);
+			f.writefln(`    "persistent": %s,`,      sd.persistent);
+			f.writef(`    "failCount": %s`, sd.failCount);
+			f.writefln((sd.cvars.length || sd.players.length) ? ",": "");
 		}
 
-		if (sd.players.length) {
-			output_.writeln("    <players>");
-			playersToXml(sd);
-			output_.writeln("    </players>");
-		}
+		if (sd.cvars.length)
+			cvarsToJson(sd, sd.players.length == 0);
 
-		output_.writeln("  </server>");
+		if (sd.players.length)
+			playersToJson(sd);
+
+		first = false;
 	}
 
-
-	private void cvarsToXml(in ServerData* sd)
-	{
-		foreach (cvar; sd.cvars) {
-			outputXml(`      <cvar key=`, cvar[0]);
-			outputXml(` value=`, cvar[1]);
-			output_.writeln("/>");
-		}
-	}
-
-
-	private void playersToXml(in ServerData* sd)
-	{
-		foreach (player; sd.players) {
-			outputXml(`      <player name=`, player[PlayerColumn.RAWNAME]);
-			outputXml(` score=`, player[PlayerColumn.SCORE]);
-			outputXml(` ping=`, player[PlayerColumn.PING]);
-			output_.writeln("/>");
-		}
-	}
-
-
-	// Outputs prefix as-is, value in quotes and after encoding entities.
-	private void outputXml(in char[] prefix, in char[] value)
-	{
-		char[100] buf = void;
-
-		output_.write(prefix);
-		output_.write("\"");
-		output_.write(toEntity(value, buf));
-		output_.write("\"");
-	}
-
-
-	private {
-		File output_;
-	}
+	f.writeln(first ? "]" : "  }\n]");
 }
 
 
