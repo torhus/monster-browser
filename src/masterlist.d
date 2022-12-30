@@ -4,6 +4,7 @@ import core.memory;
 import std.array;
 import std.conv;
 import std.file;
+import std.json : JSONValue;
 import std.path;
 import std.range : isInputRange;
 import std.stdio;
@@ -294,12 +295,18 @@ void dumpJson(R)(R servers, string path)
 {
 	bool first = true;
 	auto f = File(path, "w");
+	auto or = f.lockingTextWriter();
+
+	void putJson(string s) { JSONValue(s).toString(or); }
 
 	void cvarsToJson(const ref ServerData sd, bool last)
 	{
 		f.writeln(`    "cvars": {`);
 		foreach (i, cvar; sd.cvars) {
-			f.writef(`      "%s": "%s"`, cvar[0], cvar[1]);
+			f.write(`      `);
+			putJson(cvar[0]);
+			f.write(`: `);
+			putJson(cvar[1]);
 			f.writeln((i + 1 < sd.cvars.length) ? "," : "");
 		}
 		f.writeln(last ? "    }" : "    },");
@@ -309,8 +316,9 @@ void dumpJson(R)(R servers, string path)
 	{
 		f.writeln(`    "players": [`);
 		foreach (i, player; sd.players) {
-			f.writef(`      {"name": "%s", "score": "%s", "ping": "%s"}`,
-			               player[PlayerColumn.RAWNAME],
+			f.write(`      {"name": `);
+			putJson(player[PlayerColumn.RAWNAME]);
+			f.writef(`, "score": "%s", "ping": "%s"}`,
 			               player[PlayerColumn.SCORE],
 			               player[PlayerColumn.PING]);
 			f.writeln((i + 1 < sd.players.length) ? "," : "");
@@ -323,7 +331,9 @@ void dumpJson(R)(R servers, string path)
 	foreach (sd; servers) {
 		with (ServerColumn) {
 			f.writeln(first ? "  {" : "  },\n  {");
-			f.writefln(`    "name": "%s",`, sd.rawName);
+			f.writef(`    "name": `);
+			putJson(sd.rawName);
+			f.writefln(",");
 			f.writefln(`    "countryCode": "%s",`,     sd.server[COUNTRY]);
 			f.writefln(`    "address": "%s",`,         sd.server[ADDRESS]);
 			f.writefln(`    "protocolVersion": "%s",`, sd.protocolVersion);
