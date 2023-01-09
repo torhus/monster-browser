@@ -142,40 +142,15 @@ bool matchGame(in ServerData* sd, in GameConfig game)
 	if (sd.protocolVersion != game.protocolVersion)
 		return false;
 
-	debug version (matchOnlyGamename)
-		bool gameMatched = false;
-
-	// FIXME: use binary search?
-	foreach (cvar; sd.cvars) {
-		version (matchOnlyGamename) {
-			if (cvar[0] == "gamename" && sicmp(cvar[1], game.mod) == 0)
-					return true;
-			if (cvar[0] == "game" && sicmp(cvar[1], game.mod) == 0) {
-				debug
-					gameMatched = true;
-				else
-					return true;
-			}
-		}
-		else {
-			if (cvar[0] == "game" || cvar[0] == "gamename") {
-				if (sicmp(cvar[1], game.mod) == 0)
-					return true;
-			}
-		}
-	}
-
-	debug version (matchOnlyGamename) {
-		if (gameMatched) {
-			log("Skipped (game matched) %s (%s)",
-		        sd.server[ServerColumn.NAME], sd.server[ServerColumn.ADDRESS]);
-		}
-	}
-
-	static if (MOD_ONLY)
-		return game.mod.length == 0 && sd.cvars.length > 0;
-	else
+	static if (!MOD_ONLY)
 		return true;
+
+	if (sicmp(sd.server[ServerColumn.CVAR_GAME], game.mod) == 0 ||
+	             sicmp(sd.server[ServerColumn.CVAR_GAMENAME], game.mod) == 0) {
+		return true;
+	}
+
+	return game.mod.length == 0 && sd.cvars.length > 0;
 }
 
 
