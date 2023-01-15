@@ -1,6 +1,5 @@
 module serverlist;
 
-import core.stdc.string : memmove;
 import std.algorithm;
 import std.conv;
 import std.range;
