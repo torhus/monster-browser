@@ -1,10 +1,10 @@
 module serverdata;
 
 debug import core.thread;
-import core.stdc.ctype;
+import std.ascii : isDigit;
 import std.conv;
 import std.string;
-import std.uni;
+import std.uni : sicmp;
 
 import colorednames : stripColorCodes;
 import common;
@@ -50,7 +50,7 @@ struct ServerData {
 	int humanCount() const
 	{
 		string s = server[ServerColumn.PLAYERS];
-		if (s.length > 0 && isdigit(s[0]))
+		if (s.length > 0 && isDigit(s[0]))
 			return parse!int(s);
 		return 0;
 	}
@@ -63,7 +63,7 @@ struct ServerData {
 
 		if (plus != -1) {
 			string t = s[plus+1 .. $];
-			if (isdigit(t[0]))
+			if (isDigit(t[0]))
 				return parse!int(t);
 		}
 		return 0;
@@ -77,7 +77,7 @@ struct ServerData {
 
 		if (slash != -1) {
 			string t = s[slash+1 .. $];
-			if (isdigit(t[0]))
+			if (isDigit(t[0]))
 				return parse!int(t);
 		}
 		return 0;
