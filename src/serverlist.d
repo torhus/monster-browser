@@ -115,10 +115,9 @@ final class ServerList
 	 *
 	 * Returns: the server's index, or -1 if unknown or not found.
 	 */
-	int getFilteredIndex(in char[] ipAndPort, bool* found=null)
+	int getFilteredIndex(in char[] ipAndPort)
 	{
 		int result = -1;
-		bool wasFound = false;
 
 		synchronized (this) {
 			if (!ipHashValid_)
@@ -127,11 +126,9 @@ final class ServerList
 			if (int* i = ipAndPort in ipHash_) {
 				assert(*i == -1 || *i < filteredList.length);
 				result = *i;
-				wasFound = true;
 			}
 		}
-		if (found)
-			*found = wasFound;
+
 		return result;
 	}
 
