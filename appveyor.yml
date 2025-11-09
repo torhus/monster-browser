@@ -1,11 +1,11 @@
-version: 0.9j.{branch}.{build}
+version: 0.9k.{branch}.{build}
 image: Visual Studio 2022
 environment:
   BASEDIR: C:\projects
 install: |
   cd %BASEDIR%
   cd
-  curl -sS -o dmd.7z https://downloads.dlang.org/releases/2.x/2.100.2/dmd.2.100.2.windows.7z
+  curl -sS -o dmd.7z https://downloads.dlang.org/releases/2.x/2.101.2/dmd.2.101.2.windows.7z
   curl -sSL -o deps.zip https://github.com/torhus/monster-browser/files/9840031/monsterbrowser_deps-09g.zip
   7z x dmd.7z > NUL
   unzip -q deps.zip
@@ -20,5 +20,5 @@ build_script: |
 test: off
 artifacts:
 - path: MonsterBrowser.exe
-- path: MonsterBrowser09j.zip
-- path: misc\Monster Browser 0.9j Setup.exe
+- path: MonsterBrowser09k.zip
+- path: misc\Monster Browser 0.9k Setup.exe

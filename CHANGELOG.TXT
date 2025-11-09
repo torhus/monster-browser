@@ -1,3 +1,7 @@
+v0.9k - 2025-11-09
+------------------
+This release is just to update the geolocation database.
+
 v0.9j - 2022-12-16
 ------------------
 - New: A column showing the numerical game type can now be enabled in Settings.

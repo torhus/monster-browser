@@ -8,7 +8,7 @@ Useful links
 ------------
 D compiler:
 http://dlang.org/download.html
-Currently I'm using DMD 2.100.2
+Currently I'm using DMD 2.101.2
 
 D docs, support, etc.:
 http://dlang.org
