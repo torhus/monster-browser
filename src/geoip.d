@@ -156,8 +156,6 @@ private string getString(MMDB_entry_s* start, in char*[] args ...)
 		return cast(string)entry_data.utf8_string[0..entry_data.data_size];
 	}
 	else {
-		log("MMDB_aget_value failed getting %s", args.map!(to!string));
-		log("GeoIP: " ~ to!string(MMDB_strerror(result)));
 		return null;
 	}
 }
