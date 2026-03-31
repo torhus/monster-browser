@@ -59,7 +59,6 @@ module ini;
 private import core.stdc.string;
 private import std.file;
 private import std.string;
-private import std.windows.charset;
 private import undead.stream;
 
 
@@ -486,12 +485,7 @@ protected:
 									if(ch2 == secEnd) // ']'
 									{
 										isecs ~= isec;
-										version (Windows) {
-											isec = new IniSection(this, ansiToUtf8(data[i2 .. i]));
-										}
-										else {
-											isec = new IniSection(this, data[i2 .. i]);
-										}
+										isec = new IniSection(this, data[i2 .. i]);
 										debug(INI)
 											writefln("INI section: '%s'", isec._name);
 										for(;;)
@@ -565,14 +559,8 @@ protected:
 	
 									void addKey()
 									{
-										version (Windows) {
-											ikey.data = ansiToUtf8(data[lineStartIndex .. i]);
-											ikey._value = ansiToUtf8(data[i2 .. i]);
-										}
-										else {
-											ikey.data = data[lineStartIndex .. i];
-											ikey._value = data[i2 .. i];
-										}
+										ikey.data = data[lineStartIndex .. i];
+										ikey._value = data[i2 .. i];
 										isec.lines ~= ikey;
 										debug(INI)
 											writefln("INI key: '%s' = '%s'", ikey._name, ikey._value);
@@ -726,13 +714,7 @@ public:
 		for(; i != isecs.length; i++)
 		{
 			write_name:
-			version (Windows) {
-				f.writefln("%s%s%s",
-				                 secStart, utf8ToAnsi(isecs[i]._name), secEnd);
-			}
-			else {
-				f.writefln("%s%s%s", secStart, isecs[i]._name, secEnd);
-			}
+			f.writefln("%s%s%s", secStart, isecs[i]._name, secEnd);
 			after_name:
 			isec = isecs[i];
 			for(j = 0; j != isec.lines.length; j++)
@@ -743,12 +725,7 @@ public:
 					if(ikey)
 						ikey.data = ikey._name ~ "=" ~ ikey._value;
 				}
-				version (Windows) {
-					f.writeLine(utf8ToAnsi(isec.lines[j].data));
-				}
-				else {
-					f.writeLine(isec.lines[j].data);
-				}
+				f.writeLine(isec.lines[j].data);
 			}
 		}
 	}
@@ -845,21 +822,6 @@ public:
 			}
 		}
 	}
-}
-
-
-version (Windows) {
-    private string ansiToUtf8(string source)
-    {
-	    return fromMBSz(toStringz(source));
-    }
-
-
-    private const(char)[] utf8ToAnsi(in char[] source)
-    {
-	    const(char)* s = toMBSz(source);
-	    return s[0..strlen(s)];
-    }
 }
 
 

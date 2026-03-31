@@ -3,6 +3,7 @@ Work in progress
 - New: Show city names in addition to country names. If you want city names you
        need to replace the included geolocation database with one that has this
        information, and update settings.ini with the new database file name.
+ -Change: Configuration files are now expected to be UTF-8 instead of ANSI.
 
 v0.9k - 2025-11-09
 ------------------
