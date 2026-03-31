@@ -4,7 +4,8 @@
 
 module gameconfig;
 
-import std.exception : ErrnoException;
+import std.algorithm : canFind;
+import std.exception : ErrnoException, ifThrown;
 import std.file;
 import std.stdio;
 import std.string;
@@ -24,6 +25,16 @@ struct GameConfig
         return name_;
     }
 
+    string alias_() const /// Alias for section name in the game config file.
+    {
+        return section.getValue("alias");
+    }
+
+    string inherit() const /// Name of section to inherit from.
+    {
+        return section.getValue("inherit");
+    }
+
     string mod() const  /// Quake 3 gamename, like "baseq3".
     {
         return section.getValue("mod");
@@ -31,19 +42,19 @@ struct GameConfig
 
     string masterServer() const   /// Like "master3.idsoftware.com".
     {
-        return section.getValue(
+        return getWithInherited(
                                "masterServer", "master.quake3arena.com:27950");
     }
 
     string protocolVersion() const  /// Defaults to 68.
     {
-        return section.getValue("protocolVersion", "68");
+        return getWithInherited("protocolVersion", "68");
     }
 
     string[] gameTypes() const ///
     {
         __gshared string[0] empty;
-        string s = section.getValue("gameTypes");
+        string s = getWithInherited("gameTypes");
 
         if (s is null)
             return null;
@@ -88,7 +99,7 @@ struct GameConfig
         }
 
         if (!path && !badRegKey)
-            path = section["exePath"];
+            path = getWithInherited("exePath");
 
         return path ? path : !(regKey || exeName) ? getSetting("gamePath") :
                                                                           null;
@@ -98,21 +109,33 @@ struct GameConfig
     /// Off by default.
     bool useEtColors() const
     {
-        string r = section["etColors"];
+        string r = getWithInherited("etColors");
         return r ? (r == "true") : false;
     }
 
     /// Value to use for Qstat's -cfg parameter.
     string qstatConfigFile() const
     {
-        return section.getValue("qstatConfigFile", null);
+        return getWithInherited("qstatConfigFile", null);
     }
 
     /// Qstat master server type.
     string qstatMasterServerType() const
     {
-        return section.getValue("qstatMasterServerType", "q3m");
+        return getWithInherited("qstatMasterServerType", "q3m");
     }
+
+    /// IniSection.getValue wrapper that checks for inherited values
+    private string getWithInherited(
+        in char[] keyName, string defaultValue = null) const
+	{
+        assert(keyName != "alias");
+        assert(keyName != "inherit");
+        assert(keyName != "mod");
+
+        auto game = inherit ? getInheritedGameConfig(this) : this;
+        return game.section.getValue(keyName, defaultValue);
+	}
 
     private string name_;
     private IniSection section;
@@ -132,6 +155,7 @@ private
     enum defaultGamesFileContents = import("mods-template.ini");
 
     __gshared Ini gamesIni;
+    __gshared string[string] aliasMap;
 }
 
 /**
@@ -148,6 +172,17 @@ GameConfig getGameConfig(string name)
         throw new Exception("getGameConfig: non-existant game '" ~ name ~ "'");
 
     return GameConfig(name, section);
+}
+
+/**
+ * Get the inherited configuration for a game.
+ */
+private GameConfig getInheritedGameConfig(const(GameConfig) game)
+{
+    assert (game.inherit);
+
+    return getGameConfig(game.inherit)
+            .ifThrown(_ => getGameConfig(aliasMap[game.inherit]));
 }
 
 
@@ -211,9 +246,26 @@ void loadGamesFile()
     }
 
     gameNames = null;
+    aliasMap = null;
     foreach (sec; gamesIni) {
-        if (sec.name.length > 0)
+        if (sec.name.length > 0) {
             gameNames ~= sec.name;
+            if (string alias_ = sec["alias"])
+                aliasMap[alias_] = sec.name;
+        }
+    }
+
+    // Check for mismatch between inherit values and names/aliases
+    foreach (sec; gamesIni) {
+        if (sec.name.length > 0 && sec["inherit"]) {
+            string inherit = sec["inherit"];
+            if (!gameNames.canFind(inherit) && inherit !in aliasMap) {
+                // Disable it so it won't cause problems
+                sec["inherit"] = null;
+                warning("%s is configured to inherit from %s, which was not found. " ~
+                        "please check the game configuration.", sec.name, inherit);
+            }
+        }
     }
 }
 

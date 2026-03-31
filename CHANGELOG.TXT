@@ -1,5 +1,6 @@
 Work in progress
 ----------------
+- New: Game configuration values can now be inherited from another game.
 - New: Show city names in addition to country names. If you want city names you
        need to replace the included geolocation database with one that has this
        information, and update settings.ini with the new database file name.
