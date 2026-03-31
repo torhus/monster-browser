@@ -53,10 +53,9 @@ struct GameConfig
         return r.length > 0 ? r : empty;
     }
 
-    string extraServersFile() /// Like "baseq3.extra".
+    string extraServersFile() /// Like "Smokin' Guns.extra".
     {
-        string base = mod.length > 0 ? mod : name;
-        return dataDir ~ base ~ ".extra";
+        return dataDir ~ name ~ ".extra";
     }
 
     /**
