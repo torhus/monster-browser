@@ -24,9 +24,9 @@ struct GameConfig
         return name_;
     }
 
-    string mod() const  /// Quake 3 gamename, like "baseq3".  Defaults to name.
+    string mod() const  /// Quake 3 gamename, like "baseq3".
     {
-        return section.getValue("mod", name);
+        return section.getValue("mod");
     }
 
     string masterServer() const   /// Like "master3.idsoftware.com".
