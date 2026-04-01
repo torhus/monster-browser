@@ -417,6 +417,14 @@ void checkForNewServers()
 
 		size_t count = addresses.length + addresses2.length;
 
+		// Remove stale server lists from the cache
+		if (removed > 0 || count > 0) {
+			foreach (name, _; serverListCache) {
+				if (name != game.name)
+					serverListCache.remove(name);
+			}
+		}
+
 		if (count == 0) {
 			// FIXME: what to do when there are no servers?
 			Display.getDefault.asyncExec(dgRunnable( {
