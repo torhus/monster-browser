@@ -72,37 +72,35 @@ struct GameConfig
     /**
      * The path to the game's executable, including the file name.
      *
-     * The path is looked for in several places, in this order:
-     *
-     * $(OL $(LI regKey + exeName from the game configuration)
-     *      $(LI _exePath from the game configuration)
-     *      $(LI gamePath from settings.ini))
+     * Tries to retrieve the path from the Windows registry if it's not
+     * set already.
      */
     string exePath() const
     {
-        string path = null;
-        string regKey = section["regKey"];
-        string exeName = section["exeName"];
-        bool badRegKey = false;
+        auto game = inherit ? getInheritedGameConfig(this) : this;
+        string path = getExePath(game.name);
 
-        version (Windows) if (regKey && exeName) {
-            try {
-                if (string dir = getRegistryStringValue(regKey))
-                    path = dir ~ '\\' ~ exeName;
-                else
-                    log("regKey not found: " ~ regKey);
-            }
-            catch (Exception e) {
-                log(e.toString());
-                badRegKey = true;
+        version (Windows) if (path.empty) {
+            string regKey = game.section["regKey"];
+            string exeName = game.section["exeName"];
+
+            if (!path && regKey && exeName) {
+                try {
+                    if (string dir = getRegistryStringValue(regKey)) {
+                        path = dir ~ '\\' ~ exeName;
+                        setExePath(game.name, path);
+                    }
+                    else {
+                        log("regKey not found: " ~ regKey);
+                    }
+                }
+                catch (Exception e) {
+                    log(e.toString());
+                }
             }
         }
 
-        if (!path && !badRegKey)
-            path = getWithInherited("exePath");
-
-        return path ? path : !(regKey || exeName) ? getSetting("gamePath") :
-                                                                          null;
+        return path;
     }
 
     /// Enable Enemy Territory-style extended color codes (31 colors)?

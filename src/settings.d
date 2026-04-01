@@ -13,6 +13,8 @@ version (Windows) import mswindows.util;
 
 private {
 	shared string settingsFilePath;
+	__gshared string[string] exePaths;
+	shared bool exePathsUpdated = false;
 
 	__gshared Ini settingsIni;
 
@@ -113,6 +115,10 @@ void saveSettings()
 	if (getSessionState("programVersion") != FINAL_VERSION)
 		setSessionState("programVersion", FINAL_VERSION);
 
+	if (exePathsUpdated) {
+		// TODO
+	}
+
 	if (settingsIni.modified) {
 		settingsIni.save();
 	}
@@ -205,6 +211,26 @@ void setRconPassword(string ip, string password)
 	IniSection sec = settingsIni.addSection("RconPasswords");
 	sec.setValue(ip, password);
 }
+
+
+/**
+ * Returns the path to the executable for a game, or null if not found.
+ */
+ string getExePath(string gameName)
+ {
+	string* path = gameName in exePaths;
+	return path ? *path : null;
+ }
+
+
+/**
+ * Sets the executable path for a game.
+ */
+ void setExePath(string gameName, string path)
+ {
+	exePaths[gameName] = path;
+	exePathsUpdated = true;
+ }
 
 
 private void loadSessionState()

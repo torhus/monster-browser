@@ -2,6 +2,7 @@
 
 module launch;
 
+import std.file;
 import std.path;
 version (Windows) {
 	import std.utf : toUTF16z;
@@ -23,7 +24,8 @@ import settings;
  *
  * If needed, shows a dialog asking for a password to enter the server.
  *
- * Displays an error message if the game executable was not found.
+ * Will ask for the file to run if it's missing from the settings, or not
+ * found.
  */
 void joinServer(in char[] gameName, ServerData sd)
 {
@@ -34,10 +36,11 @@ void joinServer(in char[] gameName, ServerData sd)
 	bool launch = true;
 	string[] cvar;
 
-	if (!pathString) {
-		error("No path found for " ~ gameName ~
-		                                      ", please check your settings.");
-		return;
+	if (!pathString || !exists(pathString)) {
+		askForGamePath(game.name);
+		pathString = game.exePath;
+		if (!pathString || !exists(pathString))
+			return;
 	}
 
 	cvar = sd.cvars.getCvar("game");
@@ -74,6 +77,7 @@ void joinServer(in char[] gameName, ServerData sd)
 				      "correct location for Quake 3 is set in the settings, " ~
 				      "or the exePath value in the game configuration for " ~
 				      "other games.", pathString);
+				// TODO: clear game.exePath setting
 			}
 			else if (getSetting("minimizeOnGameLaunch") == "true") {
 				mainWindow.minimized = true;

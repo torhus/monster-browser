@@ -570,10 +570,12 @@ private class ToolBarWrapper
 			menu_ = new Menu(toolBar);
 			menu_.addItem("Settings").tag("settings");
 			menu_.addSeparator();
+			menu_.addItem("Set this game's executable file").tag("executable");
+			menu_.addSeparator();
 			menu_.addItem("Open settings and data folder").tag("data folder");
 			menu_.addItem("Open log file").tag("log file");
 			menu_.addSeparator();
-			menu_.addItem("Reset game configuration").tag("reset config");
+			menu_.addItem("Reset game configuration file").tag("reset config");
 			menu_.addSeparator();
 			menu_.addItem("Check for updates").tag("update check");
 			menu_.addItem("Visit web site").tag("web site");
@@ -609,6 +611,9 @@ private class ToolBarWrapper
 						saveSettings();
 					break;
 				}
+				case "executable":
+					askForGamePath(serverTable.serverList.gameName);
+					break;
 				case "data folder":
 					Program.launch(dataDir);
 					break;

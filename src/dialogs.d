@@ -4,6 +4,7 @@ module dialogs;
 
 import std.conv;
 import std.file;
+import std.path;
 import std.socket;
 import std.string;
 
@@ -21,6 +22,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
@@ -575,6 +577,27 @@ class RconPasswordDialog : PasswordDialog
 	}
 
 	private string address_;
+}
+
+
+/**
+ * Asks the user to select the file to run, stores the path in the settings.
+ */
+void askForGamePath(string gameName)
+{
+	auto dialog = new FileDialog(mainShell, SWT.OPEN);
+	string path = getGameConfig(gameName).exePath;
+
+	dialog.setText("Select the game's executable");
+	dialog.setFilterExtensions(["*.exe;*.bat;*.cmd;*.lnk", "*.*"]);
+	dialog.setFilterNames(["Executables (*.exe;*.bat;*.cmd;*.lnk)",
+	                       "All files (*.*)"]);
+
+	dialog.setFilterPath(path ? dirName(path) : null);
+	dialog.setFileName(path ? baseName(path) : null);
+
+	if (string newPath = dialog.open())
+		setExePath(gameName, newPath);
 }
 
 

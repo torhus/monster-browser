@@ -1,6 +1,8 @@
 Work in progress
 ----------------
 - New: Game configuration values can now be inherited from another game.
+- New: MB will ask for the location of game executables when needed. The
+       executable for the current game can be changed from the Tools menu.
 - New: Show city names in addition to country names. If you want city names you
        need to replace the included geolocation database with one that has this
        information, and update settings.ini with the new database file name.
@@ -9,6 +11,7 @@ Work in progress
            having an empty value for it (mod=) is just the same as not having
            it at all.
 - Change: Extra server files should now be named after the game, not the mod.
+- Change: The exePath game configuration setting is gone.
 
 v0.9k - 2025-11-09
 ------------------
