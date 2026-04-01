@@ -6,6 +6,7 @@ Work in progress
 - New: Show city names in addition to country names. If you want city names you
        need to replace the included geolocation database with one that has this
        information, and update settings.ini with the new database file name.
+- Change: mods.ini was renamed to games.ini.
  - Change: Configuration files are now expected to be UTF-8 instead of ANSI.
  - Change: The mod value no longer defaults to being the section name, and
            having an empty value for it (mod=) is just the same as not having

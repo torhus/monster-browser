@@ -149,8 +149,8 @@ shared string backupGamesFilePath;  /// ditto
 
 private
 {
-    enum defaultGamesFileName = "mods-default.ini";
-    enum defaultGamesFileContents = import("mods-template.ini");
+    enum defaultGamesFileName = "games-default.ini";
+    enum defaultGamesFileContents = import("games-template.ini");
 
     __gshared Ini gamesIni;
     __gshared string[string] aliasMap;
@@ -203,7 +203,7 @@ GameConfig createGameConfig(string name)
 ///
 void initGameConfig()
 {
-    gamesFilePath = dataDir ~ "mods.ini";
+    gamesFilePath = dataDir ~ "games.ini";
     backupGamesFilePath = gamesFilePath ~ ".autobackup";
     loadGamesFile();
 
