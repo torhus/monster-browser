@@ -14,6 +14,8 @@ Work in progress
 - Change: The exePath game configuration setting is gone.
 - Change: Finding Quake 3's executable path is not longer built in, it's part
           of the game configuration now.
+- Change: Game type names are no longer built in for any game, but added to the
+          default game configuration instead.
 
 v0.9k - 2025-11-09
 ------------------
