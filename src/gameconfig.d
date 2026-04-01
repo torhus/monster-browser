@@ -145,6 +145,7 @@ __gshared string[] gameNames;
 
 /// Name of the file containing options for each game.
 shared string gamesFilePath;
+shared string oldGamesFilePath;
 shared string backupGamesFilePath;  /// ditto
 
 private
@@ -204,6 +205,7 @@ GameConfig createGameConfig(string name)
 void initGameConfig()
 {
     gamesFilePath = dataDir ~ "games.ini";
+    oldGamesFilePath = dataDir ~ "mods.ini";
     backupGamesFilePath = gamesFilePath ~ ".autobackup";
     loadGamesFile();
 
@@ -229,6 +231,12 @@ void loadGamesFile()
         createGamesFile();
     else if (!gamesIni && getSessionState("programVersion") < "0.9e")
         updateGameConfiguration();
+
+    if (exists(oldGamesFilePath) && getSessionState("programversion") < "1.0")
+        info("The game configuration is now in games.ini, please move any " ~
+             "customization you want to keep over from mods.ini.\n\n" ~
+             "Sorry about the inconvenience!");
+
 
     gamesIni = new Ini(gamesFilePath);
 
