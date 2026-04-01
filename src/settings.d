@@ -88,6 +88,16 @@ void loadSettings()
 	}
 
 	loadSessionState();
+
+	if (auto paths = settingsIni.section("Paths")) {
+		exePaths = null;
+		for (int i = 1;; i++) {
+			if (string name = paths[text("game", i)])
+				exePaths[name] = paths[text("path", i)];
+			else
+				break;
+		}
+	}
 }
 
 
@@ -100,7 +110,14 @@ void saveSettings()
 		setSessionState("programVersion", FINAL_VERSION);
 
 	if (exePathsUpdated) {
-		// TODO
+		settingsIni.remove("Paths");
+		auto sec = settingsIni.addSection("Paths");
+		int i = 0;
+		foreach (name, path; exePaths) {
+			i++;
+			sec[text("game", i)] = name;
+			sec[text("path", i)] = path;
+		}
 	}
 
 	if (settingsIni.modified) {
