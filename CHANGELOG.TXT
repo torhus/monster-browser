@@ -12,6 +12,8 @@ Work in progress
            it at all.
 - Change: Extra server files should now be named after the game, not the mod.
 - Change: The exePath game configuration setting is gone.
+- Change: Finding Quake 3's executable path is not longer built in, it's part
+          of the game configuration now.
 
 v0.9k - 2025-11-09
 ------------------

@@ -364,14 +364,6 @@ class SettingsDialog
 		mainComposite.setLayoutData(gridData);
 		mainComposite.setLayout(new GridLayout);
 
-		// executable path
-		Label labelB = new Label(mainComposite, SWT.NONE);
-		labelB.setText("Location of your Quake 3 executable:");
-		pathText_ = new Text(mainComposite, SWT.SINGLE | SWT.BORDER);
-		pathText_.setText(getSetting("gamePath"));
-		gridData = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
-		pathText_.setLayoutData(gridData);
-
 		// startup game
 		Group startupGroup = new Group(mainComposite, SWT.SHADOW_ETCHED_IN);
 		startupGroup.setText("Start with");
@@ -450,7 +442,6 @@ class SettingsDialog
 				if (event.widget == okButton_) {
 					string s;
 					result_ = SWT.OK;
-					setSetting("gamePath", pathText_.getText);
 
 					s = (startupLastButton_.getSelection()) ? "true" : "false";
 					setSetting("startWithLastMod", s);

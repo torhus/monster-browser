@@ -73,11 +73,7 @@ void joinServer(in char[] gameName, ServerData sd)
 			if (r <= 32) {
 				auto code = GetLastError();
 				log("Launch error %s: %s", code, sysErrorString(code));
-				error("Unable to execute \"%s\".\n\nPlease check that the " ~
-				      "correct location for Quake 3 is set in the settings, " ~
-				      "or the exePath value in the game configuration for " ~
-				      "other games.", pathString);
-				// TODO: clear game.exePath setting
+				error("Unable to execute \"%s\".", pathString);
 			}
 			else if (getSetting("minimizeOnGameLaunch") == "true") {
 				mainWindow.minimized = true;

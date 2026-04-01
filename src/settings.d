@@ -68,9 +68,7 @@ private {
  *
  * Missing settings are replaced by defaults, this also happens if the config
  * file is missing altogether.
- *
- * If the "gamePath" setting is missing, attempts to find quake3.exe by looking
- * in the registry.  If that fails, a sensible default is used.
+
  */
 void loadSettings()
 {
@@ -87,20 +85,6 @@ void loadSettings()
 		if (!sec.getValue(s.name)) {
 			sec.setValue(s.name, s.value);
 		}
-	}
-
-	// make sure we have a path for quake3.exe
-	if (!sec.getValue("gamePath")) {
-		string path;
-		version (Windows) {	
-			path = autodetectQuake3Path();			
-		}
-		else {
-			// FIXME: need linux default
-			path = "~/dev/test";
-		}
-		sec.setValue("gamePath", path);
-		log("Set gamePath to '" ~ path ~ "'.");
 	}
 
 	loadSessionState();
@@ -274,26 +258,6 @@ void setSessionState(in char[] key, string value)
 int getSessionStateInt(in char[] key)
 {
 	return getSettingInt("Session", defaultSessionState, key);
-}
-
-
-private string autodetectQuake3Path()
-{
-	version (Windows) {
-		string q3path = getRegistryStringValue("HKEY_LOCAL_MACHINE\\" ~
-		                      "SOFTWARE\\Id\\Quake III Arena\\INSTALLEXEPATH");
-		if (!q3path) {
-			log("Quake 3's installation path was not found in the registry, " ~
-		                                   "falling back to a default value.");
-			// use a sensible default value
-			q3path = getProgramFilesDirectory();
-			q3path ~= "\\Quake III Arena\\quake3.exe";
-		}
-		return q3path;
-	}
-	else {
-		assert(0, "autodetectQuake3Path");
-	}
 }
 
 
