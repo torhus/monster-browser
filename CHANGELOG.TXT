@@ -1,5 +1,5 @@
-Work in progress
-----------------
+v1.0 - 2026-04-01
+-----------------
 - New: Game configuration values can now be inherited from another game.
 - New: MB will ask for the location of game executables when needed. The
        executable for the current game can be changed from the Tools menu.
@@ -17,6 +17,7 @@ Work in progress
           of the game configuration now.
 - Change: Game type names are no longer built in for any game, but added to the
           default game configuration instead.
+-Fix: Stale server lists will be now refreshed after checking for new servers.
 
 v0.9k - 2025-11-09
 ------------------
