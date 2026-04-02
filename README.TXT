@@ -12,7 +12,9 @@ once a day or so.
 
 The filters and column sorting should be pretty straight forward to use.  You
 can leave the filters on while doing a refresh, all the servers will be
-queried anyway.
+queried anyway. The Search field is for filtering servers based on name, and
+game and gamename cvars. It can also be used to filter servers based on player
+names.
 
 To join a server, double click on it, or select it and press <Enter>.  If the
 server requires a password, a password dialog will pop up.  To change the
@@ -23,19 +25,18 @@ password, or add an optional password for servers with private slots, select
 Customizing the Game List
 -------------------------
 By clicking on the Edit button you can edit the list displayed in the drop-
-down list.  The first game listed will be used as the default. If you remove
-this file, or clear its contents, Monster Browser will create a new one
-containing the default configuration.
+down list.  The first game listed will be used as the default.
 
 Available Options:
 
 * inherit: Set this the name, or alias, of a game in the configuration. Most
   values, including the executable path will be inherited from the other game.
-  You can stil define new values for those you want to override.
+  You can stil define new values for those you want to override. Inheritance
+  is only one level deep.
 * alias: Use this to define a shorter name if you have games with long names
-  you want to inherit from.
+  you want to inherit from. Not inheritable.
 * mod: This is matched against the game and gamename cvars, to allow for
-  filtering on game or mod.
+  filtering on game or mod. Not inheritable.
 * regKey: A registry key containing the path to the game. Useful for the games
   that have installers that set this.
 * exeName: Combined with the value found through regKey to form the full path.
