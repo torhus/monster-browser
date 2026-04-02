@@ -3,12 +3,12 @@ Monster Browser Instructions
 
 Basic Usage
 -----------
-Select a game or mod from the drop-down list in the 'Game' section. To update
-the server list, press the 'Refresh all' button.  This happens automatically
-at startup, or the first time each session you switch to a game.  You can
-press 'Check for new' to synchronize the list of servers that Monster Browser
-queries with the master server.  It's probably a good idea to do this once a
-day or so.
+Select a game or mod from the drop-down list in the 'Games and mods' section.
+To update the server list, press the 'Refresh all' button.  This happens
+automatically at startup, or the first time each session you switch to a game. 
+You can press 'Check for new' to synchronize the list of servers that Monster
+Browser queries with the master server.  It's probably a good idea to do this
+once a day or so.
 
 The filters and column sorting should be pretty straight forward to use.  You
 can leave the filters on while doing a refresh, all the servers will be
@@ -29,15 +29,15 @@ containing the default configuration.
 
 Available Options:
 
+* inherit: Set this the name, or alias, of a game in the configuration. Most
+  values, including the executable path will be inherited from the other game.
+  You can stil define new values for those you want to override.
+* alias: Use this to define a shorter name if you have games with long names
+  you want to inherit from.
 * mod: This is matched against the game and gamename cvars, to allow for
-  filtering on game or mod. Set to empty value (mod=) to disable filtering.
-  Defaults to being the same as the section name.
-* exePath: The full path to the game's executable. The default is the path set
-  in Settings. This can be set a to shortcut (.lnk) or  file (.bat) to get more
-  flexibility. In batch files you have to pass MB's arguments to the executable
-  on explicitly, like this: C:\TheGame\game.exe %*
+  filtering on game or mod.
 * regKey: A registry key containing the path to the game. Useful for the games
-  that have installers that set this. This will be tried before exePath.
+  that have installers that set this.
 * exeName: Combined with the value found through regKey to form the full path.
 * masterServer: Defaults to master.quake3arena.com:27950.
 * protocolVersion: Defaults to 68.
@@ -59,12 +59,11 @@ time you check for new servers. If you don't want this to happen, make sure
 removed automatically if it times out too many times.
 
 If you have more than a couple of servers to add, it's easier to add them 
-directly to a file called '<mod>.extra' in the settings and data folder. If
-mod is set to nothing, use '<section name>.extra' instead. The format is just 
-one IP address per line, with or without a port number. For instance, when 
-refreshing a list or checking for new servers for the cpma mod, Monster 
-Browser checks for existence of a file called 'cpma.extra', and adds any 
-servers listed in it to the list of servers to query.
+directly to a file called '<game name>.extra' in the settings and data folder.
+The format is just one IP address per line, with or without a port number. For
+instance, when refreshing a list or checking for new servers for the cpma mod,
+Monster Browser checks for existence of a file called 'cpma.extra', and adds
+any servers listed in it to the list of servers to query.
 
 
 Remote Console
