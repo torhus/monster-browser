@@ -1,3 +1,7 @@
+v1.0a - 2026-04-02
+------------------
+- Fix: Overriding inherited game configuration values did not work.
+
 v1.0 - 2026-04-01
 -----------------
 - New: Game configuration values can now be inherited from another game.

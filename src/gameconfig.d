@@ -77,25 +77,20 @@ struct GameConfig
      */
     string exePath() const
     {
-        auto game = inherit ? getInheritedGameConfig(this) : this;
-        string path = getExePath(game.name);
+        string path = getExePath(name);
 
-        version (Windows) if (path.empty) {
-            string regKey = game.section["regKey"];
-            string exeName = game.section["exeName"];
-
-            if (!path && regKey && exeName) {
-                try {
-                    if (string dir = getRegistryStringValue(regKey)) {
-                        path = dir ~ '\\' ~ exeName;
-                        setExePath(game.name, path);
-                    }
-                    else {
-                        log("regKey not found: " ~ regKey);
-                    }
-                }
-                catch (Exception e) {
-                    log(e.toString());
+        if (!path) {
+            path = getPathFromRegistry(this);
+            if (path) {
+                setExePath(name, path);
+            }
+            else if (inherit) {
+                auto base = getInheritedGameConfig(this);
+                path = getExePath(base.name);
+                if (!path) {
+                    path = getPathFromRegistry(base);
+                    if (path)
+                        setExePath(base.name, path);
                 }
             }
         }
@@ -131,9 +126,41 @@ struct GameConfig
         assert(keyName != "inherit");
         assert(keyName != "mod");
 
-        auto game = inherit ? getInheritedGameConfig(this) : this;
-        return game.section.getValue(keyName, defaultValue);
+        if (string v = section[keyName]) {
+            return v;
+        }
+        else if (inherit) {
+            auto base = getInheritedGameConfig(this);
+            assert(!base.name.empty);
+            if (string v = base.section[keyName])
+                return base.section[keyName];
+        }
+
+        return defaultValue;
 	}
+
+    private string getPathFromRegistry(const(GameConfig) game) const
+    {
+        string path = null;
+
+        version (Windows) {
+            string regKey = game.section["regKey"];
+            string exeName = game.section["exeName"];
+
+            if (regKey && exeName) {
+                try {
+                    if (string dir = getRegistryStringValue(regKey))
+                        path = dir ~ '\\' ~ exeName;
+                    else
+                        log("regKey not found: " ~ regKey);
+                }
+                catch (Exception e) {
+                    log(e.toString());
+                }
+            }
+        }
+        return path;
+    }
 
     private string name_;
     private IniSection section;
