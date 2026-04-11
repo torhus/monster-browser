@@ -228,7 +228,7 @@ void queryServers(string[] addresses, bool replace=false, bool select=false)
 		int replyCount = contr.run();
 
 		Display.getDefault.asyncExec(dgRunnable( {
-				statusBar.hideProgress(text("Done. ", replyCount," of ",
+				statusBar.hideProgress(text(replyCount, " of ",
 				                            addresses_.length,
 				                            " servers replied"));
 			}));
@@ -323,7 +323,7 @@ void refreshAll()
 		}
 
 		Display.getDefault.asyncExec(dgRunnable( {
-				statusBar.hideProgress(text("Done. ", replyCount," of ", count,
+				statusBar.hideProgress(text(replyCount," of ", count,
 				                            " servers replied"));
 			}));
 	}
@@ -480,7 +480,7 @@ void checkForNewServers()
 			}
 
 			Display.getDefault.asyncExec(dgRunnable( {
-				statusBar.hideProgress(text("Done. ", replyCount," of ", count,
+				statusBar.hideProgress(text(replyCount," of ", count,
 				                            " servers replied"));
 			}));
 		}
