@@ -145,9 +145,9 @@ bool matchGame(in ServerData* sd, in GameConfig game)
 	static if (!MOD_ONLY)
 		return true;
 
-	return (game.mod.empty ||
+	return (sd.cvars.length > 0 && (game.mod.empty ||
 		    sicmp(sd.server[ServerColumn.CVAR_GAME], game.mod) == 0 ||
-		    sicmp(sd.server[ServerColumn.CVAR_GAMENAME], game.mod) == 0);
+		    sicmp(sd.server[ServerColumn.CVAR_GAMENAME], game.mod) == 0));
 }
 
 

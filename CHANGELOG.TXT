@@ -1,3 +1,7 @@
+Work in progress
+------------------
+- Fix: Unresponsive servers were listed after getting a new list.
+
 v1.0a - 2026-04-02
 ------------------
 - Fix: Overriding inherited game configuration values did not work.
