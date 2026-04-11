@@ -631,10 +631,8 @@ class ServerRetrievalController
 					}
 				}
 				else {
-					if (finish_) {
-						statusBar.hideProgress("Done");
+					if (finish_)
 						done();
-					}
 					serverList_.complete = true;
 				}
 			}));
