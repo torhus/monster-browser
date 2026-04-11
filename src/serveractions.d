@@ -225,7 +225,13 @@ void queryServers(string[] addresses, bool replace=false, bool select=false)
 		if (select_)
 			contr.autoSelect = addresses_;
 
-		contr.run();
+		int replyCount = contr.run();
+
+		Display.getDefault.asyncExec(dgRunnable( {
+				statusBar.hideProgress(text("Done. ", replyCount," of ",
+				                            addresses_.length,
+				                            " servers replied"));
+			}));
 	}
 
 	if (!addresses.length)
@@ -292,6 +298,9 @@ void refreshAll()
 	if (addresses.length || addresses2.length) {
 		auto updater = new StatusBarUpdater(cast(int)(addresses.length +
 		                                               addresses2.length));
+		immutable count = addresses.length + addresses2.length;
+		int replyCount = 0;
+
 		if (addresses.length) {
 			auto retriever = new QstatServerRetriever(game.name, master,
 			                                                  addresses, true);
@@ -299,7 +308,7 @@ void refreshAll()
 			                                      !addresses2.length, updater);
 			contr.progressLabel = text("Refreshing ", addresses.length,
 			                           " servers");
-			contr.run();
+			replyCount = contr.run();
 		}
 
 		if (addresses2.length && !threadManager.abort) {
@@ -310,8 +319,13 @@ void refreshAll()
 			contr.progressLabel = text("Retrying ", addresses2.length,
 			                            " previously unresponsive servers");
 			contr.interruptedMessage = "Ready";
-			contr.run();
+			replyCount += contr.run();
 		}
+
+		Display.getDefault.asyncExec(dgRunnable( {
+				statusBar.hideProgress(text("Done. ", replyCount," of ", count,
+				                            " servers replied"));
+			}));
 	}
 	else {
 		Display.getDefault().syncExec(dgRunnable({
@@ -444,13 +458,15 @@ void checkForNewServers()
 			auto contr = new ServerRetrievalController(retriever, false,
 			                                      !addresses2.length, updater);
 			string message = format("Got %s servers, querying", total);
+			int replyCount = 0;
+
 			if (addresses.length < total)
 				contr.progressLabel = message ~ format(" %s new",
 			                                     addresses.length);
 			else
 				contr.progressLabel = message;
 
-			contr.run();
+			replyCount = contr.run();
 
 			if (addresses2.length) {
 				retriever = new QstatServerRetriever(game.name,
@@ -460,8 +476,13 @@ void checkForNewServers()
 				contr.progressLabel = message ~ format(" %s already known",
 				                                            addresses2.length);
 				contr.interruptedMessage = "Ready";
-				contr.run();
+				replyCount += contr.run();
 			}
+
+			Display.getDefault.asyncExec(dgRunnable( {
+				statusBar.hideProgress(text("Done. ", replyCount," of ", count,
+				                            " servers replied"));
+			}));
 		}
 	}
 	catch(Exception e) {
@@ -547,12 +568,13 @@ class ServerRetrievalController
 
 
 	/**
-	 * Call this to start the process.
+	 * Call this to start the process. Returns the number of servers that
+	 * replied.
 	 *
 	 * Note: primarily to be called in a secondary thread, not tested when
 	 *       running in the GUI thread.
 	 */
-	void run()
+	int run()
 	{
 		try {
 			int total = serverRetriever_.prepare();
@@ -620,6 +642,8 @@ class ServerRetrievalController
 		catch(Exception e) {
 			logx(__FILE__, __LINE__, e);
 		}
+
+		return replyCount_;
 	}
 
 
@@ -646,6 +670,7 @@ class ServerRetrievalController
 		bool matched;
 
 		if (replied) {
+			++replyCount_;
 			matched = matchGame(&sd, game);
 		}
 		else {
@@ -729,6 +754,7 @@ class ServerRetrievalController
 		bool replace_;
 		void delegate(ServerHandle) deliverDg_;
 		bool delegate(ServerHandle) deliverDg2_;
+		int replyCount_ = 0;
 		bool wasStopped_ = false;
 		bool addRemaining_ = true;
 		bool useQueue_ = true;
