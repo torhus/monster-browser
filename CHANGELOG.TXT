@@ -1,4 +1,4 @@
-Work in progress
+v1.0b - 2026-04-12
 ------------------
 - New: Show the number of queried servers, and how many replied.
 - New: Added setting for showing servers that haven't responded yet.
