@@ -287,9 +287,10 @@ private:
 	void addCleanPlayerNames()
 	{
 		foreach (p; players_) {
-			if (p.data[PlayerColumn.NAME] is null)
-				p.data[PlayerColumn.NAME] =
-				                 stripColorCodes(p.data[PlayerColumn.RAWNAME]);
+			if (p.data[PlayerColumn.NAME] is null) {
+				string name = stripColorCodes(p.data[PlayerColumn.RAWNAME]);
+				p.data[PlayerColumn.NAME] = name.length ? name : Q3_DEFAULT_NAME;
+			}
 		}
 	}
 }

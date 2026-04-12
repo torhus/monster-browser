@@ -127,8 +127,10 @@ enum TIMEOUT = "9999";
 void addCleanPlayerNames(string[][] players)
 {
 	foreach (p; players) {
-		if (p[PlayerColumn.NAME] is null)
-			p[PlayerColumn.NAME] = stripColorCodes(p[PlayerColumn.RAWNAME]);
+		if (p[PlayerColumn.NAME] is null) {
+			string name = stripColorCodes(p[PlayerColumn.RAWNAME]);
+			p[PlayerColumn.NAME] = name.length ? name : Q3_DEFAULT_NAME;
+		}
 	}
 }
 

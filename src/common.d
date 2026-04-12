@@ -52,6 +52,8 @@ enum FINAL_VERSION = "1.0a";
 
 enum logFileName = "LOG.TXT";
 
+enum Q3_DEFAULT_NAME = "UnnamedPlayer";
+
 __gshared Clipboard clipboard;
 __gshared Shell mainShell;  ///
 __gshared Timer globalTimer;

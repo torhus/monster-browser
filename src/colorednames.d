@@ -13,8 +13,6 @@ import org.eclipse.swt.widgets.Display;
 // The first eight colors are the same as for Quake 3.
 __gshared private TextStyle[32] etColors;
 
-private enum Q3_DEFAULT_NAME = "UnnamedPlayer";
-
 
 void initNameColors()
 {
@@ -153,9 +151,6 @@ ColoredName parseColors(in char[] s, bool useEtColors=false)
 	if (name.ranges.length)
 		name.ranges[$-1].end = cast(int)name.cleanName.length - 1;
 
-	if (name.cleanName.length == 0)
-		name.cleanName = Q3_DEFAULT_NAME;
-
 	return name;
 }
 
@@ -184,5 +179,5 @@ string stripColorCodes(in char[] s)
 		name ~= s[i];
 	}
 
-	return (name.length > 0) ? cast(string)name : Q3_DEFAULT_NAME;
+	return cast(string)name;
 }
