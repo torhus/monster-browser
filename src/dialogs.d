@@ -411,6 +411,14 @@ class SettingsDialog
 		cvarButton_.setText("Show columns for the game and gamename cvars");
 		cvarButton_.setSelection(serverTable.extraColumnsShown());
 
+		// Show servers that never replied?
+		auto noDataComposite = new Composite(mainComposite, 0);
+		noDataComposite.setLayout(new GridLayout());
+		noDataButton_ = new Button(noDataComposite, SWT.CHECK);
+		noDataButton_.setText("Show servers that have not replied");
+		noDataButton_.setSelection(
+			getSetting("showServersWithNoData") == "true");
+
 		// Update checker
 		auto updComposite = new Composite(mainComposite, 0);
 		updComposite.setLayout(new GridLayout());
@@ -461,6 +469,9 @@ class SettingsDialog
 					serverTable.showNumericalGtColumn(
 						                          numGtButton_.getSelection());
 					serverTable.showExtraColumns(cvarButton_.getSelection());
+
+					s = noDataButton_.getSelection() ? "true" : "false";
+					setSetting("showServersWithNoData", s);
 				}
 
 				shell_.close();
@@ -493,7 +504,7 @@ private:
 	Text pathText_;
 	int result_ = SWT.CANCEL;
 	Spinner sqSpinner_;
-	Button colorButton_, numGtButton_, cvarButton_, updButton_;
+	Button colorButton_, numGtButton_, cvarButton_, noDataButton_, updButton_;
 }
 
 

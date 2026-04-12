@@ -1,7 +1,8 @@
 Work in progress
 ------------------
-- Fix: Unresponsive servers were listed after getting a new list.
 - New: Show the number of queried servers, and how many replied.
+- New: Added setting for showing servers that haven't responded yet.
+- Fix: Unresponsive servers were listed after getting a new list.
 
 v1.0a - 2026-04-02
 ------------------

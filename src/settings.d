@@ -35,6 +35,7 @@ private {
 		{"startWithLastMod", "true"},
 		{"startupAction", "1"},
 		{"windowMaximized", "false"},
+		{"showServersWithNoData", "false"}
 	];
 
 	enum Setting[] defaultSessionState = [

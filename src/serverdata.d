@@ -9,6 +9,7 @@ import std.uni : sicmp;
 import colorednames : stripColorCodes;
 import common;
 import gameconfig;
+import settings : getSetting;
 
 
 /** Stores all data for a server. */
@@ -145,9 +146,14 @@ bool matchGame(in ServerData* sd, in GameConfig game)
 	static if (!MOD_ONLY)
 		return true;
 
-	return (sd.cvars.length > 0 && (game.mod.empty ||
-		    sicmp(sd.server[ServerColumn.CVAR_GAME], game.mod) == 0 ||
-		    sicmp(sd.server[ServerColumn.CVAR_GAMENAME], game.mod) == 0));
+	if (sd.cvars.length > 0) {
+		return game.mod.empty ||
+		       sicmp(sd.server[ServerColumn.CVAR_GAME], game.mod) == 0 ||
+		       sicmp(sd.server[ServerColumn.CVAR_GAMENAME], game.mod) == 0;
+	}
+	else {
+		return getSetting("showServersWithNoData") == "true";
+	}
 }
 
 
