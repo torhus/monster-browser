@@ -191,6 +191,10 @@ void loadSavedList()
 	contr.disableQueue();
 	contr.progressLabel = "Loading saved server list...";
 	contr.run();
+
+	Display.getDefault.asyncExec(dgRunnable( {
+		statusBar.hideProgress("Ready");
+	}));
 }
 
 
