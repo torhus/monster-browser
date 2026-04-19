@@ -288,6 +288,9 @@ void loadGamesFile()
         }
     }
 
+    // Update settings in case any game configs have been removed
+    pruneExePaths(gameNames);
+
     // Check for mismatch between inherit values and names/aliases
     foreach (sec; gamesIni) {
         if (sec.name.length > 0 && sec["inherit"]) {

@@ -4,6 +4,7 @@
 
 module settings;
 
+import std.algorithm : canFind;
 import std.conv;
 
 import common;
@@ -233,6 +234,22 @@ void setRconPassword(string ip, string password)
 	exePaths[gameName] = path;
 	exePathsUpdated = true;
  }
+
+
+/**
+* Removes executable paths for games not in gameNames.
+*/
+void pruneExePaths(string[] gameNames)
+{
+	assert(settingsIni);
+
+	foreach (name; exePaths.keys) {
+		if (!gameNames.canFind(name)) {
+			exePaths.remove(name);
+			exePathsUpdated = true;
+		}
+	}
+}
 
 
 private void loadSessionState()

@@ -1,3 +1,7 @@
+Work in progress
+----------------
+- Fix: Remove executable paths for games that are missing from games.ini.
+
 v1.0b - 2026-04-12
 ------------------
 - New: Show the number of queried servers, and how many replied.
