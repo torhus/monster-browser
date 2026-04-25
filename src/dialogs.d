@@ -384,7 +384,7 @@ class SettingsDialog
 		sqComposite.setLayout(new GridLayout(2, false));
 		Label sqLabel = new Label(sqComposite, SWT.WRAP);
 		sqLabel.setText("Number of servers to query\n" ~
-		                "simultaneously, default is 10:");
+		                "simultaneously, default is 20:");
 		sqSpinner_ = new Spinner(sqComposite, SWT.BORDER);
 		sqSpinner_.setMinimum(1);
 		sqSpinner_.setMaximum(99);
