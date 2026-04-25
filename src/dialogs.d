@@ -471,7 +471,11 @@ class SettingsDialog
 					serverTable.showExtraColumns(cvarButton_.getSelection());
 
 					s = noDataButton_.getSelection() ? "true" : "false";
-					setSetting("showServersWithNoData", s);
+					if (s != getSetting("showServersWithNoData")) {
+						setSetting("showServersWithNoData", s);
+						serverTable.serverList.refillFromMaster(true);
+						serverTable.fullRefresh();
+					}
 				}
 
 				shell_.close();

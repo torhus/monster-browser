@@ -1,5 +1,7 @@
 Work in progress
 ----------------
+- Change: Update the server list when toggling the "Show servers that have not
+          replied" setting.
 - Fix: Remove executable paths for games that are missing from games.ini.
 
 v1.0b - 2026-04-12
