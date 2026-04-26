@@ -5,7 +5,7 @@ import std.conv;
 import std.range;
 import std.regex;
 import std.string;
-import std.uni : sicmp;
+import std.uni : icmp;
 
 import common;
 import gameconfig;
@@ -511,7 +511,7 @@ private:
 				break;
 
 			default:
-				result = sicmp(a.server[sortColumn_], b.server[sortColumn_]);
+				result = icmp(a.server[sortColumn_], b.server[sortColumn_]);
 		}
 
 		return (reversed_ ? -result : result);
