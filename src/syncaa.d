@@ -4,6 +4,8 @@
 
 module syncaa;
 
+import std.traits : SharedOf;
+
 
 synchronized final class SyncAA(K, V) ///
 {
@@ -14,7 +16,11 @@ synchronized final class SyncAA(K, V) ///
     V opIndex(K key) { return unshare[key]; }
 
     ///
-    V opIndexAssign(V value, K key) { return unshare[key] = value; }
+    V opIndexAssign(V value, K key)
+    {
+        data_[key] = cast(SharedOf!V)value;
+        return value;
+    }
 
     ///
     K[] keys() { return unshare.keys; }

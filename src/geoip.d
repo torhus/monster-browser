@@ -169,7 +169,7 @@ private string getString(MMDB_entry_s* start, in char*[] args ...)
  * loading each flag, calling this function again will not cause more attempts
  * to be made.
  */
-Image getFlagImage(in char[] countryCode)
+Image getFlagImage(string countryCode)
 {
 	Image* image;
 
@@ -216,12 +216,12 @@ void disposeFlagImages()
 
 
 extern (C) __gshared {
-	c_int function(in char */*const*/ filename, uint32_t flags,
+	c_int function(const(char)* filename, uint32_t flags,
 	               MMDB_s */*const*/ mmdb)
 	    MMDB_open;
 	void function(MMDB_s */*const*/ mmdb) MMDB_close;
 	MMDB_lookup_result_s function(MMDB_s */*const*/ mmdb,
-	                              in char */*const*/ ipstr,
+	                              const(char)* ipstr,
 	                              c_int */*const*/ gai_error,
 	                              c_int */*const*/ mmdb_error)
 	    MMDB_lookup_string;
@@ -234,7 +234,7 @@ extern (C) __gshared {
 	    MMDB_vget_value;
 	c_int function(MMDB_entry_s */*const*/ start,
 	               MMDB_entry_data_s */*const*/ entry_data,
-	               in /*const*/ char */*const*/ */*const*/ path)
+	               const(char*)*/*const*/ path)
 	    MMDB_aget_value;
 	c_int function(MMDB_s */*const*/ mmdb,
 	               MMDB_entry_data_list_s **/*const*/ entry_data_list)
