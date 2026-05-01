@@ -259,7 +259,7 @@ void loadGamesFile()
     else if (!gamesIni && getSessionState("programVersion") < "0.9e")
         updateGameConfiguration();
 
-    if (exists(oldGamesFilePath) && getSessionState("programversion") < "1.0")
+    if (exists(oldGamesFilePath) && getSessionState("programVersion") < "1.0")
         info("The game configuration is now in games.ini, please move any " ~
              "customization you want to keep over from mods.ini.\n\n" ~
              "Sorry about the inconvenience!");
