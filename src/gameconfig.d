@@ -20,6 +20,15 @@ version (Windows) import mswindows.util;
 /// Configuration for a game.
 struct GameConfig
 {
+    @disable this();
+
+    /// Call getGameConfig to get an instance.
+    private this(string name, IniSection section)
+    {
+        name_ = name;
+        this.section = section;
+    }
+
     string name() const /// Section name in the game config file.
     {
         return name_;
