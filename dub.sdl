@@ -15,7 +15,6 @@ lflags "/rc:misc\\mb.res" platform="x86_omf"
 lflags "misc\\mb.res" platform="x86_mscoff"
 lflags "misc\\mb.res" platform="windows-x86_64"
 mainSourceFile "src/main.d"
-excludedSourceFiles "src/monitor.d"
 excludedSourceFiles "src/mswindows/*" platform="linux"
 stringImportPaths "." "flags" "icons"
 preBuildCommands "git rev-parse --abbrev-ref HEAD > revision.txt" \
