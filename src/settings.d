@@ -218,6 +218,8 @@ void setRconPassword(string ip, string password)
 
 /**
  * Returns the path to the executable for a game, or null if not found.
+ *
+ * Note: Use GameConfig.exePath instead of this directly.
  */
  string getExePath(string gameName)
  {

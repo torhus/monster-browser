@@ -86,23 +86,10 @@ struct GameConfig
      */
     string exePath() const
     {
-        string path = getExePath(name);
+        string path = findExePath(this);
 
-        if (!path) {
-            path = getPathFromRegistry(this);
-            if (path) {
-                setExePath(name, path);
-            }
-            else if (inherit) {
-                auto base = getInheritedGameConfig(this);
-                path = getExePath(base.name);
-                if (!path) {
-                    path = getPathFromRegistry(base);
-                    if (path)
-                        setExePath(base.name, path);
-                }
-            }
-        }
+        if (!path && inherit)
+            path = findExePath(getInheritedGameConfig(this));
 
         return path;
     }
@@ -148,26 +135,40 @@ struct GameConfig
         return defaultValue;
 	}
 
-    private string getPathFromRegistry(const(GameConfig) game) const
+    static private string findExePath(const (GameConfig) game)
+    {
+        string path = getExePath(game.name);
+
+        version (Windows) if (!path) {
+            path = getPathFromRegistry(game);
+            if (path) {
+                setExePath(game.name, path);
+            }
+        }
+
+        return path;
+    }
+
+    version (Windows)
+    static private string getPathFromRegistry(const(GameConfig) game)
     {
         string path = null;
 
-        version (Windows) {
-            string regKey = game.section["regKey"];
-            string exeName = game.section["exeName"];
+        string regKey = game.section["regKey"];
+        string exeName = game.section["exeName"];
 
-            if (regKey && exeName) {
-                try {
-                    if (string dir = getRegistryStringValue(regKey))
-                        path = dir ~ '\\' ~ exeName;
-                    else
-                        log("regKey not found: " ~ regKey);
-                }
-                catch (Exception e) {
-                    log(e.toString());
-                }
+        if (regKey && exeName) {
+            try {
+                if (string dir = getRegistryStringValue(regKey))
+                    path = dir ~ '\\' ~ exeName;
+                else
+                    log("regKey not found: " ~ regKey);
+            }
+            catch (Exception e) {
+                log(e.toString());
             }
         }
+
         return path;
     }
 
