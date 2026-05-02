@@ -5,7 +5,7 @@ copyright "Copyright © 2026, torhu"
 
 #dependency "dwt" version="~>1.0.5"
 dependency "dwt" repository="git+https://github.com/torhus/dwt.git" \
-                 version="19f219e"
+                 version="f3a1f1beb6354570370f75cf59bd08b7a0e080ff"
 dependency "fswatch" version="~>0.6.0"
 dependency "undead" version="~>1.1.7"
 targetName "MonsterBrowser"
