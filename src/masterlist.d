@@ -2,11 +2,13 @@ module masterlist;
 
 import core.memory;
 import std.array;
+import std.ascii : newline;
 import std.conv;
 import std.file;
 import std.path;
 import std.stdio;
 import std.uni;
+import ddn.data.xml.write;
 import tango.text.xml.DocEntity;
 import tango.text.xml.SaxParser;
 
@@ -297,16 +299,20 @@ private final class XmlDumper
 	///
 	this(string fileName)
 	{
-		output_ = File(fileName, "w");
-		output_.writeln(`<?xml version="1.0" encoding="UTF-8"?>`);
-		output_.writeln("<masterserver>");
+		XmlWriteOptions options = {
+			pretty: true, indentation: "  ", newline: newline
+		};
+		output_ = File(fileName, "wb");
+		auto sink = (const(char)[] v) { output_.write(v); };
+		writer_ = new XmlStreamWriter(sink, options);
+		writer_.startElement("masterserver");
 	}
 
 
 	///
 	void close()
 	{
-		output_.writeln("</masterserver>");
+		writer_.endElement();
 		output_.close();
 	}
 
@@ -314,39 +320,39 @@ private final class XmlDumper
 	///
 	void serverToXml(in ServerData* sd)
 	{
-		outputXml(`  <server name=`, sd.rawName);
-		outputXml(` country_code=`,  sd.server[ServerColumn.COUNTRY]);
-		outputXml(` address=`,       sd.server[ServerColumn.ADDRESS]);
-		outputXml(` protocol_version=`, sd.protocolVersion);
-		outputXml(` ping=`,          sd.server[ServerColumn.PING]);
-		outputXml(` player_count=`,  sd.server[ServerColumn.PLAYERS]);
-		outputXml(` map=`,           sd.server[ServerColumn.MAP]);
-		outputXml(` persistent=`,    sd.persistent ? "true" : "false");
-		output_.writef(` fail_count="%s"`,    sd.failCount);
-		output_.writeln(">");
+		writer_.startElement("server");
+		writer_.attribute("name",             sd.rawName);
+		writer_.attribute("country_code",     sd.server[ServerColumn.COUNTRY]);
+		writer_.attribute("address",          sd.server[ServerColumn.ADDRESS]);
+		writer_.attribute("protocol_version", sd.protocolVersion);
+		writer_.attribute("ping",             sd.server[ServerColumn.PING]);
+		writer_.attribute("player_count",     sd.server[ServerColumn.PLAYERS]);
+		writer_.attribute("map",              sd.server[ServerColumn.MAP]);
+		writer_.attribute("persistent",       sd.persistent ? "true" : "false");
+		writer_.attribute("fail_count",       to!string(sd.failCount));
 
 		if (sd.cvars.length) {
-			output_.writeln("    <cvars>");
+			writer_.startElement("cvars");
 			cvarsToXml(sd);
-			output_.writeln("    </cvars>");
+			writer_.endElement();
 		}
 
 		if (sd.players.length) {
-			output_.writeln("    <players>");
+			writer_.startElement("players");
 			playersToXml(sd);
-			output_.writeln("    </players>");
+			writer_.endElement();
 		}
-
-		output_.writeln("  </server>");
+		writer_.endElement();
 	}
 
 
 	private void cvarsToXml(in ServerData* sd)
 	{
 		foreach (cvar; sd.cvars) {
-			outputXml(`      <cvar key=`, cvar[0]);
-			outputXml(` value=`, cvar[1]);
-			output_.writeln("/>");
+			writer_.startElement("cvar");
+			writer_.attribute("key",   cvar[0]);
+			writer_.attribute("value", cvar[1]);
+			writer_.endElement();
 		}
 	}
 
@@ -354,27 +360,16 @@ private final class XmlDumper
 	private void playersToXml(in ServerData* sd)
 	{
 		foreach (player; sd.players) {
-			outputXml(`      <player name=`, player[PlayerColumn.RAWNAME]);
-			outputXml(` score=`, player[PlayerColumn.SCORE]);
-			outputXml(` ping=`, player[PlayerColumn.PING]);
-			output_.writeln("/>");
+			writer_.startElement("player");
+			writer_.attribute("name",  player[PlayerColumn.RAWNAME]);
+			writer_.attribute("score", player[PlayerColumn.SCORE]);
+			writer_.attribute("ping",  player[PlayerColumn.PING]);
+			writer_.endElement();
 		}
 	}
 
-
-	// Outputs prefix as-is, value in quotes and after encoding entities.
-	private void outputXml(in char[] prefix, in char[] value)
-	{
-		char[100] buf = void;
-
-		output_.write(prefix);
-		output_.write("\"");
-		output_.write(toEntity(value, buf));
-		output_.write("\"");
-	}
-
-
 	private {
+		XmlStreamWriter writer_;
 		File output_;
 	}
 }

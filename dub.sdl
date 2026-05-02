@@ -8,8 +8,14 @@ dependency "dwt" repository="git+https://github.com/d-widget-toolkit/dwt.git" \
                  version="3287055b2dd2392b1ca23b434e71460f29abbe29"
 dependency "fswatch" version="~>0.6.0"
 dependency "undead" version="~>1.1.7"
+dependency "ddn-data-xml" repository="git+https://codeberg.org/ddn/ddn-data-xml.git" \
+                 version="8cc5b698fb6f1ac7b13adc1ae1d204214fce78f6"
+dependency "ddn" repository="git+https://codeberg.org/ddn/ddn.git" \
+                 version="85bb798e2ae6442dc16bdd6db05bdafd8827bef4"
 targetName "MonsterBrowser"
 targetType "executable"
+# Needed for some Windows API definitions that ddn-data-xml uses
+versions "WindowsVista" platform="windows"
 buildRequirements "silenceDeprecations"
 #dflags "-verrors=0"
 lflags "misc\\mb.res" platform="x86"
