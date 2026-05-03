@@ -20,6 +20,8 @@ excludedSourceFiles "src/mswindows/*" platform="linux"
 stringImportPaths "." "flags" "icons"
 preBuildCommands "git rev-parse --abbrev-ref HEAD > revision.txt" \
                  "git describe --always --dirty >> revision.txt"
+postBuildCommands "copy libcurl32.dll libcurl.dll" platform="windows-x86"
+postBuildCommands "copy libcurl64.dll libcurl.dll" platform="windows-x86_64"
 
 configuration "console" {
 	versions "console"

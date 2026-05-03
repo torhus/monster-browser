@@ -51,9 +51,9 @@ private void bindFunc(alias funcPtr)(ExeModule lib)
 bool initGeoIp(in char[] dbName)
 {
 	version (Win32)
-		string libName = "libmaxminddb.dll";
+		string libName = "maxminddb32.dll";
 	else version (Win64)
-		string libName = "maxminddb.dll";
+		string libName = "maxminddb64.dll";
 	else
 		string libName = "libmaxminddb.so.0";
 

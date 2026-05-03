@@ -30,13 +30,17 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}";
 
+[InstallDelete]
+; The MaxMind DLL was renamed after version 1.0b.
+Type: files; Name: "{app}\libmaxminddb.dll"
+
 [Files]
 Source: "MonsterBrowser.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "README.TXT"; DestDir: "{app}"; Flags: ignoreversion
 Source: "CHANGELOG.TXT"; DestDir: "{app}"; Flags: ignoreversion
 Source: "GeoLite2-Country.mmdb"; DestDir: "{app}"; Flags: ignoreversion
 Source: "libcurl.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "libmaxminddb.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "maxminddb32.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "qstat.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "qstat_mb.cfg"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
