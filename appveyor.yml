@@ -2,16 +2,18 @@ version: 1.0b.{branch}.{build}
 image: Visual Studio 2022
 environment:
   BASEDIR: C:\projects
-install: |
-  cd %BASEDIR%
-  cd
-  curl -sS -o dmd.7z https://downloads.dlang.org/releases/2.x/2.107.1/dmd.2.107.1.windows.7z
-  curl -sSL -o deps.zip https://github.com/torhus/monster-browser/releases/download/v1.0b/monsterbrowser_deps-10b.zip
-  7z x dmd.7z > NUL
-  unzip -q deps.zip
-  for %%f in (qstat.exe libcurl32.dll libcurl64.dll maxminddb32.dll maxminddb64.dll GeoLite2-Country.mmdb) do copy %%f monster-browser\
-  cd monster-browser
-  path %BASEDIR%\dmd2\windows\bin;%PATH%
+install:
+  - cd %BASEDIR%
+  - cd
+  - curl -sS -o dmd.7z https://downloads.dlang.org/releases/2.x/2.107.1/dmd.2.107.1.windows.7z
+  - curl -sSL -o deps.zip https://github.com/torhus/monster-browser/releases/download/v1.0b/monsterbrowser_deps-10b.zip
+  - 7z x dmd.7z > NUL
+  - unzip -q deps.zip
+  - >
+    for %%f in (qstat.exe libcurl32.dll libcurl64.dll maxminddb32.dll
+    maxminddb64.dll GeoLite2-Country.mmdb) do copy %%f monster-browser\
+  - cd monster-browser
+  - path %BASEDIR%\dmd2\windows\bin;%PATH%
 build_script: |
   dub build --build=release --config=windows --arch=x86
   make-package.bat
