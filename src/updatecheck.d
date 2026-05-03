@@ -39,7 +39,7 @@ private void checkForUpdate(bool quiet)
     }
     catch (CurlException e)
     {
-        logx(__FILE__, __LINE__, e);
+        log(e.msg);
     }
 
 	if (auto m = content.matchFirst(`"tag_name": "v(\d+.\d+(\w|\.\d+|))"`)) {
