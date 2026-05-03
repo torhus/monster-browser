@@ -26,6 +26,9 @@ synchronized final class SyncAA(K, V) ///
     K[] keys() { return unshare.keys; }
 
     ///
+    V[] values() { return unshare.values; }
+
+    ///
     void remove(K key) { data_.remove(key); }
 
     /// There is no `in` operator, it would not be thread-safe.

@@ -4,6 +4,7 @@ Work in progress
           replied" setting.
 - Fix: Remove executable paths for games that are missing from games.ini.
 - Fix: Never remove persistent servers automatically.
+- Fix: Keep cached server lists from other masters when getting a new list.
 
 v1.0b - 2026-04-12
 ------------------

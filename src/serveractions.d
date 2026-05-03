@@ -437,9 +437,9 @@ void checkForNewServers()
 
 		// Remove stale server lists from the cache
 		if (removed > 0 || count > 0) {
-			foreach (name, _; serverListCache) {
-				if (name != game.name)
-					serverListCache.remove(name);
+			foreach (list; serverListCache.values) {
+				if (list.master is master && list.gameName != game.name)
+					serverListCache.remove(list.gameName);
 			}
 		}
 
