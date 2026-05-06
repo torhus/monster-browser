@@ -7,13 +7,12 @@ https://github.com/user-attachments/files/27318971/monsterbrowser_deps-10b.zip
 Useful links
 ------------
 D compiler:
-http://dlang.org/download.html
-Currently I'm using DMD 2.107.1
+https://github.com/ldc-developers/ldc/releases/tag/v1.37.0
 
 D docs, support, etc.:
 http://dlang.org
 
-DUB is used for building (comes with DMD):
+DUB is used for building (included in the compiler download):
 https://github.com/dlang/dub
 
 
@@ -28,8 +27,19 @@ https://github.com/d-widget-toolkit/dwt
 https://help.eclipse.org/latest/topic/org.eclipse.platform.doc.isv/reference/api/org/eclipse/swt/package-summary.html
 
 Building on Windows
--------------------
-dub build --arch=x86
+-------------------------------
+Debug build:
+dub build
+
+Or without getting a console window:
+dub build -c=windows
+
+Add -a=x86 to get a 32-bit build instead of 64-bit.
+
+To avoid the dependency on MSVCR*.DLL, install Visual Studio 2022
+or just Visual Studio Build Tools 2022. Then restart Windows. This should make
+LDC use Microsoft's link.exe and link the standard C library statically
+automatically.
 
 A final release is built like this:
 dub build --arch=x86 --build=release --config=final --compiler=ldc2 --force

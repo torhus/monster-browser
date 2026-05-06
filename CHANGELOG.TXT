@@ -2,6 +2,7 @@ Work in progress
 ----------------
 - Change: Update the server list when toggling the "Show servers that have not
           replied" setting.
+- Fix: Remove the dependency on MSVCR120.DLL.
 - Fix: Remove executable paths for games that are missing from games.ini.
 - Fix: Never remove persistent servers automatically.
 - Fix: Keep cached server lists from other masters when getting a new list.
