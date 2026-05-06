@@ -5,17 +5,17 @@ environment:
 install:
   - cd %BASEDIR%
   - cd
-  - curl -sS -o dmd.7z https://downloads.dlang.org/releases/2.x/2.107.1/dmd.2.107.1.windows.7z
+  - curl -sSL -o ldc2.7z https://github.com/ldc-developers/ldc/releases/download/v1.37.0/ldc2-1.37.0-windows-x86.7z
   - curl -sSL -o deps.zip https://github.com/user-attachments/files/27318971/monsterbrowser_deps-10b.zip
-  - 7z x dmd.7z > NUL
+  - 7z x ldc2.7z > NUL
   - unzip -q deps.zip
   - >
     for %%f in (qstat.exe libcurl32.dll libcurl64.dll maxminddb32.dll
     maxminddb64.dll GeoLite2-Country.mmdb) do copy %%f monster-browser\
   - cd monster-browser
-  - path %BASEDIR%\dmd2\windows\bin;%PATH%
+  - path %BASEDIR%\ldc2-1.37.0-windows-x86\bin;%PATH%
 build_script: |
-  dub build --build=release --config=windows --arch=x86
+  dub build --build=release --config=windows --arch=x86 --compiler=ldc2
   make-package.bat
   cd misc
   "C:\Program Files (x86)\Inno Setup 6\iscc" /Q mb.iss
