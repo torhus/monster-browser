@@ -5,7 +5,7 @@
 @goto end
 :ok
 
-@set VERSION=10b
+@set VERSION=10c
 
 @set FILES=^
 CHANGELOG.TXT ^

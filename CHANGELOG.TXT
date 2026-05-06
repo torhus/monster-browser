@@ -1,5 +1,5 @@
-Work in progress
-----------------
+v1.0c - 2026-05-06
+------------------
 - Change: Update the server list when toggling the "Show servers that have not
           replied" setting.
 - Fix: Remove the dependency on MSVCR120.DLL.

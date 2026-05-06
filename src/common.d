@@ -48,7 +48,7 @@ shared string dataDir;  /// Absolute path to where settings and data is stored.
 shared string logDir;  /// Absolute path to where the log file is.
 
 enum APPNAME = "Monster Browser";
-enum FINAL_VERSION = "1.0b";
+enum FINAL_VERSION = "1.0c";
 
 enum logFileName = "LOG.TXT";
 
