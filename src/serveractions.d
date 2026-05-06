@@ -676,7 +676,8 @@ class ServerRetrievalController
 			matched = matchGame(&sd, game);
 		}
 		else {
-			if (sd.failCount <= maxTimeouts_ || sd.persistent) {
+			if (sd.failCount <= maxTimeouts_ || maxTimeouts_ <= 0
+			                                     || sd.persistent) {
 				timedOut_++;
 				if (sd.protocolVersion.length == 0) {
 					// This can happen when checking for new servers.  Just set
