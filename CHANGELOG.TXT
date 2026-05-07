@@ -1,3 +1,7 @@
+Work in progress
+----------------
+- New: Cvar table context menu for opening an URL or copying the value
+
 v1.0c - 2026-05-06
 ------------------
 - Change: Update the server list when toggling the "Show servers that have not

@@ -1,7 +1,14 @@
 module cvartable;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MenuDetectEvent;
+import org.eclipse.swt.events.MenuDetectListener;
+import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
@@ -20,7 +27,7 @@ class CvarTable
 	this(Composite parent)
 	{
 		parent_ = parent;
-		table_ = new Table(parent_, SWT.BORDER);
+		table_ = new Table(parent_, SWT.BORDER | SWT.FULL_SELECTION);
 		table_.setHeaderVisible(true);
 		table_.setLinesVisible(true);
 
@@ -34,6 +41,23 @@ class CvarTable
 		// add columns
 		table_.getColumn(0).setWidth(widths[0]);
 		table_.getColumn(1).setWidth(widths[1]);
+
+		table_.addSelectionListener(new class SelectionAdapter {
+			override void widgetDefaultSelected(SelectionEvent e)
+			{
+				auto item = cast(TableItem)e.item;
+				openUrl(item.getText(1));
+			}
+		});
+
+		table_.setMenu(createContextMenu());
+		table_.addMenuDetectListener(new class MenuDetectListener {
+			void menuDetected(MenuDetectEvent e)
+			{
+				if (table_.getSelectionCount() == 0)
+					e.doit = false;
+			}
+		});
 	}
 
 	Table getTable() { return table_; }  ///
@@ -60,4 +84,38 @@ class CvarTable
 private:
 	Table table_;
 	Composite parent_;
+
+
+	Menu createContextMenu()
+	{
+		Menu menu = new Menu(table_);
+
+		MenuItem item = new MenuItem(menu, SWT.PUSH);
+		item.setText("Open link\tEnter");
+		menu.setDefaultItem(item);
+		item.addSelectionListener(new class SelectionAdapter {
+			override void widgetSelected(SelectionEvent e) {
+				string s = table_.getItem(table_.getSelectionIndex()).getText(1);
+				openUrl(s);
+			}
+		});
+
+		item = new MenuItem(menu, SWT.PUSH);
+		item.setText("Copy value\tCtrl+C");
+		item.addSelectionListener(new class SelectionAdapter {
+			override void widgetSelected(SelectionEvent e) {
+				string s = table_.getItem(table_.getSelectionIndex()).getText(1);
+				copyToClipboard(s);
+			}
+		});
+
+
+		return menu;
+	}
+
+
+	void openUrl(string url)
+	{
+		Program.launch(url);
+	}
 }
