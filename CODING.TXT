@@ -7,7 +7,8 @@ https://github.com/user-attachments/files/27318971/monsterbrowser_deps-10b.zip
 Useful links
 ------------
 D compiler:
-https://github.com/ldc-developers/ldc/releases/tag/v1.37.0
+http://dlang.org/download.html
+Currently I'm using DMD 2.107.1
 
 D docs, support, etc.:
 http://dlang.org
@@ -38,8 +39,8 @@ Add -a=x86 to get a 32-bit build instead of 64-bit.
 
 To avoid the dependency on MSVCR*.DLL, install Visual Studio 2022
 or just Visual Studio Build Tools 2022. Then restart Windows. This should make
-LDC use Microsoft's link.exe and link the standard C library statically
-automatically.
+the compiler use Microsoft's link.exe and link the standard C library
+statically automatically.
 
 A final release is built like this:
 dub build --arch=x86 --build=release --config=final --compiler=ldc2 --force
