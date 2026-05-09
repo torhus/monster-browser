@@ -1,5 +1,7 @@
 module cvartable;
 
+import std.algorithm : canFind;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MenuDetectEvent;
 import org.eclipse.swt.events.MenuDetectListener;
@@ -46,7 +48,7 @@ class CvarTable
 			override void widgetDefaultSelected(SelectionEvent e)
 			{
 				auto item = cast(TableItem)e.item;
-				openUrl(item.getText(1));
+				maybeOpenUrl(item.getText(1));
 			}
 		});
 
@@ -96,7 +98,7 @@ private:
 		item.addSelectionListener(new class SelectionAdapter {
 			override void widgetSelected(SelectionEvent e) {
 				string s = table_.getItem(table_.getSelectionIndex()).getText(1);
-				openUrl(s);
+				maybeOpenUrl(s);
 			}
 		});
 
@@ -114,8 +116,9 @@ private:
 	}
 
 
-	void openUrl(string url)
+	void maybeOpenUrl(string maybeUrl)
 	{
-		Program.launch(url);
+		if (maybeUrl.canFind('.') && !maybeUrl.canFind(' '))
+			Program.launch(maybeUrl);
 	}
 }
