@@ -1,6 +1,7 @@
 Work in progress
 ----------------
-- New: Cvar table context menu for opening an URL or copying the value
+- New: Cvar table context menu for opening an URL or copying the value.
+- New: Tools->Open game folder.
 
 v1.0c - 2026-05-06
 ------------------

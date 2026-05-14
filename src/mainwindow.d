@@ -4,6 +4,7 @@ module mainwindow;
 
 import std.algorithm;
 import std.conv;
+import std.path : dirName;
 import std.regex;
 import std.string;
 
@@ -43,6 +44,7 @@ import common;
 import cvartable;
 import dialogs;
 import gameconfig;
+import messageboxes;
 import playertable;
 import runtools : killServerBrowser;
 import serveractions;
@@ -571,6 +573,7 @@ private class ToolBarWrapper
 			menu_.addItem("Settings").tag("settings");
 			menu_.addSeparator();
 			menu_.addItem("Set this game's executable file").tag("executable");
+			menu_.addItem("Open game folder").tag("game folder");
 			menu_.addSeparator();
 			menu_.addItem("Open settings and data folder").tag("data folder");
 			menu_.addItem("Open log file").tag("log file");
@@ -614,6 +617,16 @@ private class ToolBarWrapper
 				case "executable":
 					askForGamePath(serverTable.serverList.gameName);
 					break;
+				case "game folder": {
+					auto game = getGameConfig(serverTable.serverList.gameName);
+					if (game.exePath.length == 0) {
+						info("Please select the executable for this game first.");
+						askForGamePath(serverTable.serverList.gameName);
+					}
+					if (game.exePath.length > 0)
+						Program.launch(dirName(game.exePath));
+					break;
+				}
 				case "data folder":
 					Program.launch(dataDir);
 					break;
