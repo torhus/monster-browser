@@ -10,7 +10,7 @@ import std.conv;
 import std.file;
 import std.stdio;
 import std.string;
-import tango.text.xml.PullParser : XmlException;
+import ddn.data.xml.errors : XmlException;
 
 import java.lang.Runnable;
 import org.eclipse.swt.widgets.Display;
@@ -116,10 +116,11 @@ void switchToGame(string name, bool configChanged=false)
 					master.load(game.protocolVersion);
 				}
 				catch (FileException e) {
-					error("There was an error reading " ~ master.fileName);
+					error("There was an error loading %s:\n%s",
+					                     master.fileName, e.msg);
 				}
 				catch (XmlException e) {
-					error("Syntax error in " ~ master.fileName);
+					error("Error in %s:\n%s", master.fileName, e.toString());
 				}
 
 			}

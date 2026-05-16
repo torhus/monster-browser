@@ -8,9 +8,8 @@ import std.file;
 import std.path;
 import std.stdio;
 import std.uni;
+import ddn.data.xml.stream;
 import ddn.data.xml.write;
-import tango.text.xml.DocEntity;
-import tango.text.xml.SaxParser;
 
 import colorednames;
 import common;
@@ -215,21 +214,18 @@ final class MasterList
 		Timer timer;
 		timer.start();
 
-		char[] content = cast(char[])read(dataDir ~ fileName_);
+		auto content = cast(string)read(dataDir ~ fileName_);
 		GC.setAttr(content.ptr, GC.BlkAttr.NO_SCAN);
-		auto parser = new SaxParser!(char);
-		auto handler = new MySaxHandler!(char)(defaultProtocolVersion);
 
-		parser.setSaxHandler(handler);
-		parser.setContent(content);
-		parser.parse;
+		auto reader = new MyXmlReader(content, defaultProtocolVersion);
+		reader.parse();
 
-		log("Loaded %s servers in %s seconds.", handler.servers.length,
+		log("Loaded %s servers in %s seconds.", reader.servers.length,
 		                                                        timer.seconds);
 
 		synchronized (this) {
-			servers_ = handler.servers;
-			downCount_ = handler.downCount;
+			servers_ = reader.servers;
+			downCount_ = reader.downCount;
 		}
 
 		return true;
@@ -375,90 +371,72 @@ private final class XmlDumper
 }
 
 
-private final class MySaxHandler(Ch=char) : SaxHandler!(Ch)
+private final class MyXmlReader
 {
 	ServerData[string] servers;
-	ServerData sd;
 	size_t downCount = 0;
 
-	private string defaultProtocolVersion_;
 
-
-	this(string defaultProtocolVersion)
+	this(string xml, string defaultProtocolVersion)
 	{
 		defaultProtocolVersion_ = defaultProtocolVersion;
-	}
-
-	override void startElement(const(Ch)[] uri, const(Ch)[] localName,
-	                           const(Ch)[] qName, Attribute!(Ch)[] attributes)
-	{
-		if (localName == "cvar")
-			addCvar(attributes);
-		else if (localName == "player")
-			addPlayer(attributes);
-		else if (localName == "server")
-			startServer(attributes);
+		reader_ = new XmlReader(xml);
 	}
 
 
-	override void endElement(const(Ch)[] uri, const(Ch)[] localName,
-	                         const(Ch)[] qName)
+	void parse()
 	{
-		if (localName == "server") {
-			auto cvars = sd.cvars;
-
-			sortStringArray(cvars);
-
-			if (auto cvar = cvars.getCvar("g_gametype")) {
-				sd.server[ServerColumn.GAMETYPE_NUM] = cvar[1];
-				sd.numericGameType = toIntOrDefault(cvar[1], -1);
+		while(!reader_.empty) {
+			auto element = reader_.front;
+			switch (element.type) {
+				case XmlEventType.START_ELEMENT:
+					if (element.local == "server")
+						startServer(element);
+					else if (element.local == "cvars")
+						addCvars();
+					else if (element.local == "players")
+						addPlayers();
+					break;
+				case XmlEventType.END_ELEMENT:
+					if (element.local == "server")
+						endServer();
+					break;
+				default:
+				break;
 			}
-			if (auto cvar = cvars.getCvar("g_needpass")) {
-				string s = cvar[1] == "0" ? PASSWORD_NO : PASSWORD_YES;
-				sd.server[ServerColumn.PASSWORDED] = s;
-			}
-			if (auto cvar = cvars.getCvar("game")) {
-				sd.server[ServerColumn.CVAR_GAME] = cvar[1];
-			}
-			if (auto cvar = cvars.getCvar("gamename")) {
-				sd.server[ServerColumn.CVAR_GAMENAME] = cvar[1];
-			}
-
-			if (!hasReplied(&sd))
-				downCount++;
-
-			servers[sd.server[ServerColumn.ADDRESS]] = sd;
-			sd = ServerData.init;
+			reader_.popFront();
 		}
 	}
 
 
 	// Allocate a new server and add server attributes.
-	private void startServer(Attribute!(Ch)[] attributes)
+	private void startServer(in XmlEvent event)
 	{
+		assert(event.local == "server");
+		assert(event.type == XmlEventType.START_ELEMENT);
+
 		sd.server.length = ServerColumn.max + 1;
 
-		foreach (ref attr; attributes) {
-			if (attr.localName == "name") {
-				sd.rawName = fromEntityCopy(attr.value);
-				sd.server[ServerColumn.NAME] =
-				           cast(string)fromEntity(stripColorCodes(attr.value));
+		foreach (attr; event.attributes) {
+			if (attr.local == "name") {
+				sd.rawName = attr.value.dup;
+				sd.server[ServerColumn.NAME] = stripColorCodes(attr.value);
 			}
-			else if (attr.localName == "country_code")
-				sd.server[ServerColumn.COUNTRY] = fromEntityCopy(attr.value);
-			else if (attr.localName == "address")
-				sd.server[ServerColumn.ADDRESS] = fromEntityCopy(attr.value);
-			else if (attr.localName == "protocol_version")
-				sd.protocolVersion = fromEntityCopy(attr.value);
-			else if (attr.localName == "ping")
-				sd.server[ServerColumn.PING] = fromEntityCopy(attr.value);
-			else if (attr.localName == "player_count")
-				sd.server[ServerColumn.PLAYERS] = fromEntityCopy(attr.value);
-			else if (attr.localName == "map")
-				sd.server[ServerColumn.MAP] = fromEntityCopy(attr.value);
-			else if (attr.localName == "persistent")
+			else if (attr.local == "country_code")
+				sd.server[ServerColumn.COUNTRY] = attr.value.dup;
+			else if (attr.local == "address")
+				sd.server[ServerColumn.ADDRESS] = attr.value.dup;
+			else if (attr.local == "protocol_version")
+				sd.protocolVersion = attr.value.dup;
+			else if (attr.local == "ping")
+				sd.server[ServerColumn.PING] = attr.value.dup;
+			else if (attr.local == "player_count")
+				sd.server[ServerColumn.PLAYERS] = attr.value.dup;
+			else if (attr.local == "map")
+				sd.server[ServerColumn.MAP] = attr.value.dup;
+			else if (attr.local == "persistent")
 				sd.persistent = attr.value == "true";
-			else if (attr.localName == "fail_count")
+			else if (attr.local == "fail_count")
 				sd.failCount = toIntOrDefault(attr.value);
 		}
 
@@ -471,47 +449,106 @@ private final class MySaxHandler(Ch=char) : SaxHandler!(Ch)
 	}
 
 
-	// Add a cvar.
-	private void addCvar(Attribute!(Ch)[] attributes)
+	void endServer()
 	{
-		string[] cvar = new string[2];
+		auto cvars = sd.cvars;
 
-		foreach (ref attr; attributes) {
-			if (attr.localName == "key")
-				cvar[0] = fromEntityCopy(attr.value);
-			else if (attr.localName == "value")
-				cvar[1] = fromEntityCopy(attr.value);
+		sortStringArray(cvars);
+
+		if (auto cvar = cvars.getCvar("g_gametype")) {
+			sd.server[ServerColumn.GAMETYPE_NUM] = cvar[1];
+			sd.numericGameType = toIntOrDefault(cvar[1], -1);
+		}
+		if (auto cvar = cvars.getCvar("g_needpass")) {
+			string s = cvar[1] == "0" ? PASSWORD_NO : PASSWORD_YES;
+			sd.server[ServerColumn.PASSWORDED] = s;
+		}
+		if (auto cvar = cvars.getCvar("game")) {
+			sd.server[ServerColumn.CVAR_GAME] = cvar[1];
+		}
+		if (auto cvar = cvars.getCvar("gamename")) {
+			sd.server[ServerColumn.CVAR_GAMENAME] = cvar[1];
 		}
 
-		sd.cvars ~= cvar;
+		if (!hasReplied(&sd))
+			downCount++;
+
+		servers[sd.server[ServerColumn.ADDRESS]] = sd;
+		sd = ServerData.init;
 	}
 
 
-	// Add a player.
-	private void addPlayer(Attribute!(Ch)[] attributes)
+	private void addCvars()
 	{
-		string[] player = new string[PlayerColumn.max + 1];
+		assert(reader_.front.local == "cvars");
+		assert(reader_.front.type == XmlEventType.START_ELEMENT);
 
-		foreach (ref attr; attributes) {
-			if (attr.localName == "name")
-				player[PlayerColumn.RAWNAME] = fromEntityCopy(attr.value);
-			else if (attr.localName == "score")
-				player[PlayerColumn.SCORE] = fromEntityCopy(attr.value);
-			else if (attr.localName == "ping")
-				player[PlayerColumn.PING] = fromEntityCopy(attr.value);
+		reader_.popFront();
+		if (reader_.front.type == XmlEventType.TEXT)
+			reader_.popFront();
+
+		while(reader_.front.local != "cvars") {
+			auto element = reader_.front;
+			string[] cvar;
+
+			switch (element.type) {
+				case XmlEventType.START_ELEMENT: {
+					cvar = new string[2];
+					foreach (attr; element.attributes) {
+						if (attr.local == "key")
+							cvar[0] = attr.value.dup;
+						else if (attr.local == "value")
+							cvar[1] = attr.value.dup;
+					}
+					sd.cvars ~= cvar;
+					break;
+				}
+				default:
+					break;
+			}
+			reader_.popFront();
 		}
-
-		sd.players ~= player;
 	}
 
-	// Convert XML entities to characters, unconditionally copying the source.
-	string fromEntityCopy(in char[] s)
-	{	
-		const(char)[] r = fromEntity(s);
-		if (r.ptr != s.ptr)
-			return cast(string)r;
-		else
-			return s.idup;
+
+	private void addPlayers()
+	{
+		assert(reader_.front.local == "players");
+		assert(reader_.front.type == XmlEventType.START_ELEMENT);
+
+		reader_.popFront();
+		if (reader_.front.type == XmlEventType.TEXT)
+			reader_.popFront();
+
+		while(reader_.front.local != "players") {
+			auto element = reader_.front;
+			string[] player;
+
+			switch (element.type) {
+				case XmlEventType.START_ELEMENT: {
+					player = new string[PlayerColumn.max + 1];
+					foreach (attr; element.attributes) {
+						if (attr.local == "name")
+							player[PlayerColumn.RAWNAME] = attr.value.dup;
+						else if (attr.local == "score")
+							player[PlayerColumn.SCORE] = attr.value.dup;
+						else if (attr.local == "ping")
+							player[PlayerColumn.PING] = attr.value.dup;
+					}
+					sd.players ~= player;
+					break;
+				}
+				default:
+					break;
+			}
+			reader_.popFront();
+		}
 	}
 
+
+	private {
+		XmlReader reader_;
+		string defaultProtocolVersion_;
+		ServerData sd;
+	}
 }
