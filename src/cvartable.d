@@ -3,6 +3,8 @@ module cvartable;
 import std.algorithm : canFind;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.MenuDetectEvent;
 import org.eclipse.swt.events.MenuDetectListener;
 import org.eclipse.swt.program.Program;
@@ -49,6 +51,13 @@ class CvarTable
 			{
 				auto item = cast(TableItem)e.item;
 				maybeOpenUrl(item.getText(1));
+			}
+		});
+
+		table_.addKeyListener(new class KeyAdapter {
+			override void keyPressed(KeyEvent e) {
+				if (e.keyCode == 'c' && e.stateMask == SWT.MOD1)
+					onCopyValue();
 			}
 		});
 
@@ -106,8 +115,7 @@ private:
 		item.setText("Copy value\tCtrl+C");
 		item.addSelectionListener(new class SelectionAdapter {
 			override void widgetSelected(SelectionEvent e) {
-				string s = table_.getItem(table_.getSelectionIndex()).getText(1);
-				copyToClipboard(s);
+				onCopyValue();
 			}
 		});
 
@@ -120,5 +128,12 @@ private:
 	{
 		if (maybeUrl.canFind('.') && !maybeUrl.canFind(' '))
 			Program.launch(maybeUrl);
+	}
+
+
+	void onCopyValue()
+	{
+		string s = table_.getItem(table_.getSelectionIndex()).getText(1);
+		copyToClipboard(s);
 	}
 }
