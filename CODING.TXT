@@ -32,9 +32,6 @@ Building on Windows
 Debug build:
 dub build
 
-Or without getting a console window:
-dub build -c=windows
-
 Add -a=x86 to get a 32-bit build instead of 64-bit.
 
 To avoid the dependency on MSVCR*.DLL, install Visual Studio 2022
