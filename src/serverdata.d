@@ -109,6 +109,8 @@ struct ServerData {
 
 // should correspond to playertable.playerHeaders
 enum PlayerColumn { NAME, SCORE, PING, RAWNAME }
+// should correspond to cvartable.cvarHeaders
+enum CvarColumn { KEY, VALUE }
 // should correspond to servertable.serverHeaders
 enum ServerColumn {
 	COUNTRY, NAME, PASSWORDED, PING, PLAYERS, GAMETYPE, GAMETYPE_NUM, MAP,

@@ -1,14 +1,20 @@
 module cvartable;
 
 import std.algorithm : canFind;
+import std.regex;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.MenuDetectEvent;
 import org.eclipse.swt.events.MenuDetectListener;
+import org.eclipse.swt.graphics.TextLayout;
+import org.eclipse.swt.graphics.TextStyle;
 import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -18,11 +24,14 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 
 import common;
+import serverdata;
 import settings;
 
 
 __gshared CvarTable cvarTable;  ///
 
+// should correspond to serverlist.CvarColumn
+immutable cvarHeaders = ["Key", "Value"];
 
 ///
 class CvarTable
@@ -36,9 +45,9 @@ class CvarTable
 		table_.setLinesVisible(true);
 
 		TableColumn column = new TableColumn(table_, SWT.HIDE_SELECTION);
-		column.setText("Key");
+		column.setText(cvarHeaders[CvarColumn.KEY]);
 		column = new TableColumn(table_, SWT.NONE);
-		column.setText("Value");
+		column.setText(cvarHeaders[CvarColumn.VALUE]);
 
 		int[] widths = parseIntList(getSessionState("cvarColumnWidths"), 2, 90);
 
@@ -49,8 +58,7 @@ class CvarTable
 		table_.addSelectionListener(new class SelectionAdapter {
 			override void widgetDefaultSelected(SelectionEvent e)
 			{
-				auto item = cast(TableItem)e.item;
-				maybeOpenUrl(item.getText(1));
+				maybeOpenLink(cast(TableItem)e.item);
 			}
 		});
 
@@ -69,6 +77,39 @@ class CvarTable
 					e.doit = false;
 			}
 		});
+
+		table_.addListener(SWT.EraseItem, new class Listener {
+			void handleEvent(Event e) {
+				if (e.index == CvarColumn.VALUE)
+					e.detail &= ~SWT.FOREGROUND;
+			}
+		});
+
+		table_.addListener(SWT.PaintItem, new class Listener {
+			void handleEvent(Event e) {
+				if (e.index != CvarColumn.VALUE)
+					return;
+
+				auto item = cast(TableItem) e.item;
+				auto text = item.getText(CvarColumn.VALUE);
+				scope tl = new TextLayout(Display.getDefault);
+				int index = table_.indexOf(item);
+				auto range = ranges_[index];
+
+				tl.setText(item.getText(CvarColumn.VALUE));
+
+				if (range.hasLink) {
+					auto linkColor = Display.getDefault()
+					                    .getSystemColor(SWT.COLOR_BLUE);
+					auto style = new TextStyle(null, linkColor, null);
+					style.underline = true;
+					tl.setStyle(style, range.first, range.last);
+				}
+
+				tl.draw(e.gc, e.x + 2, e.y + 2);
+				tl.dispose();
+			}
+		});
 	}
 
 	Table getTable() { return table_; }  ///
@@ -77,9 +118,12 @@ class CvarTable
 	{
 		table_.setRedraw(false);
 		table_.setItemCount(0);
-		foreach (v; items) {
+		ranges_.length = items.length;
+
+		foreach (i, v; items) {
 			TableItem item = new TableItem(table_, SWT.NONE);
       		item.setText(v);
+			ranges_[i] = getLinkRange(v[CvarColumn.VALUE]);
       	}
 		table_.setRedraw(true);
   	}
@@ -93,8 +137,11 @@ class CvarTable
 	            PRIVATE STUFF
 	 ************************************************/
 private:
+	struct LinkRange { bool hasLink; int first; int last; }
+
 	Table table_;
 	Composite parent_;
+	LinkRange[] ranges_;
 
 
 	Menu createContextMenu()
@@ -106,8 +153,8 @@ private:
 		menu.setDefaultItem(item);
 		item.addSelectionListener(new class SelectionAdapter {
 			override void widgetSelected(SelectionEvent e) {
-				string s = table_.getItem(table_.getSelectionIndex()).getText(1);
-				maybeOpenUrl(s);
+				if (table_.getSelectionCount > 0)
+					maybeOpenLink(table_.getSelection()[0]);
 			}
 		});
 
@@ -123,17 +170,31 @@ private:
 		return menu;
 	}
 
-
-	void maybeOpenUrl(string maybeUrl)
+	LinkRange getLinkRange(const(char)[] s)
 	{
-		if (maybeUrl.canFind('.') && !maybeUrl.canFind(' '))
-			Program.launch(maybeUrl);
+		__gshared auto re = ctRegex!(
+		    r"((((https?:\/\/)|(s?ftps?:\/\/))([\w-_]+\.)?)|[\w-_]+\.)[\w-_]+\.[a-zA-Z]{2,}(\/[\w-_/]+)?");
+		auto m = s.matchFirst(re);
+
+		if (!!m)
+			return LinkRange(true, m.pre.length, s.length - m.post.length - 1);
+		else
+			return LinkRange(false);
 	}
 
+	void maybeOpenLink(TableItem item)
+	{
+		string s = item.getText(CvarColumn.VALUE);
+		auto range = ranges_[table_.indexOf(item)];
+
+		if (range.hasLink)
+			Program.launch(s[range.first..range.last+1]);
+	}
 
 	void onCopyValue()
 	{
-		string s = table_.getItem(table_.getSelectionIndex()).getText(1);
+		string s = table_.getItem(table_.getSelectionIndex())
+		                                    .getText(CvarColumn.VALUE);
 		copyToClipboard(s);
 	}
 }
