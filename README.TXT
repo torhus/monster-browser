@@ -44,8 +44,9 @@ Available Options:
 * protocolVersion: Defaults to 68.
 * gameTypes: List of game type names, separated by spaces.
 * etColors: Set to true to enable Enemy Territory-style extended color codes
-  (31 colors). See http://wolfwiki.anime.net/index.php/Color_Codes for more
-  information.
+  (31 colors).
+  See https://steamcommunity.com/sharedfiles/filedetails/?id=2800185548
+  for more information.
 * qstatMasterServerType: Defaults to q3m.
 * qstatConfigFile: For setting Qstat's -cfg parameter.
 
