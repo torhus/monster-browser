@@ -207,6 +207,16 @@ final class ServerTable
 	/// The ServerList currently being used.
 	ServerList serverList() { return serverList_; }
 
+	/// Get the selected server.
+	ServerData getSelectedServerData() {
+		int index = table_.getSelectionIndex();
+		ServerData sd;
+
+		if (index != -1)
+			sd = serverList.getFiltered(index);
+		return sd;
+	}
+
 	/// The index of the currently active sort column.
 	int sortColumn() { return table_.indexOf(table_.getSortColumn()); }
 

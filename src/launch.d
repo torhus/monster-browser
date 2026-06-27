@@ -29,21 +29,17 @@ import settings;
  */
 void joinServer(in char[] gameName, ServerData sd)
 {
-	string argv;
-	string address = sd.server[ServerColumn.ADDRESS];
 	GameConfig game = getGameConfig(gameName.idup);
+
+	if (!checkPath(game))
+		return;
+
+	string address = sd.server[ServerColumn.ADDRESS];
 	string pathString = game.exePath;
-	bool launch = true;
-	string[] cvar;
+	string[] cvar = sd.cvars.getCvar("game");
+	string argv;
+	bool ok = true;
 
-	if (!pathString || !exists(pathString)) {
-		askForGamePath(game.name);
-		pathString = game.exePath;
-		if (!pathString || !exists(pathString))
-			return;
-	}
-
-	cvar = sd.cvars.getCvar("game");
 	if (cvar && cvar[1].length > 0)
 		argv = "+set fs_game " ~ cvar[1];
 
@@ -57,30 +53,68 @@ void joinServer(in char[] gameName, ServerData sd)
 		                                         message, address, true, true);
 
 		if (!dialog.open() || dialog.password.length == 0)
-			launch = false;
+			ok = false;
 	}
 
-	if (launch) {
+	if (ok) {
 		string pw = getPassword(address);
 		if (pw.length > 0)
 			argv ~= " +set password " ~ pw;
 
 		log("Launching game: " ~ pathString ~ " " ~ argv);
+		launch(pathString, argv);
+	}
+}
 
-		version (Windows) {
-			int r = cast(int)ShellExecuteW(null, "open", toUTF16z(pathString),
-			           toUTF16z(argv), toUTF16z(dirName(pathString)), SW_SHOW);
-			if (r <= 32) {
-				auto code = GetLastError();
-				log("Launch error %s: %s", code, sysErrorString(code));
-				error("Unable to execute \"%s\".", pathString);
-			}
-			else if (getSetting("minimizeOnGameLaunch") == "true") {
-				mainWindow.minimized = true;
-			}
+
+/**
+ * Launch the game without connecting to a server.
+ *
+ * Will ask for the file to run if it's missing from the settings, or not
+ * found.
+ */
+void launchGame(in char[] gameName)
+{
+	GameConfig game = getGameConfig(gameName.idup);
+
+	if (!checkPath(game))
+		return;
+
+	string argv = game.mod.length ? "+set fs_game " ~ game.mod : null;
+	log("Launching without connecting: " ~ game.exePath ~ " " ~ argv);
+	launch(game.exePath, argv);
+}
+
+
+private bool checkPath(GameConfig game)
+{
+	string pathString = game.exePath;
+
+	if (!pathString || !exists(pathString)) {
+		askForGamePath(game.name);
+		pathString = game.exePath;
+		if (!pathString || !exists(pathString))
+			return false;
+	}
+	return true;
+}
+
+
+private void launch(string pathString, string argv=null)
+{
+	version (Windows) {
+		int r = cast(int)ShellExecuteW(null, "open", toUTF16z(pathString),
+					toUTF16z(argv), toUTF16z(dirName(pathString)), SW_SHOW);
+		if (r <= 32) {
+			auto code = GetLastError();
+			log("Launch error %s: %s", code, sysErrorString(code));
+			error("Unable to execute \"%s\".", pathString);
 		}
-		else {
-			error("Launching a game is not implemented on this platform.");
+		else if (getSetting("minimizeOnGameLaunch") == "true") {
+			mainWindow.minimized = true;
 		}
+	}
+	else {
+		error("Launching a game is not implemented on this platform.");
 	}
 }

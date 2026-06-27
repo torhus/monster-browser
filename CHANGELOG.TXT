@@ -1,5 +1,6 @@
 Work in progress
 ----------------
+- New: Launch button with option to launch without connection to a server.
 - New: Double click or use context menu to open URL or copy cvar value.
 - New: Tools->Open game folder.
 - Fix: Don't show server counts in status bar tooltip, the numbers don't

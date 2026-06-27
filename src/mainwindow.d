@@ -44,6 +44,7 @@ import common;
 import cvartable;
 import dialogs;
 import gameconfig;
+import launch;
 import messageboxes;
 import playertable;
 import runtools : killServerBrowser;
@@ -92,7 +93,7 @@ class MainWindow
 		topLayout.horizontalSpacing = 20;
 		topComposite.setLayout(topLayout);
 
-		new ToolBarWrapper(topComposite);
+		new ToolBarWrapper(shell_, topComposite);
 
 		gameBar = new GameBar(topComposite);
 		filterBar = new FilterBar(topComposite);
@@ -142,7 +143,7 @@ class MainWindow
 		else {
 			Point size = topComposite.computeSize(SWT.DEFAULT, SWT.DEFAULT);
 			// FIXME: Not sure how to get the actual needed width here.
-			shell_.setSize(size.x + 23, windowSize[1]);
+			shell_.setSize(size.x + 22, windowSize[1]);
 		}
 
 		if (getSetting("windowMaximized") == "true")
@@ -518,7 +519,7 @@ private:
  */
 private class ToolBarWrapper
 {
-	this(Composite parent)
+	this(Shell shell, Composite parent)
 	{
 		auto toolBar_ = new ToolBar(parent, SWT.HORIZONTAL);
 
@@ -558,6 +559,15 @@ private class ToolBarWrapper
 
 		new ToolItem(toolBar_, SWT.SEPARATOR);
 
+		launchButton_ = new ToolItem(toolBar_, SWT.DROP_DOWN);
+		launchButton_.setText("  Join  ");
+		launchButton_.setImage(loadImage!("launch_32.png"));
+		launchButton_.addSelectionListener(new LaunchButtonListener(shell));
+
+		// Need some space between the buttons to reduce the chance of the
+		// drop down part getting stuck in the hot state.
+		(new ToolItem(toolBar_, SWT.SEPARATOR)).setWidth(10);
+
 		settingsButton_ = new ToolItem(toolBar_, SWT.PUSH);
 		settingsButton_.setText(" Tools ");
 		settingsButton_.setImage(loadImage!("spanner_32.png"));
@@ -565,6 +575,42 @@ private class ToolBarWrapper
 	}
 
 	ToolBar getToolBar() { return toolBar_; }
+
+	private class LaunchButtonListener : SelectionAdapter {
+		this (Shell shell)
+		{
+			menu_ = new Menu(shell);
+			auto item = new MenuItem(menu_, SWT.NONE);
+			item.setText("Launch without connecting");
+			item.addSelectionListener(new class SelectionAdapter {
+				override void widgetSelected(SelectionEvent e)
+				{
+					launchGame(gameBar.selectedGame);
+				}
+			});
+		}
+
+		override void widgetSelected(SelectionEvent e)
+		{
+			if (e.detail != SWT.ARROW) {
+				auto sd = serverTable.getSelectedServerData();
+				if (sd.server.length)
+					joinServer(gameBar.selectedGame, sd);
+			}
+			else {
+				auto parent = (cast(ToolItem)e.widget).getParent();
+				auto display = Display.getDefault();
+				menu_.setLocation(display.map(parent, null, e.x, e.y));
+
+				// Making the button toggle the menu on/off is complicated, as
+				// the menu is automatically hidden when you click the button.
+				// We do it the easy way by just always showing it.
+				menu_.setVisible(true);
+			}
+		}
+
+		private Menu menu_;
+	}
 
 	private class ToolsButtonListener : SelectionAdapter {
 		this(ToolBar toolBar)
@@ -659,6 +705,7 @@ private class ToolBarWrapper
 		ToolBar toolBar_;
 		ToolItem checkForNewButton_;
 		ToolItem refreshAllButton_;
+		ToolItem launchButton_;
 		ToolItem addButton_;
 		ToolItem settingsButton_;
 	}
