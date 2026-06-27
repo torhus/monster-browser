@@ -2,6 +2,8 @@ Work in progress
 ----------------
 - New: Double click or use context menu to open URL or copy cvar value.
 - New: Tools->Open game folder.
+- Fix: Don't show server counts in status bar tooltip, the numbers don't
+       always make sense.
 
 v1.0c - 2026-05-06
 ------------------
