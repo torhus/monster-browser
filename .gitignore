@@ -5,8 +5,10 @@ dwt*
 qstat.exe
 *.mmdb
 libcurl.dll
-libmaxminddb.dll
-maxminddb.dll
+libcurl32.dll
+libcurl64.dll
+maxminddb32.dll
+maxminddb64.dll
 
 # Files and directories created by build tools, etc
 .dub
@@ -27,6 +29,7 @@ unittest.ini
 
 # Monster Browser configuration and data files
 games.ini
+games-default.ini
 settings.ini
 LOG.TXT
 CONSOLE.OUT
