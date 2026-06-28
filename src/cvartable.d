@@ -173,7 +173,7 @@ private:
 	LinkRange getLinkRange(const(char)[] s)
 	{
 		__gshared auto re = ctRegex!(
-		    r"((((https?:\/\/)|(s?ftps?:\/\/))([\w-_]+\.)?)|[\w-_]+\.)[\w-_]+\.[a-zA-Z]{2,}(\/[\w-_/]+)?");
+		    r"((((https?:\/\/)|(s?ftps?:\/\/))([-\w]+\.)?)|[-\w]+\.)[-\w]+\.[a-zA-Z]{2,}(\/[-/\w]+)?");
 		auto m = s.matchFirst(re);
 
 		if (!!m)
