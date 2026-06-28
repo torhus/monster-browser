@@ -580,14 +580,14 @@ private class ToolBarWrapper
 		this (Shell shell)
 		{
 			menu_ = new Menu(shell);
-			auto item = new MenuItem(menu_, SWT.NONE);
-			item.setText("Launch without connecting");
-			item.addSelectionListener(new class SelectionAdapter {
-				override void widgetSelected(SelectionEvent e)
-				{
-					launchGame(gameBar.selectedGame);
-				}
-			});
+			menu_.addItem("Launch without connecting").tag("launch");
+			menu_.addItem("Open game folder").tag("game folder");
+			menu_.addItem("Set executable file").tag("executable");
+
+			auto listener = new MenuItemListener;
+
+			foreach (item; menu_.getItems())
+				item.addSelectionListener(listener);
 		}
 
 		override void widgetSelected(SelectionEvent e)
@@ -617,9 +617,6 @@ private class ToolBarWrapper
 		{
 			menu_ = new Menu(toolBar);
 			menu_.addItem("Settings").tag("settings");
-			menu_.addSeparator();
-			menu_.addItem("Set this game's executable file").tag("executable");
-			menu_.addItem("Open game folder").tag("game folder");
 			menu_.addSeparator();
 			menu_.addItem("Open settings and data folder").tag("data folder");
 			menu_.addItem("Open log file").tag("log file");
@@ -654,14 +651,9 @@ private class ToolBarWrapper
 		override void widgetSelected(SelectionEvent e)
 		{
 			switch (lookUp(cast(MenuItem)e.widget)) {
-				case "settings": {
-					auto dialog = new SettingsDialog(mainShell);
-					if (dialog.open())
-						saveSettings();
-					break;
-				}
-				case "executable":
-					askForGamePath(serverTable.serverList.gameName);
+				// Join button menu
+				case "launch":
+					launchGame(gameBar.selectedGame);
 					break;
 				case "game folder": {
 					auto game = getGameConfig(serverTable.serverList.gameName);
@@ -671,6 +663,17 @@ private class ToolBarWrapper
 					}
 					if (game.exePath.length > 0)
 						Program.launch(dirName(game.exePath));
+					break;
+				}
+				case "executable":
+					askForGamePath(serverTable.serverList.gameName);
+					break;
+
+				// Tools button menu
+				case "settings": {
+					auto dialog = new SettingsDialog(mainShell);
+					if (dialog.open())
+						saveSettings();
 					break;
 				}
 				case "data folder":

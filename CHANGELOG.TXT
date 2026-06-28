@@ -1,8 +1,9 @@
 Work in progress
 ----------------
-- New: Launch button with option to launch without connection to a server.
+- New: Join button with option to launch without connecting to a server, and
+       also an option for opening the game folder. Setting the game's executable
+       is now done here instead of from the Tools menu.
 - New: Double click or use context menu to open URL or copy cvar value.
-- New: Tools->Open game folder.
 - Fix: Don't show server counts in status bar tooltip, the numbers don't
        always make sense.
 
