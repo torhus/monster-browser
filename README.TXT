@@ -16,10 +16,14 @@ queried anyway. The Search field is for filtering servers based on name, and
 game and gamename cvars. It can also be used to filter servers based on player
 names.
 
-To join a server, double click on it, or select it and press <Enter>.  If the
-server requires a password, a password dialog will pop up.  To change the
-password, or add an optional password for servers with private slots, select
-'Set password...' in the right-click menu.
+To join a server, click Join or just double-click it. Monster Browser will ask
+for an executable to run if it doesn't already know one. If you want to switch
+to a different executable for the current game or mod, use "Set executable
+file" from the Join button menu.
+
+If the server requires a password, a password dialog will pop up.  To change
+the password, or add an optional password for servers with private slots,
+select 'Set password...' in the right-click menu.
 
 
 Customizing the Game List
