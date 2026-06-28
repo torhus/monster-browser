@@ -91,7 +91,6 @@ class CvarTable
 					return;
 
 				auto item = cast(TableItem) e.item;
-				auto text = item.getText(CvarColumn.VALUE);
 				scope tl = new TextLayout(Display.getDefault);
 				int index = table_.indexOf(item);
 				auto range = ranges_[index];
