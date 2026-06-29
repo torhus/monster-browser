@@ -4,11 +4,13 @@
 
 module qstat;
 
+import std.algorithm : any, filter;
 import std.ascii : newline;
 import std.conv;
 import std.process;
 import std.stdio;
 import std.string;
+import std.uni : isControl;
 
 import colorednames;
 import common;
@@ -76,7 +78,7 @@ bool parseOutput(in char[] modName, File input,
 			sd.server[ServerColumn.ADDRESS] = fields[Field.ADDRESS];
 
 			if (!error) {
-				sd.rawName = fields[Field.NAME];
+				sd.rawName = cleanString(fields[Field.NAME]);
 				sd.server[ServerColumn.PING] = fields[Field.PING];
 				sd.server[ServerColumn.MAP] = fields[Field.MAP];
 
@@ -166,7 +168,7 @@ do {
 
 		string[] cvar = new string[2];
 		cvar[0] = s[0..i];
-		cvar[1] = s[i+1..$];
+		cvar[1] = cleanString(s[i+1..$]);
 
 		switch (cvar[0]) {
 			case "game":
@@ -219,7 +221,7 @@ private string[][] parsePlayers(File input, int* humanCount, File output)
 
 		string[] fields = split(line, FIELDSEP);
 		string[] player = new string[PlayerColumn.max + 1];
-		player[PlayerColumn.RAWNAME] = fields[0];
+		player[PlayerColumn.RAWNAME] = cleanString(fields[0]);
 		player[PlayerColumn.SCORE]   = fields[1];
 		player[PlayerColumn.PING]    = fields[2];
 		player[PlayerColumn.NAME]    = null;
@@ -234,6 +236,17 @@ private string[][] parsePlayers(File input, int* humanCount, File output)
 		*humanCount = humans;
 
 	return players;
+}
+
+
+// Make sure the Windows GUI controls don't choke on this string.
+// This can happen when using custom painting in DWT.
+private string cleanString(string s)
+{
+	if (s.any!(c => isControl(c) && c != '\t'))
+		return s.filter!(c => !isControl(c) || c == '\t').to!string;
+	else
+		return s;
 }
 
 

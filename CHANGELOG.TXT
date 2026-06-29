@@ -6,6 +6,8 @@ Work in progress
 - New: Double click or use context menu to open URL or copy cvar value.
 - Fix: Don't show server counts in status bar tooltip, the numbers don't
        always make sense.
+- Fix: Prevent crash caused by control characters in server or player names,
+       or cvar values.
 
 v1.0c - 2026-05-06
 ------------------
