@@ -571,9 +571,10 @@ private class ToolBarWrapper
 		this (Shell shell)
 		{
 			menu_ = new Menu(shell);
-			menu_.addItem("Launch without connecting").tag("launch");
+			menu_.addItem("Launch without joining").tag("launch");
+			menu_.addSeparator();
+			menu_.addItem("Select game executable...").tag("executable");
 			menu_.addItem("Open game folder").tag("game folder");
-			menu_.addItem("Set executable file").tag("executable");
 
 			auto listener = new MenuItemListener;
 
@@ -646,6 +647,9 @@ private class ToolBarWrapper
 				case "launch":
 					launchGame(gameBar.selectedGame);
 					break;
+				case "executable":
+					askForGamePath(serverTable.serverList.gameName);
+					break;
 				case "game folder": {
 					auto game = getGameConfig(serverTable.serverList.gameName);
 					if (game.exePath.length == 0) {
@@ -656,9 +660,6 @@ private class ToolBarWrapper
 						Program.launch(dirName(game.exePath));
 					break;
 				}
-				case "executable":
-					askForGamePath(serverTable.serverList.gameName);
-					break;
 
 				// Tools button menu
 				case "settings": {
