@@ -206,9 +206,7 @@ class SpecifyServerDialog
 		addressText_.setLayoutData(addressTextData);
 
 		saveButton_ = new Button(shell_, SWT.CHECK);
-		saveButton_.setText("Never remove this server automatically");
-		saveButton_.setToolTipText("This is useful for servers that are not" ~
-		                           " known to the master server");
+		saveButton_.setText("Keep this server even if it is sometimes unresponsive");
 		saveButton_.setSelection(
 		                  getSessionState("addServersAsPersistent") == "true");
 		auto saveButtonData = new GridData;
