@@ -1,4 +1,4 @@
-Work in progress
+v1.0d - 2026-06-02
 ----------------
 - New: Join button with option to launch without connecting to a server, and
        also an option for opening the game folder. Setting the game's executable
