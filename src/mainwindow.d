@@ -90,7 +90,7 @@ class MainWindow
 		// This layout works better when the buttons have images.
 		auto topLayout = new GridLayout(3, false);
 		topLayout.marginHeight = 0;
-		topLayout.horizontalSpacing = 20;
+		topLayout.horizontalSpacing = 10;
 		topComposite.setLayout(topLayout);
 
 		new ToolBarWrapper(shell_, topComposite);
@@ -143,7 +143,7 @@ class MainWindow
 		else {
 			Point size = topComposite.computeSize(SWT.DEFAULT, SWT.DEFAULT);
 			// FIXME: Not sure how to get the actual needed width here.
-			shell_.setSize(size.x + 22, windowSize[1]);
+			shell_.setSize(size.x + 21, windowSize[1]);
 		}
 
 		if (getSetting("windowMaximized") == "true")
