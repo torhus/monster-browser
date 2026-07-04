@@ -58,11 +58,10 @@ Available Options:
 Adding Extra Servers
 --------------------
 If you want to query a server that isn't registered with the master server, 
-you can click on 'Add...' to add it to the list. Normally, any servers not 
+you can click on 'Add...' to add it to the list. Normally, any server not
 registered on the master will be removed from Monster Browser's list the next 
-time you check for new servers. If you don't want this to happen, make sure
-'Never remove this server automatically' is checked. The server will still be 
-removed automatically if it times out too many times.
+time you check for new servers, or if it just times out too many times. Check
+the box if you want the server to be kept until manually removed.
 
 If you have more than a couple of servers to add, it's easier to add them 
 directly to a file called '<game name>.extra' in the settings and data folder.
