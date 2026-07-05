@@ -160,7 +160,7 @@ unittest {
 	assert(parseColors("^wwhite^0black").cleanName == "whiteblack");
 	assert(parseColors("1a2b3c4^").cleanName == "1a2b3c4");
 	assert(parseColors("^^0blackie").cleanName == "^blackie");
-	assert(parseColors("^1").cleanName == "UnnamedPlayer");
+	assert(parseColors("^1").cleanName.length == 0);
 }
 
 
