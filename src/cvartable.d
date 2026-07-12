@@ -30,7 +30,7 @@ import settings;
 
 __gshared CvarTable cvarTable;  ///
 
-// should correspond to serverlist.CvarColumn
+// should correspond to serverdata.CvarColumn
 immutable cvarHeaders = ["Key", "Value"];
 
 ///

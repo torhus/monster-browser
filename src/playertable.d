@@ -32,7 +32,7 @@ import settings;
 
 __gshared PlayerTable playerTable;  ///
 
-// should correspond to serverlist.PlayerColumn
+// should correspond to serverdata.PlayerColumn
 immutable playerHeaders = ["Name", "Score", "Ping"];
 
 

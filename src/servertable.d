@@ -52,7 +52,7 @@ import statusbar;
 
 __gshared ServerTable serverTable;  ///
 
-// should correspond to serverlist.ServerColumn
+// should correspond to serverdata.ServerColumn
 immutable serverHeaders = [" ", "Name", "PW", "Ping", "Players", "Game type",
                    "Game type #", "Map", "IP address", "[game]", "[gamename]"];
 
