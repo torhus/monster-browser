@@ -341,7 +341,11 @@ final class FilterBar : Group
 		setText("Filters");
 		setLayoutData(new GridData);
 
-		notEmptyButton_ = new Button(this, SWT.CHECK);
+		auto composite = new Composite(this, 0);
+		auto layout = new GridLayout(1, false);
+		composite.setLayout(layout);
+
+		notEmptyButton_ = new Button(composite, SWT.CHECK);
 		notEmptyButton_.setText("Not empty");
 		notEmptyButton_.addSelectionListener(new class SelectionAdapter {
 			public override void widgetSelected(SelectionEvent e)
@@ -363,7 +367,7 @@ final class FilterBar : Group
 			}
 		});
 
-		hasHumansButton_ = new Button(this, SWT.CHECK);
+		hasHumansButton_ = new Button(composite, SWT.CHECK);
 		hasHumansButton_.setText("Has humans");
 		hasHumansButton_.addSelectionListener(new class SelectionAdapter {
 			public override void widgetSelected(SelectionEvent e)
@@ -381,12 +385,30 @@ final class FilterBar : Group
 			}
 		});
 
+		favoritesOnlyButton_ = new Button(this, SWT.CHECK);
+		favoritesOnlyButton_.setText("Favorites only");
+		favoritesOnlyButton_.addSelectionListener(new class SelectionAdapter {
+			public override void widgetSelected(SelectionEvent e)
+			{
+				ServerList list = serverTable.serverList;
+
+				if (favoritesOnlyButton_.getSelection())
+					list.setFilters(list.getFilters() | Filter.FAVORITES_ONLY);
+				else
+					list.setFilters(list.getFilters() & ~Filter.FAVORITES_ONLY);
+
+				refreshServerTable();
+			}
+		});
+
 		// Restore saved filter state
 		Filter state = cast(Filter)getSessionStateInt("filterState");
 		if (state & Filter.NOT_EMPTY)
 			notEmptyButton_.setSelection(true);
 		if (state & Filter.HAS_HUMANS)
 			hasHumansButton_.setSelection(true);
+		if (state & Filter.FAVORITES_ONLY)
+			favoritesOnlyButton_.setSelection(true);
 
 		filterText_ = new Text(this, SWT.SINGLE | SWT.BORDER | SWT.SEARCH /*|
 		                                  SWT.ICON_SEARCH | SWT.ICON_CANCEL*/);
@@ -441,9 +463,7 @@ final class FilterBar : Group
 		else
 			playerFilterButton.setSelection(true);
 
-
-
-		auto layout = new GridLayout(5, false);
+		layout = new GridLayout(5, false);
 		layout.marginHeight = 0;
 		layout.marginLeft = 2;
 		layout.horizontalSpacing = 0;
@@ -460,6 +480,8 @@ final class FilterBar : Group
 			f |= Filter.NOT_EMPTY;
 		if (hasHumansButton_.getSelection())
 			f |= Filter.HAS_HUMANS;
+		if(favoritesOnlyButton_.getSelection())
+			f |= Filter.FAVORITES_ONLY;
 
 		return f;
 	}
@@ -505,7 +527,7 @@ final class FilterBar : Group
 	}
 
 private:
-	Button notEmptyButton_, hasHumansButton_;
+	Button favoritesOnlyButton_, notEmptyButton_, hasHumansButton_;
 	Text filterText_;
 	Button serverFilterButton_;
 }

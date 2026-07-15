@@ -28,6 +28,7 @@ revision.txt
 unittest.ini
 
 # Monster Browser configuration and data files
+favorites.txt
 games.ini
 games-default.ini
 settings.ini

@@ -1,5 +1,6 @@
 module servertable;
 
+import std.algorithm;
 import std.ascii : newline;
 import std.conv;
 import std.exception : ifThrown;
@@ -53,7 +54,7 @@ import statusbar;
 __gshared ServerTable serverTable;  ///
 
 // should correspond to serverdata.ServerColumn
-immutable serverHeaders = [" ", "Name", "PW", "Ping", "Players", "Game type",
+immutable serverHeaders = [" ", " ", "Name", "PW", "Ping", "Players", "Game type",
                    "Game type #", "Map", "IP address", "[game]", "[gamename]"];
 
 
@@ -72,10 +73,15 @@ final class ServerTable
 		table_.setHeaderVisible(true);
 		table_.setLinesVisible(true);
 
-		int[] widths = parseIntList(getSessionState("serverColumnWidths"),
-		                                             serverHeaders.length, 80);
-		columnShown_ = parseIntList(getSessionState("serverColumnsShown"),
-		                                                 serverHeaders.length);
+		loadIcons();
+
+		int[] widths = parseIntList(getSessionState("serverColumnWidths"), 0, 80);
+		if (widths.length != serverHeaders.length)
+			widths = parseIntList(getDefaultSessionState("serverColumnWidths"));
+
+		columnShown_ = parseIntList(getSessionState("serverColumnsShown"), 0);
+		if (columnShown_.length != serverHeaders.length)
+			columnShown_ = parseIntList(getDefaultSessionState("serverColumnsShown"));
 
 		// add columns
 		foreach (i, header; serverHeaders) {
@@ -131,12 +137,6 @@ final class ServerTable
 			}
 		});
 
-		// padlock image for passworded servers
-		auto stream  = new ByteArrayInputStream(
-		                                    cast(byte[])import("padlock.png"));
-		auto data = new ImageData(stream);
-		padlockImage_ = new Image(Display.getDefault, data.scaledTo(12, 12));
-
 		timeOutColor_ = Display.getDefault().getSystemColor(SWT.COLOR_RED);
 	}
 
@@ -145,6 +145,8 @@ final class ServerTable
 	void disposeAll()
 	{
 		padlockImage_.dispose();
+		favoriteOnImage_.dispose();
+		favoriteOffImage_.dispose();
 		disposeFlagImages();
 	}
 
@@ -448,6 +450,8 @@ private:
 	int[string] selectedIps_;
 	bool showFlags_, coloredNames_;
 	Image padlockImage_;
+	Image favoriteOnImage_;
+	Image favoriteOffImage_;
 	MenuItem refreshSelected_;
 	void delegate(bool) stopServerRefresh_;
 	bool refreshInProgress_ = false;
@@ -503,15 +507,10 @@ private:
 
 		void widgetDefaultSelected(SelectionEvent e)
 		{
-			int index = table_.getSelectionIndex();
-
-			if (index < 0)
+			if (table_.getSelectionIndex() < 0)
 				return;
-
 			widgetSelected(e);
-			if (stopServerRefresh_ !is null)
-				stopServerRefresh_(true);
-			joinServer(serverList_.gameName, serverList_.getFiltered(index));
+			onJoin();
 		}
 	}
 
@@ -546,24 +545,37 @@ private:
 
 	class EraseItemListener : Listener {
 		void handleEvent(Event e) {
-			if ((e.index == ServerColumn.NAME && coloredNames_ &&
-			                                     !(e.detail & SWT.SELECTED)) ||
-			                                e.index == ServerColumn.PASSWORDED)
+			if (e.index == ServerColumn.FAVORITE ||
+			         e.index == ServerColumn.PASSWORDED ||
+					 (e.index == ServerColumn.NAME && coloredNames_ &&
+			                                     !(e.detail & SWT.SELECTED)))
 				e.detail &= ~SWT.FOREGROUND;
 		}
 	}
 
 	class PaintItemListener : Listener {
 		void handleEvent(Event e) {
-			if (!((e.index == ServerColumn.NAME && coloredNames_ &&
-			                                     !(e.detail & SWT.SELECTED)) ||
-			                               e.index == ServerColumn.PASSWORDED))
+			if (!(e.index == ServerColumn.FAVORITE ||
+			         e.index == ServerColumn.PASSWORDED ||
+			         (e.index == ServerColumn.NAME && coloredNames_ &&
+			                                     !(e.detail & SWT.SELECTED))))
 				return;
 
 			TableItem item = cast(TableItem) e.item;
 			ServerData sd = serverList_.getFiltered(table_.indexOf(item));
 
 			switch (e.index) {
+				case ServerColumn.FAVORITE: {
+					if (isFavorite(sd.server[ServerColumn.ADDRESS]))
+						e.gc.drawImage(favoriteOnImage_, e.x+5, e.y+2);
+					else
+						e.gc.drawImage(favoriteOffImage_, e.x+5, e.y+2);
+					break;
+				}
+				case ServerColumn.PASSWORDED:
+					if (sd.server[ServerColumn.PASSWORDED] == PASSWORD_YES)
+						e.gc.drawImage(padlockImage_, e.x+4, e.y+1);
+					break;
 				case ServerColumn.NAME: {
 					TextLayout tl = new TextLayout(Display.getDefault);
 					tl.setText(sd.server[ServerColumn.NAME]);
@@ -577,10 +589,6 @@ private:
 					tl.dispose();
 					break;
 				}
-				case ServerColumn.PASSWORDED:
-					if (sd.server[ServerColumn.PASSWORDED] == PASSWORD_YES)
-						e.gc.drawImage(padlockImage_, e.x+4, e.y+1);
-					break;
 				default:
 					assert(0);
 			}
@@ -646,6 +654,12 @@ private:
 						e.doit = false;
 					}
 					break;
+				case 's':
+					if (e.stateMask == SWT.MOD1) {
+						onToggleFavorite();
+						e.doit = false;
+					}
+					break;
 				default:
 					break;
 			}
@@ -660,12 +674,7 @@ private:
 		item.setText("Join\tEnter");
 		menu.setDefaultItem(item);
 		item.addSelectionListener(new class SelectionAdapter {
-			override void widgetSelected(SelectionEvent e) {
-				if (stopServerRefresh_ !is null)
-					stopServerRefresh_(true);
-				joinServer(serverList_.gameName,
-				          serverList_.getFiltered(table_.getSelectionIndex()));
-			}
+			override void widgetSelected(SelectionEvent e) { onJoin(); }
 		});
 
 		item = new MenuItem(menu, SWT.PUSH);
@@ -676,6 +685,12 @@ private:
 
 
 		new MenuItem(menu, SWT.SEPARATOR);
+
+		item = new MenuItem(menu, SWT.PUSH);
+		item.setText("Toggle favorite(s)\tCtrl+S");
+		item.addSelectionListener(new class SelectionAdapter {
+			override void widgetSelected(SelectionEvent e) { onToggleFavorite(); }
+		});
 
 		item = new MenuItem(menu, SWT.PUSH);
 		item.setText("Refresh selected\tCtrl+R");
@@ -719,6 +734,20 @@ private:
 		return menu;
 	}
 
+	void onJoin()
+	{
+		int index = table_.getSelectionIndex();
+
+		if (index < 0)
+			return;
+
+		ServerData sd = serverList_.getFiltered(index);
+
+		if (stopServerRefresh_ !is null)
+			stopServerRefresh_(true);
+		joinServer(serverList_.gameName, sd);
+	}
+
 	void onCopyAddresses()
 	{
 		string[] addresses;
@@ -738,6 +767,20 @@ private:
 		foreach (ip, v; selectedIps_)
 			addresses ~= ip;
 		queryServers(addresses, true);
+	}
+
+	void onToggleFavorite()
+	{
+		if (selectedIps_.length == 0)
+			return;
+
+		auto visible = selectedIps_.byKeyValue.filter!(x => x.value != -1)
+		                                      .map!(x => x.key).array;
+		auto favCount = visible.count!isFavorite;
+		if (favCount == 0 || favCount == visible.length) {
+			setFavorites(visible, favCount == 0);
+			fullRefresh();
+		}
 	}
 
 	void onRemoveSelected()
@@ -878,6 +921,25 @@ private:
 		else {
 			cvarTable.clear();
 		}
+	}
+
+	void loadIcons()
+	{
+		// Star (favorite) image
+		auto stream  = new ByteArrayInputStream(
+		                      cast(byte[])import("favorite_checked_14.png"));
+		auto data = new ImageData(stream);
+		favoriteOnImage_ = new Image(Display.getDefault, data);
+
+		stream  = new ByteArrayInputStream(
+		                      cast(byte[])import("favorite_unchecked_14.png"));
+		data = new ImageData(stream);
+		favoriteOffImage_ = new Image(Display.getDefault, data);
+
+		// padlock image for passworded servers
+		stream  = new ByteArrayInputStream(cast(byte[])import("padlock.png"));
+		data = new ImageData(stream);
+		padlockImage_ = new Image(Display.getDefault, data.scaledTo(12, 12));
 	}
 
 	int getBottomIndex()

@@ -13,13 +13,15 @@ import geoip;
 import masterlist;
 import serverdata;
 import set;
+import settings : isFavorite;
 
 
 /// Server filter bitflags.
 enum Filter {
 	NONE = 0,  /// Value is zero.
 	HAS_HUMANS = 1,  ///
-	NOT_EMPTY = 2  ///
+	NOT_EMPTY = 2, ///
+	FAVORITES_ONLY = 4  ///
 }
 
 
@@ -489,6 +491,10 @@ private:
 		int result;
 
 		switch (sortColumn_) {
+			case ServerColumn.FAVORITE:
+				result = isFavorite(b.server[ServerColumn.ADDRESS]) -
+				         isFavorite(a.server[ServerColumn.ADDRESS]);
+				break;
 			case ServerColumn.PLAYERS:
 				result = b.humanCount - a.humanCount;
 				if (result)
@@ -550,17 +556,13 @@ private:
 
 	bool isFilteredOut(ServerData* sd)
 	{
-		bool matched = searchString_.length == 0 ? true : searchDg_(sd);
-
-		if (matched) {
-			if (filters_ == Filter.NONE || sd.hasHumans)
-				return false;
-			else
-				return filters_ & Filter.HAS_HUMANS || !sd.hasBots;
-		}
-		else {
+		if (searchString_.length > 0 && !searchDg_(sd))
 			return true;
-		}
+
+		return (filters_ & Filter.FAVORITES_ONLY &&
+		                       !isFavorite(sd.server[ServerColumn.ADDRESS])) ||
+		       (filters_ & Filter.NOT_EMPTY && sd.players.length == 0) ||
+		       (filters_ & Filter.HAS_HUMANS && !sd.hasHumans);
 	}
 
 	bool filterServer(ServerData* sd)

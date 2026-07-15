@@ -406,6 +406,21 @@ Set!(string) collectIpAddresses(File stream, size_t startColumn=0)
 }
 
 
+/**
+ * Filter out strings that are not IP addresses.
+ *
+ * The format of each address is IP:PORT, where the port number is
+ * optional. Strings that are not valid IP addresses are skipped.
+ *
+ * Returns: A range of strings containing the IP and port of each server.
+ */
+auto filterIpAddresses(R)(R strings)
+	if (isInputRange!R && isSomeString!(ElementType!R))
+{
+	return strings.filter!isValidIpAddress.map!(to!string);
+}
+
+
 /// Sets the values of the common.arguments struct.
 void parseCmdLine(in char[][] args)
 {

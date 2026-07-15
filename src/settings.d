@@ -4,8 +4,12 @@
 
 module settings;
 
-import std.algorithm : canFind;
+import std.algorithm;
+import std.container.rbtree;
 import std.conv;
+import std.file : exists;
+import std.range;
+import std.stdio;
 
 import common;
 import ini;
@@ -15,6 +19,16 @@ private {
 	shared string settingsFilePath;
 	__gshared string[string] exePaths;
 	shared bool exePathsUpdated = false;
+
+	shared string favoritesFilePath;
+
+	enum size_t MAX_FAVORITES = 10_000;
+	__gshared size_t nextFavoriteIndex = 0;
+	__gshared size_t[string] favoritesHash;
+	struct Favorite { size_t index; string address; }
+	__gshared auto orderedFavorites =
+	                        new RedBlackTree!(Favorite, "a.index < b.index")();
+	shared bool favoritesUpdated = false;
 
 	__gshared Ini settingsIni;
 
@@ -49,9 +63,12 @@ private {
 		{"rightWeights", "1, 1"},
 		{"cvarColumnWidths", "90, 90"},
 		{"playerColumnWidths", "100, 40, 40"},
-		{"serverColumnWidths", "27, 250, 21, 32, 50, 40, 30, 90, 130, 80, 80"},
-		{"serverColumnsShown", "1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0"},
-		{"serverColumnOrder", "0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10"},
+		{"serverColumnWidths", "27, 27, 250, 21, 32, 50, 40, 30, 90, 130, 80, 80"},
+		{"serverColumnsShown", "1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0"},
+		// The flag column is put first so it gets the extra indent on Windows
+		// that the other columns don't. We swap it with the favorite column
+		// here because we want that first.
+		{"serverColumnOrder", "1, 0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11"},
 		{"windowPosition", "150, 150"},
 		// No default width, calculated on first startup.
 		{"windowSize", "-1, 640"},
@@ -75,6 +92,8 @@ void loadSettings()
 {
 	assert(dataDir.length);
 	settingsFilePath = dataDir ~ "settings.ini";
+	favoritesFilePath = dataDir ~ "favorites.txt";
+
 
 	settingsIni = new Ini(settingsFilePath);
 	IniSection sec = settingsIni.addSection("Settings");
@@ -99,6 +118,25 @@ void loadSettings()
 				break;
 		}
 	}
+
+	if (exists(favoritesFilePath)) {
+		scope lines = File(favoritesFilePath, "r").byLine(KeepTerminator.no);
+		auto addresses = filterIpAddresses(lines);
+
+		favoritesHash = null;
+		nextFavoriteIndex = 0;
+		foreach (addr; addresses)
+			favoritesHash[addr] = nextFavoriteIndex++;
+		favoritesHash.rehash();
+
+		orderedFavorites.clear();
+		foreach (addr, index; favoritesHash)
+			orderedFavorites.insert(Favorite(index, addr));
+
+		// If there are duplicates in file we make sure to overwrite it
+		if (nextFavoriteIndex > favoritesHash.length)
+			favoritesUpdated = true;
+	}
 }
 
 
@@ -119,10 +157,18 @@ void saveSettings()
 			sec[text("game", i)] = name;
 			sec[text("path", i)] = path;
 		}
+		exePathsUpdated = false;
 	}
 
 	if (settingsIni.modified) {
 		settingsIni.save();
+	}
+
+	if (favoritesUpdated) {
+		auto file = File(favoritesFilePath, "w");
+		foreach (item; orderedFavorites)
+			file.writeln(item.address);
+		favoritesUpdated = false;
 	}
 }
 
@@ -236,6 +282,55 @@ void setRconPassword(string ip, string password)
 	exePathsUpdated = true;
  }
 
+/**
+ * Is this server a favorite?
+ */
+bool isFavorite(in char[] address)
+{
+	return (address in favoritesHash) !is null;
+}
+
+
+/**
+ * Enable or disable favorite status for a some servers.
+ */
+void setFavorites(string[] addresses, bool enable)
+{
+	if (enable) {
+		size_t newCount = addresses.count!(x => x !in favoritesHash);
+
+		if (favoritesHash.length + newCount > MAX_FAVORITES) {
+			auto tooMany = favoritesHash.length + newCount - MAX_FAVORITES;
+			auto toRemove = take(orderedFavorites[], tooMany);
+
+			toRemove.each!(fav => favoritesHash.remove(fav.address));
+			orderedFavorites.remove(toRemove);
+		}
+
+		foreach (addr; addresses) {
+			if (size_t* index = addr in favoritesHash) {
+				*index = nextFavoriteIndex;
+				orderedFavorites.removeKey(Favorite(*index, addr));
+			}
+			else {
+				favoritesHash[addr] = nextFavoriteIndex;
+			}
+			orderedFavorites.insert(Favorite(nextFavoriteIndex, addr));
+			++nextFavoriteIndex;
+		}
+	}
+	else {
+		foreach (addr; addresses) {
+			if (size_t* index = addr in favoritesHash) {
+				orderedFavorites.removeKey(Favorite(*index, addr));
+				favoritesHash.remove(addr);
+			}
+		}
+	}
+
+	favoritesUpdated = true;
+}
+
 
 /**
 * Removes executable paths for games not in gameNames.
@@ -267,11 +362,19 @@ private void loadSessionState()
 
 
 /**
- * Returns the setting's value, or a default if not set.
+ * Returns the session state setting's value, or a default if not set.
  */
 string getSessionState(in char[] key)
 {
 	return getSetting("Session", key);
+}
+
+/**
+ * Returns the session state setting's default value.
+ */
+string getDefaultSessionState(in char[] key)
+{
+	return getDefault(defaultSessionState, key);
 }
 
 

@@ -1,12 +1,13 @@
 Work in progress
 ----------------
+- New: Favorite servers.
 - New: Added master.ioquake3.org as alternative master in games.ini, just
        remove the semicolon at the beginning of the line to enable it.
 - Change: Show server addresses when asking to confirm removal.
 - Fix: Simpler error message when master doesn't reply.
 
 v1.0d - 2026-06-02
-----------------
+------------------
 - New: Join button with option to launch without connecting to a server, and
        also an option for opening the game folder. Setting the game's executable
        is now done here instead of from the Tools menu.
