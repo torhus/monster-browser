@@ -9,7 +9,6 @@ import std.conv;
 
 import common;
 import ini;
-version (Windows) import mswindows.util;
 
 
 private {
