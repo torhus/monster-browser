@@ -83,12 +83,6 @@ Set!(string) browserGetNewList(in GameConfig game)
 		catch (StdioException e) {
 			logx(__FILE__, __LINE__,e);
 		}
-		catch (Exception e) {
-			error(__FILE__ ~ to!string(__LINE__) ~
-			                 ": Unexpected exception: " ~ e.classinfo.name ~
-			                 ": " ~ e.toString());
-			logx(__FILE__, __LINE__,e);
-		}
 	}
 
 	return addresses;

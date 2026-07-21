@@ -1,3 +1,7 @@
+Work in progress
+----------------
+- Fix: Simpler error message when master doesn't reply.
+
 v1.0d - 2026-06-02
 ----------------
 - New: Join button with option to launch without connecting to a server, and

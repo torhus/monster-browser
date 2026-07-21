@@ -377,7 +377,7 @@ void checkForNewServers()
 				statusBar.setProgressError();
 			}));
 			error("Unable to retrieve a server list from " ~ masterName ~
-			                              ".\n\n\"" ~ e.toString() ~ "\"");
+			                              ".\n\n\"" ~ e.msg ~ "\"");
 			serverError = true;
 		}
 
