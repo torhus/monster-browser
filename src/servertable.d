@@ -764,14 +764,14 @@ private:
 				int index = selectedIps_[toRemove[0]];
 				ServerData sd = serverList_.getFiltered(index);
 				string name = sd.server[ServerColumn.NAME];
-				mb.setMessage("Are you sure you want to remove \"" ~ name ~
-				                                                        "\"?");
+				string address = sd.server[ServerColumn.ADDRESS];
+				mb.setMessage(text("Are you sure you want to remove \n\"", name,
+				                                          "\" (", address, ")?"));
 			}
 			else {
 				mb.setText("Remove servers");
-				string count = to!string(toRemove.length);
-				mb.setMessage("Are you sure you want to remove these " ~
-				                                          count ~ " servers?");
+				mb.setMessage(text("Are you sure you want to remove these ",
+				                                toRemove.length, " servers?"));
 			}
 
 			if (mb.open() == SWT.YES) {

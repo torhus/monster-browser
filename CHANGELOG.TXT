@@ -1,5 +1,6 @@
 Work in progress
 ----------------
+- Change: Show server addresses when asking to confirm removal.
 - Fix: Simpler error message when master doesn't reply.
 
 v1.0d - 2026-06-02
