@@ -30,8 +30,10 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group : Group;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.MessageBox;
@@ -445,29 +447,120 @@ final class FilterBar : Group
 			}
 		});
 
-		auto filterTypes = new Composite(this, 0);
-		auto filterTypesLayout = new GridLayout(1, false);
-		filterTypesLayout.marginLeft = 5;
-		filterTypes.setLayout(filterTypesLayout);
+		auto selectButton = new Button(this, 0);
+		selectButton.setText("Select");
+		selectButton.addSelectionListener(new class SelectionAdapter {
+			override void widgetSelected(SelectionEvent e)
+			{
+				openPopup(mainShell, selectButton/* , options */);
+			}
+		});
 
-		serverFilterButton_ = new Button(filterTypes, SWT.RADIO);
-		serverFilterButton_.setText("Servers");
-		serverFilterButton_.addSelectionListener(new SearchTypeHandler);
-		auto playerFilterButton = new Button(filterTypes, SWT.RADIO);
-		playerFilterButton.setText("Players");
-		playerFilterButton.addSelectionListener(new SearchTypeHandler);
+		// auto filterTypes = new Composite(this, 0);
+		// auto filterTypesLayout = new GridLayout(1, false);
+		// filterTypesLayout.marginLeft = 5;
+		// filterTypes.setLayout(filterTypesLayout);
 
 		// Restore saved search type
-		if (getSessionStateInt("searchType") == 0)
-			serverFilterButton_.setSelection(true);
-		else
-			playerFilterButton.setSelection(true);
+		// if (getSessionStateInt("searchType") == 0)
+		// 	serverFilterButton_.setSelection(true);
+		// else
+		// 	playerFilterButton.setSelection(true);
 
 		layout = new GridLayout(5, false);
 		layout.marginHeight = 0;
 		layout.marginLeft = 2;
 		layout.horizontalSpacing = 0;
 		setLayout(layout);
+	}
+
+
+	void openPopup(Shell parent, Button button/* , string[] options */)
+	{
+		if (searchPopup_ !is null && !searchPopup_.isDisposed()) {
+			searchPopup_.close();
+		}
+
+		string[] options = ["Server name", "Map name", "Game type", "IP address",
+							"Location", "game/gamename cvars", "Player name"];
+
+		searchPopup_ = new Shell(parent, SWT.NO_TRIM | SWT.ON_TOP | SWT.TOOL);
+		searchPopup_.setLayout(new FillLayout());
+
+		auto composite = new Composite(searchPopup_, SWT.BORDER);
+		auto layout = new GridLayout(1, false);
+		layout.marginWidth = 12;
+		layout.marginHeight = 7;
+		composite.setLayout(layout);
+
+		auto selectAll = new Button(composite, SWT.CHECK);
+		selectAll.setText("Select all");
+		selectAll.setSelection(true);
+
+		auto sep1 = new Label(composite, SWT.SEPARATOR | SWT.HORIZONTAL);
+		sep1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+
+		Button[] items = new Button[options.length];
+		foreach (i, option; options) {
+			auto check = new Button(composite, SWT.CHECK);
+			check.setText(option);
+			check.setSelection(true);
+			items[i] = check;
+		}
+
+		// Select all -> push state down to every item
+		selectAll.addSelectionListener(new class SelectionAdapter {
+			override void widgetSelected(SelectionEvent e) {
+				bool checked = selectAll.getSelection();
+				selectAll.setGrayed(false);
+				foreach (item; items)
+					item.setSelection(checked);
+			}
+		});
+
+		// Any individual item -> recompute Select all's state
+		auto syncMaster = new class SelectionAdapter {
+			override void widgetSelected(SelectionEvent e) {
+				int checkedCount = items.count!(x => x.getSelection());
+
+				if (checkedCount == items.length) {
+					selectAll.setGrayed(false);
+					selectAll.setSelection(true);
+				} else if (checkedCount == 0) {
+					selectAll.setGrayed(false);
+					selectAll.setSelection(false);
+				} else {
+					selectAll.setGrayed(true);
+					selectAll.setSelection(true); // mixed state
+				}
+			}
+		};
+
+		foreach (item; items) {
+			item.addSelectionListener(syncMaster);
+		}
+
+		auto sep2 = new Label(composite, SWT.SEPARATOR | SWT.HORIZONTAL);
+		sep2.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+
+		auto closeBtn = new Button(composite, SWT.PUSH);
+		closeBtn.setText("Close");
+		closeBtn.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
+		closeBtn.addSelectionListener(new class SelectionAdapter {
+			override void widgetSelected(SelectionEvent e) {
+				searchPopup_.close();
+			}
+		});
+
+		searchPopup_.addListener(SWT.Deactivate, new class Listener {
+			override void handleEvent(Event _) { searchPopup_.close(); }
+		});
+
+		searchPopup_.pack();
+		auto pt = button.getParent().toDisplay(button.getLocation());
+		int xPos = pt.x - (searchPopup_.getBounds().width / 2 - button.getBounds().width / 2);
+		searchPopup_.setLocation(xPos, pt.y + button.getBounds().height);
+		searchPopup_.open();
 	}
 
 
@@ -498,8 +591,8 @@ final class FilterBar : Group
 	private void saveState()
 	{
 		setSessionState("filterState", to!string(cast(int)filterState));
-		setSessionState("searchType", serverFilterButton_.getSelection() ?
-		                                                            "0" : "1");
+		// setSessionState("searchType", serverFilterButton_.getSelection() ?
+		//                                                             "0" : "1");
 	}
 
 
@@ -512,9 +605,9 @@ final class FilterBar : Group
 
 	private void updateSearchResults()
 	{
-		bool r = serverTable.serverList.setSearchString(filterText_.getText(),
-		                                   serverFilterButton_.getSelection());
-		if (r)
+		// bool r = serverTable.serverList.setSearchString(filterText_.getText(),
+		//                                    serverFilterButton_.getSelection());
+		if (true)
 			refreshServerTable();
 	}
 
@@ -529,7 +622,7 @@ final class FilterBar : Group
 private:
 	Button favoritesOnlyButton_, notEmptyButton_, hasHumansButton_;
 	Text filterText_;
-	Button serverFilterButton_;
+	Shell searchPopup_;
 }
 
 
