@@ -555,11 +555,8 @@ private:
 			bool inFavColumn = item
 			             && item.getBounds(ServerColumn.FAVORITE).contains(point);
 
-			if (inFavColumn && e.button == 1 && !(e.stateMask & SWT.MODIFIER_MASK)) {
-				string address = item.getText(ServerColumn.ADDRESS);
-				setFavorites([address], !isFavorite(address));
-				setSelection([table_.indexOf(item)]);
-			}
+			if (inFavColumn && e.button == 1 && !(e.stateMask & SWT.MODIFIER_MASK))
+				onToggleFavorite(table_.indexOf(item));
 		}
 
 		override void mouseDoubleClick(MouseEvent event) {
@@ -853,16 +850,26 @@ private:
 		queryServers(addresses, true);
 	}
 
-	void onToggleFavorite()
+	void onToggleFavorite(int index=-1)
 	{
-		if (selectedIps_.length == 0)
+		if (index == -1 && selectedIps_.length == 0)
 			return;
 
-		auto visible = selectedIps_.byKeyValue.filter!(x => x.value != -1)
-		                                      .map!(x => x.key).array;
-		auto favCount = visible.count!isFavorite;
-		if (favCount == 0 || favCount == visible.length) {
-			setFavorites(visible, favCount == 0);
+		if (index >= 0) {
+			string address = serverList_.getFiltered(index)
+			                            .server[ServerColumn.ADDRESS];
+			setFavorites([address], !isFavorite(address));
+		}
+		else {
+			auto visible = selectedIps_.byKeyValue.filter!(x => x.value != -1)
+			                                    .map!(x => x.key).array;
+			auto favCount = visible.count!isFavorite;
+			if (favCount == 0 || favCount == visible.length)
+				setFavorites(visible, favCount == 0);
+		}
+
+		synchronized (serverList_) synchronized (serverList_.master) {
+			serverList_.refillFromMaster();
 			fullRefresh();
 		}
 	}
