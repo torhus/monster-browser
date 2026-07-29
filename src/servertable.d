@@ -14,6 +14,8 @@ import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.MenuDetectEvent;
 import org.eclipse.swt.events.MenuDetectListener;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.events.SelectionEvent;
@@ -109,6 +111,8 @@ final class ServerTable
 
 		table_.addListener(SWT.EraseItem, new EraseItemListener);
 		table_.addListener(SWT.PaintItem, new PaintItemListener);
+		table_.addListener(SWT.MouseMove, new MouseMoveListener);
+		table_.addMouseListener(new MyMouseListener);
 
 		sortListener_ = new SortListener;
 
@@ -452,6 +456,10 @@ private:
 	Image padlockImage_;
 	Image favoriteOnImage_;
 	Image favoriteOffImage_;
+	bool pointerInFavColumn_ = false;;
+	bool doubleClickInFavColumn_ = false;
+	int lastDoubleClickTime_;
+	bool showingFavCursor_ = false;
 	MenuItem refreshSelected_;
 	void delegate(bool) stopServerRefresh_;
 	bool refreshInProgress_ = false;
@@ -509,8 +517,57 @@ private:
 		{
 			if (table_.getSelectionIndex() < 0)
 				return;
+
 			widgetSelected(e);
-			onJoin();
+
+			if (!doubleClickInFavColumn_ || (e.time - lastDoubleClickTime_) > 50)
+				onJoin();
+		}
+	}
+
+	class MouseMoveListener : Listener {
+		override void handleEvent(Event event) {
+			scope point = new Point(event.x, event.y);
+			TableItem item = table_.getItem(point);
+			pointerInFavColumn_ = item
+			             && item.getBounds(ServerColumn.FAVORITE).contains(point);
+			auto display = Display.getDefault();
+
+			if (showingFavCursor_) {
+				if (!pointerInFavColumn_) {
+					table_.setCursor(display.getSystemCursor(SWT.CURSOR_ARROW));
+					showingFavCursor_ = false;
+				}
+			}
+			else {
+				if (pointerInFavColumn_ && !(event.stateMask & SWT.MODIFIER_MASK)) {
+					table_.setCursor(display.getSystemCursor(SWT.CURSOR_HAND));
+					showingFavCursor_ = true;
+				}
+			}
+		}
+	}
+
+	class MyMouseListener : MouseAdapter {
+		override void mouseUp(MouseEvent e) {
+			scope point = new Point(e.x, e.y);
+			TableItem item = table_.getItem(point);
+			bool inFavColumn = item
+			             && item.getBounds(ServerColumn.FAVORITE).contains(point);
+
+			if (inFavColumn && e.button == 1 && !(e.stateMask & SWT.MODIFIER_MASK)) {
+				string address = item.getText(ServerColumn.ADDRESS);
+				setFavorites([address], !isFavorite(address));
+				setSelection([table_.indexOf(item)]);
+			}
+		}
+
+		override void mouseDoubleClick(MouseEvent event) {
+			Point point = new Point(event.x, event.y);
+			TableItem item = table_.getItem(point);
+			lastDoubleClickTime_ = event.time;
+			doubleClickInFavColumn_ = item &&
+			            item.getBounds(ServerColumn.FAVORITE).contains(point);
 		}
 	}
 
@@ -631,6 +688,15 @@ private:
 					if ((e.stateMask & SWT.MODIFIER_MASK) == 0)
 						onRemoveSelected();
 					break;
+				case SWT.SHIFT:
+				case SWT.CTRL:
+				case SWT.ALT:
+						if (pointerInFavColumn_ && showingFavCursor_) {
+							auto display = Display.getDefault();
+							table_.setCursor(display.getSystemCursor(SWT.CURSOR_ARROW));
+							showingFavCursor_ = false;
+						}
+					break;
 				case 'a':
 					if (e.stateMask == SWT.MOD1) {
 						// SWT bug? CTRL+A works by default in SWT.
@@ -658,6 +724,24 @@ private:
 					if (e.stateMask == SWT.MOD1) {
 						onToggleFavorite();
 						e.doit = false;
+					}
+					break;
+				default:
+					break;
+			}
+		}
+
+		public override void keyReleased(KeyEvent e)
+		{
+			switch (e.keyCode) {
+				case SWT.SHIFT:
+				case SWT.CTRL:
+				case SWT.ALT:
+					if (pointerInFavColumn_ && !showingFavCursor_
+					            && !(e.stateMask & (SWT.MODIFIER_MASK ^ e.keyCode))) {
+						auto display = Display.getDefault();
+						table_.setCursor(display.getSystemCursor(SWT.CURSOR_HAND));
+						showingFavCursor_ = true;
 					}
 					break;
 				default:
