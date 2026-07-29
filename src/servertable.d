@@ -824,6 +824,8 @@ private:
 
 		ServerData sd = serverList_.getFiltered(index);
 
+		refreshFavorite(sd.server[ServerColumn.ADDRESS]);
+
 		if (stopServerRefresh_ !is null)
 			stopServerRefresh_(true);
 		joinServer(serverList_.gameName, sd);

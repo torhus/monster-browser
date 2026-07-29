@@ -333,6 +333,21 @@ void setFavorites(string[] addresses, bool enable)
 
 
 /**
+ * Move a favorite to the end of the list, like it was just added.
+ *
+ * Does nothing if the server is not a favorite.
+ */
+ void refreshFavorite(string address)
+ {
+	if (!isFavorite(address))
+		return;
+
+	setFavorites([address], false);
+	setFavorites([address], true);
+ }
+
+
+/**
 * Removes executable paths for games not in gameNames.
 */
 void pruneExePaths(string[] gameNames)
