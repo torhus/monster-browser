@@ -882,9 +882,7 @@ private:
 		else {
 			auto visible = selectedIps_.byKeyValue.filter!(x => x.value != -1)
 			                                    .map!(x => x.key).array;
-			auto favCount = visible.count!isFavorite;
-			if (favCount == 0 || favCount == visible.length)
-				setFavorites(visible, favCount == 0);
+			setFavorites(visible, visible.count!isFavorite < visible.length);
 		}
 
 		if (sortColumn() == ServerColumn.FAVORITE
