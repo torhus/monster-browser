@@ -456,7 +456,8 @@ private:
 	Image padlockImage_;
 	Image favoriteOnImage_;
 	Image favoriteOffImage_;
-	bool pointerInFavColumn_ = false;;
+	bool pointerInFavColumn_ = false;
+	bool mouseDownInFavColumn_ = false;
 	bool doubleClickInFavColumn_ = false;
 	int lastDoubleClickTime_;
 	bool showingFavCursor_ = false;
@@ -497,19 +498,25 @@ private:
 	}
 
 	class MySelectionListener : SelectionListener {
-		void widgetSelected(SelectionEvent e)
+		void widgetSelected(SelectionEvent _)
 		{
-			selectedIps_ = null;
+			if (mouseDownInFavColumn_ && selectedIps_.length > 1
+			       && selectedIps_.values.canFind(table_.getSelectionIndex())) {
+				table_.setSelection(selectedIps_.values);
+			}
+			else {
+				selectedIps_ = null;
 
-			synchronized (serverList_) {
-				int[] indices = table_.getSelectionIndices;
-				if (indices.length) {
-					foreach (i; indices) {
-						auto sd = serverList_.getFiltered(i);
-						selectedIps_[sd.server[ServerColumn.ADDRESS]] = i;
+				synchronized (serverList_) {
+					int[] indices = table_.getSelectionIndices;
+					if (indices.length) {
+						foreach (i; indices) {
+							auto sd = serverList_.getFiltered(i);
+							selectedIps_[sd.server[ServerColumn.ADDRESS]] = i;
+						}
 					}
+					setPlayersAndCvars(indices);
 				}
-				setPlayersAndCvars(indices);
 			}
 		}
 
@@ -549,6 +556,16 @@ private:
 	}
 
 	class MyMouseListener : MouseAdapter {
+		override void mouseDown(MouseEvent e) {
+			scope point = new Point(e.x, e.y);
+			TableItem item = table_.getItem(point);
+			bool inFavColumn = item
+			             && item.getBounds(ServerColumn.FAVORITE).contains(point);
+
+			mouseDownInFavColumn_ = inFavColumn && e.button == 1
+			                             && !(e.stateMask & SWT.MODIFIER_MASK);
+		}
+
 		override void mouseUp(MouseEvent e) {
 			scope point = new Point(e.x, e.y);
 			TableItem item = table_.getItem(point);
