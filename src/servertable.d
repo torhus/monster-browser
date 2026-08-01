@@ -887,10 +887,13 @@ private:
 				setFavorites(visible, favCount == 0);
 		}
 
-		synchronized (serverList_) synchronized (serverList_.master) {
-			serverList_.refillFromMaster();
-			fullRefresh();
+		if (sortColumn() == ServerColumn.FAVORITE
+		                   || serverList.getFilters() & Filter.FAVORITES_ONLY) {
+			synchronized (serverList_)
+				synchronized (serverList_.master)
+					serverList_.refillFromMaster();
 		}
+		fullRefresh();
 	}
 
 	void onRemoveSelected()
