@@ -443,6 +443,22 @@ final class ServerTable
 		selectedIps_ = null;
 	}
 
+	///
+	void onJoin()
+	{
+		int index = table_.getSelectionIndex();
+
+		if (index < 0)
+			return;
+
+		ServerData sd = serverList_.getFiltered(index);
+
+		refreshFavorite(sd.server[ServerColumn.ADDRESS]);
+
+		if (stopServerRefresh_ !is null)
+			stopServerRefresh_(true);
+		joinServer(serverList_.gameName, sd);
+	}
 
 	/************************************************
 	            PRIVATE MEMBERS
@@ -830,22 +846,6 @@ private:
 		});
 
 		return menu;
-	}
-
-	void onJoin()
-	{
-		int index = table_.getSelectionIndex();
-
-		if (index < 0)
-			return;
-
-		ServerData sd = serverList_.getFiltered(index);
-
-		refreshFavorite(sd.server[ServerColumn.ADDRESS]);
-
-		if (stopServerRefresh_ !is null)
-			stopServerRefresh_(true);
-		joinServer(serverList_.gameName, sd);
 	}
 
 	void onCopyAddresses()

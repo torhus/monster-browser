@@ -607,9 +607,7 @@ private class ToolBarWrapper
 		override void widgetSelected(SelectionEvent e)
 		{
 			if (e.detail != SWT.ARROW) {
-				auto sd = serverTable.getSelectedServerData();
-				if (sd.server.length)
-					joinServer(gameBar.selectedGame, sd);
+				serverTable.onJoin();
 			}
 			else {
 				auto parent = (cast(ToolItem)e.widget).getParent();
