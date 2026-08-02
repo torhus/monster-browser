@@ -58,7 +58,7 @@ private {
 		{"searchType", "0"},
 		{"playerSortOrder", "0"},
 		{"resolution", "0, 0"},
-		{"serverSortOrder", "1"},
+		{"serverSortOrder", "2"},
 		{"middleWeights", "16, 5"},
 		{"rightWeights", "1, 1"},
 		{"cvarColumnWidths", "90, 90"},
