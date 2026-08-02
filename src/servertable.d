@@ -12,8 +12,8 @@ import java.io.ByteArrayInputStream;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.events.MenuDetectEvent;
-import org.eclipse.swt.events.MenuDetectListener;
+import org.eclipse.swt.events.MenuAdapter;
+import org.eclipse.swt.events.MenuEvent;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -133,13 +133,6 @@ final class ServerTable
 
 		// right-click menu for servers
 		table_.setMenu(createContextMenu);
-		table_.addMenuDetectListener(new class MenuDetectListener {
-			void menuDetected(MenuDetectEvent e)
-			{
-				if (this.outer.table_.getSelectionCount == 0)
-					e.doit = false;
-			}
-		});
 
 		timeOutColor_ = Display.getDefault().getSystemColor(SWT.COLOR_RED);
 	}
@@ -271,8 +264,6 @@ final class ServerTable
 	{
 		refreshInProgress_ = true;
 		stopServerRefresh_ = stopServerRefresh;
-		if (!refreshSelected_.isDisposed)
-			refreshSelected_.setEnabled(false);
 	}
 
 	///
@@ -280,8 +271,6 @@ final class ServerTable
 	{
 		refreshInProgress_ = false;
 		stopServerRefresh_ = null;
-		if (!refreshSelected_.isDisposed)
-			refreshSelected_.setEnabled(true);
 	}
 
 	///
@@ -478,6 +467,7 @@ private:
 	int lastDoubleClickTime_;
 	bool showingFavCursor_ = false;
 	MenuItem refreshSelected_;
+	MenuItem[] contextMenuItems_;
 	void delegate(bool) stopServerRefresh_;
 	bool refreshInProgress_ = false;
 	Color timeOutColor_;
@@ -745,7 +735,7 @@ private:
 					break;
 				case 'r':
 					if (e.stateMask == SWT.MOD1) {
-						if (refreshSelected_.getEnabled)
+						if (!refreshInProgress_)
 							onRefreshSelected();
 						e.doit = false;
 					}
@@ -784,19 +774,20 @@ private:
 	{
 		Menu menu = new Menu(table_);
 
-		MenuItem item = new MenuItem(menu, SWT.PUSH);
+		auto item = new MenuItem(menu, SWT.PUSH);
 		item.setText("Join\tEnter");
 		menu.setDefaultItem(item);
 		item.addSelectionListener(new class SelectionAdapter {
 			override void widgetSelected(SelectionEvent e) { onJoin(); }
 		});
+		contextMenuItems_ ~= item;
 
 		item = new MenuItem(menu, SWT.PUSH);
 		item.setText("Set password");
 		item.addSelectionListener(new class SelectionAdapter {
 			override void widgetSelected(SelectionEvent e) { onSetPassword(); }
 		});
-
+		contextMenuItems_ ~= item;
 
 		new MenuItem(menu, SWT.SEPARATOR);
 
@@ -805,16 +796,16 @@ private:
 		item.addSelectionListener(new class SelectionAdapter {
 			override void widgetSelected(SelectionEvent e) { onToggleFavorite(); }
 		});
+		contextMenuItems_ ~= item;
 
-		item = new MenuItem(menu, SWT.PUSH);
-		item.setText("Refresh selected\tCtrl+R");
-		item.addSelectionListener(new class SelectionAdapter {
+		refreshSelected_ = new MenuItem(menu, SWT.PUSH);
+		refreshSelected_.setText("Refresh selected\tCtrl+R");
+		refreshSelected_.addSelectionListener(new class SelectionAdapter {
 			override void widgetSelected(SelectionEvent e)
 			{
 				onRefreshSelected();
 			}
 		});
-		refreshSelected_ = item;
 
 		item = new MenuItem(menu, SWT.PUSH);
 		item.setText("Copy addresses\tCtrl+C");
@@ -824,6 +815,7 @@ private:
 				onCopyAddresses();
 			}
 		});
+		contextMenuItems_ ~= item;
 
 		item = new MenuItem(menu, SWT.PUSH);
 		item.setText("Remove selected\tDel");
@@ -833,6 +825,7 @@ private:
 				onRemoveSelected();
 			}
 		});
+		contextMenuItems_ ~= item;
 
 		new MenuItem(menu, SWT.SEPARATOR);
 
@@ -853,6 +846,16 @@ private:
 			override void widgetSelected(SelectionEvent e)
 			{
 				onRemoteConsole();
+			}
+		});
+		contextMenuItems_ ~= item;
+
+		menu.addMenuListener(new class MenuAdapter {
+			override void menuShown(MenuEvent e)
+			{
+				bool enable = table_.getSelectionCount() > 0;
+				contextMenuItems_.each!(x => x.setEnabled(enable));
+				refreshSelected_.setEnabled(enable && !refreshInProgress_);
 			}
 		});
 
