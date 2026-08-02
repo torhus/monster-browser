@@ -1,5 +1,5 @@
-Work in progress
-----------------
+v1.0e - 2026-08-02
+------------------
 - New: Favorite servers.
 - New: Added master.ioquake3.org as alternative master in games.ini, just
        remove the semicolon at the beginning of the line to enable it.
