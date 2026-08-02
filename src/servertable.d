@@ -837,6 +837,17 @@ private:
 		new MenuItem(menu, SWT.SEPARATOR);
 
 		item = new MenuItem(menu, SWT.PUSH);
+		item.setText("Select all\tCtrl+A");
+		item.addSelectionListener(new class SelectionAdapter {
+			override void widgetSelected(SelectionEvent e)
+			{
+				onSelectAll();
+			}
+		});
+
+		new MenuItem(menu, SWT.SEPARATOR);
+
+		item = new MenuItem(menu, SWT.PUSH);
 		item.setText("Remote console\tF9");
 		item.addSelectionListener(new class SelectionAdapter {
 			override void widgetSelected(SelectionEvent e)

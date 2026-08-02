@@ -3,6 +3,7 @@ Work in progress
 - New: Favorite servers.
 - New: Added master.ioquake3.org as alternative master in games.ini, just
        remove the semicolon at the beginning of the line to enable it.
+- New: "Select all" option in context menu.
 - Change: Show server addresses when asking to confirm removal.
 - Fix: Simpler error message when master doesn't reply.
 
