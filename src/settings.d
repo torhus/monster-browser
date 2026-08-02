@@ -63,7 +63,7 @@ private {
 		{"rightWeights", "1, 1"},
 		{"cvarColumnWidths", "90, 90"},
 		{"playerColumnWidths", "100, 40, 40"},
-		{"serverColumnWidths", "27, 27, 250, 21, 32, 50, 40, 30, 90, 130, 80, 80"},
+		{"serverColumnWidths", "27, 27, 250, 21, 38, 63, 43, 30, 130, 130, 80, 80"},
 		{"serverColumnsShown", "1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0"},
 		// The flag column is put first so it gets the extra indent on Windows
 		// that the other columns don't. We swap it with the favorite column
