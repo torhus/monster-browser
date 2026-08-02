@@ -944,6 +944,7 @@ private:
 
 			if (mb.open() == SWT.YES) {
 				// do the actual removal
+				setFavorites(toRemove, false);
 				foreach (string ip; toRemove) {
 					master.removeServer(ip);
 					selectedIps_.remove(ip);
