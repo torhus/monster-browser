@@ -95,8 +95,12 @@ final class ServerTable
 		}
 
 		int[] order = parseIntList(getSessionState("serverColumnOrder"));
-		if (order.length == table_.getColumnCount()) {
+		if (order.length == serverHeaders.length) {
 			table_.setColumnOrder(order);
+		}
+		else {
+			auto defaultOrder = getDefaultSessionState("serverColumnOrder");
+			table_.setColumnOrder(parseIntList(defaultOrder));
 		}
 
 		table_.getColumn(ServerColumn.PASSWORDED).setAlignment(SWT.CENTER);

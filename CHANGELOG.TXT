@@ -1,3 +1,8 @@
+Work in progress
+----------------
+- Fix: Favorite column did not come first when upgrading from an older
+       version.
+
 v1.0e - 2026-08-02
 ------------------
 - New: Favorite servers.
