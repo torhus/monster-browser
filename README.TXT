@@ -35,7 +35,7 @@ Available Options:
 
 * inherit: Set this the name, or alias, of a game in the configuration. Most
   values, including the executable path will be inherited from the other game.
-  You can stil define new values for those you want to override. Inheritance
+  You can still define new values for those you want to override. Inheritance
   is only one level deep.
 * alias: Use this to define a shorter name if you have games with long names
   you want to inherit from. Not inheritable.
